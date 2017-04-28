@@ -1,0 +1,33 @@
+$theme_color : rgb(23, 112, 179);
+$link_color: rgb(114, 185, 237);
+
+$width-medium: 768px;
+$width-small: 400px;
+
+div.container {
+  margin: 0 auto;
+  max-width: 1080px;
+}
+
+.link {
+  cursor: pointer;
+  user-select: none;
+}
+
+.button {
+  border-radius: 4px;
+  padding: 0.5em;
+  font-size: 0.95em;
+  text-align: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color ease 0.2s;
+}
+
+a:link, a:active, a:hover, a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  color: white;
+}
