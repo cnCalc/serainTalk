@@ -53,7 +53,7 @@ function getMemberInfoById(req, res) {
             // 获得此用户最近的帖子
             db.collection('discussion').aggregate([{
               $match: {
-                'posts.user': userId
+                'participants': userId
               }
             }, {
               $project: {
@@ -129,6 +129,8 @@ function getMemberInfoGeneric(req, res) {
             message: 'server side database error.'
           });
         } else {
+          // 删除所有用户的凭据部分
+          results.forEach(result => delete result['credentials']);
           res.send({
             status: 'ok',
             list: results
