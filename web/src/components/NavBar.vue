@@ -15,7 +15,7 @@
 
 <script>
 export default {
-  name: 'navbar',
+  name: 'nav-bar',
   data () {
     return {
       links: [
@@ -29,7 +29,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import './global.scss';
+@import '../styles/global.scss';
 
 div.st-header {
   display: block;
