@@ -27,6 +27,7 @@ export default {
 body {
   margin: 0;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 #app {
@@ -34,11 +35,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  margin-top: 60px;
+  margin-top: 50px;
 }
 
-#app > .container {
-  padding-top: 15px;
-}
 
 </style>

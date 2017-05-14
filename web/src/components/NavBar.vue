@@ -38,7 +38,7 @@ div.st-header {
   left: 0;
   right: 0;
   height: 50px;
-  background-color: rgba($theme_color, 0.95);
+  background-color: $theme_color;
   box-shadow: 0 2px 2px $theme_color;
   text-align: center;
 
@@ -61,7 +61,6 @@ div.st-header {
     }
 
     div.right {
-      // float: right;
       position: absolute;
       right: 0;
     }

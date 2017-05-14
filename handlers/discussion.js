@@ -15,7 +15,7 @@ function getLatestDiscussionList(req, res) {
   let query = {};
   if (req.query.tag) {
     query = {
-      tags: { $all: (req.query.tag instanceof Array) ? req.query.tag : [req.query.tag] }
+      tags: { $in: (req.query.tag instanceof Array) ? req.query.tag : [req.query.tag] }
     }
   }
   let pagesize = Number(req.query.pagesize) || config.pagesize;

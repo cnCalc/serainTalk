@@ -13,7 +13,13 @@ Vue.use(VueRouter)
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/', component: ListView }
+    {
+      path: '/',
+      component: ListView
+    }, {
+      path: '/c/:categorySlug',
+      component: ListView,
+    }
   ]
 })
 
