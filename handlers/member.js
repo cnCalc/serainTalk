@@ -5,7 +5,7 @@ const config = require('../config');
 
 /**
  * 根据用户 ID 获得用户信息以及最近活动
- * /api/v1/member/:id
+ * /api/v1/member/:id[?recent=(on|off)]
  * @param {Request} req 
  * @param {Response} res 
  */
@@ -50,35 +50,40 @@ function getMemberInfoById(req, res) {
             // 删除用户的登陆凭据部分
             delete result['credentials'];
 
-            // 获得此用户最近的帖子
-            db.collection('discussion').aggregate([{
-              $match: {
-                'participants': userId
-              }
-            }, {
-              $project: {
-                posts: {
-                  $filter: {
-                    input: '$posts',
-                    as: 'post',
-                    cond: { $eq: [ '$$post.user', userId ] }
+            // 获得此用户最近的帖子（如果需要）
+            if (req.query.recent === 'on') {
+              db.collection('discussion').aggregate([{
+                $match: {
+                  'participants': userId
+                }
+              }, {
+                $project: {
+                  posts: {
+                    $filter: {
+                      input: '$posts',
+                      as: 'post',
+                      cond: { $eq: [ '$$post.user', userId ] }
+                    }
                   }
                 }
-              }
-            }, {
-              $sort: {
-                'posts.createDate': -1
-              }
-            }, {
-              $limit: 10
-            }]).toArray((err, docs) => {
-              if (err) {
-                result.recentActivities = null
-              } else {
-                result.recentActivities = docs
-              }
+              }, {
+                $sort: {
+                  'posts.createDate': -1
+                }
+              }, {
+                $limit: 10
+              }]).toArray((err, docs) => {
+                if (err) {
+                  result.recentActivities = null
+                } else {
+                  result.recentActivities = docs
+                }
+                res.send(result);
+              })
+            } else {
+              // 不需要，直接发送
               res.send(result);
-            })
+            }
           }
         })
       }

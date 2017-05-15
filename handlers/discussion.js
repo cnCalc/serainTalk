@@ -2,6 +2,7 @@
 
 const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
+const { resloveMembersInDiscussions } = require('../utils/resolve-members');
 
 /**
  * 获取指定标签下最新的讨论
@@ -23,7 +24,7 @@ function getLatestDiscussionList(req, res) {
 
   MongoClient.connect(config.database, (err, db) => {
     db.collection('discussion').find(query, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1
+      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1,
     }, {
       limit: pagesize,
       skip: offset * pagesize,
@@ -35,10 +36,13 @@ function getLatestDiscussionList(req, res) {
           message: 'server side database error.'
         })
       } else {
-        res.send({
-          status: 'ok',
-          discussions: results,
-        })
+        resloveMembersInDiscussions(results, (err, members) => {
+          res.send({
+            status: 'ok',
+            discussions: results,
+            members
+          });
+        });
       }
     })
   });
@@ -68,7 +72,7 @@ function getDiscussionById(req, res) {
     db.collection('discussion').find({
       _id: ObjectID(discussionId)
     }, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, posts: 1
+      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, posts: 1, lastMember: 1,
     }, {
       limit: pagesize,
       skip: offset * pagesize,

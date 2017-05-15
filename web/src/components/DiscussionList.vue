@@ -2,10 +2,16 @@
   div.discussion-list
     ul
       li.discussion-list-item(v-for="discussion in discussions")
-        div.avater 头
+        div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
+        div.creater-info-popup
+          div.triangle-left
+          span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
         div.discussion-meta
-          h3.discussion-title {{ discussion.title }}
-          span.discussion-last-reply 最后回复于 {{ new Date(discussion.lastDate * 1000).toLocaleDateString() }}
+          router-link(:to="'/d/' + discussion._id")
+            h3.discussion-title {{ discussion.title }}
+          span.discussion-last-reply
+            span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
+            |回复于 {{ timeAgo(discussion.lastDate) }}
           span.discussion-tags wtmsb
           span.discussion-tags jbdxbl
     loading-icon(v-if="busy")
@@ -19,6 +25,10 @@ import LoadingIcon from './LoadingIcon.vue';
 import config from '../config';
 import store from '../store';
 
+import { timeAgo } from '../utils/filters';
+
+console.log(timeAgo)
+
 export default {
   name: 'discussion-list',
   components: {
@@ -27,6 +37,7 @@ export default {
   data () {
     return {
       discussions: [],
+      members: {},
       currentPage: 1,
       slug: '',
       busy: true,
@@ -44,6 +55,7 @@ export default {
     }
   },
   methods: {
+    timeAgo, 
     loadDiscussionList() {
       this.currentPage = 1;
       this.slug = this.selectedCategory;
@@ -57,6 +69,7 @@ export default {
       this.discussions = [];
       this.$http.get(url).then(res => {
         this.discussions = res.body.discussions;
+        this.members = res.body.members;
         this.busy = false;
       })
     },
@@ -84,6 +97,7 @@ export default {
       }
       this.$http.get(url).then(res => {
         this.discussions = [...this.discussions, ...res.body.discussions];
+        this.members = Object.assign(this.members, res.body.members);
         this.busy = false;
       })
     }
@@ -127,7 +141,7 @@ div.discussion-list {
   }
 
   li.discussion-list-item:hover {
-    background-color: mix($theme_color, white, 15%);
+    background-color: mix($theme_color, white, 5%);
   }
 
   div.avater {
@@ -135,6 +149,7 @@ div.discussion-list {
     margin: 3px;
     width: 38px;
     height: 38px;
+    font-size: 22px;
     line-height: 38px;
     text-align: center;
     border-radius: 19px;
@@ -143,17 +158,64 @@ div.discussion-list {
     cursor: pointer;
   }
 
-  div.discussion-meta {
+  $popup-height: 26px;
+  $arrow-width: 5px;
+  $arrow-height: 6px;
+  $popup-color: #333;
+  div.creater-info-popup {
     display: inline-block;
+    position: absolute;
+    margin-top: 8px;
+    margin-left: 8px;
+    background:  $popup-color;
+    border-radius: 4px;
+    font-size: 13.6px;
+    line-height: $popup-height;
+    color: white;
+    opacity: 0;
+    transition: opacity ease 0.2s;
+    pointer-events: none;
+
+    div.triangle-left {
+      display: inline-block;
+      margin-left: -$arrow-width;
+      margin-top: ($popup-height - $arrow-height) / 2;
+      width: 0;
+      height: 0;
+      border-top: $arrow-height / 2 solid transparent;
+      border-bottom: $arrow-height / 2 solid transparent; 
+      border-right: $arrow-width solid  $popup-color;
+      vertical-align: top;
+    }
+
+    span {
+      display: inline-block;
+      opacity: 1;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  }
+
+  div.avater:hover + div.creater-info-popup {
+    opacity: 1;
+  }
+
+  div.discussion-meta {
     padding-left: 12px;
+    display: inline-block;
     vertical-align: top;
-    cursor: pointer;
   }
 
   h3.discussion-title {
     font-weight: normal;
     font-size: 16px;
     margin: 0;
+    cursor: pointer;
+    transition: color ease 0.2s;
+  }
+
+  h3.discussion-title:hover {
+    color: $theme_color;
   }
 
   span.discussion-last-reply {
@@ -161,19 +223,27 @@ div.discussion-list {
     font-size: 12px;
   }
 
-  span.discussion-tags {
-    margin-left: 0.4em;
+  span.discussion-user, span.discussion-tags {
     font-size: 12px;
-    background: mix($theme_color, white, 15%);
     color: mix($theme_color, white, 90%);
     font-weight: bold;
     border-radius: 4px;
     padding: 3px;
     transition: background ease 0.2s;
+    cursor: pointer;
+  }
+
+  span.discussion-tags {
+    margin-left: 0.4em;
+    background: mix($theme_color, white, 15%);
   }
 
   span.discussion-tags:hover {
     background: mix($theme_color, white, 30%);
+  }
+
+  span.discussion-user:hover {
+    color: mix($theme_color, black, 75%);
   }
 
   div.discussion-button {

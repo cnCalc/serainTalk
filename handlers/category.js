@@ -2,6 +2,7 @@
 
 const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
+const { resloveMembersInDiscussions } = require('../utils/resolve-members');
 
 let slugCache = null;
 
@@ -92,16 +93,19 @@ function getDiscussionsUnderSpecifiedCategory(req, res) {
         db.collection('discussion').find({
           category
         }, {
-          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1
+          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1,
         }, {
           limit: pagesize,
           skip: offset * pagesize,
           sort: [['lastDate', 'desc']]
         }).toArray((err, results) => {
-          res.send({
-            status: 'ok',
-            discussions: results,
-          });
+          resloveMembersInDiscussions(results, (err, members) => {
+            res.send({
+              status: 'ok',
+              discussions: results,
+              members
+            });
+          })
         })
       }
     })
