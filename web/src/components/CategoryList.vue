@@ -1,10 +1,11 @@
 <template lang="pug">
   div.categories-list
-    div.categories-block(v-for="(group, groupIndex) in categoriesGroup")
+    div.categories-block(v-for="(group, groupIndex) in categoriesGroup" :key="group.name")
       h2.block-name {{ group.name }}
       router-link.category-name(
-        :to="'/c/' + category.slug" 
         v-for="(category, categoryIndex) in group.categories" 
+        :key="category.name"
+        :to="'/c/' + category.slug" 
         :title="category.description"
       ) {{ category.name }}
 </template>

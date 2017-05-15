@@ -30,7 +30,6 @@ export default {
       } else {
         let url = `${config.api.url}${config.api.version}/category/${slug}/discussions`;
         this.$http.get(url).then(res => {
-          console.log(res.body);
           this.discussions = res.body.discussions;
         })
       }
