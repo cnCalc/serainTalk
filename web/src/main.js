@@ -5,6 +5,7 @@ import Vuex from 'vuex'
 
 import App from './components/App.vue'
 import ListView from './components/ListView.vue'
+import NotFound from './components/NotFound.vue'
 import store from './store'
 
 Vue.use(VueResource)
@@ -15,12 +16,24 @@ const router = new VueRouter({
   routes: [
     {
       path: '/',
-      component: ListView
+      component: ListView,
+      meta: {keepAlive: true}
     }, {
       path: '/c/:categorySlug',
       component: ListView,
+      meta: {keepAlive: true}
+    }, { 
+      path: '*', 
+      component: NotFound
     }
-  ]
+  ],
+  scrollBehavior (to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { x: 0, y: 0 };
+    }
+  },
 })
 
 new Vue({

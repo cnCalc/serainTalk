@@ -2,7 +2,7 @@
   div#app
     nav-bar
     div.container
-      router-view
+      keep-alive: router-view(keep-alive)
 </template>
 
 <script>
