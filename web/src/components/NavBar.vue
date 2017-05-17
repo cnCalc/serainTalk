@@ -41,6 +41,7 @@ div.st-header {
   background-color: $theme_color;
   box-shadow: 0 2px 2px $theme_color;
   text-align: center;
+  z-index: 10;
 
   div.container {
     text-align: left;

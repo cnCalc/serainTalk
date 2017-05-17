@@ -3,6 +3,11 @@
 const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
 
+/**
+ * 解析一组讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
+ * @param {Array.<Discussion>} discussions 
+ * @param {Function(err, Object.<String, Member>)} callback 
+ */
 function resloveMembersInDiscussions(discussions, callback) {
   MongoClient.connect(config.database, (err, db) => {
     let members = {};

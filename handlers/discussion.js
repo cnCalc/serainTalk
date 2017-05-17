@@ -24,7 +24,7 @@ function getLatestDiscussionList(req, res) {
 
   MongoClient.connect(config.database, (err, db) => {
     db.collection('discussion').find(query, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1,
+      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
     }, {
       limit: pagesize,
       skip: offset * pagesize,
@@ -61,9 +61,9 @@ function getDiscussionById(req, res) {
   try {
     discussionId = ObjectID(req.params.id);
   } catch (err) {
-    res.status(400).send({
+    res.status(404).send({
       status: 'err',
-      message: 'invalid user id.'
+      message: 'discussion not found.'
     });
     return;
   }

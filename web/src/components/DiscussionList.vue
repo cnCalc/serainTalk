@@ -2,18 +2,25 @@
   div.discussion-list
     ul
       li.discussion-list-item(v-for="discussion in discussions")
-        div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
-        div.creater-info-popup
-          div.triangle-left
-          span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
+        router-link(:to="'/m/' + discussion.creater")
+          div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
+          div.creater-info-popup
+            div.triangle-left
+            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
         div.discussion-meta
           router-link(:to="'/d/' + discussion._id")
             h3.discussion-title {{ discussion.title }}
           span.discussion-last-reply
-            span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
+            router-link(:to="'/m/' + discussion.lastMember")
+              span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
             |回复于 {{ timeAgo(discussion.lastDate) }}
           span.discussion-tags wtmsb
           span.discussion-tags jbdxbl
+        div.discussion-meta-right
+          span.discussion-category(v-if="slug === ''") {{ discussion.category }}
+          div.discussion-view-count
+            div.discussion-view-count-icon 💬
+            div.discussion-view-count-value {{ discussion.replies - 1 }}
     loading-icon(v-if="busy")
     div.discussion-page-nav
       div.discussion-button(@click="loadMore", v-if="!busy") 加载更多
@@ -26,8 +33,6 @@ import config from '../config';
 import store from '../store';
 
 import { timeAgo } from '../utils/filters';
-
-console.log(timeAgo)
 
 export default {
   name: 'discussion-list',
@@ -138,6 +143,7 @@ div.discussion-list {
   li.discussion-list-item {
     transition: background ease 0.2s;
     border-radius: 4px;
+    position: relative;
   }
 
   li.discussion-list-item:hover {
@@ -204,6 +210,7 @@ div.discussion-list {
     padding-left: 12px;
     display: inline-block;
     vertical-align: top;
+    height: 45px;
   }
 
   h3.discussion-title {
@@ -267,6 +274,44 @@ div.discussion-list {
   div.discussion-button:hover {
     color: mix($theme_color, black, 60%);
     background: mix($theme_color, white, 25%);
+  }
+
+  div.discussion-meta-right {
+    padding-left: 12px;
+    display: block;
+    height: 45px;
+    line-height: 45px;
+    float: right;
+
+    span.discussion-category {
+      font-size: 12px;
+      margin-right: 5px;
+      padding: 4px 7px 4px 7px;
+      border-radius: 3px;
+      background-color: $theme_color;
+      color: white;
+      cursor: pointer;
+      margin-right: 12px;
+    }
+
+    div.discussion-view-count {
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 12px;
+      border-radius: 3px;
+      color: $theme_color;
+      text-align: center; 
+      cursor: pointer;
+      div.discussion-view-count-icon {
+        display: inline-block;
+      }
+      div.discussion-view-count-value {
+        display: inline-block;
+        width: 30px;
+        padding-left: 4px;
+        text-align: left;
+      }
+    }
   }
 }
 </style>

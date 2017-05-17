@@ -4,12 +4,20 @@ const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
 const { resloveMembersInDiscussions } = require('../utils/resolve-members');
 
+/**
+ * 缓存保存对象
+ */
 let slugCache = null;
 
+/**
+ * 刷新内存里的 slug 缓存
+ * @param {Function} callback 
+ */
 function flushCache(callback) {
   MongoClient.connect(config.database, (err, db) => {
     db.collection('generic').findOne({key: 'pinned-categories'}).then(doc => {
       let cache = {};
+      // 遍历保存
       for (let group of doc.groups) {
         for (let category of group.categories) {
           cache[category.slug] = category.name;
@@ -23,10 +31,17 @@ function flushCache(callback) {
   });
 }
 
+/**
+ * 将分区的 slug 转化为完整的分区名
+ * @param {String} slug 
+ * @param {Function} callback 
+ */
 function slugToCategory(slug, callback) {
   if (slugCache[slug]) {
+    // 缓存命中，直接调用 callback 返回结果
     callback(null, slugCache[slug]);
   } else {
+    // 刷新缓存
     flushCache(err => {
       if (err) {
         callback(err);
@@ -37,7 +52,7 @@ function slugToCategory(slug, callback) {
   }
 }
 
-// Flush it immediately
+// 立即刷新一次分区 slug 的缓存
 flushCache(err => {
   if (err) {
     console.log(err);
@@ -93,7 +108,7 @@ function getDiscussionsUnderSpecifiedCategory(req, res) {
         db.collection('discussion').find({
           category
         }, {
-          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1,
+          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
         }, {
           limit: pagesize,
           skip: offset * pagesize,
