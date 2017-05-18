@@ -66,22 +66,26 @@ div.jumbotron {
   }
 }
 div.nav {
-  white-space: nowrap;
+  display: flex;
   vertical-align: top;
-  padding-top: 15px;
+  padding: 15px;
 
   div.left {
     vertical-align: top;
-    display: inline-block;
-    width: 20%;
-    height: 100px;
+    order: 1;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 220px;
   }
 
   div.right {
     vertical-align: top;
     display: inline-block;
-    width: 80%;
+    order: 2;
+    flex-grow: 1;
+    flex-shrink: 1;
     text-align: left;
+    overflow: hidden;
   }
 
   div.create-discussion {

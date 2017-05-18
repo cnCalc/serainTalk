@@ -2,25 +2,23 @@
   div.discussion-list
     ul
       li.discussion-list-item(v-for="discussion in discussions")
-        router-link(:to="'/m/' + discussion.creater")
+        router-link.discussion-avatar(:to="'/m/' + discussion.creater")
           div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
             span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
         div.discussion-meta
-          router-link(:to="'/d/' + discussion._id")
-            h3.discussion-title {{ discussion.title }}
-          span.discussion-last-reply
-            router-link(:to="'/m/' + discussion.lastMember")
-              span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
-            |回复于 {{ timeAgo(discussion.lastDate) }}
-          span.discussion-tags wtmsb
-          span.discussion-tags jbdxbl
+          h3.discussion-title
+            router-link(:to="'/d/' + discussion._id") {{ discussion.title }}
+          div.discussion-meta-other
+            span.discussion-last-reply
+              router-link(:to="'/m/' + discussion.lastMember")
+                span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
+              |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
+            span.discussion-tags wtmsb
+            span.discussion-tags jbdxbl
         div.discussion-meta-right
           span.discussion-category(v-if="slug === ''") {{ discussion.category }}
-          div.discussion-view-count
-            div.discussion-view-count-icon 💬
-            div.discussion-view-count-value {{ discussion.replies - 1 }}
     loading-icon(v-if="busy")
     div.discussion-page-nav
       div.discussion-button(@click="loadMore", v-if="!busy") 加载更多
@@ -135,7 +133,6 @@ div.discussion-list {
     padding: 0;
     list-style: none;
     li.discussion-list-item {
-      display: block;
       padding: 12px;
     }
   }
@@ -144,6 +141,8 @@ div.discussion-list {
     transition: background ease 0.2s;
     border-radius: 4px;
     position: relative;
+    display: flex;
+    flex-wrap: nowrap;
   }
 
   li.discussion-list-item:hover {
@@ -206,82 +205,29 @@ div.discussion-list {
     opacity: 1;
   }
 
+  .discussion-avatar {
+    order: 1;
+    flex-shrink: 0;
+  }
+
   div.discussion-meta {
     padding-left: 12px;
     display: inline-block;
+    order: 2;
+    flex-shrink: 2;
+    flex-grow: 2;
+    overflow: auto;
     vertical-align: top;
     height: 45px;
   }
 
-  h3.discussion-title {
-    font-weight: normal;
-    font-size: 16px;
-    margin: 0;
-    cursor: pointer;
-    transition: color ease 0.2s;
-  }
-
-  h3.discussion-title:hover {
-    color: $theme_color;
-  }
-
-  span.discussion-last-reply {
-    line-height: 24px;
-    font-size: 12px;
-  }
-
-  span.discussion-user, span.discussion-tags {
-    font-size: 12px;
-    color: mix($theme_color, white, 90%);
-    font-weight: bold;
-    border-radius: 4px;
-    padding: 3px;
-    transition: background ease 0.2s;
-    cursor: pointer;
-  }
-
-  span.discussion-tags {
-    margin-left: 0.4em;
-    background: mix($theme_color, white, 15%);
-  }
-
-  span.discussion-tags:hover {
-    background: mix($theme_color, white, 30%);
-  }
-
-  span.discussion-user:hover {
-    color: mix($theme_color, black, 75%);
-  }
-
-  div.discussion-button {
-    margin: 10px auto 0 auto;
-    font-size: 0.8em;
-    width: 60px;
-    line-height: 16px;
-    border-radius: 4px;
-    color: mix($theme_color, black, 90%);
-    background: mix($theme_color, white, 15%);
-    text-align: center; 
-    padding: 6px;
-    transition: all ease 0.1s;
-    cursor: pointer;
-  }
-
-  div.discussion-page-nav {
-    padding-top: 4px;
-  }
-
-  div.discussion-button:hover {
-    color: mix($theme_color, black, 60%);
-    background: mix($theme_color, white, 25%);
-  }
-
   div.discussion-meta-right {
+    order: 3;
+    flex-shrink: 0;
+    flex-grow: 0;
     padding-left: 12px;
-    display: block;
     height: 45px;
     line-height: 45px;
-    float: right;
 
     span.discussion-category {
       font-size: 12px;
@@ -313,5 +259,76 @@ div.discussion-list {
       }
     }
   }
+
+  h3.discussion-title {
+    white-space: nowrap;
+    font-weight: normal;
+    font-size: 16px;
+    margin: 0;
+    transition: color ease 0.2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  h3.discussion-title:hover {
+    color: $theme_color;
+  }
+
+  div.discussion-meta-other {
+    white-space: nowrap;
+    overflow: hidden;
+
+    span.discussion-last-reply {
+      line-height: 24px;
+      font-size: 12px;
+    }
+
+    span.discussion-user, span.discussion-tags {
+      font-size: 12px;
+      color: mix($theme_color, white, 90%);
+      font-weight: bold;
+      border-radius: 4px;
+      padding: 3px;
+      transition: background ease 0.2s;
+      cursor: pointer;
+    }
+
+    span.discussion-tags {
+      margin-left: 0.4em;
+      background: mix($theme_color, white, 15%);
+    }
+
+    span.discussion-tags:hover {
+      background: mix($theme_color, white, 30%);
+    }
+
+    span.discussion-user:hover {
+      color: mix($theme_color, black, 75%);
+    }
+  }
+
+  div.discussion-button {
+    margin: 10px auto 0 auto;
+    font-size: 0.8em;
+    width: 60px;
+    line-height: 16px;
+    border-radius: 4px;
+    color: mix($theme_color, black, 90%);
+    background: mix($theme_color, white, 15%);
+    text-align: center; 
+    padding: 6px;
+    transition: all ease 0.1s;
+    cursor: pointer;
+  }
+
+  div.discussion-page-nav {
+    padding-top: 4px;
+  }
+
+  div.discussion-button:hover {
+    color: mix($theme_color, black, 60%);
+    background: mix($theme_color, white, 25%);
+  }
+
 }
 </style>

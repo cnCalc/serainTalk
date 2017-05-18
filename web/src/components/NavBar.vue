@@ -43,6 +43,10 @@ div.st-header {
   text-align: center;
   z-index: 10;
 
+  a:hover {
+    color: white;
+  }
+
   div.container {
     text-align: left;
     height: 50px;
