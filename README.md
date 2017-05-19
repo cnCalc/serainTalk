@@ -1,8 +1,8 @@
 serain-talk
 ===========
 
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](LICENSE)
-[![Build Status](https://travis-ci.org/cnCalc/serainTalk.svg?branch=eslint)](https://travis-ci.org/cnCalc/serainTalk)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.org/cnCalc/serainTalk.svg?branch=master)](https://travis-ci.org/cnCalc/serainTalk)
 
 Next generation forum engine designed for cnCalc.org
 
