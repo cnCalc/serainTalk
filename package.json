@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "author": "ntzyz <ntzyz@live.cn>",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js"
+  },
   "dependencies": {
     "express": "^4.15.2",
     "mongodb": "^2.2.26"
