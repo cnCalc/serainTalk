@@ -2,19 +2,18 @@
 
 const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
+const errorHandler = require('../utils/error-handler');
+const errorMessages = require('../utils/error-messages');
 
 /**
  * 根据用户 ID 获得用户信息以及最近活动
  * /api/v1/member/:id[?recent=(on|off)]
- * @param {Request} req 
- * @param {Response} res 
+ * @param {Request} req
+ * @param {Response} res
  */
-function getMemberInfoById(req, res) {
+function getMemberInfoById (req, res) {
   if (!req.params.id) {
-    res.status(400).send({
-      status: 'err',
-      message: 'missing user id.'
-    });
+    errorHandler(null, 'missing member id', 400, res);
   } else {
     let userId;
     try {
@@ -28,17 +27,17 @@ function getMemberInfoById(req, res) {
     }
     MongoClient.connect(config.database, (err, db) => {
       if (err) {
-        console.error(err);
-        res.status(500).send({
-          status: 'error',
-          message: 'server side database error.'
-        });
+        errorHandler(err, errorMessages.DB_ERROR, 500, res);
       } else {
         // 查询用户的基础信息
         db.collection('common_member').find({
           _id: userId
         }).toArray((err, results) => {
-          if (results.length != 1) {
+          if (err) {
+            errorHandler(err, errorMessages.DB_ERROR, 500, res);
+            return;
+          }
+          if (results.length !== 1) {
             res.send({
               status: 'ok',
             });
@@ -62,7 +61,7 @@ function getMemberInfoById(req, res) {
                     $filter: {
                       input: '$posts',
                       as: 'post',
-                      cond: { $eq: [ '$$post.user', userId ] }
+                      cond: { $eq: ['$$post.user', userId] }
                     }
                   }
                 }
@@ -74,18 +73,18 @@ function getMemberInfoById(req, res) {
                 $limit: 10
               }]).toArray((err, docs) => {
                 if (err) {
-                  result.recentActivities = null
+                  result.recentActivities = null;
                 } else {
-                  result.recentActivities = docs
+                  result.recentActivities = docs;
                 }
                 res.send(result);
-              })
+              });
             } else {
               // 不需要，直接发送
               res.send(result);
             }
           }
-        })
+        });
       }
     });
   }
@@ -95,10 +94,10 @@ function getMemberInfoById(req, res) {
  * 查询符合用户名/主力设备的用户信息
  * /api/v1/members?name=<name>
  * /api/v1/members?device=<device>
- * @param {Request} req 
- * @param {Response} res 
+ * @param {Request} req
+ * @param {Response} res
  */
-function getMemberInfoGeneric(req, res) {
+function getMemberInfoGeneric (req, res) {
   let query = {};
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page) || 0;
@@ -108,10 +107,7 @@ function getMemberInfoGeneric(req, res) {
   } else if (req.query.device) {
     query.device = req.query.device;
   } else {
-    res.status(400).send({
-      status: 'err',
-      message: 'name or device is required.'
-    });
+    errorHandler(null, 'name or device is required.', 500, res);
     return;
   }
 
@@ -141,9 +137,9 @@ function getMemberInfoGeneric(req, res) {
             list: results
           });
         }
-      })
+      });
     }
-  })
+  });
 }
 
 module.exports = {
@@ -156,4 +152,4 @@ module.exports = {
       get: getMemberInfoGeneric,
     }
   ]
-}
+};

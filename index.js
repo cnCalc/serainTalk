@@ -1,7 +1,6 @@
 'use strict';
 
 const express = require('express');
-const { MongoClient } = require('mongodb');
 
 const app = express();
 
@@ -9,7 +8,7 @@ if (process.env.DEV) {
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     next();
-  })
+  });
 }
 
 app.use(require('./utils/log'));

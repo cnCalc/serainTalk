@@ -1,15 +1,16 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import VueResource from 'vue-resource'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import VueResource from 'vue-resource';
+import Vuex from 'vuex';
 
-import App from './components/App.vue'
-import ListView from './components/ListView.vue'
-import NotFound from './components/NotFound.vue'
-import store from './store'
+import App from './components/App.vue';
+import ListView from './components/ListView.vue';
+import NotFound from './components/NotFound.vue';
+import store from './store';
 
-Vue.use(VueResource)
-Vue.use(VueRouter)
+Vue.use(VueResource);
+Vue.use(VueRouter);
+Vue.use(Vuex);
 
 const router = new VueRouter({
   mode: 'history',
@@ -17,14 +18,14 @@ const router = new VueRouter({
     {
       path: '/',
       component: ListView,
-      meta: {keepAlive: true}
+      meta: { keepAlive: true }
     }, {
       path: '/c/:categorySlug',
       component: ListView,
-      meta: {keepAlive: true}
-    }, { 
-      path: '*', 
-      component: NotFound
+      meta: { keepAlive: true }
+    }, {
+      path: '*',
+      component: NotFound,
     }
   ],
   scrollBehavior (to, from, savedPosition) {
@@ -34,11 +35,11 @@ const router = new VueRouter({
       return { x: 0, y: 0 };
     }
   },
-})
+});
 
 new Vue({
   el: '#app',
   router,
   store,
   render: h => h(App)
-})
+});

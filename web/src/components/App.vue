@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import NavBar from './NavBar.vue'
+import NavBar from './NavBar.vue';
 
 export default {
   name: 'app',
@@ -16,9 +16,9 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'
-    }
+    };
   }
-}
+};
 </script>
 
 <style lang="scss">

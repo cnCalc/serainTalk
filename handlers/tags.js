@@ -2,20 +2,24 @@
 
 const { MongoClient } = require('mongodb');
 const config = require('../config');
+const errorHandler = require('../utils/error-handler');
+const errorMessages = require('../utils/error-messages');
 
 /**
  * 获取论坛内所有的 tag
  * /api/v1/tags/all
- * @param {Request} req 
- * @param {Response} res 
+ * @param {Request} req
+ * @param {Response} res
  */
-function getAllTags(req, res) {
+function getAllTags (req, res) {
   MongoClient.connect(config.database, (err, db) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
     db.collection('discussion').distinct('tags', (err, docs) => {
       if (err) {
-        res.code(500).send({
-          status: 'err'
-        })
+        errorHandler(err, errorMessages.DB_ERROR, 500, res);
       } else {
         res.send({
           status: 'ok',
@@ -23,25 +27,25 @@ function getAllTags(req, res) {
         });
       }
     });
-  })
+  });
 }
 
-function getPinnedTags(req, res) {
+function getPinnedTags (req, res) {
   MongoClient.connect(config.database, (err, db) => {
-    db.collection('generic').find({key: 'pinned-tags'}).toArray((err, docs) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
+    db.collection('generic').find({ key: 'pinned-tags' }).toArray((err, docs) => {
       if (err) {
-        console.log(err);
-        res.code(500).send({
-          status: 'err',
-          message: 'server side database error.'
-        });
+        errorHandler(err, errorMessages.DB_ERROR, 500, res);
       } else {
         res.send({
           status: 'ok',
           tags: docs[0].tags
         });
       }
-    })
+    });
   });
 }
 
@@ -55,4 +59,4 @@ module.exports = {
       get: getPinnedTags,
     }
   ]
-}
+};

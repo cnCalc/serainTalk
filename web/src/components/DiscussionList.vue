@@ -44,22 +44,22 @@ export default {
       currentPage: 1,
       slug: '',
       busy: true,
-    }
+    };
   },
   computed: {
-    selectedCategory() {
+    selectedCategory () {
       if (this.$route.fullPath === '/') {
         return '';
       }
-      return this.$route.params.categorySlug
+      return this.$route.params.categorySlug;
     },
-    categoriesGroup() {
+    categoriesGroup () {
       return store.state.categoriesGroup;
     }
   },
   methods: {
-    timeAgo, 
-    loadDiscussionList() {
+    timeAgo,
+    loadDiscussionList () {
       this.currentPage = 1;
       this.slug = this.selectedCategory;
       let url;
@@ -74,9 +74,9 @@ export default {
         this.discussions = res.body.discussions;
         this.members = res.body.members;
         this.busy = false;
-      })
+      });
     },
-    updateListView() {
+    updateListView () {
       if (!this.selectedCategory) {
         return;
       }
@@ -89,7 +89,7 @@ export default {
         }
       }
     },
-    loadMore() {
+    loadMore () {
       this.busy = true;
       this.currentPage++;
       let url;
@@ -102,25 +102,25 @@ export default {
         this.discussions = [...this.discussions, ...res.body.discussions];
         this.members = Object.assign(this.members, res.body.members);
         this.busy = false;
-      })
+      });
     }
   },
   watch: {
-    selectedCategory: function(val, oldval) {
-      if (typeof val === "undefined" || typeof oldval === "undefined") {
+    selectedCategory (val, oldval) {
+      if (typeof val === 'undefined' || typeof oldval === 'undefined') {
         return;
       }
       this.loadDiscussionList();
       this.updateListView();
     },
-    categoriesGroup: function() {
+    categoriesGroup () {
       this.updateListView();
     }
   },
-  created() {
+  created () {
     this.loadDiscussionList();
   }
-}
+};
 </script>
 
 <style lang="scss">

@@ -1,8 +1,10 @@
 'use strict';
 
-const { MongoClient, ObjectID } = require('mongodb');
+const { MongoClient } = require('mongodb');
 const config = require('../config');
 const { resloveMembersInDiscussions } = require('../utils/resolve-members');
+const errorHandler = require('../utils/error-handler');
+const errorMessages = require('../utils/error-messages');
 
 /**
  * 缓存保存对象
@@ -11,11 +13,15 @@ let slugCache = null;
 
 /**
  * 刷新内存里的 slug 缓存
- * @param {Function} callback 
+ * @param {Function} callback
  */
-function flushCache(callback) {
+function flushCache (callback) {
   MongoClient.connect(config.database, (err, db) => {
-    db.collection('generic').findOne({key: 'pinned-categories'}).then(doc => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    db.collection('generic').findOne({ key: 'pinned-categories' }).then(doc => {
       let cache = {};
       // 遍历保存
       for (let group of doc.groups) {
@@ -33,10 +39,10 @@ function flushCache(callback) {
 
 /**
  * 将分区的 slug 转化为完整的分区名
- * @param {String} slug 
- * @param {Function} callback 
+ * @param {String} slug
+ * @param {Function} callback
  */
-function slugToCategory(slug, callback) {
+function slugToCategory (slug, callback) {
   if (slugCache[slug]) {
     // 缓存命中，直接调用 callback 返回结果
     callback(null, slugCache[slug]);
@@ -48,7 +54,7 @@ function slugToCategory(slug, callback) {
       } else {
         callback(null, slugCache[slug]);
       }
-    })
+    });
   }
 }
 
@@ -58,26 +64,28 @@ flushCache(err => {
     console.log(err);
     process.exit(10);
   }
-})
+});
 
 /**
  * 获得所有板块和分区信息
  * /api/v1/categories
- * @param {Request} req 
- * @param {Response} res 
+ * @param {Request} req
+ * @param {Response} res
  */
-function getCategoryList(req, res) {
+function getCategoryList (req, res) {
   MongoClient.connect(config.database, (err, db) => {
-    db.collection('generic').findOne({key: 'pinned-categories'}).then(doc => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
+    db.collection('generic').findOne({ key: 'pinned-categories' }).then(doc => {
       res.send({
         status: 'ok',
         groups: doc.groups,
       });
     }).catch(err => {
-      res.status(500).send({
-        status: 'err',
-        message: 'server side database error.'
-      });
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
     });
   });
 }
@@ -85,21 +93,22 @@ function getCategoryList(req, res) {
 /**
  * 获得指定分区下的所有讨论
  * /api/v1/category/:slug/discussions
- * @param {Request} req 
- * @param {Response} res 
+ * @param {Request} req
+ * @param {Response} res
  */
-function getDiscussionsUnderSpecifiedCategory(req, res) {
+function getDiscussionsUnderSpecifiedCategory (req, res) {
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
 
   MongoClient.connect(config.database, (err, db) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
     slugToCategory(req.params.slug, (err, category) => {
       if (err) {
-        console.log(err);
-        res.status(500).send({
-          status: 'err',
-          message: 'server fucked up.'
-        });
+        errorHandler(err, errorMessages.DB_ERROR, 500, res);
+        return;
       } else if (typeof category === 'undefined') {
         res.send({
           status: 'ok',
@@ -114,16 +123,24 @@ function getDiscussionsUnderSpecifiedCategory(req, res) {
           skip: offset * pagesize,
           sort: [['lastDate', 'desc']]
         }).toArray((err, results) => {
+          if (err) {
+            errorHandler(err, errorMessages.DB_ERROR, 500, res);
+            return;
+          }
           resloveMembersInDiscussions(results, (err, members) => {
+            if (err) {
+              errorHandler(err, errorMessages.DB_ERROR, 500, res);
+              return;
+            }
             res.send({
               status: 'ok',
               discussions: results,
               members
             });
-          })
-        })
+          });
+        });
       }
-    })
+    });
   });
 }
 
@@ -137,4 +154,4 @@ module.exports = {
       get: getDiscussionsUnderSpecifiedCategory,
     }
   ]
-}
+};
