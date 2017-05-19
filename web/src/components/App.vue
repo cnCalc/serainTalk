@@ -1,17 +1,20 @@
 <template lang="pug">
   div#app
     nav-bar
+    global-title
     div.container
-      keep-alive: router-view(keep-alive)
+      keep-alive: router-view(v-if="$route.meta.keepAlive")
+      router-view(v-if="!$route.meta.keepAlive")
 </template>
 
 <script>
 import NavBar from './NavBar.vue';
+import GlobalTitle from './GlobalTitle.vue';
 
 export default {
   name: 'app',
   components: {
-    NavBar
+    NavBar, GlobalTitle
   },
   data () {
     return {

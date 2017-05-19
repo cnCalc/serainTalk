@@ -2,7 +2,7 @@
 
 const { MongoClient, ObjectID } = require('mongodb');
 const config = require('../config');
-const { resloveMembersInDiscussions } = require('../utils/resolve-members');
+const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../utils/resolve-members');
 const errorHandler = require('../utils/error-handler');
 const errorMessages = require('../utils/error-messages');
 
@@ -40,7 +40,7 @@ function getLatestDiscussionList (req, res) {
         errorHandler(err, errorMessages.DB_ERROR, 500, res);
         return;
       } else {
-        resloveMembersInDiscussions(results, (err, members) => {
+        resloveMembersInDiscussionArray(results, (err, members) => {
           if (err) {
             errorHandler(err, errorMessages.DB_ERROR, 500, res);
             return;
@@ -84,7 +84,10 @@ function getDiscussionById (req, res) {
     db.collection('discussion').find({
       _id: ObjectID(discussionId)
     }, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, posts: 1, lastMember: 1,
+      creater: 1, title: 1, createDate: 1,
+      lastDate: 1, views: 1, tags: 1,
+      status: 1, posts: 1, lastMember: 1,
+      category: 1,
     }, {
       limit: pagesize,
       skip: offset * pagesize,
@@ -100,7 +103,15 @@ function getDiscussionById (req, res) {
           status: 'ok',
         });
       } else {
-        res.send(Object.assign({ status: 'ok' }, results[0]));
+        resloveMembersInDiscussion(results[0], (err, members) => {
+          if (err) {
+            errorHandler(err, errorMessages.DB_ERROR, 500, res);
+            return;
+          }
+          let result = Object.assign({ status: 'ok' }, results[0]);
+          result = Object.assign(result, { members });
+          res.send(result);
+        });
       }
     });
   });

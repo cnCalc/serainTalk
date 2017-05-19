@@ -1,7 +1,7 @@
 <template lang="pug">
   div.discussion-list
-    ul
-      li.discussion-list-item(v-for="discussion in discussions")
+    ul: transition-group(name="list")
+      li(v-for="discussion in discussions" :key="discussion._id"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater")
           div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
@@ -78,13 +78,14 @@ export default {
     },
     updateListView () {
       if (!this.selectedCategory) {
+        this.$store.commit('setGlobalTitles', []);
         return;
       }
       let categoriesGroup = store.state.categoriesGroup;
       for (let group of categoriesGroup) {
         for (let category of group.categories) {
           if (category.slug === this.selectedCategory) {
-            this.$parent.setNameAndDescription(category.name, category.description);
+            this.$store.commit('setGlobalTitles', [category.name, category.description]);
           }
         }
       }
@@ -119,6 +120,12 @@ export default {
   },
   created () {
     this.loadDiscussionList();
+  },
+  activated () {
+    if (this.selectedCategory !== this.$route.params.categorySlug) {
+      this.loadDiscussionList();
+    }
+    this.updateListView();
   }
 };
 </script>
@@ -132,20 +139,20 @@ div.discussion-list {
     margin: 0;
     padding: 0;
     list-style: none;
-    li.discussion-list-item {
+    div.discussion-list-item {
       padding: 12px;
     }
   }
 
-  li.discussion-list-item {
-    transition: background ease 0.2s;
+  div.discussion-list-item {
+    transition: all ease 0.2s;
     border-radius: 4px;
     position: relative;
     display: flex;
     flex-wrap: nowrap;
   }
 
-  li.discussion-list-item:hover {
+  div.discussion-list-item:hover {
     background-color: mix($theme_color, white, 5%);
   }
 

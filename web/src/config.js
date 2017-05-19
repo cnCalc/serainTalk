@@ -1,6 +1,6 @@
 export default {
   api: {
-    url: 'http://219.230.148.140:8000/api/',
+    url: 'https://seraintalk.ntzyz.io/api/',
     version: 'v1'
   }
 };

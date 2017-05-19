@@ -10,9 +10,15 @@ export default new Vuex.Store({
     user: {},
     selectedTags: [],
     categoriesGroup: [],
+    globalTitle: '',
+    globalSubtitle: '',
   },
   mutations: {
     setTags: (state, newTagList) => state.selectedTags = newTagList,
     setCategoriesGroup: (state, newCategoriesGroup) => state.categoriesGroup = newCategoriesGroup,
+    setGlobalTitles: (state, [title, subtitle]) => {
+      state.globalTitle = title || '';
+      state.globalSubtitle = subtitle || '';
+    },
   },
 });

@@ -1,8 +1,5 @@
 <template lang="pug">
   div.list-view
-    div.jumbotron(v-if="typeof $route.params.categorySlug !== 'undefined'")
-      h1 {{ categoryName }}
-      h2 {{ categoryDescription }}
     div.nav
       div.left
         div.button.create-discussion 创建新帖
@@ -20,22 +17,6 @@ export default {
   name: 'list-view',
   components: {
     TagList, DiscussionList, CategoryList,
-  },
-  data () {
-    return {
-      categoryName: '',
-      categoryDescription: ''
-    };
-  },
-  created () {
-  },
-  methods: {
-    setNameAndDescription (name, description) {
-      this.categoryName = name;
-      this.categoryDescription = description;
-    }
-  },
-  computed: {
   }
 };
 </script>
@@ -43,27 +24,6 @@ export default {
 <style lang="scss">
 @import '../styles/global.scss';
 
-div.jumbotron {
-  min-height: 120px;
-  background: #888;
-  color: white;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  overflow: hidden;
-  h1, h2 {
-    font-weight: normal;
-    margin: 0;
-  }
-  h1 {
-    padding-top: 1em;
-    font-size: 24px;
-    line-height: 2em;
-  }
-  h2 {
-    font-size: 18px;
-    line-height: 1.2em;
-  }
-}
 div.nav {
   display: flex;
   vertical-align: top;

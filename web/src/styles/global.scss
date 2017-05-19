@@ -28,6 +28,28 @@ a:link, a:active, a:hover, a:visited {
   color: inherit;
   text-decoration: none;
 }
+
 a:hover {
   color: inherit;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s ease;
+}
+.fade-enter, .fade-leave-active {
+  opacity: 0;
+}
+
+.list-enter-active {
+  transition: all .2s;
+}
+.list-leave-active {
+  // transition: all .1s;
+}
+.list-enter, .list-leave-active {
+  opacity: 0;
 }

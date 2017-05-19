@@ -2,7 +2,7 @@
 
 const { MongoClient } = require('mongodb');
 const config = require('../config');
-const { resloveMembersInDiscussions } = require('../utils/resolve-members');
+const { resloveMembersInDiscussionArray } = require('../utils/resolve-members');
 const errorHandler = require('../utils/error-handler');
 const errorMessages = require('../utils/error-messages');
 
@@ -127,7 +127,7 @@ function getDiscussionsUnderSpecifiedCategory (req, res) {
             errorHandler(err, errorMessages.DB_ERROR, 500, res);
             return;
           }
-          resloveMembersInDiscussions(results, (err, members) => {
+          resloveMembersInDiscussionArray(results, (err, members) => {
             if (err) {
               errorHandler(err, errorMessages.DB_ERROR, 500, res);
               return;

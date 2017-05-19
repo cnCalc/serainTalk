@@ -6,6 +6,7 @@ import Vuex from 'vuex';
 import App from './components/App.vue';
 import ListView from './components/ListView.vue';
 import NotFound from './components/NotFound.vue';
+import DiscussionView from './components/DiscussionView.vue';
 import store from './store';
 
 Vue.use(VueResource);
@@ -23,6 +24,10 @@ const router = new VueRouter({
       path: '/c/:categorySlug',
       component: ListView,
       meta: { keepAlive: true }
+    }, {
+      path: '/d/:discussionId',
+      component: DiscussionView,
+      meta: { keepAlive: false }
     }, {
       path: '*',
       component: NotFound,
