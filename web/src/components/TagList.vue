@@ -24,17 +24,17 @@ export default {
       tagMode: 'pinned',
       listUpdating: false,
       listWillUpdate: false,
-    }
+    };
   },
-  created: function() {
+  created () {
     this.loadTagList();
   },
   methods: {
-    updateFilter: function(index) {
+    updateFilter (index) {
       this.tagsList[index].active = !this.tagsList[index].active;
       this.listWillUpdate = true;
     },
-    switchTagMode: function() {
+    switchTagMode () {
       if (this.listUpdating) {
         return;
       }
@@ -45,7 +45,7 @@ export default {
       }
       this.loadTagList();
     },
-    loadTagList: function() {
+    loadTagList () {
       let url;
       this.listUpdating = true;
       this.listWillUpdate = false;
@@ -57,11 +57,13 @@ export default {
       }
       this.$http.get(url).then(res => {
         if (res.body.status === 'ok') {
-          this.tagsList = res.body.tags.map(tag => { return {
-            name: tag,
-            active: false,
-            hide: true,
-          }});
+          this.tagsList = res.body.tags.map(tag => {
+            return {
+              name: tag,
+              active: false,
+              hide: true,
+            };
+          });
           let offset = 0;
           let intervalId = setInterval(() => {
             this.tagsList[offset++].hide = false;
@@ -71,23 +73,23 @@ export default {
             }
           }, 25);
         }
-      })
+      });
     },
-    commit: function() {
+    commit () {
       store.commit('setTags', this.tagsList.filter(el => el.active).map(el => el.name));
       this.listWillUpdate = false;
     }
   },
   computed: {
-    switchButtonText: function() {
+    switchButtonText () {
       if (this.tagMode === 'pinned') {
-        return '切换至所有标签'
+        return '切换至所有标签';
       } else {
         return '切换至常用标签';
       }
     }
   }
-}
+};
 </script>
 
 <style lang="scss">

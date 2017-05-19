@@ -5,9 +5,9 @@ const tagsHandlers = require('./tags');
 const memberHandlers = require('./member');
 const categoryHandlers = require('./category');
 
-function handlersInstaller(app) {
+function handlersInstaller (app) {
   let handlers = [
-    ...discussionHandlers.handlers, 
+    ...discussionHandlers.handlers,
     ...tagsHandlers.handlers,
     ...memberHandlers.handlers,
     ...categoryHandlers.handlers,

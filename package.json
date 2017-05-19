@@ -4,12 +4,19 @@
   "version": "1.0.0",
   "author": "ntzyz <ntzyz@live.cn>",
   "private": true,
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "express": "^4.15.2",
     "mongodb": "^2.2.26"
   },
   "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-config-vue": "^2.0.2",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "eslint-plugin-vue": "^2.0.1"
   }
 }

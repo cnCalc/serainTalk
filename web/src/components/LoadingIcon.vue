@@ -17,8 +17,8 @@
 
 <script>
 export default {
-  name: 'loading-icon',  
-}
+  name: 'loading-icon',
+};
 </script>
 
 <style lang="scss">

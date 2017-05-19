@@ -18,22 +18,22 @@ export default {
   name: 'category-list',
   data () {
     return {
-      categoriesGroup: []
-    }
+      categoriesGroup: [],
+    };
   },
   methods: {
-    loadCategoryList() {
+    loadCategoryList () {
       let url = `${config.api.url}${config.api.version}/categories`;
       this.$http.get(url).then(res => {
-        store.commit('setCategoriesGroup', res.body.groups)
+        store.commit('setCategoriesGroup', res.body.groups);
         this.categoriesGroup = res.body.groups;
-      })
+      });
     },
   },
-  created() {
+  created () {
     this.loadCategoryList();
   }
-}
+};
 </script>
 
 <style lang="scss">

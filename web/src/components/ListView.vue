@@ -15,30 +15,29 @@
 import TagList from './TagList.vue';
 import DiscussionList from './DiscussionList.vue';
 import CategoryList from './CategoryList.vue';
-import store from '../store';
 
 export default {
   name: 'list-view',
   components: {
-    TagList, DiscussionList, CategoryList
+    TagList, DiscussionList, CategoryList,
   },
   data () {
     return {
       categoryName: '',
       categoryDescription: ''
-    }
+    };
   },
-  created: function() {
+  created () {
   },
   methods: {
-    setNameAndDescription(name, description) {
+    setNameAndDescription (name, description) {
       this.categoryName = name;
       this.categoryDescription = description;
     }
   },
   computed: {
   }
-}
+};
 </script>
 
 <style lang="scss">
