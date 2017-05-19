@@ -15,7 +15,7 @@
 <script>
 import LoadingIcon from './LoadingIcon.vue';
 import config from '../config';
-import { timeAgo } from '../utils/filters';
+// import { timeAgo } from '../utils/filters';
 
 export default {
   name: 'discussion-view',
@@ -56,7 +56,7 @@ export default {
   created () {
     this.loadDiscussionData();
   }
-}
+};
 </script>
 
 <style lang="scss">

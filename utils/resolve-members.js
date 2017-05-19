@@ -26,7 +26,6 @@ function fetchOneMember (db, members, memberId) {
   });
 };
 
-
 /**
  * 解析一组讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
  * @param {Array.<Discussion>} discussions
