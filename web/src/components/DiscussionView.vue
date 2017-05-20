@@ -143,14 +143,42 @@ div.discussion-view {
 
         div.discussion-post-content {
           padding-top: 10px;
-          line-height: 1.5em;
-          font-size: 0.95em;
+          line-height: 26px;
+          font-size: 14px;
+
+          br {
+              content: "";
+              margin: 2em;
+              display: block;
+              font-size: 24%;
+          }
 
           blockquote {
             margin: 0;
-            padding: 8px 15px 8px 15px;
+            padding: 9px 16px 9px 16px;
             background-color: mix($theme_color, white, 10%);
             border-radius: 5px;
+            font-size: 0.95em;
+            line-height: 1.5em;
+            color: mix(white, black, 60%);
+            br {
+              margin: 0em;
+            }
+          }
+
+          p {
+            margin-top: 0.35em;
+            margin-bottom: 0.35em;
+          }
+          table { 
+              border-spacing: 0;
+              border-collapse: collapse;
+          }
+          td {
+            border: 1px solid mix($theme_color, white, 30%);
+            border-spacing: 0px;
+            padding: 5px;
+            text-align: center;
           }
         }
       }

@@ -17,8 +17,7 @@
               router-link(:to="'/m/' + discussion.lastMember")
                 span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
               |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
-            span.discussion-tags wtmsb
-            span.discussion-tags jbdxbl
+            span.discussion-tags(v-for="tag in discussion.tags") {{ tag }}
         div.discussion-meta-right
           span.discussion-category(v-if="slug === ''") {{ discussion.category }}
     loading-icon(v-if="busy")
@@ -250,6 +249,7 @@ div.discussion-list {
     overflow: auto;
     vertical-align: top;
     height: 45px;
+    overflow: hidden;
   }
 
   div.discussion-meta-right {
