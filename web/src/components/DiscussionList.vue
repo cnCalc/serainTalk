@@ -122,7 +122,7 @@ export default {
     this.loadDiscussionList();
   },
   activated () {
-    if (this.selectedCategory !== this.$route.params.categorySlug) {
+    if (this.selectedCategory !== this.slug) {
       this.loadDiscussionList();
     }
     this.updateListView();

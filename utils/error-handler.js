@@ -3,7 +3,7 @@
 function errorHandler (err, message, code, res) {
   err && console.error(err);
   if (res) {
-    code && res.code(code);
+    code && res.code && res.code(code);
     res.send({
       status: 'error',
       message,
