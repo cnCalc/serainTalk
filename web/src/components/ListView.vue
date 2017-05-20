@@ -50,6 +50,12 @@ div.nav {
   div.create-discussion {
     width: 90%;
     margin-left: 0%;
+    color: white;
+  }
+}
+
+.light-theme div.nav {
+  div.create-discussion {
     background-color: $theme_color;
     color: white;
   }
@@ -58,4 +64,16 @@ div.nav {
     background-color: darken($theme_color, 7%);
   }
 }
+
+.dark-theme div.nav {
+  div.create-discussion {
+    background-color: #444;
+    color: white;
+  }
+
+  div.button:hover {
+    background-color: #666;
+  }
+}
+
 </style>

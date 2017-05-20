@@ -57,13 +57,25 @@ div.categories-list {
     height: 1.8em;
     margin-top: 0.2em;
     padding-left: 5px;
-    color: $theme_color;
     border-radius: 2px;
-    // transition: color ease 0.1s;
+  }
+}
+
+.light-theme div.categories-list {
+  a.category-name {
+    color: $theme_color;
   }
   a.category-name:hover {
     color: mix($theme_color, black, 40%);
   }
 }
 
+.dark-theme div.categories-list {
+  a.category-name {
+    color: lightgray;
+  }
+  a.category-name:hover {
+    color: grey;
+  }
+}
 </style>

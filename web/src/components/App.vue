@@ -1,5 +1,5 @@
 <template lang="pug">
-  div#app
+  div#app(v-bind:class="{ 'dark-theme': $store.state.theme === 'dark', 'light-theme': $store.state.theme === 'light' }")
     nav-bar
     global-title
     div.container
@@ -38,7 +38,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   margin-top: 50px;
+  min-height: 100vh;
+  transition: background-color linear 0.2s;
 }
 
+#app.dark-theme {
+  background: #222;
+}
 
 </style>

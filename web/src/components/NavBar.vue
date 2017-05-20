@@ -7,6 +7,7 @@
           a(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
           router-link(v-else :to="link.href" :title="link.text") {{ link.text }}
       div.links.right
+        a.theme-switch(@click="switchTheme") 💡
         div.input
           input(type="text", placeholder="搜索")
         router-link(to="/signup" title="注册") 注册
@@ -24,6 +25,11 @@ export default {
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ]
     };
+  },
+  methods: {
+    switchTheme () {
+      this.$store.commit('switchTheme');
+    }
   }
 };
 </script>
@@ -38,13 +44,11 @@ div.st-header {
   left: 0;
   right: 0;
   height: 50px;
-  background-color: $theme_color;
-  box-shadow: 0 2px 2px $theme_color;
   text-align: center;
   z-index: 10;
 
-  a:hover {
-    color: white;
+  a.theme-switch {
+    cursor: pointer;
   }
 
   div.container {
@@ -82,7 +86,6 @@ div.st-header {
 
     div.links {
       display: inline-block;
-      color: $link_color;
       font-size: 0.9em;
       vertical-align: top;
       line-height: 50px;
@@ -105,10 +108,8 @@ div.st-header {
       }
       input:focus {
         width: 250px;
-        background: darken($theme_color, 12%);
       }
       input {
-        background: darken($theme_color, 6%);
         padding: 7px;
         border-radius: 4px;
         color: white;
@@ -124,9 +125,50 @@ div.st-header {
           width: 150px;
         }
       }
-      input::placeholder {
-        color: $link_color;
-      }
+    }
+  }
+}
+
+.light-theme {
+  div.st-header {
+    background-color: $theme_color;
+    box-shadow: 0 2px 2px $theme_color;
+    div.links {
+      color: $link_color;
+    }
+    a:hover {
+      color: white;
+    }
+    input {
+      background: darken($theme_color, 12%);
+    }
+    input:focus {
+      background: #222;
+    }
+    input::placeholder {
+      color: $link_color;
+    }
+  }
+}
+
+.dark-theme {
+  div.st-header {
+    background-color: #555;
+    box-shadow: 0 2px 2px #555;
+    a {
+      color: #bbb;
+    }
+    a:hover {
+      color: #fff;
+    }
+    input {
+      background: #333;
+    }
+    input:focus {
+      background: #222;
+    }
+    input::placeholder {
+      color: #bbb;
     }
   }
 }

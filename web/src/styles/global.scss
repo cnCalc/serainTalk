@@ -1,6 +1,5 @@
 $theme_color : rgb(23, 112, 179);
 $link_color: rgb(114, 185, 237);
-
 $width-medium: 768px;
 $width-small: 400px;
 
@@ -47,9 +46,10 @@ a:hover {
 .list-enter-active {
   transition: all .2s;
 }
-.list-leave-active {
-  // transition: all .1s;
-}
+// .list-leave-active {
+//   transition: all .1s;
+// }
 .list-enter, .list-leave-active {
   opacity: 0;
 }
+

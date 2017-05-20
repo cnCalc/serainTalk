@@ -43,7 +43,6 @@ export default {
   margin: 0 auto;
   width: 15%;
   height: 15%;
-  background-color: $theme_color;
   border-radius: 100%;
   -webkit-animation: sk-circleBounceDelay 1.2s infinite ease-in-out both;
           animation: sk-circleBounceDelay 1.2s infinite ease-in-out both;
@@ -144,5 +143,11 @@ export default {
     -webkit-transform: scale(1);
             transform: scale(1);
   }
+}
+.light-theme .sk-circle .sk-child:before {
+  background-color: $theme_color;
+}
+.dark-theme .sk-circle .sk-child:before {
+  background-color: gray;
 }
 </style>

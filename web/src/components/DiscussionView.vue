@@ -97,7 +97,6 @@ div.discussion-view {
         display: flex;
         margin-bottom: 25px;
         padding-bottom: 25px;
-        border-bottom: mix($theme_color, white, 10%) solid 1px;
       }
 
       $avatar-size: 50px;
@@ -156,11 +155,10 @@ div.discussion-view {
           blockquote {
             margin: 0;
             padding: 9px 16px 9px 16px;
-            background-color: mix($theme_color, white, 10%);
             border-radius: 5px;
             font-size: 0.95em;
             line-height: 1.5em;
-            color: mix(white, black, 60%);
+            color: #999;
             br {
               margin: 0em;
             }
@@ -175,16 +173,38 @@ div.discussion-view {
               border-collapse: collapse;
           }
           td {
-            border: 1px solid mix($theme_color, white, 30%);
             border-spacing: 0px;
             padding: 5px;
             text-align: center;
           }
         }
       }
-
     }
   }
 }
 
+.light-theme div.discussion-view {
+  blockquote {
+    background-color: mix($theme_color, white, 10%);
+  }
+  div.discussion-post-container {
+    border-bottom: mix($theme_color, white, 10%) solid 1px;
+  }
+  td {
+    border: 1px solid mix($theme_color, white, 30%);
+  }
+}
+
+.dark-theme div.discussion-view {
+  color: lightgray;
+  blockquote {
+    background-color: #111;
+  }
+  div.discussion-post-container {
+    border-bottom:  solid 1px #444;
+  }
+  td {
+    border: 1px solid #444;
+  }
+}
 </style>

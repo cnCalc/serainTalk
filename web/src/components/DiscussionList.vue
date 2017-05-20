@@ -18,6 +18,7 @@
                 span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
               |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
             span.discussion-tags(v-for="tag in discussion.tags") {{ tag }}
+            span.discussion-tags 假装有tag
         div.discussion-meta-right
           span.discussion-category(v-if="slug === ''") {{ discussion.category }}
     loading-icon(v-if="busy")
@@ -165,10 +166,6 @@ div.discussion-list {
     flex-wrap: nowrap;
   }
 
-  div.discussion-list-item:hover {
-    background-color: mix($theme_color, white, 5%);
-  }
-
   $avatar_size: 40px;
   div.avater {
     display: inline-block;
@@ -219,7 +216,7 @@ div.discussion-list {
       height: 0;
       border-top: $arrow-height / 2 solid transparent;
       border-bottom: $arrow-height / 2 solid transparent; 
-      border-right: $arrow-width solid  $popup-color;
+      border-right: $arrow-width solid $popup-color;
       vertical-align: top;
     }
 
@@ -265,29 +262,8 @@ div.discussion-list {
       margin-right: 5px;
       padding: 4px 7px 4px 7px;
       border-radius: 3px;
-      background-color: $theme_color;
-      color: white;
       cursor: pointer;
       margin-right: 12px;
-    }
-
-    div.discussion-view-count {
-      display: inline-block;
-      vertical-align: middle;
-      font-size: 12px;
-      border-radius: 3px;
-      color: $theme_color;
-      text-align: center; 
-      cursor: pointer;
-      div.discussion-view-count-icon {
-        display: inline-block;
-      }
-      div.discussion-view-count-value {
-        display: inline-block;
-        width: 30px;
-        padding-left: 4px;
-        text-align: left;
-      }
     }
   }
 
@@ -301,10 +277,6 @@ div.discussion-list {
     text-overflow: ellipsis;
   }
 
-  h3.discussion-title:hover {
-    color: $theme_color;
-  }
-
   div.discussion-meta-other {
     white-space: nowrap;
     overflow: hidden;
@@ -316,7 +288,6 @@ div.discussion-list {
 
     span.discussion-user, span.discussion-tags {
       font-size: 12px;
-      color: mix($theme_color, white, 90%);
       font-weight: bold;
       border-radius: 4px;
       padding: 3px;
@@ -326,15 +297,6 @@ div.discussion-list {
 
     span.discussion-tags {
       margin-left: 0.4em;
-      background: mix($theme_color, white, 15%);
-    }
-
-    span.discussion-tags:hover {
-      background: mix($theme_color, white, 30%);
-    }
-
-    span.discussion-user:hover {
-      color: mix($theme_color, black, 75%);
     }
   }
 
@@ -344,8 +306,6 @@ div.discussion-list {
     width: 60px;
     line-height: 16px;
     border-radius: 4px;
-    color: mix($theme_color, black, 90%);
-    background: mix($theme_color, white, 15%);
     text-align: center; 
     padding: 6px;
     transition: all ease 0.1s;
@@ -357,9 +317,75 @@ div.discussion-list {
   }
 
   div.discussion-button:hover {
-    color: mix($theme_color, black, 60%);
     background: mix($theme_color, white, 25%);
   }
-
 }
+
+.light-theme div.discussion-list {
+  color: black;
+  div.discussion-list-item:hover {
+    background-color: rgba($theme_color, 0.1);
+  }
+  span.discussion-category {
+    background-color: $theme_color;
+    color: white;
+  }
+  h3.discussion-title:hover {
+    color: $theme_color;
+  }
+  span.discussion-user, span.discussion-tags {
+    color: mix($theme_color, white, 90%);
+  }
+  span.discussion-tags {
+    background: mix($theme_color, white, 15%);
+  }
+  span.discussion-user {
+    color: mix($theme_color, black, 75%);
+  }
+  span.discussion-tags:hover {
+    background: mix($theme_color, white, 30%);
+  }
+  div.discussion-button {
+    color: mix($theme_color, black, 90%);
+    background: mix($theme_color, white, 15%);
+  }
+  div.discussion-button:hover {
+    color: mix($theme_color, black, 60%);
+  }
+}
+
+.dark-theme div.discussion-list {
+  color: lightgray;
+  div.discussion-list-item:hover {
+    background-color: #333; 
+  }
+  span.discussion-category {
+    background-color: mix($theme_color, black, 10%); 
+    color: grey;
+  }
+  h3.discussion-title:hover {
+    color: #eee;
+  }
+  span.discussion-tags {
+    background: black;
+    color: gray;
+  }
+  span.discussion-user {
+    color: gray;
+  }
+  span.discussion-user:hover {
+    color: lightgray;
+  }
+  span.discussion-tags:hover {
+    background: mix(black, white, 80%);
+  }
+  div.discussion-button {
+    color: gray;
+    background: #333;
+  }
+  div.discussion-button:hover {
+    color: lightgray;
+  }
+}
+
 </style>

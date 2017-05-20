@@ -23,8 +23,6 @@ export default {
 
 div.jumbotron {
   min-height: 120px;
-  background: #888;
-  color: white;
   width: 100vw;
   margin-left: calc(50% - 50vw);
   overflow: hidden;
@@ -40,6 +38,20 @@ div.jumbotron {
   h2 {
     font-size: 18px;
     line-height: 1.2em;
+  }
+}
+
+.light-theme {
+  div.jumbotron {
+    background: #888;
+    color: white;
+  }
+}
+
+.dark-theme {
+  div.jumbotron {
+    background-color: #333;
+    color: lightgray;
   }
 }
 </style>
