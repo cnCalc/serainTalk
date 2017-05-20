@@ -1,10 +1,11 @@
 'use strict';
 
-const { MongoClient, ObjectID } = require('mongodb');
+const { ObjectID } = require('mongodb');
 const config = require('../config');
 const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../utils/resolve-members');
 const errorHandler = require('../utils/error-handler');
 const errorMessages = require('../utils/error-messages');
+const dbTool = require('../utils/database');
 
 /**
  * 获取指定标签下最新的讨论
@@ -24,35 +25,29 @@ function getLatestDiscussionList (req, res) {
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
 
-  MongoClient.connect(config.database, (err, db) => {
+  dbTool.db.collection('discussion').find(query, {
+    creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+  }, {
+    limit: pagesize,
+    skip: offset * pagesize,
+    sort: [['lastDate', 'desc']]
+  }).toArray((err, results) => {
     if (err) {
       errorHandler(err, errorMessages.DB_ERROR, 500, res);
       return;
-    }
-    db.collection('discussion').find(query, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-    }, {
-      limit: pagesize,
-      skip: offset * pagesize,
-      sort: [['lastDate', 'desc']]
-    }).toArray((err, results) => {
-      if (err) {
-        errorHandler(err, errorMessages.DB_ERROR, 500, res);
-        return;
-      } else {
-        resloveMembersInDiscussionArray(results, (err, members) => {
-          if (err) {
-            errorHandler(err, errorMessages.DB_ERROR, 500, res);
-            return;
-          }
-          res.send({
-            status: 'ok',
-            discussions: results,
-            members
-          });
+    } else {
+      resloveMembersInDiscussionArray(results, (err, members) => {
+        if (err) {
+          errorHandler(err, errorMessages.DB_ERROR, 500, res);
+          return;
+        }
+        res.send({
+          status: 'ok',
+          discussions: results,
+          members
         });
-      }
-    });
+      });
+    }
   });
 }
 
@@ -76,44 +71,38 @@ function getDiscussionById (req, res) {
     return;
   }
 
-  MongoClient.connect(config.database, (err, db) => {
+  dbTool.db.collection('discussion').find({
+    _id: ObjectID(discussionId)
+  }, {
+    creater: 1, title: 1, createDate: 1,
+    lastDate: 1, views: 1, tags: 1,
+    status: 1, posts: 1, lastMember: 1,
+    category: 1,
+  }, {
+    limit: pagesize,
+    skip: offset * pagesize,
+    sort: [['lastDate', 'desc']]
+  }).toArray((err, results) => {
     if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      return;
+      res.status(500).send({
+        status: 'err',
+        message: 'server side database error.'
+      });
+    } else if (results.length !== 1) {
+      res.send({
+        status: 'ok',
+      });
+    } else {
+      resloveMembersInDiscussion(results[0], (err, members) => {
+        if (err) {
+          errorHandler(err, errorMessages.DB_ERROR, 500, res);
+          return;
+        }
+        let result = Object.assign({ status: 'ok' }, results[0]);
+        result = Object.assign(result, { members });
+        res.send(result);
+      });
     }
-    db.collection('discussion').find({
-      _id: ObjectID(discussionId)
-    }, {
-      creater: 1, title: 1, createDate: 1,
-      lastDate: 1, views: 1, tags: 1,
-      status: 1, posts: 1, lastMember: 1,
-      category: 1,
-    }, {
-      limit: pagesize,
-      skip: offset * pagesize,
-      sort: [['lastDate', 'desc']]
-    }).toArray((err, results) => {
-      if (err) {
-        res.status(500).send({
-          status: 'err',
-          message: 'server side database error.'
-        });
-      } else if (results.length !== 1) {
-        res.send({
-          status: 'ok',
-        });
-      } else {
-        resloveMembersInDiscussion(results[0], (err, members) => {
-          if (err) {
-            errorHandler(err, errorMessages.DB_ERROR, 500, res);
-            return;
-          }
-          let result = Object.assign({ status: 'ok' }, results[0]);
-          result = Object.assign(result, { members });
-          res.send(result);
-        });
-      }
-    });
   });
 }
 

@@ -1,9 +1,10 @@
 'use strict';
 
-const { MongoClient, ObjectID } = require('mongodb');
+const { ObjectID } = require('mongodb');
 const config = require('../config');
 const errorHandler = require('../utils/error-handler');
 const errorMessages = require('../utils/error-messages');
+const dbTool = require('../utils/database');
 
 /**
  * 根据用户 ID 获得用户信息以及最近活动
@@ -25,66 +26,60 @@ function getMemberInfoById (req, res) {
       });
       return;
     }
-    MongoClient.connect(config.database, (err, db) => {
+    // 查询用户的基础信息
+    dbTool.db.collection('common_member').find({
+      _id: userId
+    }).toArray((err, results) => {
       if (err) {
         errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      } else {
-        // 查询用户的基础信息
-        db.collection('common_member').find({
-          _id: userId
-        }).toArray((err, results) => {
-          if (err) {
-            errorHandler(err, errorMessages.DB_ERROR, 500, res);
-            return;
-          }
-          if (results.length !== 1) {
-            res.send({
-              status: 'ok',
-            });
-          } else {
-            let result = Object.assign({
-              status: 'ok'
-            }, results[0]);
-
-            // 删除用户的登陆凭据部分
-            delete result['credentials'];
-
-            // 获得此用户最近的帖子（如果需要）
-            if (req.query.recent === 'on') {
-              db.collection('discussion').aggregate([{
-                $match: {
-                  'participants': userId
-                }
-              }, {
-                $project: {
-                  posts: {
-                    $filter: {
-                      input: '$posts',
-                      as: 'post',
-                      cond: { $eq: ['$$post.user', userId] }
-                    }
-                  }
-                }
-              }, {
-                $sort: {
-                  'posts.createDate': -1
-                }
-              }, {
-                $limit: 10
-              }]).toArray((err, docs) => {
-                if (err) {
-                  result.recentActivities = null;
-                } else {
-                  result.recentActivities = docs;
-                }
-                res.send(result);
-              });
-            } else {
-              // 不需要，直接发送
-              res.send(result);
-            }
-          }
+        return;
+      }
+      if (results.length !== 1) {
+        res.send({
+          status: 'ok',
         });
+      } else {
+        let result = Object.assign({
+          status: 'ok'
+        }, results[0]);
+
+        // 删除用户的登陆凭据部分
+        delete result['credentials'];
+
+        // 获得此用户最近的帖子（如果需要）
+        if (req.query.recent === 'on') {
+          dbTool.db.collection('discussion').aggregate([{
+            $match: {
+              'participants': userId
+            }
+          }, {
+            $project: {
+              posts: {
+                $filter: {
+                  input: '$posts',
+                  as: 'post',
+                  cond: { $eq: ['$$post.user', userId] }
+                }
+              }
+            }
+          }, {
+            $sort: {
+              'posts.createDate': -1
+            }
+          }, {
+            $limit: 10
+          }]).toArray((err, docs) => {
+            if (err) {
+              result.recentActivities = null;
+            } else {
+              result.recentActivities = docs;
+            }
+            res.send(result);
+          });
+        } else {
+          // 不需要，直接发送
+          res.send(result);
+        }
       }
     });
   }
@@ -111,32 +106,22 @@ function getMemberInfoGeneric (req, res) {
     return;
   }
 
-  MongoClient.connect(config.database, (err, db) => {
+  dbTool.db.collection('common_member').find(query, {
+    limit: pagesize,
+    skip: offset * pagesize,
+    sort: [['date', 'desc']]
+  }).toArray((err, results) => {
     if (err) {
-      console.error(err);
       res.status(500).send({
         status: 'error',
         message: 'server side database error.'
       });
     } else {
-      db.collection('common_member').find(query, {
-        limit: pagesize,
-        skip: offset * pagesize,
-        sort: [['date', 'desc']]
-      }).toArray((err, results) => {
-        if (err) {
-          res.status(500).send({
-            status: 'error',
-            message: 'server side database error.'
-          });
-        } else {
-          // 删除所有用户的凭据部分
-          results.forEach(result => delete result['credentials']);
-          res.send({
-            status: 'ok',
-            list: results
-          });
-        }
+      // 删除所有用户的凭据部分
+      results.forEach(result => delete result['credentials']);
+      res.send({
+        status: 'ok',
+        list: results
       });
     }
   });
