@@ -12,7 +12,7 @@ function fetchOneMember (db, members, memberId) {
       db.collection('common_member').findOne({
         _id: memberId
       }, {
-        username: 1,
+        username: 1, uid: 1,
       }).then(data => {
         delete data._id;
         members[memberId] = data;

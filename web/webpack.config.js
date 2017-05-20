@@ -1,5 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
+var express = require('express');
 
 module.exports = {
   entry: './src/main.js',
@@ -45,7 +46,15 @@ module.exports = {
   },
   devServer: {
     historyApiFallback: true,
-    noInfo: true
+    noInfo: true,
+    proxy: {
+      '/api/': {
+        target: 'http://localhost:8000/',
+      }
+    },
+    setup (app) {
+      app.use('/uploads', express.static('../uploads'));
+    }
   },
   performance: {
     hints: false

@@ -3,7 +3,9 @@
     ul: transition-group(name="list")
       li(v-for="discussion in discussions" :key="discussion._id"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater")
-          div.avater {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
+          div.avater
+            div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(discussion.creater) + ')'}")
+            div.avatar-fallback {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
             span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
@@ -59,6 +61,18 @@ export default {
   },
   methods: {
     timeAgo,
+    getMemberAvatarUrl (memberId) {
+      let pad = number => ('000000000' + number.toString()).substr(-9);
+      let member = this.members[memberId];
+      if (member.uid) {
+        // Discuz 用户数据
+        let matchResult = pad(member.uid).match(/(\d{3})(\d{2})(\d{2})(\d{2})/);
+        return `/uploads/avatar/${matchResult[1]}/${matchResult[2]}/${matchResult[3]}/${matchResult[4]}_avatar_big.jpg`;
+      } else {
+        // 新用户，直接返回字段
+        return `/uploads/avatar/${member.avatar || 'default.png'}`;
+      }
+    },
     loadDiscussionList () {
       this.currentPage = 1;
       this.slug = this.selectedCategory;
@@ -156,18 +170,28 @@ div.discussion-list {
     background-color: mix($theme_color, white, 5%);
   }
 
+  $avatar_size: 40px;
   div.avater {
     display: inline-block;
+    position: relative;
     margin: 3px;
-    width: 38px;
-    height: 38px;
-    font-size: 22px;
-    line-height: 38px;
+    width: $avatar_size;
+    height: $avatar_size;
+    font-size: $avatar_size * 0.55;
+    line-height: $avatar_size;
     text-align: center;
-    border-radius: 19px;
+    border-radius: $avatar_size / 2;
     background-color: mix($theme_color, white, 80%);
     color: white;
     cursor: pointer;
+    overflow: hidden;
+
+    div.avatar-image {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+    }
   }
 
   $popup-height: 26px;

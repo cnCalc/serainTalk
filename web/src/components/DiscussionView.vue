@@ -4,7 +4,9 @@
     ul.discussion-post-list.hide
       li(v-for="post in discussionPosts")
         div.discussion-post-container
-          div.discussion-post-avater {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
+          div.discussion-post-avater
+            div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
+            div.avatar-fallback {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
           div.discussion-post-body
             div.discussion-post-info 
               span.discussion-post-member {{ members[post.user].username }}
@@ -32,6 +34,18 @@ export default {
     };
   },
   methods: {
+    getMemberAvatarUrl (memberId) {
+      let pad = number => ('000000000' + number.toString()).substr(-9);
+      let member = this.members[memberId];
+      if (member.uid) {
+        // Discuz 用户数据
+        let matchResult = pad(member.uid).match(/(\d{3})(\d{2})(\d{2})(\d{2})/);
+        return `/uploads/avatar/${matchResult[1]}/${matchResult[2]}/${matchResult[3]}/${matchResult[4]}_avatar_big.jpg`;
+      } else {
+        // 新用户，直接返回字段
+        return `/uploads/avatar/${member.avatar || 'default.png'}`;
+      }
+    },
     loadDiscussionData () {
       this.discussionId = this.$route.params.discussionId;
       let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}`;
@@ -50,6 +64,11 @@ export default {
         this.busy = false;
 
         document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
+      }, res => {
+        // on error
+        if (res.status === 404) {
+          this.$router.push('/404');
+        }
       });
     }
   },
@@ -83,6 +102,7 @@ div.discussion-view {
 
       $avatar-size: 50px;
       div.discussion-post-avater {
+        position: relative;
         order: 1;
         flex-grow: 0;
         flex-shrink: 0;
@@ -94,6 +114,14 @@ div.discussion-view {
         color: white;
         line-height: $avatar-size;
         font-size: $avatar-size * 0.45;
+        overflow: hidden;
+
+        div.avatar-image {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background-size: cover;
+        }
       }
 
       div.discussion-post-body {
