@@ -1,7 +1,6 @@
 'use strict';
 
-const { MongoClient } = require('mongodb');
-const config = require('../config');
+const dbTool = require('./database');
 const errorHandler = require('./error-handler');
 
 function fetchOneMember (db, members, memberId) {
@@ -32,34 +31,22 @@ function fetchOneMember (db, members, memberId) {
  * @param {Function(err, Object.<String, Member>)} callback
  */
 function resloveMembersInDiscussionArray (discussions, callback) {
-  MongoClient.connect(config.database, (err, db) => {
-    if (err) {
-      errorHandler(err);
-      return;
-    }
-    let members = {};
-    let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
-    Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(db, members, memberId))).then(() => {
-      callback(null, members);
-    }).catch(err => {
-      callback(err);
-    });
+  let members = {};
+  let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
+  Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId))).then(() => {
+    callback(null, members);
+  }).catch(err => {
+    callback(err);
   });
 }
 
 function resloveMembersInDiscussion (discussion, callback) {
-  MongoClient.connect(config.database, (err, db) => {
-    if (err) {
-      errorHandler(err);
-      return;
-    }
-    let members = {};
-    let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user]), []);
-    Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(db, members, memberId))).then(() => {
-      callback(null, members);
-    }).catch(err => {
-      callback(err);
-    });
+  let members = {};
+  let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user]), []);
+  Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId))).then(() => {
+    callback(null, members);
+  }).catch(err => {
+    callback(err);
   });
 }
 
