@@ -7,7 +7,9 @@
           a(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
           router-link(v-else :to="link.href" :title="link.text") {{ link.text }}
       div.links.right
-        a.theme-switch(@click="switchTheme") 💡
+        a.theme-switch(@click="switchTheme")
+          span(v-if="$store.state.theme !== 'dark'") 夜间模式
+          span(v-else) 正常模式
         div.input
           input(type="text", placeholder="搜索")
         router-link(to="/signup" title="注册") 注册
@@ -100,6 +102,11 @@ div.st-header {
       }
     }
 
+    a.theme-switch {
+      display: inline-block;
+      cursor: pointer;
+    }
+
     div.input {
       display: inline-block;
       input, input:active {
@@ -116,6 +123,7 @@ div.st-header {
         width: 150px;
         transition: all ease 0.3s;
         margin-right: 0.5em;
+        margin-left: 0.5em;
       }
       @media screen and (max-width: $width-medium) {
         input {

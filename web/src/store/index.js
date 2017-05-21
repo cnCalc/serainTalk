@@ -12,7 +12,7 @@ export default new Vuex.Store({
     categoriesGroup: [],
     globalTitle: '',
     globalSubtitle: '',
-    theme: 'dark',
+    theme: 'light',
   },
   mutations: {
     setTags: (state, newTagList) => state.selectedTags = newTagList,

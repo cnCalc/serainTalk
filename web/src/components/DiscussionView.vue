@@ -177,6 +177,12 @@ div.discussion-view {
             padding: 5px;
             text-align: center;
           }
+          a {
+            transition: all linear 0.3s;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
         }
       }
     }
@@ -193,6 +199,9 @@ div.discussion-view {
   td {
     border: 1px solid mix($theme_color, white, 30%);
   }
+  a {
+    color: $theme_color;
+  }
 }
 
 .dark-theme div.discussion-view {
@@ -205,6 +214,9 @@ div.discussion-view {
   }
   td {
     border: 1px solid #444;
+  }
+  a {
+    color: white;
   }
 }
 </style>
