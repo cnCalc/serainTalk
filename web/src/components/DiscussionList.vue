@@ -11,7 +11,7 @@
             span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
         div.discussion-meta
           h3.discussion-title
-            router-link(:to="'/d/' + discussion._id") {{ discussion.title }}
+            router-link(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
           div.discussion-meta-other
             span.discussion-last-reply
               router-link(:to="'/m/' + discussion.lastMember")
@@ -33,6 +33,7 @@ import config from '../config';
 import store from '../store';
 
 import { timeAgo } from '../utils/filters';
+import decodeHTML from '../utils/decodeHTML';
 
 export default {
   name: 'discussion-list',
@@ -60,7 +61,7 @@ export default {
     }
   },
   methods: {
-    timeAgo,
+    timeAgo, decodeHTML,
     getMemberAvatarUrl (memberId) {
       let pad = number => ('000000000' + number.toString()).substr(-9);
       let member = this.members[memberId];

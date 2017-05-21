@@ -15,11 +15,6 @@ export default {
   name: 'app',
   components: {
     NavBar, GlobalTitle
-  },
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
-    };
   }
 };
 </script>
@@ -37,7 +32,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  margin-top: 50px;
+  padding-top: 50px;
+  box-sizing: border-box;
   min-height: 100vh;
   transition: background-color linear 0.2s;
 }

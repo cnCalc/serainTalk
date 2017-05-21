@@ -11,18 +11,19 @@
             div.discussion-post-info 
               span.discussion-post-member {{ members[post.user].username }}
               span.discussion-post-date {{ new Date(1000 * post.createDate).toLocaleDateString() }}
-            div.discussion-post-content(v-html="post.content")
+            post-content.discussion-post-content(:content="post.content")
 </template>
 
 <script>
 import LoadingIcon from './LoadingIcon.vue';
+import PostContent from './PostContent.vue';
 import config from '../config';
 // import { timeAgo } from '../utils/filters';
 
 export default {
   name: 'discussion-view',
   components: {
-    LoadingIcon
+    LoadingIcon, PostContent
   },
   data () {
     return {
@@ -182,6 +183,14 @@ div.discussion-view {
           }
           a:hover {
             text-decoration: underline;
+          }
+          pre.code {
+            font-family: Consolas, Courier New, Courier, monospace;
+            font-size: 0.9em;
+            line-height: 0.9em;
+            padding: 0.3em 1em 0.3em 1em;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
           }
         }
       }

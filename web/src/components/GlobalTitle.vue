@@ -1,10 +1,12 @@
 <template lang="pug">
   div.jumbotron(v-if="globalTitle !== ''")
-    h1 {{ globalTitle }}
-    h2 {{ globalSubtitle }}
+    h1 {{ decodeHTML(globalTitle) }}
+    h2 {{ decodeHTML(globalSubtitle) }}
 </template>
 
 <script>
+import decodeHTML from '../utils/decodeHTML';
+
 export default {
   name: 'global-title',
   computed: {
@@ -14,6 +16,9 @@ export default {
     globalSubtitle () {
       return this.$store.state.globalSubtitle;
     }
+  },
+  methods: {
+    decodeHTML
   }
 };
 </script>

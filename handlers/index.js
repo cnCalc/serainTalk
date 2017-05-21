@@ -4,6 +4,7 @@ const discussionHandlers = require('./discussion');
 const tagsHandlers = require('./tags');
 const memberHandlers = require('./member');
 const categoryHandlers = require('./category');
+const attachmentHandlers = require('./attachment');
 
 function handlersInstaller (app) {
   let handlers = [
@@ -11,6 +12,7 @@ function handlersInstaller (app) {
     ...tagsHandlers.handlers,
     ...memberHandlers.handlers,
     ...categoryHandlers.handlers,
+    ...attachmentHandlers.handlers,
   ];
 
   handlers.forEach(handler => {

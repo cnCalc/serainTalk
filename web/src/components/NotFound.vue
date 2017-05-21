@@ -22,4 +22,10 @@ div.not-found {
     font-size: 48px;
   }
 }
+
+.dark-theme {
+  h1, h2 {
+    color: white;
+  }
+}
 </style>
