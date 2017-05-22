@@ -12,7 +12,7 @@ export default new Vuex.Store({
     categoriesGroup: [],
     globalTitle: '',
     globalSubtitle: '',
-    theme: 'light',
+    theme: window.localStorage['theme'] || 'light',
   },
   mutations: {
     setTags: (state, newTagList) => state.selectedTags = newTagList,
@@ -21,6 +21,6 @@ export default new Vuex.Store({
       state.globalTitle = title || '';
       state.globalSubtitle = subtitle || '';
     },
-    switchTheme: state => state.theme = (state.theme === 'dark' ? 'light' : 'dark'),
+    switchTheme: state => state.theme = window.localStorage['theme'] = (state.theme === 'dark' ? 'light' : 'dark'),
   },
 });

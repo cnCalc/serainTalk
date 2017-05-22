@@ -7,6 +7,7 @@ import App from './components/App.vue';
 import ListView from './components/ListView.vue';
 import NotFound from './components/NotFound.vue';
 import DiscussionView from './components/DiscussionView.vue';
+import MemberView from './components/MemberView.vue';
 import store from './store';
 
 Vue.use(VueResource);
@@ -27,6 +28,10 @@ const router = new VueRouter({
     }, {
       path: '/d/:discussionId',
       component: DiscussionView,
+      meta: { keepAlive: false }
+    }, {
+      path: '/m/:memberId',
+      component: MemberView,
       meta: { keepAlive: false }
     }, {
       path: '*',

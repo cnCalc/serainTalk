@@ -54,6 +54,7 @@ function getMemberInfoById (req, res) {
             }
           }, {
             $project: {
+              title: 1,
               posts: {
                 $filter: {
                   input: '$posts',

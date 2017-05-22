@@ -31,6 +31,8 @@ div.jumbotron {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   overflow: hidden;
+  transition: background linear 0.2s;
+
   h1, h2 {
     font-weight: normal;
     margin: 0;

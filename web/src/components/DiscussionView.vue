@@ -4,7 +4,7 @@
     ul.discussion-post-list.hide
       li(v-for="post in discussionPosts")
         div.discussion-post-container
-          div.discussion-post-avater
+          router-link(:to="'/m/' + post.user"): div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
             div.avatar-fallback {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
           div.discussion-post-body
@@ -145,53 +145,6 @@ div.discussion-view {
           padding-top: 10px;
           line-height: 26px;
           font-size: 14px;
-
-          br {
-              content: "";
-              margin: 2em;
-              display: block;
-              font-size: 24%;
-          }
-
-          blockquote {
-            margin: 0;
-            padding: 9px 16px 9px 16px;
-            border-radius: 5px;
-            font-size: 0.95em;
-            line-height: 1.5em;
-            color: #999;
-            br {
-              margin: 0em;
-            }
-          }
-
-          p {
-            margin-top: 0.35em;
-            margin-bottom: 0.35em;
-          }
-          table { 
-              border-spacing: 0;
-              border-collapse: collapse;
-          }
-          td {
-            border-spacing: 0px;
-            padding: 5px;
-            text-align: center;
-          }
-          a {
-            transition: all linear 0.3s;
-          }
-          a:hover {
-            text-decoration: underline;
-          }
-          pre.code {
-            font-family: Consolas, Courier New, Courier, monospace;
-            font-size: 0.9em;
-            line-height: 0.9em;
-            padding: 0.3em 1em 0.3em 1em;
-            border-radius: 4px;
-            background-color: rgba(0, 0, 0, 0.1);
-          }
         }
       }
     }
