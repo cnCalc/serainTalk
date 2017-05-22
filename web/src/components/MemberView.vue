@@ -15,7 +15,7 @@ div
         //- div: a [图标] 创建的讨论
       div.member-recent-activity: ul
         li.activity-item(v-for="activity in member.recentActivities")
-          span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}
+          span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
           router-link(:to="'/d/' + activity._id"): h3.post-title {{ activity.title }}
           PostContent(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
 </template>
@@ -50,7 +50,7 @@ export default {
         this.member = res.body;
         this.$store.commit('setGlobalTitles', [' ']);
         this.busy = false;
-      })
+      });
     },
   },
   created () {
@@ -124,6 +124,7 @@ div.member-info {
   }
 
   div.member-activity-container {
+    margin-top: 10px;
     display: flex;
 
     div.member-side-nav {
@@ -171,16 +172,20 @@ div.member-info {
 
       li {
         display: block;
-        padding-bottom: 0px;
+        padding-bottom: 20px;
+        margin-bottom: 12px;
 
         div.post-content {
           padding: 20px;
           font-size: 14px;
-          background-color: rgba(black, 0.05);
+          background-color: rgba(grey, 0.15);
           border-radius: 5px;
           overflow: hidden;
-          margin-bottom: 20px;
         }
+      }
+
+      li:not(:last-child) {
+        border-bottom: 2px solid rgba(grey, 0.3);
       }
     }
   }
