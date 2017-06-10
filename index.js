@@ -13,13 +13,12 @@ if (process.env.DEV) {
 
 app.use(require('./utils/log'));
 
-app.get('/', (req, res) => {
-  res.send({
-    status: 'ok'
-  });
-});
-
 require('./handlers/index')(app);
 
+app.use('/uploads', express.static('uploads'));
+app.use(express.static('web'));
+app.use((req, res) => {
+  res.sendfile('./web/index.html');
+})
 app.listen(process.env.PORT || 8000);
 console.log('API Service started on port %d', process.env.PORT || 8000);

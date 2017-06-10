@@ -1,6 +1,6 @@
 export default {
   api: {
-    url: 'https://seraintalk.ntzyz.io/api/',
+    url: '/api/',
     version: 'v1'
   }
 };
