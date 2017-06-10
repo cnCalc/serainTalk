@@ -19,6 +19,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(express.static('web'));
 app.use((req, res) => {
   res.sendfile('./web/index.html');
-})
+});
+
 app.listen(process.env.PORT || 8000);
 console.log('API Service started on port %d', process.env.PORT || 8000);
