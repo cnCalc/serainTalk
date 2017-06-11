@@ -151,7 +151,7 @@ div.st-header {
       background: darken($theme_color, 12%);
     }
     input:focus {
-      background: #222;
+      background: darken($theme_color, 18%);
     }
     input::placeholder {
       color: $link_color;

@@ -1,7 +1,8 @@
 <template lang="pug">
   div.not-found
     h1 :(
-    h2 The page you are looking for could not be found.
+    h2 The URL appears to be broken.
+    h5 {{ $route.query.from }}
 </template>
 
 <script>
@@ -23,6 +24,9 @@ div.not-found {
   }
   h1 {
     font-size: 48px;
+  }
+  h5 {
+    padding-left: 20px;
   }
 }
 

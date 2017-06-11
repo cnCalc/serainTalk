@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --host seraintalk.ntzyz.io",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --host 172.16.10.176",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {

@@ -53,6 +53,10 @@ export default {
       this.$http.get(url).then(res => {
         delete res.body.status;
 
+        if (!res.body.posts || res.body.posts.length === 0) {
+          this.$router.replace('/404');
+        }
+
         this.discussionPosts = res.body.posts;
         this.members = res.body.members;
 
@@ -67,8 +71,8 @@ export default {
         document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
       }, res => {
         // on error
-        if (res.status === 404) {
-          this.$router.push('/404');
+        if (res.status === 400) {
+          this.$router.replace('/400');
         }
       });
     }

@@ -20,10 +20,7 @@ function getMemberInfoById (req, res) {
     try {
       userId = ObjectID(req.params.id);
     } catch (err) {
-      res.status(400).send({
-        status: 'err',
-        message: 'invalid user id.'
-      });
+      errorHandler(null, 'invalid member id', 400, res);
       return;
     }
     // 查询用户的基础信息
@@ -103,7 +100,7 @@ function getMemberInfoGeneric (req, res) {
   } else if (req.query.device) {
     query.device = req.query.device;
   } else {
-    errorHandler(null, 'name or device is required.', 500, res);
+    errorHandler(null, 'name or device is required.', 400, res);
     return;
   }
 
@@ -113,10 +110,7 @@ function getMemberInfoGeneric (req, res) {
     sort: [['date', 'desc']]
   }).toArray((err, results) => {
     if (err) {
-      res.status(500).send({
-        status: 'error',
-        message: 'server side database error.'
-      });
+      errorHandler(null, errorMessages.DB_ERROR, 500, res);
     } else {
       // 删除所有用户的凭据部分
       results.forEach(result => delete result['credentials']);

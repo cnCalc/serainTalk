@@ -50,6 +50,10 @@ export default {
         this.member = res.body;
         this.$store.commit('setGlobalTitles', [' ']);
         this.busy = false;
+      }, res => {
+        if (res.status === 400) {
+          this.$router.replace('/400');
+        }
       });
     },
   },

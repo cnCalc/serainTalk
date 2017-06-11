@@ -64,15 +64,12 @@ function getDiscussionById (req, res) {
   try {
     discussionId = ObjectID(req.params.id);
   } catch (err) {
-    res.status(404).send({
-      status: 'err',
-      message: 'discussion not found.'
-    });
+    errorHandler(err, 'invalid discussion id', 400, res);
     return;
   }
 
   dbTool.db.collection('discussion').find({
-    _id: ObjectID(discussionId)
+    _id: discussionId
   }, {
     creater: 1, title: 1, createDate: 1,
     lastDate: 1, views: 1, tags: 1,

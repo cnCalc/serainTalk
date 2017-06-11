@@ -6,6 +6,7 @@ import Vuex from 'vuex';
 import App from './components/App.vue';
 import ListView from './components/ListView.vue';
 import NotFound from './components/NotFound.vue';
+import BadRequest from './components/BadRequest.vue';
 import DiscussionView from './components/DiscussionView.vue';
 import MemberView from './components/MemberView.vue';
 import store from './store';
@@ -33,6 +34,9 @@ const router = new VueRouter({
       path: '/m/:memberId',
       component: MemberView,
       meta: { keepAlive: false }
+    }, {
+      path: '/400',
+      component: BadRequest,
     }, {
       path: '*',
       component: NotFound,
