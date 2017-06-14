@@ -32,7 +32,7 @@ export default {
       });
       this.html = html;
       this.loaded = true;
-    })
+    });
   },
   methods: {
     attachmentFactory (aid) {
@@ -41,17 +41,17 @@ export default {
         this.$http.get(url).then(res => {
           let attachment = res.body.attachment;
           if (!attachment || !attachment.path) {
-            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
-          } else if (attachment.path && attachment.path.match(/\.(jpg|jpeg|png|bmp)$/)){
-            this.attachmentMap[aid] = `<img src="/uploads/attachment/forum/${attachment.path}"/>`
+            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
+          } else if (attachment.path && attachment.path.match(/\.(jpg|jpeg|png|bmp)$/)) {
+            this.attachmentMap[aid] = `<img src="/uploads/attachment/forum/${attachment.path}"/>`;
           } else if (attachment.path) {
             this.attachmentMap[aid] = `<a class="attachment" href="/uploads/attachment/forum/${attachment.path}" target="_blank" download="${attachment.filename}">[附件] ${attachment.filename}</a>`;
           } else {
-            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
+            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
           }
           resolve();
         }, res => {
-          this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
+          this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
           resolve();
         });
       });

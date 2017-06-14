@@ -19,7 +19,7 @@
 import LoadingIcon from './LoadingIcon.vue';
 import PostContent from './PostContent.vue';
 import config from '../config';
-import { timeAgo, indexToPage } from '../utils/filters';
+import { indexToPage } from '../utils/filters';
 
 export default {
   name: 'discussion-view',
@@ -84,7 +84,7 @@ export default {
             el.scrollIntoView();
           }
           document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
-        })
+        });
       }, res => {
         // on error
         if (res.status === 400) {
@@ -123,10 +123,10 @@ export default {
 
           let diff = document.body.clientHeight - window.scrollY;
           this.$nextTick(() => {
-            console.log([diff, document.body.clientHeight - diff])
+            console.log([diff, document.body.clientHeight - diff]);
             window.scrollTo(0, document.body.clientHeight - diff);
             this.busy = false;
-          })
+          });
         });
       }
     },
