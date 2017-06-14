@@ -1,24 +1,25 @@
 <template lang="pug">
   div.discussion-view
     loading-icon(v-if="busy")
-    ul.discussion-post-list.hide
-      li(v-for="post in discussionPosts")
+    div.discussion-view-left: ul.discussion-post-list.hide
+      li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="typeof post !== 'undefined'")
         div.discussion-post-container
-          router-link(:to="'/m/' + post.user"): div.discussion-post-avater
+          router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
             div.avatar-fallback {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
           div.discussion-post-body
             div.discussion-post-info 
               span.discussion-post-member {{ members[post.user].username }}
-              span.discussion-post-date {{ new Date(1000 * post.createDate).toLocaleDateString() }}
+              span.discussion-post-date {{ new Date(1000 * post.createDate).toLocaleDateString() }} {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content")
+            //- div.discussion-post-content(v-html="post.content")
 </template>
 
 <script>
 import LoadingIcon from './LoadingIcon.vue';
 import PostContent from './PostContent.vue';
 import config from '../config';
-// import { timeAgo } from '../utils/filters';
+import { timeAgo, indexToPage } from '../utils/filters';
 
 export default {
   name: 'discussion-view',
@@ -32,6 +33,10 @@ export default {
       discussionMeta: {},
       discussionPosts: [],
       members: {},
+      minPage: null,
+      maxPage: null,
+      currentPage: null,
+      watching: true,
     };
   },
   methods: {
@@ -49,7 +54,9 @@ export default {
     },
     loadDiscussionData () {
       this.discussionId = this.$route.params.discussionId;
-      let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}`;
+      this.currentPage = indexToPage(this.$route.params.index, config.pagesize) || 1;
+      this.minPage = this.maxPage = this.currentPage;
+      let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.currentPage}`;
       this.$http.get(url).then(res => {
         delete res.body.status;
 
@@ -57,7 +64,10 @@ export default {
           this.$router.replace('/404');
         }
 
-        this.discussionPosts = res.body.posts;
+        res.body.posts.forEach(post => {
+          this.discussionPosts[post.index] = post;
+        });
+        this.discussionMeta.postCount = res.body.postCount;
         this.members = res.body.members;
 
         delete res.body.posts;
@@ -67,18 +77,77 @@ export default {
 
         this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
         this.busy = false;
-
-        document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
+        this.$nextTick(() => {
+          if (this.$route.params.index) {
+            let el = document.querySelector(`#index-${this.$route.params.index}`);
+            el.classList.add('highlight');
+            el.scrollIntoView();
+          }
+          document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
+        })
       }, res => {
         // on error
         if (res.status === 400) {
           this.$router.replace('/400');
         }
       });
+    },
+    loadNextPage () {
+      if (indexToPage(this.discussionMeta.postCount, config.pagesize) < this.maxPage || this.busy) {
+        return;
+      } else {
+        this.busy = true;
+        this.maxPage++;
+        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.maxPage}`;
+        this.$http.get(url).then(res => {
+          this.busy = false;
+          res.body.posts.forEach(post => {
+            this.discussionPosts[post.index] = post;
+          });
+          this.members = Object.assign(this.members, res.body.members);
+        });
+      }
+    },
+    loadPrevPage () {
+      if (this.minPage < 1 || this.busy) {
+        return;
+      } else {
+        this.busy = true;
+        this.minPage--;
+        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.minPage}`;
+        this.$http.get(url).then(res => {
+          res.body.posts.forEach(post => {
+            this.discussionPosts[post.index] = post;
+          });
+          this.members = Object.assign(this.members, res.body.members);
+
+          let diff = document.body.clientHeight - window.scrollY;
+          this.$nextTick(() => {
+            console.log([diff, document.body.clientHeight - diff])
+            window.scrollTo(0, document.body.clientHeight - diff);
+            this.busy = false;
+          })
+        });
+      }
+    },
+    scrollWatcher () {
+      if (window.scrollY + window.innerHeight + 200 > document.body.clientHeight) {
+        this.watching || this.loadNextPage();
+        this.watching = false;
+      } else if (window.scrollY < 200) {
+        this.watching || this.loadPrevPage();
+        this.watching = false;
+      } else {
+        this.watching = true;
+      }
     }
   },
   created () {
     this.loadDiscussionData();
+    window.addEventListener('scroll', this.scrollWatcher);
+  },
+  beforeDestory () {
+    window.removeEventListener('scroll', this.scrollWatcher);
   }
 };
 </script>
@@ -100,11 +169,15 @@ div.discussion-view {
 
       div.discussion-post-container {
         display: flex;
-        margin-bottom: 25px;
-        padding-bottom: 25px;
+        padding: 15px 0 15px 15px;
       }
 
       $avatar-size: 50px;
+      a.discussion-post-avater {
+        width: $avatar-size;
+        height: $avatar-size;
+      }
+
       div.discussion-post-avater {
         position: relative;
         order: 1;
@@ -149,6 +222,7 @@ div.discussion-view {
           padding-top: 10px;
           line-height: 26px;
           font-size: 14px;
+          box-sizing: border-box;
         }
       }
     }
@@ -168,6 +242,9 @@ div.discussion-view {
   a {
     color: $theme_color;
   }
+  li.highlight {
+    background-color: rgba(255, 255, 0, 0.15);
+  }
 }
 
 .dark-theme div.discussion-view {
@@ -183,6 +260,9 @@ div.discussion-view {
   }
   a {
     color: white;
+  }
+  li.highlight {
+    background-color: rgba(255, 255, 0, 0.1);
   }
 }
 </style>

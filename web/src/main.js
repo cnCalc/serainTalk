@@ -29,7 +29,11 @@ const router = new VueRouter({
     }, {
       path: '/d/:discussionId',
       component: DiscussionView,
-      meta: { keepAlive: false }
+      meta: { keepAlive: false },
+    }, {
+      path: '/d/:discussionId/:index',
+      component: DiscussionView,
+      meta: { keepAlive: false },
     }, {
       path: '/m/:memberId',
       component: MemberView,

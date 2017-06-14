@@ -15,7 +15,6 @@ function getAttachmentByAid (req, res) {
     errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
   }
   dbTool.db.collection('attachment').findOne({ aid: Number(attachmentId) }).then(doc => {
-    console.log(attachmentId);
     res.send({
       status: 'ok',
       attachment: doc,

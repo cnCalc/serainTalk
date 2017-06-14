@@ -75,10 +75,6 @@ function getDiscussionById (req, res) {
     lastDate: 1, views: 1, tags: 1,
     status: 1, posts: 1, lastMember: 1,
     category: 1,
-  }, {
-    limit: pagesize,
-    skip: offset * pagesize,
-    sort: [['lastDate', 'desc']]
   }).toArray((err, results) => {
     if (err) {
       res.status(500).send({
@@ -97,6 +93,8 @@ function getDiscussionById (req, res) {
         }
         let result = Object.assign({ status: 'ok' }, results[0]);
         result = Object.assign(result, { members });
+        result.postCount = result.posts.length;
+        result.posts = result.posts.slice(offset * pagesize, (offset + 1) * pagesize);
         res.send(result);
       });
     }

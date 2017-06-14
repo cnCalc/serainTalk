@@ -11,38 +11,50 @@ export default {
   data () {
     return {
       html: '',
+      attachmentMap: {},
+      loaded: false,
     };
   },
   created () {
-    this.html = this.content;
-    let attachments = this.html.match(/\[attach\](\d+)\[\/attach\]/ig);
+    // this.html = this.content; return;
+    let html = this.content;
+    let attachments = html.match(/<attach>(\d+)<\/attach>/ig);
     if (attachments === null) {
       // nothing to do, exit.
+      this.html = html;
+      this.loaded = true;
       return;
     }
-    attachments
-      .map(attachTag => Number(attachTag.match(/(\d+)/i)[1]))
-      .forEach(this.injectAttachment);
+    attachments = attachments.map(attachTag => Number(attachTag.match(/(\d+)/i)[1]));
+    Promise.all(attachments.map(aid => this.attachmentFactory(aid))).then(() => {
+      attachments.forEach(aid => {
+        html = html.split(`<attach>${aid}<\/attach>`).join(this.attachmentMap[aid]);
+      });
+      this.html = html;
+      this.loaded = true;
+    })
   },
   methods: {
-    injectAttachment (aid) {
-      if (this.noattach) {
-        this.html = this.html.split(`[attach]${aid}[/attach]`).join('');
-      } else {
+    attachmentFactory (aid) {
+      return new Promise((resolve, reject) => {
         let url = `${config.api.url}${config.api.version}/attachment?aid=${aid}`;
         this.$http.get(url).then(res => {
           let attachment = res.body.attachment;
           if (!attachment || !attachment.path) {
-            this.html = this.html.split(`[attach]${aid}[/attach]`).join('<a class="attachment invalid-attachment">无效附件</a>');
-          } else if (attachment.path && attachment.path.match(/\.(jpg|jpeg|png|bmp)$/)) {
-            this.html = this.html.split(`[attach]${aid}[/attach]`).join(`<img src="/uploads/attachment/forum/${attachment.path}"/>`);
+            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
+          } else if (attachment.path && attachment.path.match(/\.(jpg|jpeg|png|bmp)$/)){
+            this.attachmentMap[aid] = `<img src="/uploads/attachment/forum/${attachment.path}"/>`
           } else if (attachment.path) {
-            this.html = this.html.split(`[attach]${aid}[/attach]`).join(`<a class="attachment" href="/uploads/attachment/forum/${attachment.path}" target="_blank" download="${attachment.filename}">[附件] ${attachment.filename}</a>`);
+            this.attachmentMap[aid] = `<a class="attachment" href="/uploads/attachment/forum/${attachment.path}" target="_blank" download="${attachment.filename}">[附件] ${attachment.filename}</a>`;
+          } else {
+            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
           }
+          resolve();
         }, res => {
-          this.html = this.html.split(`[attach]${aid}[/attach]`).join('<a class="attachment invalid-attachment">无效附件</a>');
+          this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>'
+          resolve();
         });
-      }
+      });
     }
   }
 };
@@ -52,21 +64,25 @@ export default {
 div.post-content {
   img {
     max-width: 70%;
+    // height: 400px;
     // display: block;
   }
+
   .attachment {
     display: block;
   }
+
   .invalid-attachment {
     color: #d00 !important;
     cursor: not-allowed;
   }
-  br {
-      content: "";
-      margin: 2em;
-      display: block;
-      font-size: 24%;
-  }
+
+  // br {
+  //     content: "";
+  //     margin: 2em;
+  //     display: block;
+  //     font-size: 24%;
+  // }
 
   blockquote {
     margin: 0;
@@ -78,6 +94,10 @@ div.post-content {
     br {
       margin: 0em;
     }
+  }
+
+  attach, inject {
+    display: none;
   }
 
   p {

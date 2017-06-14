@@ -11,4 +11,8 @@ function timeAgo (time) {
   }
 };
 
-export { timeAgo };
+function indexToPage (index, pagesize = 10) {
+  return Math.floor((index - 1) / pagesize) + 1;
+}
+
+export { timeAgo, indexToPage };

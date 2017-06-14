@@ -16,7 +16,7 @@ div
       div.member-recent-activity: ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
-          router-link(:to="'/d/' + activity._id"): h3.post-title {{ activity.title }}
+          router-link(:to="`/d/${activity._id}/${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
           PostContent(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
 </template>
 
