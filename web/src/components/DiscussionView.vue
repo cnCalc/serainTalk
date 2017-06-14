@@ -93,7 +93,7 @@ export default {
       });
     },
     loadNextPage () {
-      if (indexToPage(this.discussionMeta.postCount, config.pagesize) < this.maxPage || this.busy) {
+      if (indexToPage(this.discussionMeta.postCount, config.pagesize) <= this.maxPage || this.busy) {
         return;
       } else {
         this.busy = true;
@@ -109,7 +109,7 @@ export default {
       }
     },
     loadPrevPage () {
-      if (this.minPage < 1 || this.busy) {
+      if (this.minPage <= 1 || this.busy) {
         return;
       } else {
         this.busy = true;
