@@ -12,10 +12,9 @@ if (process.env.DEV) {
 }
 
 app.use(require('./utils/log'));
+app.use('/api', require('./handlers/index'));
 
-require('./handlers/index')(app);
-
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.use(express.static('web'));
 app.use((req, res) => {
   res.sendfile('./web/index.html');

@@ -12,7 +12,6 @@
               span.discussion-post-member {{ members[post.user].username }}
               span.discussion-post-date {{ new Date(1000 * post.createDate).toLocaleDateString() }} {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content")
-            //- div.discussion-post-content(v-html="post.content")
 </template>
 
 <script>
@@ -36,7 +35,6 @@ export default {
       minPage: null,
       maxPage: null,
       currentPage: null,
-      watching: true,
     };
   },
   methods: {
@@ -81,7 +79,13 @@ export default {
           if (this.$route.params.index) {
             let el = document.querySelector(`#index-${this.$route.params.index}`);
             el.classList.add('highlight');
+            setTimeout(() => {
+              el.classList.remove('highlight');
+            }, 2000);
             el.scrollIntoView();
+            if (el.getBoundingClientRect().top === 0) {
+              window.scrollTo(0, window.scrollY - 60);
+            }
           }
           document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
         });
@@ -100,11 +104,11 @@ export default {
         this.maxPage++;
         let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.maxPage}`;
         this.$http.get(url).then(res => {
-          this.busy = false;
           res.body.posts.forEach(post => {
             this.discussionPosts[post.index] = post;
           });
           this.members = Object.assign(this.members, res.body.members);
+          this.$nextTick(() => { this.busy = false; });
         });
       }
     },
@@ -120,27 +124,23 @@ export default {
             this.discussionPosts[post.index] = post;
           });
           this.members = Object.assign(this.members, res.body.members);
-
           let diff = document.body.clientHeight - window.scrollY;
           this.$nextTick(() => {
             console.log([diff, document.body.clientHeight - diff]);
             window.scrollTo(0, document.body.clientHeight - diff);
-            this.busy = false;
+            this.$nextTick(() => { this.busy = false; });
           });
         });
       }
     },
     scrollWatcher () {
       if (window.scrollY + window.innerHeight + 200 > document.body.clientHeight) {
-        this.watching || this.loadNextPage();
-        this.watching = false;
-      } else if (window.scrollY < 200) {
-        this.watching || this.loadPrevPage();
-        this.watching = false;
-      } else {
-        this.watching = true;
+        this.loadNextPage();
       }
-    }
+      if (window.scrollY < 200) {
+        this.loadPrevPage();
+      }
+    },
   },
   created () {
     this.loadDiscussionData();
@@ -166,7 +166,7 @@ div.discussion-view {
     transition: all ease 0.5s;
 
     li {
-
+      transition: all ease 0.5s;
       div.discussion-post-container {
         display: flex;
         padding: 15px 0 15px 15px;

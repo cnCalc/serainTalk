@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import config from '../config';
-
 export default {
   name: 'post-content',
   props: ['content', 'noattach'],
@@ -16,46 +14,9 @@ export default {
     };
   },
   created () {
-    // this.html = this.content; return;
-    let html = this.content;
-    let attachments = html.match(/<attach>(\d+)<\/attach>/ig);
-    if (attachments === null) {
-      // nothing to do, exit.
-      this.html = html;
-      this.loaded = true;
-      return;
-    }
-    attachments = attachments.map(attachTag => Number(attachTag.match(/(\d+)/i)[1]));
-    Promise.all(attachments.map(aid => this.attachmentFactory(aid))).then(() => {
-      attachments.forEach(aid => {
-        html = html.split(`<attach>${aid}<\/attach>`).join(this.attachmentMap[aid]);
-      });
-      this.html = html;
-      this.loaded = true;
-    });
+    this.html = this.content;
   },
   methods: {
-    attachmentFactory (aid) {
-      return new Promise((resolve, reject) => {
-        let url = `${config.api.url}${config.api.version}/attachment?aid=${aid}`;
-        this.$http.get(url).then(res => {
-          let attachment = res.body.attachment;
-          if (!attachment || !attachment.path) {
-            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
-          } else if (attachment.path && attachment.path.match(/\.(jpg|jpeg|png|bmp)$/)) {
-            this.attachmentMap[aid] = `<img src="/uploads/attachment/forum/${attachment.path}"/>`;
-          } else if (attachment.path) {
-            this.attachmentMap[aid] = `<a class="attachment" href="/uploads/attachment/forum/${attachment.path}" target="_blank" download="${attachment.filename}">[附件] ${attachment.filename}</a>`;
-          } else {
-            this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
-          }
-          resolve();
-        }, res => {
-          this.attachmentMap[aid] = '<a class="attachment invalid-attachment">无效附件</a>';
-          resolve();
-        });
-      });
-    }
   }
 };
 </script>
