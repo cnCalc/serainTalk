@@ -18,7 +18,9 @@ let handlers = [
 ];
 
 router.use((req, res, next) => {
-  res.header('Cache-Control: no-cache');
+  res.header('cache-control', 'no-cache');
+  res.header('pragma', 'no-cache');
+  res.header('expires', '0');
   next();
 });
 

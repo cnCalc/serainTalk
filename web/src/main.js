@@ -14,6 +14,10 @@ import store from './store';
 Vue.use(VueResource);
 Vue.use(VueRouter);
 Vue.use(Vuex);
+Vue.http.interceptors.push((request, next) => {
+  request.url += (request.url.indexOf('?') > 0 ? '&' : '?') + `__t=${new Date().getTime()}`;
+  next();
+});
 
 const router = new VueRouter({
   mode: 'history',
