@@ -81,7 +81,7 @@ export default {
               }, 2000);
               el.scrollIntoView();
               if (el.getBoundingClientRect().top === 0) {
-                window.scrollTo(0, window.scrollY - 60);
+                window.scrollTo(0, window.scrollY - 60); // Height of NavBar
               }
             }
             document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
@@ -126,16 +126,21 @@ export default {
           this.$nextTick(() => {
             console.log([diff, document.body.clientHeight - diff]);
             window.scrollTo(0, document.body.clientHeight - diff);
-            this.$nextTick(() => { this.busy = false; });
+            this.$nextTick(() => {
+              if (window.scrollY < config.discussionView.boundingThreshold.top) {
+                window.scrollTo(0, config.discussionView.boundingThreshold.top);
+              }
+              this.busy = false;
+            });
           });
         });
       }
     },
     scrollWatcher () {
-      if (window.scrollY + window.innerHeight + 200 > document.body.clientHeight) {
+      if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
         this.loadNextPage();
       }
-      if (window.scrollY < 200) {
+      if (window.scrollY < config.discussionView.boundingThreshold.top) {
         this.loadPrevPage();
       }
     },
