@@ -86,7 +86,7 @@ export default {
             }
             document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
           });
-        })
+        });
       }, res => {
         // on error
         if (res.status === 400) {

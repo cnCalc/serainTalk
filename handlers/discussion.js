@@ -67,13 +67,13 @@ function getDiscussionById (req, res) {
   }
 
   dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId } },
+    { $match: { _id: discussionId }},
     { $project: {
       creater: 1, title: 1, createDate: 1,
       lastDate: 1, views: 1, tags: 1,
       status: 1, lastMember: 1, category: 1,
       postsCount: { $size: '$posts' },
-    } }
+    }}
   ]).toArray((err, results) => {
     if (err) {
       errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -103,8 +103,8 @@ function getDiscussionPostsById (req, res) {
     return;
   }
   dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId } },
-    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
+    { $match: { _id: discussionId }},
+    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] }}}
   ]).toArray((err, results) => {
     if (err) {
       errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -123,7 +123,7 @@ function getDiscussionPostsById (req, res) {
         });
       });
     }
-  })
+  });
 }
 
 module.exports = {
