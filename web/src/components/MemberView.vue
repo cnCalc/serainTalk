@@ -9,10 +9,11 @@ div
       h1.member-name {{ member.username }}
       h2.member-bio {{ member.bio }}
       div.member-other-info 加入于{{ timeAgo(member.regdate) }}
+  div.member-activity(v-if="member")
     div.member-activity-container
       div.member-side-nav
-        //- div: a [图标] 最近的活动
-        //- div: a [图标] 创建的讨论
+        div: a 最近的活动
+        div: a 创建的讨论
       div.member-recent-activity: ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
@@ -68,8 +69,8 @@ export default {
 
 div.member-info {
   text-align: left;
-
   $avatar-size: 120px;
+  display: flex;
   div.avatar {
     width: $avatar-size;
     height: $avatar-size;
@@ -79,7 +80,8 @@ div.member-info {
     overflow: hidden;
     display: inline-block;
     box-shadow: 0 0 10px black;
-
+    flex-grow: 0;
+    flex-shrink: 0;
     div.avatar-image, div.avatar-fallback {
       position: absolute;
       width: 100%;
@@ -102,9 +104,14 @@ div.member-info {
 
   div.name-and-bio-container {
     display: inline-block;
+    flex-grow: 1;
+    flex-shrink: 1;
     padding-left: 1em;
     margin-top: -$avatar-size / 2;
     vertical-align: top;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     h1.member-name {
       font-weight: normal;
       margin: 0;
@@ -126,6 +133,10 @@ div.member-info {
       height: $avatar-size / 4;
     }
   }
+}
+
+div.member-activity {
+  text-align: left;
 
   div.member-activity-container {
     margin-top: 10px;
@@ -136,6 +147,7 @@ div.member-info {
       flex-shrink: 0;
       width: 120px;
       order: 1;
+      text-align: center;
 
       padding-top: 20px;
       line-height: 20px;
@@ -195,14 +207,14 @@ div.member-info {
   }
 }
 
-.dark-theme div.member-info {
+.dark-theme div.member-info, .dark-theme div.member-activity {
   color: #ccc;
   a {
     color: white;
   }
 }
 
-.light-theme div.member-info {
+.light-theme div.member-info, .light-theme div.member-activity {
   a {
     color: $theme_color;
   }

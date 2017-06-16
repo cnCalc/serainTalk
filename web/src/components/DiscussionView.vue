@@ -54,41 +54,39 @@ export default {
       this.discussionId = this.$route.params.discussionId;
       this.currentPage = indexToPage(this.$route.params.index, config.pagesize) || 1;
       this.minPage = this.maxPage = this.currentPage;
-      let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.currentPage}`;
+      let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}`;
       this.$http.get(url).then(res => {
         delete res.body.status;
 
-        if (!res.body.posts || res.body.posts.length === 0) {
+        if (!res.body.title) {
           this.$router.replace('/404');
         }
 
-        res.body.posts.forEach(post => {
-          this.discussionPosts[post.index] = post;
-        });
-        this.discussionMeta.postCount = res.body.postCount;
-        this.members = res.body.members;
-
-        delete res.body.posts;
-        delete res.body.members;
-
         this.discussionMeta = res.body;
-
         this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
-        this.busy = false;
-        this.$nextTick(() => {
-          if (this.$route.params.index) {
-            let el = document.querySelector(`#index-${this.$route.params.index}`);
-            el.classList.add('highlight');
-            setTimeout(() => {
-              el.classList.remove('highlight');
-            }, 2000);
-            el.scrollIntoView();
-            if (el.getBoundingClientRect().top === 0) {
-              window.scrollTo(0, window.scrollY - 60);
+
+        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.currentPage}`;
+        this.$http.get(url).then(res => {
+          res.body.posts.forEach(post => {
+            this.discussionPosts[post.index] = post;
+          });
+          this.members = res.body.members;
+          this.busy = false;
+          this.$nextTick(() => {
+            if (this.$route.params.index) {
+              let el = document.querySelector(`#index-${this.$route.params.index}`);
+              el.classList.add('highlight');
+              setTimeout(() => {
+                el.classList.remove('highlight');
+              }, 2000);
+              el.scrollIntoView();
+              if (el.getBoundingClientRect().top === 0) {
+                window.scrollTo(0, window.scrollY - 60);
+              }
             }
-          }
-          document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
-        });
+            document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
+          });
+        })
       }, res => {
         // on error
         if (res.status === 400) {
@@ -97,12 +95,12 @@ export default {
       });
     },
     loadNextPage () {
-      if (indexToPage(this.discussionMeta.postCount, config.pagesize) <= this.maxPage || this.busy) {
+      if (indexToPage(this.discussionMeta.postsCount, config.pagesize) <= this.maxPage || this.busy) {
         return;
       } else {
         this.busy = true;
         this.maxPage++;
-        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.maxPage}`;
+        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.maxPage}`;
         this.$http.get(url).then(res => {
           res.body.posts.forEach(post => {
             this.discussionPosts[post.index] = post;
@@ -118,7 +116,7 @@ export default {
       } else {
         this.busy = true;
         this.minPage--;
-        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}?page=${this.minPage}`;
+        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.minPage}`;
         this.$http.get(url).then(res => {
           res.body.posts.forEach(post => {
             this.discussionPosts[post.index] = post;

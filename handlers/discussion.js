@@ -52,12 +52,47 @@ function getLatestDiscussionList (req, res) {
 }
 
 /**
- * 根据 ID 获得指定讨论
+ * 根据 ID 获得指定讨论的信息，不包含帖子列表
  * /api/v1/discussion/:id
  * @param {Request} req
  * @param {Response} res
  */
 function getDiscussionById (req, res) {
+  let discussionId;
+  try {
+    discussionId = ObjectID(req.params.id);
+  } catch (err) {
+    errorHandler(err, 'invalid discussion id', 400, res);
+    return;
+  }
+
+  dbTool.db.collection('discussion').aggregate([
+    { $match: { _id: discussionId } },
+    { $project: {
+      creater: 1, title: 1, createDate: 1,
+      lastDate: 1, views: 1, tags: 1,
+      status: 1, lastMember: 1, category: 1,
+      postsCount: { $size: '$posts' },
+    } }
+  ]).toArray((err, results) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+    } else if (results.length === 0) {
+      errorHandler(err, errorMessages.NOT_FOUND, 404, res);
+    } else {
+      let result = Object.assign({ status: 'ok' }, results[0]);
+      res.send(result);
+    }
+  });
+}
+
+/**
+ * 根据 ID 获得指定讨论的帖子
+ * /api/v1/discussion/:id/posts
+ * @param {Request} req
+ * @param {Response} res
+ */
+function getDiscussionPostsById (req, res) {
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
   let discussionId;
@@ -67,38 +102,28 @@ function getDiscussionById (req, res) {
     errorHandler(err, 'invalid discussion id', 400, res);
     return;
   }
-
-  dbTool.db.collection('discussion').find({
-    _id: discussionId
-  }, {
-    creater: 1, title: 1, createDate: 1,
-    lastDate: 1, views: 1, tags: 1,
-    status: 1, posts: 1, lastMember: 1,
-    category: 1,
-  }).toArray((err, results) => {
+  dbTool.db.collection('discussion').aggregate([
+    { $match: { _id: discussionId } },
+    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
+  ]).toArray((err, results) => {
     if (err) {
-      res.status(500).send({
-        status: 'err',
-        message: 'server side database error.'
-      });
-    } else if (results.length !== 1) {
-      res.send({
-        status: 'ok',
-      });
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+    } else if (results.length === 0) {
+      errorHandler(err, errorMessages.NOT_FOUND, 404, res);
     } else {
       resloveMembersInDiscussion(results[0], (err, members) => {
         if (err) {
           errorHandler(err, errorMessages.DB_ERROR, 500, res);
           return;
         }
-        let result = Object.assign({ status: 'ok' }, results[0]);
-        result = Object.assign(result, { members });
-        result.postCount = result.posts.length;
-        result.posts = result.posts.slice(offset * pagesize, (offset + 1) * pagesize);
-        res.send(result);
+        res.send({
+          status: 'ok',
+          posts: results[0].posts,
+          members
+        });
       });
     }
-  });
+  })
 }
 
 module.exports = {
@@ -109,6 +134,9 @@ module.exports = {
     }, {
       path: '/discussion/:id',
       get: getDiscussionById,
+    }, {
+      path: '/discussion/:id/posts',
+      get: getDiscussionPostsById,
     }
   ]
 };

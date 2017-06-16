@@ -65,7 +65,7 @@ function getMemberInfoById (req, res) {
               'posts.createDate': -1
             }
           }, {
-            $limit: 10
+            $limit: 50
           }]).toArray((err, docs) => {
             if (err) {
               result.recentActivities = null;
