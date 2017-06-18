@@ -5,16 +5,20 @@
   "author": "ntzyz <ntzyz@live.cn>",
   "private": true,
   "scripts": {
-    "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js"
+    "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js",
+    "test": "_mocha ./test/ --recursive -u tdd --timeout 999999 --colors",
+    "cover": "istanbul cover _mocha -- ./test/ --recursive -u tdd --timeout 999999 --colors"
   },
   "dependencies": {
     "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
     "jsonwebtoken": "^7.4.1",
+    "md5": "^2.2.1",
     "mongodb": "^2.2.26",
     "randomstring": "^1.1.5"
   },
   "devDependencies": {
+    "chai": "^4.0.2",
     "eslint": "^3.19.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-config-vue": "^2.0.2",
@@ -23,6 +27,7 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-plugin-vue": "^2.0.1",
+    "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "supertest": "^3.0.0"
   }

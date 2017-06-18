@@ -12,10 +12,10 @@ const utils = require('../utils');
 let router = express.Router();
 
 let login = async (req, res, next) => {
-  let userInfo;
+  let userInfo = {};
 
   try {
-    userInfo = await dbTool.db.collection('common_member').findOne({ username: req.params.username });
+    userInfo = await dbTool.db.collection('common_member').findOne({ username: req.data.username });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
@@ -26,7 +26,7 @@ let login = async (req, res, next) => {
   }
 
   // 核对密码。
-  let password = req.params.password;
+  let password = req.data.password;
   if (userInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== userInfo.credentials.password) {
@@ -49,7 +49,7 @@ let login = async (req, res, next) => {
 };
 
 let signup = async (req, res, next) => {
-  let userInfo;
+  let userInfo = {};
 
   let info = [
     'gender',
@@ -64,25 +64,35 @@ let signup = async (req, res, next) => {
     'email',
     'regip',
     'regdate',
-    'lastlogintime',
     'secques',
     'device'
   ];
 
   info.forEach(key => {
-    if (req.params[key]) {
-      userInfo[key] = req.params[key];
+    if (req.data[key]) {
+      userInfo[key] = req.data[key];
     }
   });
 
-  if (!(userInfo.username && req.params.password && userInfo.email)) {
+  if (!(userInfo.username && req.data.password && userInfo.email)) {
     return utils.errorHandler(null, utils.errorMessages.LACK_INFO, 400, res);
+  }
+
+  let existUser;
+  try {
+    existUser = await dbTool.db.collection('common_member').findOne({ username: userInfo.username });
+  } catch (err) {
+    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
+  }
+  if (existUser) {
+    return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
   }
 
   userInfo.credentials = {};
   userInfo.credentials.salt = randomString.generate();
   userInfo.credentials.type = 'seraintalk';
-  userInfo.credentials.password = MD5(userInfo.credentials.salt + req.params.password);
+  userInfo.credentials.password = MD5(userInfo.credentials.salt + req.data.password);
+  userInfo.lastlogintime = Date.now();
 
   await dbTool.db.collection('common_member').insertOne(userInfo);
 
@@ -95,3 +105,5 @@ let signup = async (req, res, next) => {
 
 router.post('/login', login);
 router.post('/signup', signup);
+
+module.exports = router;

@@ -5,17 +5,27 @@ const config = require('../config');
 
 let _db = null;
 
-MongoClient.connect(config.database, (err, db) => {
-  if (err) {
+let mongoConnect = async () => {
+  let db;
+  try {
+    db = await MongoClient.connect(config.database);
+  } catch (err) {
     console.error(err);
     process.exit(10);
-  } else {
-    _db = db;
   }
-});
+  _db = db;
+};
+
+let prepare = async () => {
+  if (_db) return;
+  await mongoConnect();
+};
+
+mongoConnect();
 
 module.exports = {
   get db () {
     return _db;
-  }
+  },
+  prepare
 };

@@ -21,6 +21,8 @@ let handlers = [
 router.use(utils.tools.getUserInfo);
 router.use(utils.tools.sortData);
 
+router.use('/v1/member', require('./user'));
+
 router.use((req, res, next) => {
   res.header('cache-control', 'no-cache');
   res.header('pragma', 'no-cache');
