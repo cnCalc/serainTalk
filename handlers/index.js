@@ -6,6 +6,7 @@ const tagsHandlers = require('./tags');
 const memberHandlers = require('./member');
 const categoryHandlers = require('./category');
 const attachmentHandlers = require('./attachment');
+const utils = require('./../utils');
 
 let router = express.Router();
 
@@ -16,6 +17,9 @@ let handlers = [
   ...categoryHandlers.handlers,
   ...attachmentHandlers.handlers,
 ];
+
+router.use(utils.tools.getUserInfo);
+router.use(utils.tools.sortData);
 
 router.use((req, res, next) => {
   res.header('cache-control', 'no-cache');

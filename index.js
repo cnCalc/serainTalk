@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -10,6 +11,8 @@ if (process.env.DEV) {
     next();
   });
 }
+
+app.use(cookieParser());
 
 app.use(require('./utils/log'));
 app.use('/api', require('./handlers/index'));
