@@ -6,7 +6,7 @@ export default {
   },
   discussionView: {
     boundingThreshold: {
-      top: 200,
+      top: 400,
       bottom: 200,
     }
   },
