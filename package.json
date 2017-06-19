@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js",
     "test": "_mocha ./test/ --recursive -u tdd --timeout 999999 --colors",
-    "cover": "COVERALLS_SERVICE_NAME=serainTalk COVERALLS_REPO_TOKEN=cgATQ8c2hdjIHUkrQUCzZhvykfQCDkrfS ./node_modules/.bin/istanbul cover --report lcovonly ./node_modules/mocha/bin/_mocha -- ./test/ --recursive --timeout 999999 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "cover": "COVERALLS_SERVICE_NAME=serainTalk COVERALLS_REPO_TOKEN=cgATQ8c2hdjIHUkrQUCzZhvykfQCDkrfS ./node_modules/.bin/istanbul cover --report lcovonly ./node_modules/mocha/bin/_mocha -- ./test/ --recursive --timeout 999999 --compilers js:babel-core/register && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "dependencies": {
     "cookie-parser": "^1.4.3",
