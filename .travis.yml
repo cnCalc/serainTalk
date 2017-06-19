@@ -1,7 +1,11 @@
 language: node_js
 node_js:
-  - "7"
+  - "7.10"
 install:
   - npm i
 script:
   - npm run lint
+after_script:
+  - COVERALLS_SERVICE_NAME=router-platform COVERALLS_REPO_TOKEN=cgATQ8c2hdjIHUkrQUCzZhvykfQCDkrfS ./node_modules/.bin/istanbul cover --report lcovonly ./node_modules/mocha/bin/_mocha -- ./test/ --recursive --timeout 999999 && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+services:
+  - mongodb
