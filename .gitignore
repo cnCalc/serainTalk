@@ -9,3 +9,4 @@ yarn-error.log
 uploads/*
 
 coverage
+.nyc_output/*
