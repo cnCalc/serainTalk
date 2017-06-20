@@ -5,8 +5,8 @@ install:
   - npm i
 script:
   - npm run lint
-  - npm run cover
+  - npm run test
 after_script:
-  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage && rm -rf ./.nyc_output
+  - npm run cover
 services:
   - mongodb
