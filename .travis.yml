@@ -3,6 +3,7 @@ node_js:
   - "7.10"
 install:
   - npm i
+  - cd web && npm i
 script:
   - cd web && npm run build
   - npm run lint
