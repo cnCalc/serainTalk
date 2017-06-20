@@ -1,8 +1,8 @@
 'use strict';
 
-const errorHandler = require('../utils/error-handler');
-const errorMessages = require('../utils/error-messages');
-const dbTool = require('../utils/database');
+const errorHandler = require('../../utils/error-handler');
+const errorMessages = require('../../utils/error-messages');
+const dbTool = require('../../utils/database');
 
 /**
  * 获取论坛内所有的 tag

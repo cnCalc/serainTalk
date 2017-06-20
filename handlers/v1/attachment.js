@@ -1,8 +1,8 @@
 'use strict';
 
-const errorHandler = require('../utils/error-handler');
-const errorMessages = require('../utils/error-messages');
-const dbTool = require('../utils/database');
+const errorHandler = require('../../utils/error-handler');
+const errorMessages = require('../../utils/error-messages');
+const dbTool = require('../../utils/database');
 
 /**
  * 根据指定的 Attachment ID 获得指定附件的详细信息（兼容 Discuz）

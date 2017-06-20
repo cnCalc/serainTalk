@@ -8,13 +8,13 @@ const dbTool = require('../../utils/database');
 
 let agent = supertest.agent(require('../../index'));
 
-describe('user part', () => {
+describe('member part', () => {
   before(async () => {
     await dbTool.prepare();
   });
 
-  it('user signup', async () => {
-    let userInfo = {
+  it('member signup', async () => {
+    let memberInfo = {
       gender: 2,
       birthyear: 1996,
       birthmonth: 8,
@@ -29,22 +29,27 @@ describe('user part', () => {
       device: 'Nspire CX CAS',
       password: 'fork you.'
     };
-    await dbTool.db.collection('common_member').removeOne({ username: userInfo.username });
+    await dbTool.db.collection('common_member').removeOne({ username: memberInfo.username });
 
-    let url = utils.tools.createRESTfulUrl('/api/v1/member/signup', userInfo);
+    let url = utils.url.createRESTfulUrl('/api/v1/member/signup', memberInfo);
     let signupInfo = await agent
       .post(url)
       .set('Accept', 'application/json')
       .expect(201);
     expect(signupInfo.body.status).to.equal('ok');
-    signupInfo = signupInfo.body.userinfo;
+    expect(signupInfo.header['set-cookie']).to.be.ok;
+    signupInfo = signupInfo.body.memberinfo;
     expect(signupInfo._id).to.not.be.null;
     expect(signupInfo.credentials).to.not.be.ok;
-    delete userInfo.password;
-    Object.keys(userInfo).forEach(key => {
-      expect(userInfo[key]).to.be.oneOf([signupInfo[key], parseInt(signupInfo[key])]);
+    delete memberInfo.password;
+    Object.keys(memberInfo).forEach(key => {
+      expect(memberInfo[key]).to.be.oneOf([signupInfo[key], parseInt(signupInfo[key])]);
     });
 
-    await dbTool.db.collection('common_member').removeOne({ username: userInfo.username });
+    await dbTool.db.collection('common_member').removeOne({ username: memberInfo.username });
+  });
+
+  it('member login', async () => {
+
   });
 });

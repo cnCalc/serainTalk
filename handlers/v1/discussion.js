@@ -1,11 +1,11 @@
 'use strict';
 
 const { ObjectID } = require('mongodb');
-const config = require('../config');
-const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../utils/resolve-members');
-const errorHandler = require('../utils/error-handler');
-const errorMessages = require('../utils/error-messages');
-const dbTool = require('../utils/database');
+const config = require('../../config');
+const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
+const errorHandler = require('../../utils/error-handler');
+const errorMessages = require('../../utils/error-messages');
+const dbTool = require('../../utils/database');
 
 /**
  * 获取指定标签下最新的讨论

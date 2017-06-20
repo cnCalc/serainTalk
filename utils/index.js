@@ -7,5 +7,6 @@ module.exports = {
   errorMessages: require('./error-messages'),
   resolveMembers: require('./resolve-members'),
   mail: require('./mail'),
-  tools: require('./tools')
+  url: require('./url'),
+  middleware: require('./middleware')
 };

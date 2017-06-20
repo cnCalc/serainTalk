@@ -15,7 +15,7 @@ if (process.env.DEV) {
 app.use(cookieParser());
 
 app.use(require('./utils/log'));
-app.use('/api', require('./handlers/index'));
+app.use('/api', require('./handlers'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.use(express.static('web'));

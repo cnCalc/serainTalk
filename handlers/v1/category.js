@@ -1,10 +1,10 @@
 'use strict';
 
-const config = require('../config');
-const { resloveMembersInDiscussionArray } = require('../utils/resolve-members');
-const errorHandler = require('../utils/error-handler');
-const errorMessages = require('../utils/error-messages');
-const dbTool = require('../utils/database');
+const config = require('../../config');
+const { resloveMembersInDiscussionArray } = require('../../utils/resolve-members');
+const errorHandler = require('../../utils/error-handler');
+const errorMessages = require('../../utils/error-messages');
+const dbTool = require('../../utils/database');
 
 /**
  * 缓存保存对象
