@@ -6,6 +6,6 @@ install:
 script:
   - npm run lint
 after_script:
-  - COVERALLS_SERVICE_NAME=serainTalk nyc ./node_modules/mocha/bin/_mocha ./test/ --recursive --timeout 999999 --compilers js:babel-core/register --require babel-polyfill && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage && rm -rf ./.nyc_output
+  - nyc ./node_modules/mocha/bin/_mocha ./test/ --recursive --timeout 999999 --compilers js:babel-core/register --require babel-polyfill && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage && rm -rf ./.nyc_output
 services:
   - mongodb
