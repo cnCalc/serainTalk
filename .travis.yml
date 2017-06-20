@@ -4,6 +4,7 @@ node_js:
 install:
   - npm i
 script:
+  - cd web && npm run build
   - npm run lint
   - npm run test
 after_script:
