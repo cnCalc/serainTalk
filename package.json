@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js",
-    "test": "_mocha ./test/ --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
+    "test": "nyc _mocha ./test/ --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage && rm -rf ./.nyc_output"
   },
   "nyc": {
