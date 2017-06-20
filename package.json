@@ -7,7 +7,9 @@
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js",
     "test": "_mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
-    "cover": "nyc npm test && nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output"
+    "cover": "nyc npm test && nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
+    "postinstall": "cd web && npm i",
+    "build": "cd web && npm run build"
   },
   "nyc": {
     "require": [
