@@ -140,7 +140,7 @@ let login = async (req, res) => {
   let memberInfo = {};
 
   try {
-    memberInfo = await dbTool.db.collection('common_member').findOne({ username: req.data.username });
+    memberInfo = await dbTool.db.collection('common_member').findOne({ username: req.data.name });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
@@ -170,7 +170,7 @@ let login = async (req, res) => {
   // 插入 userToken 作为身份识别码。
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
-  return res.status(201).send({ status: 'ok', memberInfo: memberInfo });
+  return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
 /**
