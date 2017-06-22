@@ -47,12 +47,12 @@ describe('member part', () => {
     let url = utils.url.createRESTfulUrl('/api/v1/member/signup', memberInfo);
     let signupInfo = await agent
       .post(url)
-      .set('Accept', 'application/json')
       .expect(201);
     expect(signupInfo.body.status).to.equal('ok');
     expect(signupInfo.header['set-cookie']).to.be.ok;
     signupInfo = signupInfo.body.memberinfo;
     memberInfoCheck(signupInfo);
+    Object.assign(memberInfo, signupInfo);
   });
 
   it('member login', async () => {
@@ -67,5 +67,26 @@ describe('member part', () => {
     expect(loginInfo.header['set-cookie']).to.be.ok;
     loginInfo = loginInfo.body.memberinfo;
     memberInfoCheck(loginInfo);
+  });
+
+  it('get member info by mongoid.', async () => {
+    let url = `/api/v1/member/${memberInfo._id}`;
+    let tempInfo = await agent
+      .get(url)
+      .expect(200);
+    expect(tempInfo.body.status).to.equal('ok');
+    delete tempInfo.body.status;
+    tempInfo = tempInfo.body;
+    memberInfoCheck(tempInfo);
+  });
+
+  it('get member with recent.', async () => {
+    let url = `/api/v1/member/${memberInfo._id}?recent=on`;
+    let tempInfo = await agent
+      .get(url)
+      .expect(200);
+    expect(tempInfo.body.status).to.equal('ok');
+    delete tempInfo.body.status;
+    tempInfo = tempInfo.body;
   });
 });
