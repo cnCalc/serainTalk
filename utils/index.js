@@ -8,5 +8,7 @@ module.exports = {
   resolveMembers: require('./resolve-members'),
   mail: require('./mail'),
   url: require('./url'),
-  middleware: require('./middleware')
+  middleware: require('./middleware'),
+  md5: require('./md5'),
+  createRandomString: require('./random-string'),
 };

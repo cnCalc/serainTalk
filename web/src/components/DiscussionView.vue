@@ -127,8 +127,8 @@ export default {
             console.log([diff, document.body.clientHeight - diff]);
             window.scrollTo(0, document.body.clientHeight - diff);
             this.$nextTick(() => {
-              if (window.scrollY < config.discussionView.boundingThreshold.top) {
-                window.scrollTo(0, config.discussionView.boundingThreshold.top);
+              if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
+                window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
               }
               this.busy = false;
             });

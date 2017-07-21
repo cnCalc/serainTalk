@@ -6,6 +6,8 @@ const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require(
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const express = require('express');
+const router = express.Router();
 
 /**
  * 获取指定标签下最新的讨论
@@ -126,17 +128,9 @@ function getDiscussionPostsById (req, res) {
   });
 }
 
-module.exports = {
-  handlers: [
-    {
-      path: '/discussions/latest',
-      get: getLatestDiscussionList,
-    }, {
-      path: '/discussion/:id',
-      get: getDiscussionById,
-    }, {
-      path: '/discussion/:id/posts',
-      get: getDiscussionPostsById,
-    }
-  ]
-};
+router.get('/latest', getLatestDiscussionList);
+router.get('/:id', getDiscussionById);
+router.get('/:id/posts', getDiscussionPostsById);
+
+
+module.exports = router;

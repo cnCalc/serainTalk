@@ -10,6 +10,7 @@ div
       h2.member-bio {{ member.bio }}
       div.member-other-info 加入于{{ timeAgo(member.regdate) }}
   div.member-activity(v-if="member")
+    loading-icon(v-if="busy")
     div.member-activity-container
       div.member-side-nav
         div: a 最近的活动
@@ -60,6 +61,12 @@ export default {
   },
   created () {
     this.loadMemberInfo();
+  },
+  activated () {
+    if (this.$route.params.memberId !== this.memberId) {
+      this.member = null;
+      this.loadMemberInfo();
+    }
   }
 };
 </script>

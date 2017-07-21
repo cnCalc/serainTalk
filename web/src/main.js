@@ -41,7 +41,7 @@ const router = new VueRouter({
     }, {
       path: '/m/:memberId',
       component: MemberView,
-      meta: { keepAlive: false }
+      meta: { keepAlive: true }
     }, {
       path: '/400',
       component: BadRequest,

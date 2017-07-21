@@ -3,14 +3,12 @@
 const { ObjectID } = require('mongodb');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const MD5 = require('md5');
-const randomString = require('randomstring');
-
 const config = require('../../config');
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
 const utils = require('../../utils');
+const MD5 = utils.md5;
 
 let router = express.Router();
 
@@ -220,7 +218,7 @@ let signup = async (req, res) => {
   }
 
   memberInfo.credentials = {};
-  memberInfo.credentials.salt = randomString.generate();
+  memberInfo.credentials.salt = utils.createRandomString();
   memberInfo.credentials.type = 'seraintalk';
   memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.data.password);
   memberInfo.lastlogintime = Date.now();
