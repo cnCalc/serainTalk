@@ -172,7 +172,7 @@ let login = async (req, res) => {
 };
 
 /**
- * [处理函数] 登录
+ * [处理函数] 注册
  * post: /api/v1/member/signup?name=<name>&password=<password>
  * @param {any} req 请求
  * @param {any} res 回复

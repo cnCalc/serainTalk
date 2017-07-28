@@ -66,8 +66,8 @@ div.post-content {
     margin-bottom: 0.35em;
   }
   table { 
-      border-spacing: 0;
-      border-collapse: collapse;
+    border-spacing: 0;
+    border-collapse: collapse;
   }
   td {
     border-spacing: 0px;

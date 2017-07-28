@@ -14,5 +14,6 @@ router.use('/attachment', require('./attachment'));
 router.use(/\/categor(ies|y)/, require('./category'));
 router.use(/\/discussion[s]{0,1}/, require('./discussion'));
 router.use('/tags', require('./tags'));
+router.use('/migration', require('./migration'));
 
 module.exports = router;
