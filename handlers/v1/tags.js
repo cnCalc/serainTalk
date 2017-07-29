@@ -3,6 +3,8 @@
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const express = require('express');
+const router = express.Router();
 
 /**
  * 获取论坛内所有的 tag
@@ -36,14 +38,7 @@ function getPinnedTags (req, res) {
   });
 }
 
-module.exports = {
-  handlers: [
-    {
-      path: '/tags',
-      get: getAllTags,
-    }, {
-      path: '/tags/pinned',
-      get: getPinnedTags,
-    }
-  ]
-};
+router.get('/', getAllTags);
+router.get('/pinned', getPinnedTags);
+
+module.exports = router;

@@ -36,7 +36,21 @@ let sortData = (req, res, next) => {
   next();
 };
 
+/**
+ * [中间件]对支持的浏览器禁用缓存
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next
+ */
+let disableCache = (req, res, next) => {
+  res.header('cache-control', 'no-cache');
+  res.header('pragma', 'no-cache');
+  res.header('expires', '0');
+  next();
+};
+
 module.exports = {
   getUserInfo,
-  sortData
+  sortData,
+  disableCache
 };

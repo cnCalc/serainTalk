@@ -15,12 +15,18 @@ if (process.env.DEV) {
 app.use(cookieParser());
 
 app.use(require('./utils/log'));
+
+app.use(async (req, res, next) => {
+  await require('./utils/database').prepare();
+  next();
+});
+
 app.use('/api', require('./handlers'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.use(express.static('web'));
 app.use((req, res) => {
-  res.sendfile('./web/index.html');
+  res.sendFile('./web/index.html');
 });
 
 app.listen(process.env.PORT || 8000);

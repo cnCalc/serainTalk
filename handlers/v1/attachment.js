@@ -3,6 +3,8 @@
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const express = require('express');
+const router = express.Router();
 
 /**
  * 根据指定的 Attachment ID 获得指定附件的详细信息（兼容 Discuz）
@@ -13,6 +15,7 @@ function getAttachmentByAid (req, res) {
   let attachmentId = req.query.aid;
   if (typeof attachmentId === 'undefined') {
     errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    return;
   }
   dbTool.db.collection('attachment').findOne({ aid: Number(attachmentId) }).then(doc => {
     res.send({
@@ -24,11 +27,6 @@ function getAttachmentByAid (req, res) {
   });
 }
 
-module.exports = {
-  handlers: [
-    {
-      path: '/attachment',
-      get: getAttachmentByAid,
-    }
-  ]
-};
+router.get('/', getAttachmentByAid);
+
+module.exports = router;

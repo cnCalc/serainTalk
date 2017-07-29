@@ -26,9 +26,7 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
     "jsonwebtoken": "^7.4.1",
-    "md5": "^2.2.1",
-    "mongodb": "^2.2.26",
-    "randomstring": "^1.1.5"
+    "mongodb": "^2.2.26"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

@@ -1,17 +1,36 @@
 <template lang="pug">
   div.discussion-view
-    loading-icon(v-if="busy")
-    div.discussion-view-left: ul.discussion-post-list.hide
-      li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="typeof post !== 'undefined'")
+    div.discussion-view-left
+      loading-icon(v-if="busy")
+      ul.discussion-post-list.hide: li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="typeof post !== 'undefined'")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
             div.avatar-fallback {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
-          div.discussion-post-body
-            div.discussion-post-info 
+          article.discussion-post-body
+            header.discussion-post-info
               span.discussion-post-member {{ members[post.user].username }}
-              span.discussion-post-date {{ new Date(1000 * post.createDate).toLocaleDateString() }} {{ `#${post.index}` }}
+              span.discussion-post-date {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content")
+            footer.discussion-post-info
+              div.discussion-post-date 最后编辑于 {{ new Date(1000 * post.createDate).toLocaleDateString() }}
+              div.button-left-container
+                button.button.vote-up 0
+                button.button.vote-down 0
+                button.button.laugh 0
+                button.button.doubt 0
+                button.button.cheer 0
+                button.button.emmmm 0
+              div.button-right-container
+                button.button 回复
+                button.button 复制链接
+                button.button 编辑
+    div.discussion-view-right
+      div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
+        div.quick-funcs 快速操作
+        button.button.quick-funcs 订阅更新
+        button.button.quick-funcs 回复帖子
+        button.button.quick-funcs 只看楼主
 </template>
 
 <script>
@@ -27,6 +46,7 @@ export default {
   },
   data () {
     return {
+      pageSize: config.api.pagesize,
       busy: true,
       discussion: null,
       discussionMeta: {},
@@ -35,9 +55,11 @@ export default {
       minPage: null,
       maxPage: null,
       currentPage: null,
+      fixedSlideBar: false,
     };
   },
   methods: {
+    indexToPage,
     getMemberAvatarUrl (memberId) {
       let pad = number => ('000000000' + number.toString()).substr(-9);
       let member = this.members[memberId];
@@ -127,8 +149,8 @@ export default {
             console.log([diff, document.body.clientHeight - diff]);
             window.scrollTo(0, document.body.clientHeight - diff);
             this.$nextTick(() => {
-              if (window.scrollY < config.discussionView.boundingThreshold.top) {
-                window.scrollTo(0, config.discussionView.boundingThreshold.top);
+              if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
+                window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
               }
               this.busy = false;
             });
@@ -143,6 +165,8 @@ export default {
       if (window.scrollY < config.discussionView.boundingThreshold.top) {
         this.loadPrevPage();
       }
+      // change scroll fix mode.
+      this.fixedSlideBar = window.scrollY > 50 + 120;
     },
   },
   created () {
@@ -161,6 +185,43 @@ export default {
 div.discussion-view {
   padding: 15px;
   text-align: left;
+  display: flex;
+
+  div.discussion-view-left {
+    flex-grow: 1;
+    flex-shrink: 1;
+    order: 1;
+  }
+
+  $right_width: 100px;
+  div.discussion-view-right {
+    flex-grow: 0;
+    flex-shrink: 0;
+    order: 2;
+    width: $right_width;
+    position: relative;
+
+    div.functions-slide-bar-container {
+      width: $right_width;
+      font-size: 0.8em;
+
+      button.quick-funcs {
+        width: 100%;
+      }
+
+      div.quick-funcs {
+        margin: 1em 0 1em 0;
+        width: 100%;
+        padding: 0;
+        text-align: center;
+      }
+    }
+
+    div.fixed-slide-bar {
+      position: fixed;
+      top: 50px;
+    }
+  }
 
   ul.discussion-post-list {
     list-style: none;
@@ -204,7 +265,7 @@ div.discussion-view {
         }
       }
 
-      div.discussion-post-body {
+      article.discussion-post-body {
         order: 2;
         flex-grow: 1;
         flex-shrink: 1;
@@ -225,11 +286,50 @@ div.discussion-view {
           padding-top: 10px;
           line-height: 26px;
           font-size: 14px;
+          word-wrap: break-word;
           box-sizing: border-box;
+        }
+
+        footer.discussion-post-info {
+          font-size: 0.8em;
+          position: relative;
+
+          div.discussion-post-date {
+            color: grey;
+            line-height: 3em;
+          }
+
+          div.button-left-container {
+            display: inline-block;
+          }
+
+          div.button-right-container {
+            display: inline-block;
+            position: absolute;
+            right: 0;
+          }
         }
       }
     }
   }
+  button.button {
+    margin: 2px;
+    padding: 0.5em 0.8em 0.5em 0.8em;
+    line-height: 1.2em;
+    border: none;
+  }
+
+  button.right {
+    float: right;
+  }
+
+  button.vote-up::before { content: '👍 '; }
+  button.vote-down::before { content: '👎 '; }
+  button.laugh::before { content: '😄 '; }
+  button.doubt::before { content: '😕 '; }
+  button.love::before { content: '❤️ '; }
+  button.cheer::before { content: '🎉 '; }
+  button.emmmm::before { content: '🌚 '; }
 }
 
 .light-theme div.discussion-view {
@@ -247,6 +347,13 @@ div.discussion-view {
   }
   li.highlight {
     background-color: rgba(255, 255, 0, 0.15);
+  }
+  button.button {
+    background-color: mix($theme_color, white, 10%);
+    color: $theme_color;
+  }
+  button.button:hover {
+    background-color: mix($theme_color, white, 20%);
   }
 }
 
@@ -266,6 +373,13 @@ div.discussion-view {
   }
   li.highlight {
     background-color: rgba(255, 255, 0, 0.1);
+  }
+  button.button {
+    background-color: #444;
+    color: white;
+  }
+  button.button:hover {
+    background-color: #555;
   }
 }
 </style>

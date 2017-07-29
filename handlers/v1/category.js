@@ -5,6 +5,8 @@ const { resloveMembersInDiscussionArray } = require('../../utils/resolve-members
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const express = require('express');
+const router = express.Router();
 
 /**
  * 缓存保存对象
@@ -126,14 +128,7 @@ function getDiscussionsUnderSpecifiedCategory (req, res) {
   });
 }
 
-module.exports = {
-  handlers: [
-    {
-      path: '/categories',
-      get: getCategoryList,
-    }, {
-      path: '/category/:slug/discussions',
-      get: getDiscussionsUnderSpecifiedCategory,
-    }
-  ]
-};
+router.get('/', getCategoryList);
+router.get('/:slug/discussions', getDiscussionsUnderSpecifiedCategory);
+
+module.exports = router;
