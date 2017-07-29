@@ -1,12 +1,11 @@
 'use strict';
 
-const supertest = require('supertest');
-const expect = require('chai').expect;
-
 let utils = require('../../utils');
 const dbTool = require('../../utils/database');
+const MD5 = require('../../utils/md5');
+const config = require('../../config');
+const jwt = require('jsonwebtoken');
 
-let agent = supertest.agent(require('../../index'));
 let memberInfo = {
   gender: 2,
   birthyear: 1996,
@@ -23,25 +22,24 @@ let memberInfo = {
   password: 'fork you.'
 };
 
-let addMember = async () => {
-  if (!(memberInfo.username && req.data.password && memberInfo.email)) {
-    return utils.errorHandler(null, utils.errorMessages.LACK_INFO, 400, res);
+let addMember = async (next) => {
+  let existMember = await dbTool.db.collection('common_member').findOne({ username: memberInfo.username });
+  if (!existMember) {
+    memberInfo.credentials = {};
+    memberInfo.credentials.salt = utils.createRandomString();
+    memberInfo.credentials.type = 'seraintalk';
+    memberInfo.credentials.password = MD5(memberInfo.credentials.salt + memberInfo.password);
+    memberInfo.lastlogintime = Date.now();
+
+    let res = await dbTool.db.collection('common_member').insertOne(memberInfo);
+
+    memberInfo.mongoId = res.insertedId;
+    existMember = memberInfo;
   }
-
-  try {
-    let existMember = await dbTool.db.collection('common_member').findOne({ username: memberInfo.username });
-    if (existMember) {
-      return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
-    }
-  } catch (err) {
-    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
-  }
-
-  memberInfo.credentials = {};
-  memberInfo.credentials.salt = randomString.generate();
-  memberInfo.credentials.type = 'seraintalk';
-  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.data.password);
-  memberInfo.lastlogintime = Date.now();
-
-  await dbTool.db.collection('common_member').insertOne(memberInfo);
+  memberInfo = existMember;
+  delete memberInfo.credentials;
+  let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+  existMember.jwt = memberToken;
+  await next(existMember);
+  await dbTool.db.collection('common_member').deleteOne({ mongoId: memberInfo.mongoId });
 };
