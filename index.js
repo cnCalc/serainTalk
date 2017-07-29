@@ -15,6 +15,12 @@ if (process.env.DEV) {
 app.use(cookieParser());
 
 app.use(require('./utils/log'));
+
+app.use(async (req, res, next) => {
+  await require('./utils/database').prepare();
+  next();
+});
+
 app.use('/api', require('./handlers'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
