@@ -169,7 +169,7 @@ let login = async (req, res) => {
 };
 
 /**
- * [处理函数] 登录
+ * [处理函数] 注册
  * post: /api/v1/member/signup?name=<name>&password=<password>
  * @param {any} req 请求
  * @param {any} res 回复
@@ -204,14 +204,13 @@ let signup = async (req, res) => {
     return utils.errorHandler(null, utils.errorMessages.LACK_INFO, 400, res);
   }
 
-  let existMember;
   try {
-    existMember = await dbTool.db.collection('common_member').findOne({ username: memberInfo.username });
+    let existMember = await dbTool.db.collection('common_member').findOne({ username: memberInfo.username });
+    if (existMember) {
+      return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
+    }
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
-  }
-  if (existMember) {
-    return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
   }
 
   memberInfo.credentials = {};
