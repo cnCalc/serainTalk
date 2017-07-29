@@ -76,8 +76,14 @@ describe('member part', () => {
       .expect(200);
     expect(tempInfo.body.status).to.equal('ok');
     delete tempInfo.body.status;
+<<<<<<< HEAD:test/handlers/member.test.js
     tempInfo = tempInfo.body;
     memberInfoCheck(tempInfo);
+=======
+    tempInfo = tempInfo.body.memberinfo;
+    memberInfoCheck(tempInfo);
+    expect(tempInfo.recentActivities).to.equal(undefined);
+>>>>>>> 70ada2d6b9c24cd622f80b5b18f07e156be400d3:test/handlers/user.test.js
   });
 
   it('get member with recent.', async () => {
@@ -87,6 +93,11 @@ describe('member part', () => {
       .expect(200);
     expect(tempInfo.body.status).to.equal('ok');
     delete tempInfo.body.status;
+<<<<<<< HEAD:test/handlers/member.test.js
     tempInfo = tempInfo.body;
+=======
+    tempInfo = tempInfo.body.memberinfo;
+    expect(tempInfo.recentActivities).to.not.equal(undefined);
+>>>>>>> 70ada2d6b9c24cd622f80b5b18f07e156be400d3:test/handlers/user.test.js
   });
 });

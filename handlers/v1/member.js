@@ -22,12 +22,17 @@ let getMemberInfoById = async (req, res) => {
   if (!req.params.id) {
     return errorHandler(null, 'missing member id', 400, res);
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 70ada2d6b9c24cd622f80b5b18f07e156be400d3
   let memberId;
   try {
     memberId = ObjectID(req.params.id);
   } catch (err) {
     return errorHandler(null, 'invalid member id', 400, res);
   }
+<<<<<<< HEAD
   // 查询用户的基础信息
   try {
     let results = dbTool.db.collection('common_member').find({ _id: memberId }).toArray();
@@ -46,6 +51,32 @@ let getMemberInfoById = async (req, res) => {
       // 获得此用户最近的帖子（如果需要）
       if (req.query.recent === 'on') {
         dbTool.db.collection('discussion').aggregate([{
+=======
+
+  // 查询用户的基础信息
+  let results;
+  try {
+    results = await dbTool.db.collection('common_member').find({ _id: memberId }).toArray();
+  } catch (err) {
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+
+  if (results.length !== 1) {
+    res.status(200).send({ status: 'ok' });
+  } else {
+    let result = {
+      status: 'ok',
+      memberinfo: results[0]
+    };
+
+    // 删除用户的登陆凭据部分
+    delete result.memberinfo['credentials'];
+
+    // 获得此用户最近的帖子（如果需要）
+    if (req.query.recent === 'on') {
+      try {
+        let docs = await dbTool.db.collection('discussion').aggregate([{
+>>>>>>> 70ada2d6b9c24cd622f80b5b18f07e156be400d3
           $match: {
             'participants': memberId
           }
@@ -66,6 +97,7 @@ let getMemberInfoById = async (req, res) => {
           }
         }, {
           $limit: 50
+<<<<<<< HEAD
         }]).toArray((err, docs) => {
           if (err) {
             result.recentActivities = null;
@@ -81,6 +113,19 @@ let getMemberInfoById = async (req, res) => {
     }
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+=======
+        }]).toArray();
+
+        result.memberinfo.recentActivities = docs;
+        return res.status(200).send(result);
+      } catch (err) {
+        result.recentActivities = null;
+      }
+    } else {
+      // 不需要，直接发送
+      return res.status(200).send(result);
+    }
+>>>>>>> 70ada2d6b9c24cd622f80b5b18f07e156be400d3
   }
 };
 
