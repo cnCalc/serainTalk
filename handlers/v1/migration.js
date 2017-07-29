@@ -3,6 +3,7 @@
 const express = require('express');
 const dbTool = require('../../utils/database');
 const utils = require('../../utils');
+const config = require('../../config');
 const MD5 = utils.md5;
 
 let router = express.Router();
@@ -17,13 +18,16 @@ let migrateTokens = {};
  */
 async function verifyDiscuzMemberInfo (req, res) {
   let memberInfo = {};
+  let { name, password } = req.data;
 
-  if (!req.data.name || !req.data.password) {
-    return utils.errorHandler(null, utils.errorMessages.LACK_INFO, 400, res);
+  try {
+    utils.datacheck.checkUndefined({ name, password });
+  } catch (err) {
+    return utils.errorHandler(null, err.message, 400, res);
   }
 
   try {
-    memberInfo = await dbTool.db.collection('common_member').findOne({ username: req.data.name });
+    memberInfo = await dbTool.db.collection('common_member').findOne({ username: name });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
@@ -33,7 +37,6 @@ async function verifyDiscuzMemberInfo (req, res) {
   }
 
   // 核对密码。
-  let password = req.data.password;
   if (memberInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== memberInfo.credentials.password) {
@@ -48,8 +51,11 @@ async function verifyDiscuzMemberInfo (req, res) {
 
   // 保存迁移 token，留着下一步使用
   let token = utils.createRandomString(20);
+  while (!migrateTokens[token]) {
+    token = utils.createRandomString(20);
+  }
   migrateTokens[token] = {
-    name: req.data.name,
+    name: name,
     timestamp: new Date().getTime(),
   };
 
@@ -67,9 +73,15 @@ async function verifyDiscuzMemberInfo (req, res) {
  */
 async function performMingration (req, res) {
   let memberInfo = {};
+  let token = req.data;
 
-  if (typeof migrateTokens[req.data.token] === 'undefined') {
-    return utils.errorHandler(null, utils.errorMessages.BAD_REQUEST, 400, res);
+  try {
+    utils.datacheck.checkUndefined({ token: migrateTokens[token] });
+    if (Date.now() - migrateTokens[token].timestamp > config.tokenValidTime) {
+      throw new Error(utils.errorMessages.TIME_OUT);
+    }
+  } catch (err) {
+    return utils.errorHandler(null, err.message, 400, res);
   }
 
   try {
@@ -79,7 +91,7 @@ async function performMingration (req, res) {
   }
 
   if (memberInfo) {
-    return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 500, res);
+    return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
   }
 
   // 加密密码，采用和新的密码杂凑方式
@@ -96,7 +108,7 @@ async function performMingration (req, res) {
 
   try {
     dbTool.db.collection('common_member').findAndModify(
-      { username: migrateTokens[req.data.token].name },
+      { username: migrateTokens[token].name },
       [],
       { $set: newMemberInfo }
     );
@@ -104,6 +116,7 @@ async function performMingration (req, res) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
 
+  delete migrateTokens[token];
   return res.send({ status: 'ok' });
 }
 

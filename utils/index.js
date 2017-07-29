@@ -11,4 +11,5 @@ module.exports = {
   middleware: require('./middleware'),
   md5: require('./md5'),
   createRandomString: require('./random-string'),
+  datacheck: require('./data-check'),
 };

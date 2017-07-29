@@ -8,4 +8,5 @@ module.exports = {
   LACK_INFO: 'need more information.',
   MEMBER_EXIST: 'member is exist.',
   ALREADY_MIGRATED: 'member already migrated.',
+  TIME_OUT: 'data is invalid.',
 };

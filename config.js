@@ -4,5 +4,6 @@ module.exports = {
   jwtSecret: 'exampleSecret',
   cookie: {
     renewTime: 86400000
-  }
+  },
+  tokenValidTime: 1000 * 60 * 10
 };
