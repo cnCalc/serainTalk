@@ -26,7 +26,7 @@ app.use('/api', require('./handlers'));
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.use(express.static('web'));
 app.use((req, res) => {
-  res.sendFile('./web/index.html');
+  res.sendFile('./web/index.html', { root: __dirname });
 });
 
 app.listen(process.env.PORT || 8000);
