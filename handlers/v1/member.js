@@ -30,7 +30,7 @@ let getMemberInfoById = async (req, res) => {
   }
   // 查询用户的基础信息
   try {
-    let results = dbTool.db.collection('common_member').find({ _id: memberId }).toArray();
+    let results = await dbTool.db.collection('common_member').find({ _id: memberId }).toArray();
     if (results.length !== 1) {
       res.send({
         status: 'ok',
