@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueResource from 'vue-resource';
+import { sync } from 'vuex-router-sync';
 import Vuex from 'vuex';
 
 import App from './components/App.vue';
@@ -58,6 +59,35 @@ const router = new VueRouter({
     }
   },
 });
+
+Vue.mixin({
+  beforeMount () {
+    const { asyncData } = this.$options;
+    if (asyncData) {
+      this.dataPromise = asyncData({
+        store: this.$store,
+        route: this.$route
+      });
+    }
+  }
+});
+
+// Vue.mixin({
+//   beforeRouteUpdate (to, from, next) {
+//     console.log('here');
+//     const { asyncData } = this.$options;
+//     if (asyncData) {
+//       asyncData({
+//         store: this.$store,
+//         route: to
+//       }).then(next).catch(next);
+//     } else {
+//       next();
+//     }
+//   }
+// });
+
+sync(store, router);
 
 new Vue({
   el: '#app',

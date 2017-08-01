@@ -11,27 +11,15 @@
 </template>
 
 <script>
-import config from '../config';
-import store from '../store';
-
 export default {
   name: 'category-list',
-  data () {
-    return {
-      categoriesGroup: [],
-    };
+  computed: {
+    categoriesGroup () {
+      return this.$store.state.categoriesGroup;
+    }
   },
-  methods: {
-    loadCategoryList () {
-      let url = `${config.api.url}${config.api.version}/categories`;
-      this.$http.get(url).then(res => {
-        store.commit('setCategoriesGroup', res.body.groups);
-        this.categoriesGroup = res.body.groups;
-      });
-    },
-  },
-  created () {
-    this.loadCategoryList();
+  asyncData ({ store, route }) {
+    return store.dispatch('fetchCategory');
   }
 };
 </script>
