@@ -1,8 +1,7 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      loading-icon(v-if="busy")
-      ul.discussion-post-list(v-bind:class="{'hide': busy}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
+      ul.discussion-post-list: li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
@@ -25,7 +24,7 @@
                 button.button 回复
                 button.button 复制链接
                 button.button 编辑
-      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage")
+      loading-icon(v-if="busy")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
@@ -85,15 +84,15 @@ export default {
         let diff = document.body.clientHeight - window.scrollY;
         this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.minPage })
         .then(() => {
-          this.$nextTick(() => {
-            console.log(diff);
-            window.scrollTo(0, document.body.clientHeight - diff);
-            // this.$nextTick(() => {
-            //   if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
-            //     window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
-            //   }
-            // });
-          })
+          window.scrollTo(0, document.body.clientHeight - diff);
+          // this.$nextTick(() => {
+          //   window.scrollTo(0, document.body.clientHeight - diff);
+          //   // this.$nextTick(() => {
+          //   //   if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
+          //   //     window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
+          //   //   }
+          //   // });
+          // })
         });
       }
     },
@@ -104,12 +103,12 @@ export default {
       });
     },
     scrollWatcher () {
-      // if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
-      //   this.loadNextPage();
-      // }
-      // if (window.scrollY < config.discussionView.boundingThreshold.top) {
-      //   this.loadPrevPage();
-      // }
+      if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
+        this.loadNextPage();
+      }
+      if (window.scrollY < config.discussionView.boundingThreshold.top) {
+        this.loadPrevPage();
+      }
       // change scroll fix mode.
       this.fixedSlideBar = window.scrollY > 120 + 15;
     },
@@ -134,7 +133,6 @@ export default {
       this.pagesCount = indexToPage(this.discussionMeta.postsCount);
     },
     '$route': function (route) {
-      // this.asyncData({store: this.$store, route: this.$route});
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
     }
   },
