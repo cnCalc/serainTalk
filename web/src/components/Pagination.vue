@@ -44,20 +44,22 @@ export default {
 @import '../styles/global.scss';
 
 nav.pagination {
+  $size: 28px;
+
   position: relative;
+  margin: 0;
+  padding: 20px;
+  height: $size;
 
   ul {
     display: inline-block;
     list-style: none;
-    border: 1px solid mix($theme_color, white, 20%);
-    border-radius: 4px;
     padding: 0;
     margin-left: 85px;
     position: absolute;
     right: 0;
+    margin: 0;
   }
-
-  $size: 28px;
 
   li {
     display: inline-block;
@@ -66,26 +68,54 @@ nav.pagination {
     font-size: 14px;
     line-height: $size;
     text-align: center;
-    color: mix($theme_color, white, 90%);
     cursor: pointer;
+    margin-right: -1px;
   }
 
-  li.active {
-    color: mix($theme_color, white, 10%);
-    background-color: mix($theme_color, white, 90%);
+  li:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  li:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+}
+
+.light-theme nav.pagination {
+  li {
+    color: mix($theme_color, white, 90%);
+    border: 1px solid mix($theme_color, white, 20%);
   }
 
   li:hover {
     background-color: mix($theme_color, white, 20%);
   }
 
-  li.active:hover {
+  li.active {
     color: mix($theme_color, white, 10%);
+    border: 1px solid mix($theme_color, white, 90%);
     background-color: mix($theme_color, white, 90%);
   }
+}
 
-  li:not(:first-child) {
-    border-left: 1px solid mix($theme_color, white, 20%);
+.dark-theme nav.pagination {
+  li {
+    color: #aaa;
+    border: solid 1px #aaa;
+  }
+
+  li:hover {
+    background-color: #444;
+  }
+
+  li.active {
+    color: black;
+    border: 1px solid #888;
+    background-color: #888;
   }
 }
+
 </style>

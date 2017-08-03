@@ -25,13 +25,14 @@
                 button.button 回复
                 button.button 复制链接
                 button.button 编辑
-      pagination(:length="9" :active="currentPage" :max="pagesCount" :handler="loadPage")
+      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs 回复帖子
         button.button.quick-funcs 只看楼主
+        button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
 </template>
 
 <script>
@@ -59,7 +60,7 @@ export default {
     };
   },
   methods: {
-    indexToPage,
+    indexToPage, scrollToTop,
     getMemberAvatarUrl (memberId) {
       let pad = number => ('000000000' + number.toString()).substr(-9);
       let member = this.members[memberId];
