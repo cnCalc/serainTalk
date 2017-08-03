@@ -9,14 +9,13 @@
 </template>
 
 <script>
-import TagList from './TagList.vue';
-import DiscussionList from './DiscussionList.vue';
-import CategoryList from './CategoryList.vue';
+import DiscussionList from '../components/DiscussionList.vue';
+import CategoryList from '../components/CategoryList.vue';
 
 export default {
   name: 'list-view',
   components: {
-    TagList, DiscussionList, CategoryList,
+    DiscussionList, CategoryList,
   }
 };
 </script>

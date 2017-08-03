@@ -42,15 +42,10 @@ export default {
   data () {
     return {
       currentPage: 1,
+      currentSlug: '',
     };
   },
   computed: {
-    selectedCategory () {
-      if (this.$route.fullPath === '/') {
-        return '';
-      }
-      return this.$route.params.categorySlug;
-    },
     categoriesGroup () {
       return store.state.categoriesGroup;
     },
@@ -64,7 +59,7 @@ export default {
       return store.state.members;
     },
     slug () {
-      return this.$route.params.slug;
+      return this.$route.fullPath === '/' ? '' : this.$route.params.categorySlug;
     }
   },
   methods: {
@@ -81,20 +76,6 @@ export default {
         return `/uploads/avatar/${member.avatar || 'default.png'}`;
       }
     },
-    updateListView () {
-      if (!this.selectedCategory) {
-        this.$store.commit('setGlobalTitles', []);
-        return;
-      }
-      let categoriesGroup = store.state.categoriesGroup;
-      for (let group of categoriesGroup) {
-        for (let category of group.categories) {
-          if (category.slug === this.slug) {
-            this.$store.commit('setGlobalTitles', [category.name, category.description]);
-          }
-        }
-      }
-    },
     loadMore () {
       this.currentPage++;
       if (this.$route.fullPath === '/') {
@@ -109,26 +90,50 @@ export default {
           append: true,
         });
       }
+    },
+    flushGlobalTitles () {
+      if (!this.slug) {
+        return this.$store.commit('setGlobalTitles', []);
+      }
+      let categoriesGroup = this.$store.state.categoriesGroup;
+      for (let group of categoriesGroup) {
+        for (let category of group.categories) {
+          if (category.slug === this.slug) {
+            this.$store.commit('setGlobalTitles', [category.name, category.description]);
+          }
+        }
+      }
     }
   },
   watch: {
     '$route': function (route) {
+      if (this.currentSlug === route.categorySlug && route.fullPath !== '/') {
+        return;
+      }
+
+      this.currentSlug = this.slug;
       this.currentPage = 1;
+
       if (route.fullPath === '/') {
         return store.dispatch('fetchLatestDiscussions');
       } else if (route.params.categorySlug) {
         return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
       }
     },
+    slug: function (slug) {
+      this.flushGlobalTitles();
+    },
     categoriesGroup () {
-      this.updateListView();
+      this.flushGlobalTitles();
     }
+  },
+  beforeMount () {
+    this.currentSlug = this.slug;
   },
   asyncData ({ store, route }) {
     if (route.fullPath === '/') {
       return store.dispatch('fetchLatestDiscussions');
     } else {
-      console.log(route.params.categorySlug);
       return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
     }
   }

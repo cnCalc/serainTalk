@@ -16,6 +16,11 @@ export default {
   created () {
     this.html = this.content;
   },
+  watch: {
+    content () {
+      this.html = this.content;
+    }
+  },
   methods: {
   }
 };
