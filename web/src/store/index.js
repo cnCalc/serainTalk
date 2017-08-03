@@ -19,6 +19,7 @@ export default new Vuex.Store({
     busy: false,
     discussionMeta: {},
     discussionPosts: {},
+    autoLoadOnScroll: window.localStorage['experimental-auto-load-on-scroll'] === 'on',
   },
   mutations,
   actions,

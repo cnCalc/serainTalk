@@ -1,7 +1,8 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      ul.discussion-post-list: li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
+      loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
@@ -24,7 +25,7 @@
                 button.button 回复
                 button.button 复制链接
                 button.button 编辑
-      loading-icon(v-if="busy")
+      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
@@ -103,11 +104,13 @@ export default {
       });
     },
     scrollWatcher () {
-      if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
-        this.loadNextPage();
-      }
-      if (window.scrollY < config.discussionView.boundingThreshold.top) {
-        this.loadPrevPage();
+      if (this.$store.state.autoLoadOnScroll) {
+        if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
+          this.loadNextPage();
+        }
+        if (window.scrollY < config.discussionView.boundingThreshold.top) {
+          this.loadPrevPage();
+        }
       }
       // change scroll fix mode.
       this.fixedSlideBar = window.scrollY > 120 + 15;
