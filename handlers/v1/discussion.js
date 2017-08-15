@@ -10,9 +10,10 @@ const express = require('express');
 const router = express.Router();
 
 /**
- * 获取指定标签下最新的讨论
- * /api/v1/discussions/latest?tag=1&tag=2&page=1&pagesize=10
- * 当没有标签时，查询整站的讨论
+ * 获取最新的讨论
+ * /api/v1/discussions/latest
+ * query : [tag][memberid][page][pagesize]
+ * 当没有参数时，查询整站的讨论
  * 按照最新回复排序
  * @param {Request} req
  * @param {Response} res
@@ -20,9 +21,11 @@ const router = express.Router();
 function getLatestDiscussionList (req, res) {
   let query = {};
   if (req.query.tag) {
-    query = {
-      tags: { $in: (req.query.tag instanceof Array) ? req.query.tag : [req.query.tag] }
-    };
+    query.tags = { $in: (req.query.tag instanceof Array) ? req.query.tag : [req.query.tag] };
+  }
+  if (req.query.memberid) {
+    req.query.memberid = ObjectID(req.query.memberid);
+    query.creater = { $eq: req.query.memberid };
   }
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
@@ -70,12 +73,14 @@ function getDiscussionById (req, res) {
 
   dbTool.db.collection('discussion').aggregate([
     { $match: { _id: discussionId }},
-    { $project: {
-      creater: 1, title: 1, createDate: 1,
-      lastDate: 1, views: 1, tags: 1,
-      status: 1, lastMember: 1, category: 1,
-      postsCount: { $size: '$posts' },
-    }}
+    {
+      $project: {
+        creater: 1, title: 1, createDate: 1,
+        lastDate: 1, views: 1, tags: 1,
+        status: 1, lastMember: 1, category: 1,
+        postsCount: { $size: '$posts' },
+      }
+    }
   ]).toArray((err, results) => {
     if (err) {
       errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -131,6 +136,5 @@ function getDiscussionPostsById (req, res) {
 router.get('/latest', getLatestDiscussionList);
 router.get('/:id', getDiscussionById);
 router.get('/:id/posts', getDiscussionPostsById);
-
 
 module.exports = router;
