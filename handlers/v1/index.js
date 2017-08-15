@@ -11,8 +11,8 @@ router.use(utils.middleware.sortData);
 
 router.use('/member', require('./member'));
 router.use('/attachment', require('./attachment'));
-router.use(/\/categor(ies|y)/, require('./category'));
-router.use(/\/discussion[s]{0,1}/, require('./discussion'));
+router.use(['/categories', '/category'], require('./category'));
+router.use(['/discussion', '/discussions'], require('./discussion'));
 router.use('/tags', require('./tags'));
 
 module.exports = router;
