@@ -156,6 +156,7 @@ div.discussion-list {
     list-style: none;
     div.discussion-list-item {
       padding: 12px;
+      margin-bottom: 5px;
     }
   }
 

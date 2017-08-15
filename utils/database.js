@@ -19,6 +19,7 @@ let mongoConnect = async () => {
 let prepare = async () => {
   if (_db) return;
   await mongoConnect();
+  console.info('database connected.');
 };
 
 mongoConnect();
