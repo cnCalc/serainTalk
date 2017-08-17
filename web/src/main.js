@@ -1,15 +1,16 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueResource from 'vue-resource';
+import { sync } from 'vuex-router-sync';
 import Vuex from 'vuex';
 
 import App from './components/App.vue';
-import ListView from './components/ListView.vue';
-import NotFound from './components/NotFound.vue';
-import BadRequest from './components/BadRequest.vue';
-import DiscussionView from './components/DiscussionView.vue';
-import MemberView from './components/MemberView.vue';
 import store from './store';
+
+import ErrorView from './views/ErrorView.vue';
+import DiscussionView from './views/DiscussionView.vue';
+import MemberView from './views/MemberView.vue';
+import ListView from './views/ListView.vue';
 
 Vue.use(VueResource);
 Vue.use(VueRouter);
@@ -44,10 +45,12 @@ const router = new VueRouter({
       meta: { keepAlive: true }
     }, {
       path: '/400',
-      component: BadRequest,
+      component: ErrorView,
+      meta: { code: 400 },
     }, {
       path: '*',
-      component: NotFound,
+      component: ErrorView,
+      meta: { code: 404 },
     }
   ],
   scrollBehavior (to, from, savedPosition) {
@@ -58,6 +61,20 @@ const router = new VueRouter({
     }
   },
 });
+
+Vue.mixin({
+  beforeMount () {
+    const { asyncData } = this.$options;
+    if (asyncData) {
+      this.dataPromise = asyncData({
+        store: this.$store,
+        route: this.$route
+      });
+    }
+  }
+});
+
+sync(store, router);
 
 new Vue({
   el: '#app',

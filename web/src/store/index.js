@@ -3,24 +3,24 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import mutations from './mutations';
+import actions from './actions';
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    user: {},
-    selectedTags: [],
+    members: {},
+    discussions: [],
     categoriesGroup: [],
     globalTitle: '',
     globalSubtitle: '',
     theme: window.localStorage['theme'] || 'light',
+    busy: false,
+    discussionMeta: {},
+    discussionPosts: {},
+    autoLoadOnScroll: window.localStorage['experimental-auto-load-on-scroll'] === 'on',
   },
-  mutations: {
-    setTags: (state, newTagList) => state.selectedTags = newTagList,
-    setCategoriesGroup: (state, newCategoriesGroup) => state.categoriesGroup = newCategoriesGroup,
-    setGlobalTitles: (state, [title, subtitle]) => {
-      state.globalTitle = title || '';
-      state.globalSubtitle = subtitle || '';
-    },
-    switchTheme: state => state.theme = window.localStorage['theme'] = (state.theme === 'dark' ? 'light' : 'dark'),
-  },
+  mutations,
+  actions,
 });

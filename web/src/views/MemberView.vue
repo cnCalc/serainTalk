@@ -23,8 +23,8 @@ div
 </template>
 
 <script>
-import LoadingIcon from './LoadingIcon.vue';
-import PostContent from './PostContent.vue';
+import LoadingIcon from '../components/LoadingIcon.vue';
+import PostContent from '../components/PostContent.vue';
 
 import config from '../config';
 import getMemberAvatarUrl from '../utils/avatar';

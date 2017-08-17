@@ -1,8 +1,8 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      loading-icon(v-if="busy")
-      ul.discussion-post-list.hide: li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="typeof post !== 'undefined'")
+      loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(post.user) + ')'}")
@@ -25,41 +25,42 @@
                 button.button 回复
                 button.button 复制链接
                 button.button 编辑
+      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs 回复帖子
         button.button.quick-funcs 只看楼主
+        button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
 </template>
 
 <script>
-import LoadingIcon from './LoadingIcon.vue';
-import PostContent from './PostContent.vue';
+import LoadingIcon from '../components/LoadingIcon.vue';
+import PostContent from '../components/PostContent.vue';
+import Pagination from '../components/Pagination.vue';
+
 import config from '../config';
 import { indexToPage } from '../utils/filters';
+import scrollToTop from '../utils/scrollToTop';
 
 export default {
   name: 'discussion-view',
   components: {
-    LoadingIcon, PostContent
+    LoadingIcon, PostContent, Pagination
   },
   data () {
     return {
       pageSize: config.api.pagesize,
-      busy: true,
-      discussion: null,
-      discussionMeta: {},
-      discussionPosts: [],
-      members: {},
       minPage: null,
       maxPage: null,
       currentPage: null,
       fixedSlideBar: false,
+      pagesCount: 0,
     };
   },
   methods: {
-    indexToPage,
+    indexToPage, scrollToTop,
     getMemberAvatarUrl (memberId) {
       let pad = number => ('000000000' + number.toString()).substr(-9);
       let member = this.members[memberId];
@@ -72,109 +73,95 @@ export default {
         return `/uploads/avatar/${member.avatar || 'default.png'}`;
       }
     },
-    loadDiscussionData () {
-      this.discussionId = this.$route.params.discussionId;
-      this.currentPage = indexToPage(this.$route.params.index, config.pagesize) || 1;
-      this.minPage = this.maxPage = this.currentPage;
-      let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}`;
-      this.$http.get(url).then(res => {
-        delete res.body.status;
-
-        if (!res.body.title) {
-          this.$router.replace('/404');
-        }
-
-        this.discussionMeta = res.body;
-        this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
-
-        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.currentPage}`;
-        this.$http.get(url).then(res => {
-          res.body.posts.forEach(post => {
-            this.discussionPosts[post.index] = post;
-          });
-          this.members = res.body.members;
-          this.busy = false;
-          this.$nextTick(() => {
-            if (this.$route.params.index) {
-              let el = document.querySelector(`#index-${this.$route.params.index}`);
-              el.classList.add('highlight');
-              setTimeout(() => {
-                el.classList.remove('highlight');
-              }, 2000);
-              el.scrollIntoView();
-              if (el.getBoundingClientRect().top === 0) {
-                window.scrollTo(0, window.scrollY - 60); // Height of NavBar
-              }
-            }
-            document.querySelector('ul.discussion-post-list.hide').classList.remove('hide');
-          });
-        });
-      }, res => {
-        // on error
-        if (res.status === 400) {
-          this.$router.replace('/400');
-        }
-      });
-    },
     loadNextPage () {
-      if (indexToPage(this.discussionMeta.postsCount, config.pagesize) <= this.maxPage || this.busy) {
-        return;
-      } else {
-        this.busy = true;
+      if (this.maxPage < indexToPage(this.discussionMeta.postsCount) && !this.busy) {
         this.maxPage++;
-        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.maxPage}`;
-        this.$http.get(url).then(res => {
-          res.body.posts.forEach(post => {
-            this.discussionPosts[post.index] = post;
-          });
-          this.members = Object.assign(this.members, res.body.members);
-          this.$nextTick(() => { this.busy = false; });
-        });
+        this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.maxPage });
       }
     },
     loadPrevPage () {
-      if (this.minPage <= 1 || this.busy) {
-        return;
-      } else {
-        this.busy = true;
+      if (this.minPage > 1 && !this.busy) {
         this.minPage--;
-        let url = `${config.api.url}${config.api.version}/discussion/${this.discussionId}/posts?page=${this.minPage}`;
-        this.$http.get(url).then(res => {
-          res.body.posts.forEach(post => {
-            this.discussionPosts[post.index] = post;
-          });
-          this.members = Object.assign(this.members, res.body.members);
-          let diff = document.body.clientHeight - window.scrollY;
-          this.$nextTick(() => {
-            console.log([diff, document.body.clientHeight - diff]);
-            window.scrollTo(0, document.body.clientHeight - diff);
-            this.$nextTick(() => {
-              if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
-                window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
-              }
-              this.busy = false;
-            });
-          });
+        let diff = document.body.clientHeight - window.scrollY;
+        this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.minPage })
+        .then(() => {
+          window.scrollTo(0, document.body.clientHeight - diff);
+          // this.$nextTick(() => {
+          //   window.scrollTo(0, document.body.clientHeight - diff);
+          //   // this.$nextTick(() => {
+          //   //   if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
+          //   //     window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
+          //   //   }
+          //   // });
+          // })
         });
       }
     },
+    loadPage (page) {
+      scrollToTop(1000);
+      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page }).then(() => {
+        this.currentPage = page;
+      });
+    },
     scrollWatcher () {
-      if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
-        this.loadNextPage();
-      }
-      if (window.scrollY < config.discussionView.boundingThreshold.top) {
-        this.loadPrevPage();
+      if (this.$store.state.autoLoadOnScroll) {
+        if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
+          this.loadNextPage();
+        }
+        if (window.scrollY < config.discussionView.boundingThreshold.top) {
+          this.loadPrevPage();
+        }
       }
       // change scroll fix mode.
-      this.fixedSlideBar = window.scrollY > 50 + 120;
+      this.fixedSlideBar = window.scrollY > 120 + 15;
     },
   },
-  created () {
-    this.loadDiscussionData();
-    window.addEventListener('scroll', this.scrollWatcher);
+  computed: {
+    discussionMeta () {
+      return this.$store.state.discussionMeta;
+    },
+    discussionPosts () {
+      return this.$store.state.discussionPosts;
+    },
+    members () {
+      return this.$store.state.members;
+    },
+    busy () {
+      return this.$store.state.busy;
+    }
   },
-  beforeDestory () {
+  watch: {
+    discussionMeta (val) {
+      this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
+      this.pagesCount = indexToPage(this.discussionMeta.postsCount);
+    },
+    '$route': function (route) {
+      this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
+    }
+  },
+  mounted () {
+    window.addEventListener('scroll', this.scrollWatcher);
+    this.maxPage = indexToPage(this.$route.params.index) || 1;
+    this.minPage = indexToPage(this.$route.params.index) || 1;
+    this.currentPage = indexToPage(this.$route.params.index) || 1;
+  },
+  beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
+  },
+  asyncData ({store, route}) {
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: indexToPage(route.params.index) || 1 }).then(() => {
+      if (route.params.index) {
+        let el = document.querySelector(`#index-${route.params.index}`);
+        el.classList.add('highlight');
+        setTimeout(() => {
+          el.classList.remove('highlight');
+        }, 2000);
+        el.scrollIntoView();
+        if (el.getBoundingClientRect().top === 0) {
+          window.scrollTo(0, window.scrollY - 60); // Height of NavBar
+        }
+      }
+    });
   }
 };
 </script>

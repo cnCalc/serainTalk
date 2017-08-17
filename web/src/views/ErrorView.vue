@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.not-found
+  div.error-view
     h1 :(
     h2 The URL appears to be broken.
     h5 {{ $route.query.from }}
@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'not-found',
+  name: 'error-view',
   created () {
     this.$store.commit('setGlobalTitles', []);
   }
@@ -15,7 +15,7 @@ export default {
 </script>
 
 <style lang="scss">
-div.not-found {
+div.error-view {
   padding: 80px;
   text-align: left;
   h1, h2 {

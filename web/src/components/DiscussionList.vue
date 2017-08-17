@@ -1,7 +1,7 @@
 <template lang="pug">
   div.discussion-list
     ul: transition-group(name="list")
-      li(v-for="discussion in discussions" :key="discussion._id"): div.discussion-list-item
+      li(v-for="(discussion, index) in discussions" :key="discussion._id + index"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater")
           div.avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(discussion.creater) + ')'}")
@@ -20,7 +20,7 @@
             span.discussion-tags(v-for="tag in discussion.tags") {{ tag }}
             span.discussion-tags 假装有tag
         div.discussion-meta-right
-          span.discussion-category(v-if="slug === ''") {{ discussion.category }}
+          span.discussion-category(v-if="discussion.category") {{ discussion.category }}
     loading-icon(v-if="busy")
     div.discussion-page-nav
       div.discussion-button(@click="loadMore", v-if="!busy") 加载更多
@@ -29,7 +29,6 @@
 <script>
 import LoadingIcon from './LoadingIcon.vue';
 
-import config from '../config';
 import store from '../store';
 
 import { timeAgo } from '../utils/filters';
@@ -42,22 +41,25 @@ export default {
   },
   data () {
     return {
-      discussions: [],
-      members: {},
       currentPage: 1,
-      slug: '',
-      busy: true,
+      currentSlug: '',
     };
   },
   computed: {
-    selectedCategory () {
-      if (this.$route.fullPath === '/') {
-        return '';
-      }
-      return this.$route.params.categorySlug;
-    },
     categoriesGroup () {
       return store.state.categoriesGroup;
+    },
+    busy () {
+      return store.state.busy;
+    },
+    discussions () {
+      return store.state.discussions;
+    },
+    members () {
+      return store.state.members;
+    },
+    slug () {
+      return this.$route.fullPath === '/' ? '' : this.$route.params.categorySlug;
     }
   },
   methods: {
@@ -74,73 +76,66 @@ export default {
         return `/uploads/avatar/${member.avatar || 'default.png'}`;
       }
     },
-    loadDiscussionList () {
-      this.currentPage = 1;
-      this.slug = this.selectedCategory;
-      let url;
-      if (this.slug === '') {
-        url = `${config.api.url}${config.api.version}/discussions/latest?page=${this.currentPage}`;
+    loadMore () {
+      this.currentPage++;
+      if (this.$route.fullPath === '/') {
+        return store.dispatch('fetchLatestDiscussions', {
+          page: this.currentPage,
+          append: true
+        });
       } else {
-        url = `${config.api.url}${config.api.version}/category/${this.slug}/discussions?page=${this.currentPage}`;
+        return store.dispatch('fetchDiscussionsUnderCategory', {
+          slug: this.$route.params.categorySlug,
+          page: this.currentPage,
+          append: true,
+        });
       }
-      this.busy = true;
-      this.discussions = [];
-      this.$http.get(url).then(res => {
-        this.discussions = res.body.discussions;
-        this.members = res.body.members;
-        this.busy = false;
-      });
     },
-    updateListView () {
-      if (!this.selectedCategory) {
-        this.$store.commit('setGlobalTitles', []);
-        return;
+    flushGlobalTitles () {
+      if (!this.slug) {
+        return this.$store.commit('setGlobalTitles', []);
       }
-      let categoriesGroup = store.state.categoriesGroup;
+      let categoriesGroup = this.$store.state.categoriesGroup;
       for (let group of categoriesGroup) {
         for (let category of group.categories) {
-          if (category.slug === this.selectedCategory) {
+          if (category.slug === this.slug) {
             this.$store.commit('setGlobalTitles', [category.name, category.description]);
           }
         }
       }
-    },
-    loadMore () {
-      this.busy = true;
-      this.currentPage++;
-      let url;
-      if (this.slug === '') {
-        url = `${config.api.url}${config.api.version}/discussions/latest?page=${this.currentPage}`;
-      } else {
-        url = `${config.api.url}${config.api.version}/category/${this.slug}/discussions?page=${this.currentPage}`;
-      }
-      this.$http.get(url).then(res => {
-        this.discussions = [...this.discussions, ...res.body.discussions];
-        this.members = Object.assign(this.members, res.body.members);
-        this.busy = false;
-      });
     }
   },
   watch: {
-    selectedCategory (val, oldval) {
-      if (typeof val === 'undefined' || typeof oldval === 'undefined') {
+    '$route': function (route) {
+      if (this.currentSlug === route.categorySlug && route.fullPath !== '/') {
         return;
       }
-      this.loadDiscussionList();
-      this.updateListView();
+
+      this.currentSlug = this.slug;
+      this.currentPage = 1;
+
+      if (route.fullPath === '/') {
+        return store.dispatch('fetchLatestDiscussions');
+      } else if (route.params.categorySlug) {
+        return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
+      }
+    },
+    slug: function (slug) {
+      this.flushGlobalTitles();
     },
     categoriesGroup () {
-      this.updateListView();
+      this.flushGlobalTitles();
     }
   },
-  created () {
-    this.loadDiscussionList();
+  beforeMount () {
+    this.currentSlug = this.slug;
   },
-  activated () {
-    if (this.selectedCategory !== this.slug) {
-      this.loadDiscussionList();
+  asyncData ({ store, route }) {
+    if (route.fullPath === '/') {
+      return store.dispatch('fetchLatestDiscussions');
+    } else {
+      return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
     }
-    this.updateListView();
   }
 };
 </script>
