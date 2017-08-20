@@ -89,4 +89,24 @@ describe('member part', () => {
     delete tempInfo.body.status;
     tempInfo = tempInfo.body;
   });
+
+  it('get member with device', async () => {
+    let url = `/api/v1/members?device=${encodeURI(memberInfo.device)}`;
+    let tempInfo = await agent
+      .get(url)
+      .expect(200);
+    expect(tempInfo.body.status).to.equal('ok');
+    delete tempInfo.body.status;
+    tempInfo = tempInfo.body.list;
+    for (let member of tempInfo) {
+      expect(member.device).to.equal(memberInfo.device);
+    }
+  });
+
+  it('get member with nothing', async () => {
+    let url = '/api/v1/members';
+    await agent
+      .get(url)
+      .expect(400);
+  });
 });

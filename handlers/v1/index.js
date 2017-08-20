@@ -9,7 +9,7 @@ router.use(utils.middleware.disableCache);
 router.use(utils.middleware.getUserInfo);
 router.use(utils.middleware.sortData);
 
-router.use('/member', require('./member'));
+router.use(['/member', '/members'], require('./member'));
 router.use('/attachment', require('./attachment'));
 router.use(['/categories', '/category'], require('./category'));
 router.use(['/discussion', '/discussions'], require('./discussion'));
