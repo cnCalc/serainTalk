@@ -92,6 +92,8 @@ div.post-content {
     padding: 0.3em 1em 0.3em 1em;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow-x: scroll;
   }
 }
 </style>

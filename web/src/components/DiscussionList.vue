@@ -97,9 +97,9 @@ export default {
       }
       let categoriesGroup = this.$store.state.categoriesGroup;
       for (let group of categoriesGroup) {
-        for (let category of group.categories) {
-          if (category.slug === this.slug) {
-            this.$store.commit('setGlobalTitles', [category.name, category.description]);
+        for (let item of group.items) {
+          if (item.type === 'category' && item.slug === this.slug) {
+            this.$store.commit('setGlobalTitles', [item.name, item.description]);
           }
         }
       }

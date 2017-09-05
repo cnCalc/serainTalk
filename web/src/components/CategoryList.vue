@@ -2,12 +2,19 @@
   div.categories-list
     div.categories-block(v-for="(group, groupIndex) in categoriesGroup" :key="group.name")
       h2.block-name {{ group.name }}
-      router-link.category-name(
-        v-for="(category, categoryIndex) in group.categories" 
-        :key="category.name"
-        :to="'/c/' + category.slug" 
-        :title="category.description"
-      ) {{ category.name }}
+      template(v-for="item in group.items" )
+        router-link.category-name(
+          v-if="item.type === 'category'"
+          :key="item.name"
+          :to="'/c/' + item.slug" 
+          :title="item.description"
+        ) {{ item.name }}
+        a.category-name(
+          v-else
+          :href="item.href"
+          :title="item.description"
+          target="_blank"
+        ) {{ item.name }}
 </template>
 
 <script>

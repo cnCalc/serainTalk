@@ -169,6 +169,7 @@ div.member-activity {
       flex-grow: 1;
       flex-shrink: 1;
       order: 2;
+      width: 100%;
 
       ul {
         list-style: none;
