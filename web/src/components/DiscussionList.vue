@@ -292,8 +292,9 @@ div.discussion-list {
       cursor: pointer;
     }
 
-    span.discussion-tags {
-      margin-left: 0.4em;
+    span.discussion-tags::before {
+      content: '\B7';
+      margin: 0 0.1em;
     }
   }
 
@@ -333,21 +334,24 @@ div.discussion-list {
   span.discussion-user, span.discussion-tags {
     color: mix($theme_color, white, 90%);
   }
-  span.discussion-tags {
-    background: mix($theme_color, white, 15%);
-  }
+  // span.discussion-tags {
+  //   background: mix($theme_color, white, 15%);
+  // }
   span.discussion-user {
     color: mix($theme_color, black, 75%);
   }
-  span.discussion-tags:hover {
-    background: mix($theme_color, white, 30%);
-  }
+  // span.discussion-tags:hover {
+  //   background: mix($theme_color, white, 30%);
+  // }
   div.discussion-button {
     color: mix($theme_color, black, 90%);
     background: mix($theme_color, white, 15%);
   }
   div.discussion-button:hover {
     color: mix($theme_color, black, 60%);
+  }
+  span.discussion-tags::before {
+    color: black;
   }
 }
 
@@ -363,24 +367,27 @@ div.discussion-list {
   h3.discussion-title:hover {
     color: #eee;
   }
-  span.discussion-tags {
-    background: black;
+  // span.discussion-tags {
+  //   background: black;
+  //   color: gray;
+  // }
+  span.discussion-user, span.discussion-tags {
     color: gray;
   }
-  span.discussion-user {
-    color: gray;
-  }
-  span.discussion-user:hover {
+  span.discussion-user:hover, span.discussion-tags:hover {
     color: lightgray;
   }
-  span.discussion-tags:hover {
-    background: mix(black, white, 80%);
-  }
+  // span.discussion-tags:hover {
+  //   background: mix(black, white, 80%);
+  // }
   div.discussion-button {
     color: gray;
     background: #333;
   }
   div.discussion-button:hover {
+    color: lightgray;
+  }
+  span.discussion-tags::before {
     color: lightgray;
   }
 }

@@ -36,7 +36,7 @@ const router = new VueRouter({
       component: DiscussionView,
       meta: { keepAlive: false },
     }, {
-      path: '/d/:discussionId/:index',
+      path: '/d/:discussionId/:page',
       component: DiscussionView,
       meta: { keepAlive: false },
     }, {
@@ -56,6 +56,8 @@ const router = new VueRouter({
   scrollBehavior (to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
+    } else if (to.path.indexOf('/d') === 0 && from.path.indexOf('/d') === 0) {
+      return undefined;
     } else {
       return { x: 0, y: 0 };
     }

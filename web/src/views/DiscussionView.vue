@@ -10,7 +10,7 @@
           article.discussion-post-body
             header.discussion-post-info
               span.discussion-post-member {{ members[post.user].username }}
-              span.discussion-post-date {{ `#${post.index}` }}
+              span.discussion-post-index {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content")
             footer.discussion-post-info
               div.discussion-post-date 最后编辑于 {{ new Date(1000 * post.createDate).toLocaleDateString() }}
@@ -52,11 +52,11 @@ export default {
   data () {
     return {
       pageSize: config.api.pagesize,
-      minPage: null,
-      maxPage: null,
+      minPage: null,  // 当前已加载的最小页数，仅在滚动自加载模式中有效
+      maxPage: null,  // 当前已加载的最大页数，仅在滚动自加载模式中有效
       currentPage: null,
       fixedSlideBar: false,
-      pagesCount: 0,
+      pagesCount: 0,  // 总页数
     };
   },
   methods: {
@@ -99,9 +99,10 @@ export default {
     },
     loadPage (page) {
       scrollToTop(1000);
-      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page }).then(() => {
-        this.currentPage = page;
-      });
+      this.$router.push({ path: `/d/${this.$route.params.discussionId}/${page}` });
+      // this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page }).then(() => {
+      //   this.currentPage = page;
+      // });
     },
     scrollWatcher () {
       if (this.$store.state.autoLoadOnScroll) {
@@ -112,7 +113,7 @@ export default {
           this.loadPrevPage();
         }
       }
-      // change scroll fix mode.
+      // 变更右侧边栏的固定模式
       this.fixedSlideBar = window.scrollY > 120 + 15;
     },
   },
@@ -137,21 +138,26 @@ export default {
     },
     '$route': function (route) {
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
+      // this.$options.asyncData({ store: this.$store, route });
+      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page: route.params.page }).then(() => {
+        this.currentPage = page;
+      });
+      this.currentPage = this.$route.params.page || 1;
     }
   },
   mounted () {
     window.addEventListener('scroll', this.scrollWatcher);
     this.maxPage = indexToPage(this.$route.params.index) || 1;
     this.minPage = indexToPage(this.$route.params.index) || 1;
-    this.currentPage = indexToPage(this.$route.params.index) || 1;
+    this.currentPage = this.$route.params.page || 1;
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
   asyncData ({store, route}) {
-    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: indexToPage(route.params.index) || 1 }).then(() => {
-      if (route.params.index) {
-        let el = document.querySelector(`#index-${route.params.index}`);
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: route.params.page || 1 }).then(() => {
+      if (window.location.hash) {
+        let el = document.querySelector(window.location.hash);
         el.classList.add('highlight');
         setTimeout(() => {
           el.classList.remove('highlight');
@@ -262,6 +268,12 @@ div.discussion-view {
         span.discussion-post-member {
           font-size: 0.9em;
           font-weight: bold;
+        }
+
+        span.discussion-post-index {
+          float: right;
+          margin-right: 0.5em;
+          font-size: 0.9em;
         }
 
         span.discussion-post-date {

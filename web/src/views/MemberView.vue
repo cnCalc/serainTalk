@@ -18,7 +18,7 @@ div
       div.member-recent-activity: ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
-          router-link(:to="`/d/${activity._id}/${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
+          router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
           post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
 </template>
 
@@ -28,7 +28,7 @@ import PostContent from '../components/PostContent.vue';
 
 import config from '../config';
 import getMemberAvatarUrl from '../utils/avatar';
-import { timeAgo } from '../utils/filters';
+import { timeAgo, indexToPage } from '../utils/filters';
 
 export default {
   name: 'member-view',
@@ -43,7 +43,7 @@ export default {
     };
   },
   methods: {
-    getMemberAvatarUrl, timeAgo,
+    getMemberAvatarUrl, timeAgo, indexToPage,
     loadMemberInfo () {
       this.memberId = this.$route.params.memberId;
       let url = `${config.api.url}${config.api.version}/member/${this.memberId}?recent=on`;
