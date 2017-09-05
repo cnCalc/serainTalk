@@ -22,8 +22,9 @@ function flushCache (callback) {
     let cache = {};
     // 遍历保存
     for (let group of doc.groups) {
-      for (let category of group.categories) {
-        cache[category.slug] = category.name;
+      for (let item of group.items) {
+        if (item.type === 'category')
+          cache[item.slug] = item.name;
       }
     }
     slugCache = cache;
