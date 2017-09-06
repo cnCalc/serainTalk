@@ -100,6 +100,6 @@ export default {
       delete data.status;
       state.commit('setMember', data);
       state.commit('setBusy', false);
-    })
+    });
   }
 };
