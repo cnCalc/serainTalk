@@ -43,12 +43,12 @@ div.post-content {
     cursor: not-allowed;
   }
 
-  // br {
-  //     content: "";
-  //     margin: 2em;
-  //     display: block;
-  //     font-size: 24%;
-  // }
+  br {
+      content: "";
+      margin: 2em;
+      display: block;
+      font-size: 24%;
+  }
 
   blockquote {
     margin: 0;

@@ -90,4 +90,16 @@ export default {
     });
   },
 
+  /**
+   * 获取成员用户的信息
+   */
+  fetchMemberInfo: (state, param = {}) => {
+    state.commit('setBusy', true);
+    state.commit('setMember', undefined);
+    return api.v1.member.fetchMemberInfoById(param).then(data => {
+      delete data.status;
+      state.commit('setMember', data);
+      state.commit('setBusy', false);
+    })
+  }
 };

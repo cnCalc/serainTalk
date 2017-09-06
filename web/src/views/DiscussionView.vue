@@ -140,7 +140,7 @@ export default {
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
       // this.$options.asyncData({ store: this.$store, route });
       this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page: route.params.page }).then(() => {
-        this.currentPage = route.params.page;
+        this.currentPage = route.params.page || 1;
       });
     }
   },

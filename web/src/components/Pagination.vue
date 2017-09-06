@@ -63,8 +63,8 @@ nav.pagination {
 
   li {
     display: inline-block;
-    width: $size;
-    height: $size;
+    min-width: $size;
+    min-height: $size;
     font-size: 14px;
     line-height: $size;
     text-align: center;

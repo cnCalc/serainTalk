@@ -2,7 +2,6 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueResource from 'vue-resource';
 import { sync } from 'vuex-router-sync';
-import Vuex from 'vuex';
 
 import App from './components/App.vue';
 import store from './store';
@@ -14,11 +13,6 @@ import ListView from './views/ListView.vue';
 
 Vue.use(VueResource);
 Vue.use(VueRouter);
-Vue.use(Vuex);
-Vue.http.interceptors.push((request, next) => {
-  request.url += (request.url.indexOf('?') > 0 ? '&' : '?') + `__t=${new Date().getTime()}`;
-  next();
-});
 
 const router = new VueRouter({
   mode: 'history',

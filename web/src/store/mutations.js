@@ -73,6 +73,11 @@ let mutations = {
   clearDiscussionPosts: (state, posts) => {
     state.discussionPosts = [];
   },
+
+  /** 设置用户信息 */
+  setMember: (state, memberInfo) => {
+    state.member = memberInfo;
+  }
 };
 
 export default mutations;

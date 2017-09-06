@@ -37,36 +37,29 @@ export default {
   },
   data () {
     return {
-      memberId: null,
-      member: null,
-      busy: true,
     };
+  },
+  computed: {
+    member () {
+      return this.$store.state.member;
+    },
+    busy () {
+      return this.$store.state.busy;
+    }
   },
   methods: {
     getMemberAvatarUrl, timeAgo, indexToPage,
-    loadMemberInfo () {
-      this.memberId = this.$route.params.memberId;
-      let url = `${config.api.url}${config.api.version}/member/${this.memberId}?recent=on`;
-      this.$http.get(url).then(res => {
-        delete res.body.status;
-        this.member = res.body;
-        this.$store.commit('setGlobalTitles', [' ']);
-        this.busy = false;
-      }, res => {
-        if (res.status === 400) {
-          this.$router.replace('/400');
-        }
-      });
-    },
   },
   created () {
-    this.loadMemberInfo();
   },
   activated () {
-    if (this.$route.params.memberId !== this.memberId) {
-      this.member = null;
-      this.loadMemberInfo();
+    if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
+      this.$options.asyncData({ store: this.$store, route: this.$route });
     }
+    this.$store.commit('setGlobalTitles', [' ']);
+  },
+  asyncData ({ store, route }) {
+    store.dispatch('fetchMemberInfo', { id: route.params.memberId });
   }
 };
 </script>
