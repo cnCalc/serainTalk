@@ -79,9 +79,13 @@ export default {
       if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
         // 如果 currentMember 和路由中的 member 不一致时，显然可以算作是首次进入。
         let needRefetchMemberInfo = (this.currentMember !== route.params.memberId);
+        this.firstIn = false;
         if (route.params.memberId) {
           this.currentMember = route.params.memberId;
-          needRefetchMemberInfo && this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
+          if (needRefetchMemberInfo) {
+           this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
+           this.canLoadMore = true;
+          }
           this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           this.currentPage = 1;
         }
