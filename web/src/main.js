@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import VueResource from 'vue-resource';
 import { sync } from 'vuex-router-sync';
 
 import App from './components/App.vue';
@@ -11,7 +10,6 @@ import DiscussionView from './views/DiscussionView.vue';
 import MemberView from './views/MemberView.vue';
 import ListView from './views/ListView.vue';
 
-Vue.use(VueResource);
 Vue.use(VueRouter);
 
 const router = new VueRouter({

@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  loading-icon(v-if="busy", style="margin-top: 20px;")
+  loading-icon(v-if="busy && !member", style="margin-top: 20px;")
   div.member-info(v-if="member")
     div.avatar
       div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(member) + ')'}")
@@ -10,7 +10,6 @@ div
       h2.member-bio {{ member.bio }}
       div.member-other-info 加入于{{ timeAgo(member.regdate) }}
   div.member-activity(v-if="member")
-    loading-icon(v-if="busy")
     div.member-activity-container
       div.member-side-nav
         div: router-link(:to="`/m/${$route.params.memberId}`") 最近的活动
@@ -23,8 +22,9 @@ div
       div.member-recent-posts(v-else)
         discussion-list(:hideavatar="true")
         loading-icon(v-if="busy")
-        div.list-nav
-          button.button.load-more(v-if="!busy") 加载更多
+        div.list-nav(v-if="canLoadMore")
+          button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
+        div.list-nav(v-else): span.already-max 没有更多了
 </template>
 
 <script>
@@ -42,7 +42,10 @@ export default {
   },
   data () {
     return {
-
+      currentPage: 1,
+      canLoadMore: true,
+      currentMember: null,
+      firstIn: true,
     };
   },
   computed: {
@@ -58,19 +61,36 @@ export default {
   },
   methods: {
     getMemberAvatarUrl, timeAgo, indexToPage,
+    loadMore () {
+      this.currentPage++;
+      this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId, page: this.currentPage, append: true }).then(count => {
+        if (indexToPage(count) <= this.currentPage) {
+          this.canLoadMore = false;
+        }
+      });
+    }
   },
   created () {
+    this.currentPage = 1;
+    this.currentMember = this.$route.params.memberId;
   },
   watch: {
     '$route': function (route) {
-      if (route.meta.mode === 'discussions') {
+      if ((route.meta.mode === 'discussions' && this.currentMember !== route.params.memberId) || this.firstIn) {
+        this.firstIn = false;
         this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+        this.currentPage = 1;
+        if (route.params.memberId) {
+          this.currentMember = route.params.memberId;
+        }
       }
     }
   },
   activated () {
     if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
       this.$options.asyncData({ store: this.$store, route: this.$route });
+      this.firstIn = true;
+      this.canLoadMore = true;
     }
     this.$store.commit('setGlobalTitles', [' ']);
   },
@@ -226,6 +246,11 @@ div.member-activity {
 
   div.list-nav {
     padding-bottom: 16px;
+  }
+
+  span.already-max {
+    font-size: 0.85em;
+    color: #888;
   }
 }
 

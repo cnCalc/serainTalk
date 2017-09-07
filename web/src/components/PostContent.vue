@@ -88,8 +88,8 @@ div.post-content {
   pre.code {
     font-family: Consolas, Courier New, Courier, monospace;
     font-size: 0.9em;
-    line-height: 1.2em;
-    padding: 0.3em 1em 0.3em 1em;
+    line-height: 0.8em;
+    padding: 1rem 1rem 0.3rem 1rem;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.1);
     position: relative;

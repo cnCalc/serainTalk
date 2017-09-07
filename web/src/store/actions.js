@@ -108,10 +108,16 @@ export default {
    */
   fetchDiscussionsCreatedByMember: (state, param = {}) => {
     state.commit('setBusy', true);
+    param.append || state.commit('setDiscussions', []);
     return api.v1.member.fetchDiscussionsCreatedByMember(param).then(data => {
-      state.commit('setDiscussions', data.discussions);
+      if (param.append) {
+        state.commit('appendDiscussions', data.discussions);
+      } else {
+        state.commit('setDiscussions', data.discussions);
+      }
       state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);
+      return Promise.resolve(data.count);
     });
   }
 };
