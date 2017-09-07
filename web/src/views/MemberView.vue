@@ -13,30 +13,36 @@ div
     loading-icon(v-if="busy")
     div.member-activity-container
       div.member-side-nav
-        div: a 最近的活动
-        div: a 创建的讨论
-      div.member-recent-activity: ul
+        div: router-link(:to="`/m/${$route.params.memberId}`") 最近的活动
+        div: router-link(:to="`/m/${$route.params.memberId}/discussions`") 创建的讨论
+      div.member-recent-activity(v-if="$route.meta.mode === 'posts'"): ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
           router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
           post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
+      div.member-recent-posts(v-else)
+        discussion-list(:hideavatar="true")
+        loading-icon(v-if="busy")
+        div.list-nav
+          button.button.load-more(v-if="!busy") 加载更多
 </template>
 
 <script>
 import LoadingIcon from '../components/LoadingIcon.vue';
 import PostContent from '../components/PostContent.vue';
+import DiscussionList from '../components/DiscussionList.vue';
 
-import config from '../config';
 import getMemberAvatarUrl from '../utils/avatar';
 import { timeAgo, indexToPage } from '../utils/filters';
 
 export default {
   name: 'member-view',
   components: {
-    LoadingIcon, PostContent
+    LoadingIcon, PostContent, DiscussionList
   },
   data () {
     return {
+
     };
   },
   computed: {
@@ -45,12 +51,22 @@ export default {
     },
     busy () {
       return this.$store.state.busy;
+    },
+    discussions () {
+      return this.$store.state.discussions;
     }
   },
   methods: {
     getMemberAvatarUrl, timeAgo, indexToPage,
   },
   created () {
+  },
+  watch: {
+    '$route': function (route) {
+      if (route.meta.mode === 'discussions') {
+        this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+      }
+    }
   },
   activated () {
     if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
@@ -60,12 +76,16 @@ export default {
   },
   asyncData ({ store, route }) {
     store.dispatch('fetchMemberInfo', { id: route.params.memberId });
+    if (route.meta.mode === 'discussions') {
+      store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+    }
   }
 };
 </script>
 
 <style lang="scss">
 @import '../styles/global.scss';
+@import '../styles/load-more-button.scss';
 
 div.member-info {
   text-align: left;
@@ -158,7 +178,7 @@ div.member-activity {
       }
     }
 
-    div.member-recent-activity {
+    div.member-recent-activity, div.member-recent-posts {
       flex-grow: 1;
       flex-shrink: 1;
       order: 2;
@@ -173,6 +193,8 @@ div.member-activity {
       h3.post-title {
         padding-left: 20px;
         font-weight: normal;
+        margin: 0 0 0.5em 0;
+        padding-left: 20px;
       }
 
       span.activity-time {
@@ -182,12 +204,7 @@ div.member-activity {
         padding-left: 20px;
       }
 
-      h3 {
-        margin: 0 0 0.5em 0;
-        padding-left: 20px;
-      }
-
-      li {
+      li.activity-item {
         display: block;
         padding-bottom: 20px;
         margin-bottom: 12px;
@@ -201,10 +218,14 @@ div.member-activity {
         }
       }
 
-      li:not(:last-child) {
+      li.activity-item:not(:last-child) {
         border-bottom: 2px solid rgba(grey, 0.3);
       }
     }
+  }
+
+  div.list-nav {
+    padding-bottom: 16px;
   }
 }
 

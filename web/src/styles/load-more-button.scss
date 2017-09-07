@@ -1,0 +1,43 @@
+
+button.load-more {
+  margin: 10px auto 0 auto;
+  font-size: 0.8em;
+  width: 75px;
+  line-height: 16px;
+  border-radius: 4px;
+  text-align: center; 
+  padding: 6px;
+  transition: all ease 0.1s;
+  border: none;
+  cursor: pointer;
+}
+
+div.list-nav {
+  text-align: center;
+}
+
+button.load-more:focus {
+  outline: none;
+}
+
+.light-theme {
+  button.load-more {
+    color: mix($theme_color, black, 90%);
+    background: mix($theme_color, white, 15%);
+  }
+  button.load-more:hover {
+    color: mix($theme_color, black, 60%);
+    background: mix($theme_color, white, 20%);
+  }
+}
+
+
+.dark-theme {
+  button.load-more {
+    color: gray;
+    background: #333;
+  }
+  button.load-more:hover {
+    color: lightgray;
+  }
+}

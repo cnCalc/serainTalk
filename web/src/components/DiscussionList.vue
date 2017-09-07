@@ -2,7 +2,7 @@
   div.discussion-list
     ul: transition-group(name="list")
       li(v-for="(discussion, index) in discussions" :key="discussion._id + index"): div.discussion-list-item
-        router-link.discussion-avatar(:to="'/m/' + discussion.creater")
+        router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
             div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(discussion.creater) + ')'}")
             div.avatar-fallback {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
@@ -21,46 +21,25 @@
             span.discussion-tags 假装有tag
         div.discussion-meta-right
           span.discussion-category(v-if="discussion.category") {{ discussion.category }}
-    loading-icon(v-if="busy")
-    div.discussion-page-nav
-      div.discussion-button(@click="loadMore", v-if="!busy") 加载更多
 </template>
 
 <script>
-import LoadingIcon from './LoadingIcon.vue';
-
-import store from '../store';
-
 import { timeAgo } from '../utils/filters';
 import decodeHTML from '../utils/decodeHTML';
 
 export default {
   name: 'discussion-list',
-  components: {
-    LoadingIcon
-  },
-  data () {
-    return {
-      currentPage: 1,
-      currentSlug: '',
-    };
-  },
+  props: ['hideavatar'],
   computed: {
-    categoriesGroup () {
-      return store.state.categoriesGroup;
-    },
-    busy () {
-      return store.state.busy;
-    },
     discussions () {
-      return store.state.discussions;
+      return this.$store.state.discussions;
     },
     members () {
-      return store.state.members;
+      return this.$store.state.members;
     },
-    slug () {
-      return this.$route.fullPath === '/' ? '' : this.$route.params.categorySlug;
-    }
+    busy () {
+      return this.$store.state.busy;
+    },
   },
   methods: {
     timeAgo, decodeHTML,
@@ -76,67 +55,7 @@ export default {
         return `/uploads/avatar/${member.avatar || 'default.png'}`;
       }
     },
-    loadMore () {
-      this.currentPage++;
-      if (this.$route.fullPath === '/') {
-        return store.dispatch('fetchLatestDiscussions', {
-          page: this.currentPage,
-          append: true
-        });
-      } else {
-        return store.dispatch('fetchDiscussionsUnderCategory', {
-          slug: this.$route.params.categorySlug,
-          page: this.currentPage,
-          append: true,
-        });
-      }
-    },
-    flushGlobalTitles () {
-      if (!this.slug) {
-        return this.$store.commit('setGlobalTitles', []);
-      }
-      let categoriesGroup = this.$store.state.categoriesGroup;
-      for (let group of categoriesGroup) {
-        for (let item of group.items) {
-          if (item.type === 'category' && item.slug === this.slug) {
-            this.$store.commit('setGlobalTitles', [item.name, item.description]);
-          }
-        }
-      }
-    }
   },
-  watch: {
-    '$route': function (route) {
-      if (this.currentSlug === route.categorySlug && route.fullPath !== '/') {
-        return;
-      }
-
-      this.currentSlug = this.slug;
-      this.currentPage = 1;
-
-      if (route.fullPath === '/') {
-        return store.dispatch('fetchLatestDiscussions');
-      } else if (route.params.categorySlug) {
-        return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
-      }
-    },
-    slug: function (slug) {
-      this.flushGlobalTitles();
-    },
-    categoriesGroup () {
-      this.flushGlobalTitles();
-    }
-  },
-  beforeMount () {
-    this.currentSlug = this.slug;
-  },
-  asyncData ({ store, route }) {
-    if (route.fullPath === '/') {
-      return store.dispatch('fetchLatestDiscussions');
-    } else {
-      return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
-    }
-  }
 };
 </script>
 
@@ -310,10 +229,6 @@ div.discussion-list {
     cursor: pointer;
   }
 
-  div.discussion-page-nav {
-    padding-top: 4px;
-  }
-
   div.discussion-button:hover {
     background: mix($theme_color, white, 25%);
   }
@@ -380,13 +295,6 @@ div.discussion-list {
   // span.discussion-tags:hover {
   //   background: mix(black, white, 80%);
   // }
-  div.discussion-button {
-    color: gray;
-    background: #333;
-  }
-  div.discussion-button:hover {
-    color: lightgray;
-  }
   span.discussion-tags::before {
     color: lightgray;
   }

@@ -153,7 +153,7 @@ export default {
   beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
-  asyncData ({store, route}) {
+  asyncData ({ store, route }) {
     return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: route.params.page || 1 }).then(() => {
       if (window.location.hash) {
         let el = document.querySelector(window.location.hash);

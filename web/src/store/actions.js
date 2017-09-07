@@ -101,5 +101,17 @@ export default {
       state.commit('setMember', data);
       state.commit('setBusy', false);
     });
+  },
+
+  /**
+   * 获取用户创建的讨论列表
+   */
+  fetchDiscussionsCreatedByMember: (state, param = {}) => {
+    state.commit('setBusy', true);
+    return api.v1.member.fetchDiscussionsCreatedByMember(param).then(data => {
+      state.commit('setDiscussions', data.discussions);
+      state.commit('mergeMembers', data.members);
+      state.commit('setBusy', false);
+    });
   }
 };

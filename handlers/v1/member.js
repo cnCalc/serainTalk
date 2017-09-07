@@ -8,6 +8,7 @@ const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
 const utils = require('../../utils');
+const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
 const MD5 = utils.md5;
 
 let router = express.Router();
@@ -226,9 +227,58 @@ let signup = async (req, res) => {
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
+/**
+ * 查询指定用户创建的讨论
+ * GET /api/v1/member/:id/discussions
+ * @param {Request} req
+ * @param {Response} res
+ */
+let getDiscussionUnderMember = async (req, res) => {
+  if (!req.params.id) {
+    return errorHandler(null, errorMessages.LACK_INFO, 400, res);
+  }
+  let memberId;
+  try {
+    memberId = ObjectID(req.params.id);
+  } catch (err) {
+    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+  }
+
+  let pagesize = Number(req.query.pagesize) || config.pagesize;
+  let offset = Number(req.query.page - 1) || 0;
+  let cursor = null;
+  let discussions, count;
+  try {
+    cursor = dbTool.db.collection('discussion').find({
+      creater: memberId
+    }, {
+      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+    }).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+    discussions = await cursor.toArray();
+    count = await cursor.count();
+  } catch (e) {
+    console.log(e);
+    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
+  }
+
+  resloveMembersInDiscussionArray(discussions, (err, members) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
+    res.send({
+      status: 'ok',
+      discussions,
+      members,
+      count
+    });
+  });
+}
+
 router.post('/login', login);
 router.post('/signup', signup);
 router.get('/:id', getMemberInfoById);
 router.get('/', getMemberInfoGeneric);
+router.get('/:id/discussions', getDiscussionUnderMember);
 
 module.exports = router;

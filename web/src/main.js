@@ -36,7 +36,11 @@ const router = new VueRouter({
     }, {
       path: '/m/:memberId',
       component: MemberView,
-      meta: { keepAlive: true }
+      meta: { keepAlive: true, mode: 'posts' }
+    }, {
+      path: '/m/:memberId/discussions',
+      component: MemberView,
+      meta: { keepAlive: true, mode: 'discussions' }
     }, {
       path: '/400',
       component: ErrorView,
