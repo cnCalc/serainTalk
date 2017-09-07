@@ -6,7 +6,7 @@ const utils = require('../../utils');
 let router = express.Router();
 
 router.use(utils.middleware.disableCache);
-router.use(utils.middleware.getUserInfo);
+router.use(utils.middleware.getMemberInfo);
 router.use(utils.middleware.sortData);
 
 router.use(['/member', '/members'], require('./member'));

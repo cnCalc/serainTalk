@@ -6,7 +6,7 @@
  * @param {object} params 需要规范化的参数集合
  * @returns 返回转换后的参数列表
  */
-let checkInt = (params) => {
+let expectInt = (params) => {
   if (!params) params = {};
   for (let key in params) {
     if (!params[key]) continue;
@@ -25,7 +25,7 @@ let checkInt = (params) => {
  *
  * @param {any} params
  */
-let checkLength = (params) => {
+let expectSameLength = (params) => {
   let templen = 0;
   for (let key in params) {
     if (Array.isArray(params[key])) {
@@ -42,7 +42,7 @@ let checkLength = (params) => {
  *
  * @param {any} values
  */
-let checkUndefined = (values) => {
+let expectDefined = (values) => {
   for (let key in values) {
     if (values[key] === undefined) {
       throw new Error(`lack param '${key}'`);
@@ -56,7 +56,7 @@ let checkUndefined = (values) => {
  * @param {any} values Object<array>
  * @returns 返回转换后的参数列表
  */
-let checkArray = (values) => {
+let expectArray = (values) => {
   for (let key in values) {
     if (!values[key]) continue;
     if (!Array.isArray(values[key])) {
@@ -77,8 +77,8 @@ let checkArray = (values) => {
 };
 
 module.exports = {
-  checkInt,
-  checkLength,
-  checkUndefined,
-  checkArray
+  expectInt,
+  expectSameLength,
+  expectDefined,
+  expectArray
 };

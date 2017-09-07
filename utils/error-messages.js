@@ -9,4 +9,5 @@ module.exports = {
   MEMBER_EXIST: 'member is exist.',
   ALREADY_MIGRATED: 'member already migrated.',
   TIME_OUT: 'data is invalid.',
+  PERMISSION_DENIED: 'permission denied'
 };

@@ -161,7 +161,7 @@ let login = async (req, res) => {
   // 删除登录凭证。
   delete memberInfo.credentials;
 
-  // 插入 userToken 作为身份识别码。
+  // 插入 memberToken 作为身份识别码。
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
@@ -273,7 +273,7 @@ let getDiscussionUnderMember = async (req, res) => {
       count
     });
   });
-}
+};
 
 router.post('/login', login);
 router.post('/signup', signup);
