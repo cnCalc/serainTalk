@@ -29,10 +29,10 @@ import decodeHTML from '../utils/decodeHTML';
 
 export default {
   name: 'discussion-list',
-  props: ['hideavatar'],
+  props: ['hideavatar', 'list'],
   computed: {
     discussions () {
-      return this.$store.state.discussions;
+      return this.$props.list || this.$store.state.discussions;
     },
     members () {
       return this.$store.state.members;

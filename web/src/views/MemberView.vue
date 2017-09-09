@@ -1,7 +1,7 @@
 <template lang="pug">
 div
-  loading-icon(v-if="busy && !member", style="margin-top: 20px;")
-  div.member-info(v-if="member")
+  loading-icon(v-if="busy && !member._id", style="margin-top: 20px;")
+  div.member-info(v-if="member._id")
     div.avatar
       div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(member) + ')'}")
       div.avatar-fallback {{ (member.username || '?').substr(0, 1).toUpperCase() }}
@@ -9,7 +9,7 @@ div
       h1.member-name {{ member.username }}
       h2.member-bio {{ member.bio }}
       div.member-other-info 加入于{{ timeAgo(member.regdate) }}
-  div.member-activity(v-if="member")
+  div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
         div: router-link(:to="`/m/${$route.params.memberId}`") 最近的活动
@@ -20,7 +20,7 @@ div
           router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
           post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
       div.member-recent-posts(v-else)
-        discussion-list(:hideavatar="true")
+        discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
         div.list-nav(v-if="canLoadMore")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
@@ -56,7 +56,7 @@ export default {
       return this.$store.state.busy;
     },
     discussions () {
-      return this.$store.state.discussions;
+      return this.$store.state.member.discussions;
     }
   },
   methods: {
@@ -101,10 +101,11 @@ export default {
     this.$store.commit('setGlobalTitles', [' ']);
   },
   asyncData ({ store, route }) {
-    store.dispatch('fetchMemberInfo', { id: route.params.memberId });
-    if (route.meta.mode === 'discussions') {
-      store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
-    }
+    return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+      if (route.meta.mode === 'discussions') {
+        store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+      }
+    });
   }
 };
 </script>

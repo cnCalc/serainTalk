@@ -77,7 +77,22 @@ let mutations = {
   /** 设置用户信息 */
   setMember: (state, memberInfo) => {
     state.member = memberInfo;
-  }
+  },
+
+  /**
+   * 设置帖子列表正在展示的帖子
+   */
+  setMemberDiscussions: (state, discussions) => {
+    state.member.discussions = discussions;
+  },
+
+  /**
+   * 向帖子列表内附加帖子
+   */
+  appendMemberDiscussions: (state, discussions) => {
+    state.member.discussions = [...state.member.discussions, ...discussions];
+  },
+
 };
 
 export default mutations;

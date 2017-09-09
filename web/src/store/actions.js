@@ -95,7 +95,7 @@ export default {
    */
   fetchMemberInfo: (state, param = {}) => {
     state.commit('setBusy', true);
-    state.commit('setMember', undefined);
+    state.commit('setMember', {});
     return api.v1.member.fetchMemberInfoById(param).then(data => {
       delete data.status;
       state.commit('setMember', data);
@@ -108,12 +108,12 @@ export default {
    */
   fetchDiscussionsCreatedByMember: (state, param = {}) => {
     state.commit('setBusy', true);
-    param.append || state.commit('setDiscussions', []);
+    param.append || state.commit('setMemberDiscussions', []);
     return api.v1.member.fetchDiscussionsCreatedByMember(param).then(data => {
       if (param.append) {
-        state.commit('appendDiscussions', data.discussions);
+        state.commit('appendMemberDiscussions', data.discussions);
       } else {
-        state.commit('setDiscussions', data.discussions);
+        state.commit('setMemberDiscussions', data.discussions);
       }
       state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);
