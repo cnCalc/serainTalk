@@ -20,13 +20,22 @@ let prepare = async () => {
   if (_db) return;
   await mongoConnect();
   console.info('database connected.');
+
+  exports.generic = _db.collection('generic');
+  exports.discussion = _db.collection('discussion');
+  exports.attachment = _db.collection('attachment');
+  exports.commonMember = _db.collection('common_member');
+  exports.mail = _db.collection('mail');
+  exports.temppost = _db.collection('temppost');
+  exports.config = _db.collection('config');
 };
 
 mongoConnect();
 
-module.exports = {
+exports = module.exports = {
   get db () {
     return _db;
   },
+
   prepare
 };
