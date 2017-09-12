@@ -15,5 +15,6 @@ router.use(['/categories', '/category'], require('./category'));
 router.use(['/discussion', '/discussions'], require('./discussion'));
 router.use('/tags', require('./tags'));
 router.use('/migration', require('./migration'));
+router.use(['settings', 'setting'], require('./settings'));
 
 module.exports = router;
