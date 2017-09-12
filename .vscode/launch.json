@@ -18,6 +18,9 @@
         "--colors",
         "${workspaceRoot}/test"
       ],
+      "env": {
+        "NODE_ENV": "DEV"
+      },
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
