@@ -2,6 +2,7 @@
 
 1. [Discussion](#Discussion)
 2. [Post](#Post)
+3. [DiscussionCategorySetting](#DiscussionCategorySetting)
 
 ## 待补充信息列表
 
@@ -51,6 +52,30 @@ interface Post {
   status: string,                 // 状态，hidden 为隐藏，lock 为锁定（不允许编辑）
   encoding: string,               // 内容的格式，允许值为 HTML 和 Markdown，非管理员只可以选择 Markdown
   content: string,                // 内容文本
+}
+```
+
+## DiscussionCategorySetting
+
+讨论分类的分组配置结构
+
+``` TypeScript
+interface DiscussionCategorySetting {
+  groups: Array<Group>
+}
+
+interface Group {
+  name: string,
+  items: Array<Category>
+}
+
+interface Category {
+  name: string,
+  type: string,
+  slug: string,
+  description: string,
+  color: string,
+  img: null
 }
 ```
 
