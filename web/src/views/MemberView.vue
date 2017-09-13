@@ -83,8 +83,8 @@ export default {
         if (route.params.memberId) {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
-           this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
-           this.canLoadMore = true;
+            this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
+            this.canLoadMore = true;
           }
           this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           this.currentPage = 1;
