@@ -7,7 +7,7 @@ let router = express.Router();
 
 router.use(utils.middleware.disableCache);
 router.use(utils.middleware.getMemberInfo);
-router.use(utils.middleware.sortData);
+router.use(utils.middleware.prepareData);
 
 router.use(['/member', '/members'], require('./member'));
 router.use('/attachment', require('./attachment'));

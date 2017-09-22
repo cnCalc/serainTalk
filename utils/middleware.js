@@ -32,11 +32,11 @@ exports.getMemberInfo = getMemberInfo;
  * @param {any} res 回复
  * @param {any} next 传递给下一中间件
  */
-let sortData = (req, res, next) => {
+let prepareData = (req, res, next) => {
   req.data = Object.assign({}, req.params, req.body, req.query);
   next();
 };
-exports.sortData = sortData;
+exports.prepareData = prepareData;
 
 /**
  * [中间件]对支持的浏览器禁用缓存
