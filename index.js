@@ -2,6 +2,7 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(async (req, res, next) => {
   await require('./utils/database').prepare();
   next();
 });
-
+app.use(bodyParser.json());
 app.use('/api', require('./handlers'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));

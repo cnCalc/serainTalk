@@ -23,8 +23,11 @@
     "instrument": false
   },
   "dependencies": {
+    "body-parser": "^1.18.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
+    "express-validation": "^1.0.2",
+    "joi": "^11.0.1",
     "jsonwebtoken": "^7.4.1",
     "mongodb": "^2.2.26"
   },
