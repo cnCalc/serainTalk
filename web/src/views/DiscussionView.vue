@@ -222,7 +222,6 @@ div.discussion-view {
     transition: all ease 0.5s;
 
     li {
-      transition: all ease 0.5s;
       div.discussion-post-container {
         display: flex;
         padding: 15px 0 15px 15px;
