@@ -7,6 +7,8 @@ const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
 const express = require('express');
+const validation = require('express-validation');
+const dataInterface = require('../../dataInterface');
 const router = express.Router();
 
 /**
@@ -18,42 +20,55 @@ const router = express.Router();
  * @param {Request} req
  * @param {Response} res
  */
-function getLatestDiscussionList (req, res) {
+async function getLatestDiscussionList (req, res) {
   let query = {};
+
   if (req.query.tag) {
-    query.tags = { $in: (req.query.tag instanceof Array) ? req.query.tag : [req.query.tag] };
+    // 非管理只显示白名单中的标签
+    if (req.member.role !== 'admin') {
+      req.query.tag = req.query.tag.filter(
+        item => config.discussion.category.whiteList.includes(item)
+      );
+    }
+    query.tags = {
+      $in: req.query.tag
+    };
   }
   if (req.query.memberid) {
     req.query.memberid = ObjectID(req.query.memberid);
     query.creater = { $eq: req.query.memberid };
   }
-  let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page - 1) || 0;
+  let pagesize = req.query.pagesize || config.pagesize;
+  let offset = req.query.page - 1 || 0;
 
-  dbTool.db.collection('discussion').find(query, {
-    creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-  }, {
-    limit: pagesize,
-    skip: offset * pagesize,
-    sort: [['lastDate', 'desc']]
-  }).toArray((err, results) => {
-    if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      return;
-    } else {
-      resloveMembersInDiscussionArray(results, (err, members) => {
-        if (err) {
-          errorHandler(err, errorMessages.DB_ERROR, 500, res);
-          return;
-        }
-        res.send({
-          status: 'ok',
-          discussions: results,
-          members
-        });
+  try {
+    let results = await dbTool.discussion.find(
+      query,
+      {
+        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+        tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+      },
+      {
+        limit: pagesize,
+        skip: offset * pagesize,
+        sort: [['lastDate', 'desc']]
+      }
+    ).toArray();
+    resloveMembersInDiscussionArray(results, (err, members) => {
+      if (err) {
+        errorHandler(err, errorMessages.DB_ERROR, 500, res);
+        return;
+      }
+      res.send({
+        status: 'ok',
+        discussions: results,
+        members
       });
-    }
-  });
+    });
+  } catch (err) {
+    errorHandler(err, errorMessages.DB_ERROR, 500, res);
+    return;
+  }
 }
 
 /**
@@ -133,7 +148,7 @@ function getDiscussionPostsById (req, res) {
   });
 }
 
-router.get('/latest', getLatestDiscussionList);
+router.get('/latest', validation(dataInterface.discussion.getLatestDiscussionList), getLatestDiscussionList);
 router.get('/:id', getDiscussionById);
 router.get('/:id/posts', getDiscussionPostsById);
 
