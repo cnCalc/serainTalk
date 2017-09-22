@@ -16,6 +16,7 @@ let memberInfo = {
   password: 'fork you.'
 };
 
-module.exports = {
-  memberInfo
+exports = module.exports = {
+  memberInfo,
+  member: require('./memberTools')
 };
