@@ -1,5 +1,7 @@
 'use strict';
 
+exports = module.exports = {};
+
 let memberInfo = {
   gender: 2,
   birthyear: 1996,
@@ -15,8 +17,6 @@ let memberInfo = {
   device: 'Nspire CX CAS',
   password: 'fork you.'
 };
+exports.memberInfo = memberInfo;
 
-exports = module.exports = {
-  memberInfo,
-  member: require('./memberTools')
-};
+exports.member = require('./memberTools');
