@@ -19,7 +19,7 @@ let mongoConnect = async () => {
 let prepare = async () => {
   if (_db) return;
   await mongoConnect();
-  console.info('database connected.');
+  console.log('database connected.');
 
   exports.generic = _db.collection('generic');
   exports.discussion = _db.collection('discussion');
@@ -36,6 +36,14 @@ exports = module.exports = {
   get db () {
     return _db;
   },
+
+  generic: 'loading',
+  discussion: 'loading',
+  attachment: 'loading',
+  commonMember: 'loading',
+  mail: 'loading',
+  temppost: 'loading',
+  config: 'loading',
 
   prepare
 };

@@ -18,10 +18,13 @@ let config = {
 };
 
 // 优先导出部分基础配置信息
-exports = module.exports = {
-  DEV: Object.assign(config, dev),
-  PROCDUCT: Object.assign(config, procduct)
-}[process.env.NODE_ENV || 'DEV'];
+exports = module.exports = config;
+
+if (process.env.NODE_ENV === 'PROCDUCT') {
+  Object.assign(config, procduct);
+} else {
+  Object.assign(config, dev);
+}
 
 /**
  * 使用原始配置重置讨论的配置
