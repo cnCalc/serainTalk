@@ -3,7 +3,6 @@
 const expect = require('chai').expect;
 const dbTool = require('../../utils/database');
 const testTools = require('./');
-const { ObjectID } = require('mongodb');
 
 exports = module.exports = {};
 
