@@ -1,12 +1,30 @@
 'use strict';
 
-// const supertest = require('supertest');
 const expect = require('chai').expect;
-// let agent = supertest.agent(require('../../index'));
-
 const dbTool = require('../../utils/database');
-const testTools = require('./');
-let utils = require('../../utils');
+const { ObjectID } = require('mongodb');
+
+const signupUrl = '/api/v1/member/signup';
+const loginUrl = '/api/v1/member/login';
+
+exports = module.exports = {};
+
+let memberInfo = {
+  gender: 2,
+  birthyear: 1996,
+  birthmonth: 8,
+  birthday: 14,
+  qq: '914714146',
+  site: 'https://www.ntzyz.cn/',
+  bio: '弱菜',
+  username: 'test.zyz',
+  email: 'ljy99041@163.com',
+  regip: '114.232.38.5',
+  regdate: 1335761157,
+  device: 'Nspire CX CAS',
+  password: 'fork you.'
+};
+exports.memberInfo = memberInfo;
 
 /**
  * [校验函数] 校验收到的成员信息是否与已知的相同。
@@ -14,8 +32,8 @@ let utils = require('../../utils');
  * @param {any} receiveInfo 收到的成员信息。
  * @param {any} memberInfo 选填，原本的成员信息。默认为自带成员。
  */
-let checkMemberInfo = (receiveInfo, memberInfo = testTools.memberInfo) => {
-  let _memberInfo = Object.assign({}, memberInfo);
+let checkMemberInfo = (receiveInfo, tempMemberInfo = memberInfo) => {
+  let _memberInfo = Object.assign({}, tempMemberInfo);
   expect(receiveInfo._id).to.not.be.null;
   expect(receiveInfo.credentials).to.not.be.ok;
   delete _memberInfo.password;
@@ -23,6 +41,7 @@ let checkMemberInfo = (receiveInfo, memberInfo = testTools.memberInfo) => {
     expect(_memberInfo[key]).to.be.oneOf([receiveInfo[key], parseInt(receiveInfo[key])]);
   });
 };
+exports.checkMemberInfo = checkMemberInfo;
 
 /**
  * [工具] 快速新建成员。
@@ -31,28 +50,48 @@ let checkMemberInfo = (receiveInfo, memberInfo = testTools.memberInfo) => {
  * @param {any} next 新建完成后需要执行的操作函数（需为 Promise）。会将新用户的信息与 cookie 作为参数传入。
  * @param {any} userinfo 选填，按指定用户信息新建用户。会更新自带成员的信息。
  */
-let createOneUser = async (agent, next, userinfo = testTools.memberInfo) => {
+let createOneMember = async (agent, next, tempMemberInfo = memberInfo) => {
+  // 初始化数据库
   await dbTool.prepare();
-  await dbTool.commonMember.removeOne({ username: testTools.memberInfo.username });
 
-  let url = utils.url.createRESTfulUrl('/api/v1/member/signup', testTools.memberInfo);
-  let signupInfo = await agent
-    .post(url)
-    .expect(201);
-  expect(signupInfo.body.status).to.equal('ok');
-  expect(signupInfo.header['set-cookie']).to.be.ok;
-
+  // 用户已存在则转为登录
+  let newMemberBody;
   try {
-    await next(signupInfo.body.memberinfo);
+    newMemberBody = await agent
+      .post(signupUrl)
+      .send(tempMemberInfo)
+      .expect(201);
   } catch (err) {
-    await dbTool.commonMember.removeOne({ username: testTools.memberInfo.username });
-    throw err;
+    newMemberBody = await agent
+      .post(loginUrl)
+      .send({
+        name: tempMemberInfo.username,
+        password: tempMemberInfo.password
+      })
+      .expect(201);
   }
 
-  await dbTool.commonMember.removeOne({ username: testTools.memberInfo.username });
-};
+  // 简单的数据校验
+  expect(newMemberBody.body.status).to.equal('ok');
+  expect(newMemberBody.header['set-cookie']).to.be.ok;
 
-module.exports = {
-  checkMemberInfo,
-  createOneUser
+  // 生成字符串版的 id 和 MongoID版的 _id
+  let newMemberInfo = newMemberBody.body.memberinfo;
+  newMemberInfo.id = newMemberInfo._id;
+  newMemberInfo._id = ObjectID(newMemberInfo.id);
+  // 补全必要信息
+  newMemberInfo.password = tempMemberInfo.password;
+
+  try {
+    // 执行后续操作
+    await next(newMemberInfo);
+  } catch (err) {
+    // 无论情况如何，清理临时用户
+    await dbTool.commonMember.removeOne({ _id: newMemberInfo._id });
+    throw err;
+  }
+  // 无论情况如何，清理临时用户
+  await dbTool.commonMember.removeOne({ _id: newMemberInfo._id });
 };
+exports.createOneMember = createOneMember;
+
