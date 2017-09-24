@@ -2,20 +2,35 @@
 
 const joi = require('joi');
 const config = require('../config');
-const utils = require('./utils');
+const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
-let getLatestDiscussionList = {
+let getLatestList = {
   member: {
     role: joi.string().valid(['admin', 'member']),
   },
   query: {
     tag: joi.array().items(joi.string().valid(config.discussion.category.whiteList)),
-    memberid: utils.mongoId,
-    pagesize: utils.pagesize,
-    offset: utils.offset
+    memberid: interfaceUtils.mongoId,
+    pagesize: interfaceUtils.pagesize,
+    offset: interfaceUtils.offset
   }
 };
-exports.getLatestDiscussionList = getLatestDiscussionList;
+exports.getLatestList = getLatestList;
 
+let createOne = {
+  member: {
+    _id: interfaceUtils.mongoId
+  },
+  body: {
+    title: joi.string().required(),
+    tags: joi.array().items(joi.string()).required(),
+    category: joi.string().required(),
+    content: {
+      encoding: joi.string().required(),
+      content: joi.string().required()
+    }
+  }
+};
+exports.createOne = createOne;

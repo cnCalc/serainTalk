@@ -148,8 +148,44 @@ function getDiscussionPostsById (req, res) {
   });
 }
 
-router.get('/latest', validation(dataInterface.discussion.getLatestDiscussionList), getLatestDiscussionList);
+let createDiscussion = async (req, res, next) => {
+  let now = Date.now();
+  let discussionInfo = {
+    creater: req.member._id,
+    title: req.body.title,
+    createDate: now,
+    lastDate: now,
+    lastMember: req.member._id,
+    views: 0,
+    replies: 1,
+    tags: req.body.tags,
+    category: req.body.category,
+    participants: [
+      req.member._id
+    ],
+    posts: [
+      {
+        user: req.member._id,
+        createDate: now,
+        encoding: req.body.content.encoding,
+        content: req.body.content.content,
+        allowScript: false,
+        votes: [],
+        index: 1
+      },
+    ]
+  };
+  try {
+    let newDiscussion = await dbTool.discussion.insertOne(discussionInfo);
+    return res.status(201).send({ status: 'ok', discussion: newDiscussion });
+  } catch (err) {
+    return errorHandler(null, err.message, 500, res);
+  }
+};
+
+router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 router.get('/:id', getDiscussionById);
 router.get('/:id/posts', getDiscussionPostsById);
+router.post('/', validation(dataInterface.discussion.createOne), createDiscussion);
 
 module.exports = router;

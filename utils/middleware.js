@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('./../config');
 const errorHandler = require('./error-handler');
 const errorMessages = require('./error-messages');
+const { ObjectID } = require('mongodb');
 
 exports = module.exports = {};
 
@@ -15,9 +16,12 @@ exports = module.exports = {};
  * @param {any} next 传递给下一中间件
  */
 let getMemberInfo = (req, res, next) => {
+  req.member = {};
   if (req.cookies && req.cookies.membertoken) {
     try {
       req.member = jwt.verify(req.cookies.membertoken, config.jwtSecret);
+      req.member.id = req.member._id;
+      req.member._id = ObjectID(req.member.id);
     } catch (err) {
       req.member = {};
     }
