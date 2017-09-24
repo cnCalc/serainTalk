@@ -21,20 +21,25 @@
       "env": {
         "NODE_ENV": "DEV"
       },
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "启动程序",
-      "program": "${file}"
-    },
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "附加到端口",
-      "address": "localhost",
-      "port": 5858
-    }
-  ]
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": [
+        "${workspaceRoot}/node_modules/**/*.js",
+        "<node_internals>/**/*.js"
+      ]
+    ]
+  },
+  {
+    "type": "node",
+    "request": "launch",
+    "name": "启动程序",
+    "program": "${file}"
+  },
+  {
+    "type": "node",
+    "request": "attach",
+    "name": "附加到端口",
+    "address": "localhost",
+    "port": 5858
+  }
+]
 }
