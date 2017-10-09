@@ -3,6 +3,13 @@
 const dbTool = require('./database');
 const errorHandler = require('./error-handler');
 
+/**
+ * 从数据库中获取一个用户的信息，并将结果保存至 members 数组中。
+ *
+ * @param {MongoConnecton} db 数据库链接
+ * @param {Object.<String, Member>} members 保存用户信息的对象
+ * @param {String} memberId 待获取信息的用户 ID
+ */
 function fetchOneMember (db, members, memberId) {
   return new Promise((resolve, reject) => {
     if (members[memberId]) {
@@ -27,6 +34,7 @@ function fetchOneMember (db, members, memberId) {
 
 /**
  * 解析一组讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
+ *
  * @param {Array.<Discussion>} discussions
  * @param {Function(err, Object.<String, Member>)} callback
  */
@@ -40,6 +48,12 @@ function resloveMembersInDiscussionArray (discussions, callback) {
   });
 }
 
+/**
+ * 解析单个讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
+ *
+ * @param {Discussion} discussion
+ * @param {Function(err, Object.<String, Member>)} callback
+ */
 function resloveMembersInDiscussion (discussion, callback) {
   let members = {};
   let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user]), []);

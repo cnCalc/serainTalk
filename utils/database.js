@@ -3,8 +3,12 @@
 const { MongoClient } = require('mongodb');
 const config = require('../config');
 
+// 真实的连接对象
 let _db = null;
 
+/**
+ * 连接到数据库，并将连接保存到 _db 中
+ */
 let mongoConnect = async () => {
   let db;
   try {
