@@ -11,7 +11,10 @@ let router = express.Router();
 let migrateTokens = {};
 
 /**
- * 验证 Discuz 用户的信息，验证其用户和密码
+ * [处理函数] 验证 Discuz 用户的信息
+ * get: /api/v1/migration/verify?name=<name>&password=<password>
+ *
+ * 验证其用户和密码
  * 若通过，则返回一个随机 token，用于完成下一步转换
  * @param {Request} req
  * @param {Response} res
@@ -66,7 +69,10 @@ async function verifyDiscuzMemberInfo (req, res) {
 }
 
 /**
- * 执行迁移，此时允许用户设置全新的用户名和密码，以及自己的 E-Mail
+ * [处理函数] 执行迁移
+ * get: /api/v1/migration/perform
+ *
+ * 此时允许用户设置全新的用户名和密码，以及自己的 E-Mail
  * 当然用户名不能与其他用户重名
  * @param {Request} req
  * @param {Response} res
