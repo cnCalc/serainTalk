@@ -15,16 +15,16 @@
             footer.discussion-post-info
               div.discussion-post-date 最后编辑于 {{ new Date(1000 * post.createDate).toLocaleDateString() }}
               div.button-left-container
-                button.button.vote-up 0
-                button.button.vote-down 0
-                button.button.laugh 0
-                button.button.doubt 0
-                button.button.cheer 0
-                button.button.emmmm 0
-              div.button-right-container
-                button.button 回复
-                button.button 复制链接
-                button.button 编辑
+              //-   button.button.vote-up 0
+              //-   button.button.vote-down 0
+              //-   button.button.laugh 0
+              //-   button.button.doubt 0
+              //-   button.button.cheer 0
+              //-   button.button.emmmm 0
+              //- div.button-right-container
+              button.button 回复
+              button.button 复制链接
+              button.button 编辑
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
