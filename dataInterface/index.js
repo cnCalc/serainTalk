@@ -1,5 +1,6 @@
 'use strict';
 
 module.exports = {
-  discussion: require('./discussion')
+  discussion: require('./discussion'),
+  member: require('./member')
 };

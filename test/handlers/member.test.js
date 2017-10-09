@@ -6,6 +6,7 @@ const { ObjectID } = require('mongodb');
 
 const dbTool = require('../../utils/database');
 const testTools = require('../testTools');
+const utils = require('../../utils');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -50,6 +51,34 @@ describe('member part', () => {
       expect(loginBody.header['set-cookie']).to.be.ok;
       let loginInfo = loginBody.body.memberinfo;
       testTools.member.checkMemberInfo(loginInfo);
+    });
+  });
+
+  it('member logout', async () => {
+    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+      let loginUrl = '/api/v1/member/login';
+      let loginBody = await agent
+        .post(loginUrl)
+        .send({
+          name: newMemberInfo.username,
+          password: newMemberInfo.password
+        })
+        .expect(201);
+      expect(loginBody.body.status).to.equal('ok');
+      let loginCookies = {};
+      loginBody.header['set-cookie'].forEach(function (cookie) {
+        Object.assign(loginCookies, utils.cookie.parse(cookie));
+      });
+      expect(loginCookies.membertoken).to.be.ok;
+
+      let logoutBody = await agent
+        .delete(loginUrl)
+        .expect(204);
+      let logoutCookies = {};
+      logoutBody.header['set-cookie'].forEach(function (cookie) {
+        Object.assign(logoutCookies, utils.cookie.parse(cookie));
+      });
+      expect(logoutCookies.membertoken).to.be.equal('');
     });
   });
 

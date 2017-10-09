@@ -8,6 +8,8 @@ const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
 const utils = require('../../utils');
+const validation = require('express-validation');
+const dataInterface = require('../../dataInterface');
 const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
 const MD5 = utils.md5;
 
@@ -126,7 +128,8 @@ let getMemberInfoGeneric = (req, res) => {
 
 /**
  * [处理函数] 登录
- * post: /api/v1/member/login?name=<name>&password=<password>
+ * post: /api/v1/member/login
+ *
  * @param {any} req 请求
  * @param {any} res 回复
  */
@@ -134,7 +137,7 @@ let login = async (req, res) => {
   let memberInfo = {};
 
   try {
-    memberInfo = await dbTool.db.collection('common_member').findOne({ username: req.data.name });
+    memberInfo = await dbTool.commonMember.findOne({ username: req.body.name });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
@@ -145,7 +148,7 @@ let login = async (req, res) => {
   }
 
   // 核对密码。
-  let password = req.data.password;
+  let password = req.body.password;
   if (memberInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== memberInfo.credentials.password) {
@@ -168,43 +171,27 @@ let login = async (req, res) => {
 };
 
 /**
+ * [处理函数] 登出
+ * post: /api/v1/member/login
+ * @param {any} req 请求
+ * @param {any} res 回复
+ */
+let logout = async (req, res) => {
+  await res.clearCookie('membertoken');
+  return res.status(204).send({ status: 'ok' });
+};
+
+/**
  * [处理函数] 注册
  * post: /api/v1/member/signup?name=<name>&password=<password>
  * @param {any} req 请求
  * @param {any} res 回复
  */
 let signup = async (req, res) => {
-  let memberInfo = {};
-
-  let info = [
-    'gender',
-    'birthyear',
-    'birthmonth',
-    'birthday',
-    'address',
-    'qq',
-    'site',
-    'bio',
-    'username',
-    'email',
-    'regip',
-    'regdate',
-    'secques',
-    'device'
-  ];
-
-  info.forEach(key => {
-    if (req.data[key]) {
-      memberInfo[key] = req.data[key];
-    }
-  });
-
-  if (!(memberInfo.username && req.data.password && memberInfo.email)) {
-    return utils.errorHandler(null, utils.errorMessages.LACK_INFO, 400, res);
-  }
+  let memberInfo = req.body;
 
   try {
-    let existMember = await dbTool.db.collection('common_member').findOne({ username: memberInfo.username });
+    let existMember = await dbTool.commonMember.findOne({ username: memberInfo.username });
     if (existMember) {
       return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
     }
@@ -215,10 +202,10 @@ let signup = async (req, res) => {
   memberInfo.credentials = {};
   memberInfo.credentials.salt = utils.createRandomString();
   memberInfo.credentials.type = 'seraintalk';
-  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.data.password);
+  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.body.password);
   memberInfo.lastlogintime = Date.now();
 
-  await dbTool.db.collection('common_member').insertOne(memberInfo);
+  await dbTool.commonMember.insertOne(memberInfo);
 
   delete memberInfo.credentials;
 
@@ -276,7 +263,8 @@ let getDiscussionUnderMember = async (req, res) => {
 };
 
 router.post('/login', login);
-router.post('/signup', signup);
+router.delete('/login', logout);
+router.post('/signup', validation(dataInterface.member.signup), signup);
 router.get('/:id', getMemberInfoById);
 router.get('/', getMemberInfoGeneric);
 router.get('/:id/discussions', getDiscussionUnderMember);

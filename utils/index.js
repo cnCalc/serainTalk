@@ -12,4 +12,5 @@ module.exports = {
   md5: require('./md5'),
   createRandomString: require('./random-string'),
   datacheck: require('./data-check'),
+  cookie: require('./cookie'),
 };
