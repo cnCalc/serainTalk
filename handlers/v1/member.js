@@ -113,6 +113,7 @@ let getMemberInfoGeneric = (req, res) => {
     skip: offset * pagesize,
     sort: [['date', 'desc']]
   }).toArray((err, results) => {
+    /* istanbul ignore if */
     if (err) {
       errorHandler(null, errorMessages.DB_ERROR, 500, res);
     } else {
@@ -139,16 +140,19 @@ let login = async (req, res) => {
   try {
     memberInfo = await dbTool.commonMember.findOne({ username: req.body.name });
   } catch (err) {
+    /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
 
   // 如果该账号是 discuz 转入的，强制修改密码。
+  /* istanbul ignore if */
   if (memberInfo.credentials.type === 'discuz') {
     return utils.errorHandler(null, utils.errorMessages.RESET_PASSWORD, 400, res);
   }
 
   // 核对密码。
   let password = req.body.password;
+  /* istanbul ignore if */
   if (memberInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== memberInfo.credentials.password) {
@@ -196,6 +200,7 @@ let signup = async (req, res) => {
       return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
     }
   } catch (err) {
+    /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
 
