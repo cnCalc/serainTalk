@@ -10,6 +10,7 @@ import DiscussionView from './views/DiscussionView.vue';
 import MemberView from './views/MemberView.vue';
 import ListView from './views/ListView.vue';
 import SigninView from './views/SigninView.vue';
+import MigrationView from './views/MigrationView.vue';
 
 Vue.use(VueRouter);
 
@@ -43,6 +44,9 @@ const router = new VueRouter({
     }, {
       path: '/signin',
       component: SigninView,
+    }, {
+      path: '/mingration',
+      component: MigrationView,
     }, {
       path: '/400',
       component: ErrorView,

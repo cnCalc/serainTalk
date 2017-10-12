@@ -3,8 +3,8 @@ div
   loading-icon(v-if="busy && !member._id", style="margin-top: 20px;")
   div.member-info(v-if="member._id")
     div.avatar
-      div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(member) + ')'}")
-      div.avatar-fallback {{ (member.username || '?').substr(0, 1).toUpperCase() }}
+      div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+      div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
     div.name-and-bio-container
       h1.member-name {{ member.username }}
       h2.member-bio {{ member.bio }}
@@ -32,7 +32,6 @@ import LoadingIcon from '../components/LoadingIcon.vue';
 import PostContent from '../components/PostContent.vue';
 import DiscussionList from '../components/DiscussionList.vue';
 
-import getMemberAvatarUrl from '../utils/avatar';
 import { timeAgo, indexToPage } from '../utils/filters';
 
 export default {
@@ -60,7 +59,7 @@ export default {
     }
   },
   methods: {
-    getMemberAvatarUrl, timeAgo, indexToPage,
+    timeAgo, indexToPage,
     loadMore () {
       this.currentPage++;
       this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId, page: this.currentPage, append: true }).then(count => {

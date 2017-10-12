@@ -119,5 +119,5 @@ export default {
       state.commit('setBusy', false);
       return Promise.resolve(data.count);
     });
-  }
+  },
 };

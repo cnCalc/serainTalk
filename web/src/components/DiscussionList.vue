@@ -4,8 +4,8 @@
       li(v-for="(discussion, index) in discussions" :key="discussion._id + index"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
-            div.avatar-image(v-bind:style="{ backgroundImage: 'url(' + getMemberAvatarUrl(discussion.creater) + ')'}")
-            div.avatar-fallback {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
+            div.avatar-image(v-if="members[discussion.creater].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
+            div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
             span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
@@ -43,18 +43,6 @@ export default {
   },
   methods: {
     timeAgo, decodeHTML,
-    getMemberAvatarUrl (memberId) {
-      let pad = number => ('000000000' + number.toString()).substr(-9);
-      let member = this.members[memberId];
-      if (member.uid) {
-        // Discuz 用户数据
-        let matchResult = pad(member.uid).match(/(\d{3})(\d{2})(\d{2})(\d{2})/);
-        return `/uploads/avatar/${matchResult[1]}/${matchResult[2]}/${matchResult[3]}/${matchResult[4]}_avatar_big.jpg`;
-      } else {
-        // 新用户，直接返回字段
-        return `/uploads/avatar/${member.avatar || 'default.png'}`;
-      }
-    },
   },
 };
 </script>

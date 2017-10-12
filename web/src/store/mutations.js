@@ -93,6 +93,12 @@ let mutations = {
     state.member.discussions = [...state.member.discussions, ...discussions];
   },
 
+  /**
+   * 更新当前登陆的用户细心
+   */
+  setCurrentSigninedMemberInfo: (state, me) => {
+    state.me = me;
+  }
 };
 
 export default mutations;

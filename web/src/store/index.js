@@ -14,6 +14,7 @@ export default new Vuex.Store({
     member: {
       discussions: [],
     },
+    me: {},
     discussions: [],
     categoriesGroup: [],
     globalTitle: '',

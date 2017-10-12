@@ -7,7 +7,7 @@
  * @param {string} code 验证码
  */
 let sendVerificationCode = (address, code) => {
-  console.log('comming soon');
+  console.log(`Sending ${code} to ${address}`);
 };
 
 module.exports = {

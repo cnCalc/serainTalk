@@ -21,10 +21,10 @@ let migrateTokens = {};
  */
 async function verifyDiscuzMemberInfo (req, res) {
   let memberInfo = {};
-  let { name, password } = req.data;
+  let { name, password, email } = req.data;
 
   try {
-    utils.datacheck.checkUndefined({ name, password });
+    utils.datacheck.checkUndefined({ name, password, email });
   } catch (err) {
     return utils.errorHandler(null, err.message, 400, res);
   }
@@ -33,6 +33,10 @@ async function verifyDiscuzMemberInfo (req, res) {
     memberInfo = await dbTool.db.collection('common_member').findOne({ username: name });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
+  }
+
+  if (!memberInfo) {
+    return utils.errorHandler(null, utils.errorMessages.NOT_FOUND, 404, res);
   }
 
   if (memberInfo.credentials.type !== 'discuz') {
@@ -53,18 +57,21 @@ async function verifyDiscuzMemberInfo (req, res) {
   }
 
   // 保存迁移 token，留着下一步使用
-  let token = utils.createRandomString(20);
-  while (!migrateTokens[token]) {
-    token = utils.createRandomString(20);
+  // TODO: 将 token 保存至数据库中，防止服务器重启导致数据丢失
+  let token = utils.createRandomString(6);
+  while (migrateTokens[token]) {
+    token = utils.createRandomString(6);
   }
   migrateTokens[token] = {
     name: name,
     timestamp: new Date().getTime(),
   };
 
+  // 将 token 发送至新的邮箱地址
+  utils.mail.sendVerificationCode(email, token);
+
   return res.send({
     status: 'ok',
-    token,
   });
 }
 
@@ -126,7 +133,7 @@ async function performMingration (req, res) {
   return res.send({ status: 'ok' });
 }
 
-router.get('/verify', verifyDiscuzMemberInfo);
+router.post('/verify', verifyDiscuzMemberInfo);
 router.get('/perform', performMingration);
 
 module.exports = router;

@@ -1,29 +1,47 @@
 <template lang="pug">
   div.signin-view
-    div.signin-box: form
+    div.signin-box
       h2 登录 
       label.block(for="name") 用户名或电子邮件地址
-      input(id="name", placeholder="", type="text")
+      input(id="name", placeholder="", type="text", v-model="credentials.name")
       label.block(for="passwd") 密码
-      input(id="passwd", placeholder="", type="password")
+      input(id="passwd", placeholder="", type="password", v-model="credentials.password")
       div.remember-wrapper
-        input(type="checkbox", id="remember")
+        input(type="checkbox", id="remember", v-model="rememberMe")
         label(for="remember") 记住登录
-      button.button 登录
+      button.button(@click="doSignin") 登录
       div.quick-action-wrapper
         router-link(to="/signup") 前往注册
-        router-link(to="/mingrate") 账户迁移
+        router-link(to="/mingration") 账户迁移
         router-link(to="/reset-password") 忘记密码
 </template>
 
 <script>
+import api from '../api';
+
 export default {
   name: 'singin-view',
   data () {
     return {
+      credentials: {
+        name: '',
+        password: '',
+      },
+      rememberMe: false,
     };
   },
-  methods: {},
+  beforeMount () {
+    this.$store.commit('setGlobalTitles', []);
+  },
+  methods: {
+    async doSignin () {
+      api.v1.member.signin(this.credentials).then(response => {
+        this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
+      }).catch(e => {
+        alert('密码错误');
+      });
+    }
+  }
 };
 </script>
 

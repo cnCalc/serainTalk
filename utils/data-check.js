@@ -76,9 +76,18 @@ let expectArray = (values) => {
   return values;
 };
 
+let checkUndefined = (values) => {
+  Object.keys(values).forEach(key => {
+    if (typeof values[key] === 'undefined') {
+      throw new Error(`'${key}' shall not be undefined`);
+    }
+  });
+};
+
 module.exports = {
   expectInt,
   expectSameLength,
   expectDefined,
-  expectArray
+  expectArray,
+  checkUndefined
 };
