@@ -12,7 +12,7 @@
       button.button(@click="doSignin") 登录
       div.quick-action-wrapper
         router-link(to="/signup") 前往注册
-        router-link(to="/mingration") 账户迁移
+        router-link(to="/migration") 账户迁移
         router-link(to="/reset-password") 忘记密码
 </template>
 

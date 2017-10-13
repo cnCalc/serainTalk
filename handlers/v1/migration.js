@@ -65,6 +65,7 @@ async function verifyDiscuzMemberInfo (req, res) {
   migrateTokens[token] = {
     name: name,
     timestamp: new Date().getTime(),
+    email: email
   };
 
   // 将 token 发送至新的邮箱地址
@@ -86,10 +87,10 @@ async function verifyDiscuzMemberInfo (req, res) {
  */
 async function performMingration (req, res) {
   let memberInfo = {};
-  let token = req.data;
+  let { token, name } = req.data;
 
   try {
-    utils.datacheck.checkUndefined({ token: migrateTokens[token] });
+    utils.datacheck.checkUndefined({ token, name });
     if (Date.now() - migrateTokens[token].timestamp > config.tokenValidTime) {
       throw new Error(utils.errorMessages.TIME_OUT);
     }
@@ -110,8 +111,8 @@ async function performMingration (req, res) {
   // 加密密码，采用和新的密码杂凑方式
   let salt = utils.createRandomString();
   let newMemberInfo = {
-    username: req.data.name,
-    email: req.data.email,
+    username: name,
+    email: migrateTokens[token].email,
     credentials: {
       type: 'seraintalk',
       salt,
@@ -134,6 +135,6 @@ async function performMingration (req, res) {
 }
 
 router.post('/verify', verifyDiscuzMemberInfo);
-router.get('/perform', performMingration);
+router.post('/perform', performMingration);
 
 module.exports = router;

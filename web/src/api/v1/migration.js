@@ -15,6 +15,21 @@ function requestMigration (param) {
   });
 }
 
+function performMigration (param) {
+  const requestPayload = {
+    token: param.token,
+    name: param.name,
+    password: param.password,
+  };
+
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}${config.api.version}/migration/perform`, requestPayload)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
-  requestMigration
+  requestMigration,
+  performMigration
 };

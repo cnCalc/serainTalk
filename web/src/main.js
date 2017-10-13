@@ -45,7 +45,7 @@ const router = new VueRouter({
       path: '/signin',
       component: SigninView,
     }, {
-      path: '/mingration',
+      path: '/migration',
       component: MigrationView,
     }, {
       path: '/400',

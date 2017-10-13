@@ -12,13 +12,15 @@
       button.button(@click="doVerifyRequest") 下一步
     .perform-step(v-else)
       .explain 验证码已发送，请前往邮箱查看。
+      label.block(for="token") 验证码：
+      input(type="text" id="token" v-model="token")
       label.block(for="name") 新用户名（不可再修改）：
       input(type="text" id="name" v-model="name")
       label.block(for="passwd") 密码：
       input(type="password" id="passwd" v-model="passwd")
       label.block(for="repeatPasswd") 确认密码：
       input(type="password" id="repeatPasswd" v-model="repeatPasswd")
-      button.button 完成迁移
+      button.button(@click="doPerformMigration") 完成迁移
 </template>
 
 <script>
@@ -31,6 +33,7 @@ export default {
       origUserName: '',
       origPasswd: '',
       email: '',
+      token: '',
       name: '',
       passwd: '',
       repeatPasswd: '',
@@ -57,6 +60,24 @@ export default {
           break;
         }
       })
+    },
+    doPerformMigration () {
+      if (this.passwd !== this.repeatPasswd) {
+        alert('两次密码不一致！');
+        return;
+      }
+      const payload = {
+        token: this.token,
+        name: this.name,
+        password: this.passwd,
+      };
+      api.v1.migration.performMigration(payload).then(response => {
+        if (response.status === 'ok') {
+          alert('迁移成功');
+        }
+      }).catch(e => {
+        alert('出现问题，请联系管理员');
+      });
     }
   }
 }
