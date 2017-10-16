@@ -10,6 +10,7 @@ const dbTool = require('../../utils/database');
 const utils = require('../../utils');
 const validation = require('express-validation');
 const dataInterface = require('../../dataInterface');
+const joi = require('joi');
 const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
 const MD5 = utils.md5;
 
@@ -128,6 +129,66 @@ let getMemberInfoGeneric = (req, res) => {
 };
 
 /**
+ * [处理函数] 查询指定成员创建的讨论
+ * GET /api/v1/member/:id/discussions
+ * @param {Request} req
+ * @param {Response} res
+ */
+let getDiscussionUnderMember = async (req, res) => {
+  if (!req.params.id) {
+    return errorHandler(null, errorMessages.LACK_INFO, 400, res);
+  }
+  let memberId;
+  try {
+    memberId = ObjectID(req.params.id);
+  } catch (err) {
+    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+  }
+
+  let pagesize = Number(req.query.pagesize) || config.pagesize;
+  let offset = Number(req.query.page - 1) || 0;
+  let cursor = null;
+  let discussions, count;
+  try {
+    cursor = dbTool.db.collection('discussion').find({
+      creater: memberId
+    }, {
+      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+    }).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+    discussions = await cursor.toArray();
+    count = await cursor.count();
+  } catch (e) {
+    console.log(e);
+    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
+  }
+
+  resloveMembersInDiscussionArray(discussions, (err, members) => {
+    if (err) {
+      errorHandler(err, errorMessages.DB_ERROR, 500, res);
+      return;
+    }
+    res.send({
+      status: 'ok',
+      discussions,
+      members,
+      count
+    });
+  });
+};
+
+/**
+ * [处理函数] 获取自身信息
+ *
+ * @param {any} req
+ * @param {any} res
+ */
+let getSelf = async (req, res) => {
+  return res.status(200).send({ status: 'ok', memberInfo: req.member });
+};
+
+// #region 成员登录登出部分
+
+/**
  * [处理函数] 登录
  * post: /api/v1/member/login
  *
@@ -194,21 +255,28 @@ let logout = async (req, res) => {
 let signup = async (req, res) => {
   let memberInfo = req.body;
 
-  try {
-    let existMember = await dbTool.commonMember.findOne({ username: memberInfo.username });
-    if (existMember) {
-      return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
-    }
-  } catch (err) {
-    /* istanbul ignore next */
-    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
-  }
-
+  // 生成成员身份信息
   memberInfo.credentials = {};
   memberInfo.credentials.salt = utils.createRandomString();
   memberInfo.credentials.type = 'seraintalk';
   memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.body.password);
   memberInfo.lastlogintime = Date.now();
+
+  try {
+    let existMember = await dbTool.commonMember.findAndModify(
+      { username: memberInfo.username },
+      [['_id', 'asc']],
+      { $setOnInsert: memberInfo },
+      {
+        new: true,
+        upsert: true
+      }
+    );
+    console.log(existMember);
+  } catch (err) {
+    /* istanbul ignore next */
+    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
+  }
 
   await dbTool.commonMember.insertOne(memberInfo);
 
@@ -219,54 +287,148 @@ let signup = async (req, res) => {
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
+// #endregion
+
+// #region 成员密码部分
+
 /**
- * 查询指定用户创建的讨论
- * GET /api/v1/member/:id/discussions
- * @param {Request} req
- * @param {Response} res
+ * [处理函数] 重置成员密码
+ *
+ * @param {any} req
+ * @param {any} res
  */
-let getDiscussionUnderMember = async (req, res) => {
-  if (!req.params.id) {
-    return errorHandler(null, errorMessages.LACK_INFO, 400, res);
-  }
-  let memberId;
+let resetPassword = async (req, res) => {
+  let newPassword = req.body.password;
+  let mailToken = req.body.token;
+
+  // 身份验证
+  let tokenInfo;
   try {
-    memberId = ObjectID(req.params.id);
+    tokenInfo = jwt.sign(mailToken, config.jwtSecret);
   } catch (err) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
+  // 校验 token 数据
+  joi.validate(tokenInfo, {
+    memberId: dataInterface.object.mongoId.required(),
+    password: joi.string().required(),
+    time: joi.number().required()
+  }, (err) => {
+    return errorHandler(err, errorMessages.BAD_REQUEST, 400, res);
+  });
+
+  // 超时则报错
+  if (Date.now() - tokenInfo.time > config.tokenValidTime) {
+    return errorHandler(null, errorMessages.TIME_OUT, 403, res);
+  }
+
+  // 目标成员不存在则报错
+  tokenInfo.memberId = ObjectID(tokenInfo.memberId);
+  let memberInfo = await dbTool.commonMember.findOne({ _id: tokenInfo.memberId });
+  if (!memberInfo) {
     return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
   }
 
-  let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page - 1) || 0;
-  let cursor = null;
-  let discussions, count;
-  try {
-    cursor = dbTool.db.collection('discussion').find({
-      creater: memberId
-    }, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-    }).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
-    discussions = await cursor.toArray();
-    count = await cursor.count();
-  } catch (e) {
-    console.log(e);
-    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
+  // 密码不匹配则报错
+  if (tokenInfo.password !== memberInfo.credentials.password) {
+    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
   }
 
-  resloveMembersInDiscussionArray(discussions, (err, members) => {
-    if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      return;
-    }
-    res.send({
-      status: 'ok',
-      discussions,
-      members,
-      count
-    });
-  });
+  // 生成新的身份信息
+  let credentials = {};
+  credentials.salt = utils.createRandomString();
+  credentials.type = 'seraintalk';
+  credentials.password = MD5(credentials.salt + newPassword);
+
+  // 更新身份信息
+  let now = Date.now();
+  memberInfo.lastlogintime = now;
+  try {
+    await dbTool.commonMember.updateOne(
+      { _id: tokenInfo.memberId },
+      {
+        $set: {
+          credentials: credentials,
+          lastlogintime: now
+        }
+      }
+    );
+  } catch (err) {
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+
+  // 删除登录凭证。
+  delete memberInfo.credentials;
+
+  // 返回登录 token
+  let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+  return res.status(201).send({ status: 'ok' });
 };
 
+/**
+ * [处理函数] 申请重置成员密码
+ *
+ * @param {any} req
+ * @param {any} res
+ */
+let resetPasswordApplication = async (req, res) => {
+  try {
+    let memberInfo = await dbTool.commonMember.findOne({
+      name: req.body.membername
+    });
+    if (memberInfo) {
+      let emailPayload = {
+        memberId: memberInfo._id,
+        password: memberInfo.credentials.password,
+        time: Date.now()
+      };
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let url = `${config.password.resetPasswordPage}?token='${emailToken}'`;
+      await utils.mail.sendMessage(memberInfo.email, url);
+      return res.status(201).send({ status: 'ok' });
+    } else {
+      return errorHandler(null, errorMessages.NO_SUCH_MEMBER, 400, res);
+    }
+  } catch (err) {
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+};
+
+/**
+ * [处理函数] 修改成员密码
+ *
+ * @param {any} req
+ * @param {any} res
+ * @returns
+ */
+let passwordModify = async (req, res) => {
+  // 生成成员身份信息
+  let credentials = {};
+  credentials.salt = utils.createRandomString();
+  credentials.type = 'seraintalk';
+  credentials.password = MD5(credentials.salt + req.body.password);
+  try {
+    await dbTool.commonMember.updateOne(
+      {
+        _id: req.member._id
+      }, {
+        $set: { credentials: credentials }
+      }
+    );
+  } catch (err) {
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+  return res.status(201).send({ status: 'ok' });
+};
+
+// #endregion
+
+router.post('/password/reset/application', validation(dataInterface.member.password.resetApplication), resetPasswordApplication);
+router.post('/password/reset', resetPassword);
+router.put('/password', utils.middleware.verifyMember, validation(dataInterface.member.password.modify), passwordModify);
+router.get('/me', utils.middleware.verifyMember, getSelf);
 router.post('/login', login);
 router.delete('/login', logout);
 router.post('/signup', validation(dataInterface.member.signup), signup);

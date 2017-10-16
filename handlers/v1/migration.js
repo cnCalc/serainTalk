@@ -69,7 +69,7 @@ async function verifyDiscuzMemberInfo (req, res) {
   };
 
   // 将 token 发送至新的邮箱地址
-  utils.mail.sendVerificationCode(email, token);
+  await utils.mail.sendVerificationCode(email, token);
 
   return res.send({
     status: 'ok',

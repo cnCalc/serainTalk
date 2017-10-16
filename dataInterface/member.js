@@ -6,6 +6,7 @@ const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
+// 成员注册
 let signup = {
   body: {
     username: joi.string().required(),
@@ -27,3 +28,26 @@ let signup = {
   }
 };
 exports.signup = signup;
+
+// #region 成员密码部分
+let password = {};
+// 修改密码
+password.modify = {
+  body: {
+    password: joi.string().required()
+  }
+};
+// 申请重置密码
+password.resetApplication = {
+  body: {
+    membername: joi.string().required()
+  }
+};
+password.reset = {
+  query: {
+    token: joi.string().required(),
+    password: joi.string().required()
+  }
+};
+// #endregion
+exports.password = password;

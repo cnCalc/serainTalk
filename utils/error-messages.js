@@ -10,5 +10,6 @@ module.exports = {
   ALREADY_MIGRATED: 'member already migrated.',
   TIME_OUT: 'data is invalid.',
   PERMISSION_DENIED: 'permission denied.',
-  SERVER_ERROR: 'server error.'
+  SERVER_ERROR: 'server error.',
+  NO_SUCH_MEMBER: 'no such member.'
 };

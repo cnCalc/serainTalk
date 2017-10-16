@@ -2,5 +2,6 @@
 
 module.exports = {
   discussion: require('./discussion'),
-  member: require('./member')
+  member: require('./member'),
+  object: require('./interfaceUtils')
 };

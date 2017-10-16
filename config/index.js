@@ -1,3 +1,5 @@
+'use strict';
+
 const dev = require('./dev');
 const procduct = require('./procduct');
 
@@ -5,10 +7,14 @@ let config = {
   database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
   pagesize: 10,
   jwtSecret: 'exampleSecret',
+  siteAddress: 'https://www.cncalc.org', // 末尾不要加'/'
   cookie: {
     renewTime: 86400000
   },
   tokenValidTime: 1000 * 60 * 10,
+  password: {
+    resetPasswordPage: 'https://www.cncalc.org/resetpassword.html'
+  },
   discussion: {
     category: {
       whiteList: 'loading'

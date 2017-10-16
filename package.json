@@ -3,6 +3,9 @@
   "description": "Next generation forum engine designed for cnCalc.org",
   "version": "1.0.0",
   "author": "ntzyz <ntzyz@live.cn>",
+  "contributors": [
+    "kasora <kasorasun@gmail.com>"
+  ],
   "private": true,
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js web/src/views/*.vue",
