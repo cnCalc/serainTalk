@@ -13,16 +13,16 @@
       div.input
         input(type="text", placeholder="搜索")
       div(v-if="typeof me._id === 'undefined'")
-        router-link(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
-        router-link(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
+        router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
+        router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
       div(v-else)
         div.avatar(@click="dropdownMenuTrigger")
           div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
           div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
         div.menu-wrapper: div.menu(v-bind:style="{ opacity: isMenuOpened ? 1 : 0, transform: `translateY(${ isMenuOpened ? '0px' : '-6px' })`, pointerEvents: isMenuOpened ? '' : 'none' }"): ul
-          li: router-link(:to="`/m/${me._id}`") 我的主页
-          li 个人设置
-          li: a(@click="signout") 退出登录
+          li.member: router-link(:to="`/m/${me._id}`") 我的主页
+          li.settings: a 个人设置
+          li.signout: a(@click="signout") 退出登录
 </template>
 
 <script>
@@ -35,7 +35,7 @@ export default {
         { href: 'https://github.com/cnCalc', external: true, text: 'GitHub' },
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ],
-      isMenuOpened: false,
+      isMenuOpened: false
     };
   },
   computed: {
@@ -109,9 +109,9 @@ div.st-header {
       line-height: 50px;
     }
 
-    div.right {
-      position: absolute;
-      right: 0;
+    a.right {
+      margin-right: 10px;
+      transition: color ease 0.3s;
     }
 
     div.links {
@@ -198,7 +198,7 @@ div.st-header {
     }
 
     div.menu {
-      $width: 120px;
+      $width: 150px;
       position: absolute;
       top: 8px;
       // left: -$width / 2 + $avatar_width / 2;
@@ -220,8 +220,8 @@ div.st-header {
     li {
       text-align: center;
       font-size: 0.9em;
-      height: 1.8em;
-      line-height: 1.8em;
+      height: 2.2em;
+      line-height: 2.2em;
 
       a {
         color: mix($theme_color, black, 80%);
@@ -235,6 +235,36 @@ div.st-header {
 
     li:hover {
       background-color: mix($theme_color, white, 10%);
+    }
+
+    li::before {
+      content: '';
+      display: inline-block;
+      background-size: cover;
+      width: 1em;
+      height: 1em;
+      margin-right: .5em;
+      vertical-align: baseline;
+    }
+
+    li::after {
+      content: '';
+      display: inline-block;
+      width: 0.5em;
+    }
+
+    li.member::before {
+      background-image: url(../assets/member.svg);
+    }
+
+    li.settings::before {
+      background-image: url(../assets/settings.svg);
+    }
+
+    li.signout::before {
+      background-image: url(../assets/signout.svg);
+      // Fix to baseline
+      margin-bottom: -2px;
     }
   }
 }
