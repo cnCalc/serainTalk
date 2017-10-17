@@ -1,19 +1,28 @@
 <template lang="pug">
   div.st-header
     div.container
-      h1: router-link(to="/" title="cnCalc") cnCalc.org
-      div.links.left
+      router-link(to="/" title="cnCalc"): h1 cnCalc.org
+      div.links
         template(v-for="link in links")
           a(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
           router-link(v-else :to="link.href" :title="link.text") {{ link.text }}
-      div.links.right
-        a.theme-switch(@click="switchTheme")
-          span(v-if="$store.state.theme !== 'dark'") 夜间模式
-          span(v-else) 正常模式
-        div.input
-          input(type="text", placeholder="搜索")
-        router-link(to="/signup" title="注册") 注册
-        router-link(to="/signin" title="登录") 登录
+      div(style="flex-grow: 1; flex-shrink: 1;")
+      a.theme-switch(@click="switchTheme")
+        span(v-if="$store.state.theme !== 'dark'") 夜间模式
+        span(v-else) 正常模式
+      div.input
+        input(type="text", placeholder="搜索")
+      div(v-if="typeof me._id === 'undefined'")
+        router-link(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
+        router-link(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
+      div(v-else)
+        div.avatar(@click="dropdownMenuTrigger")
+          div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
+          div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
+        div.menu-wrapper: div.menu(v-bind:style="{ opacity: isMenuOpened ? 1 : 0, transform: `translateY(${ isMenuOpened ? '0px' : '-6px' })`, pointerEvents: isMenuOpened ? '' : 'none' }"): ul
+          li: router-link(:to="`/m/${me._id}`") 我的主页
+          li 个人设置
+          li: a(@click="signout") 退出登录
 </template>
 
 <script>
@@ -25,12 +34,39 @@ export default {
         // { href: '/', external: false, text: '首页' },
         { href: 'https://github.com/cnCalc', external: true, text: 'GitHub' },
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
-      ]
+      ],
+      isMenuOpened: false,
     };
+  },
+  computed: {
+    path () {
+      return this.$route.fullPath;
+    },
+    me () {
+      return this.$store.state.me;
+    }
   },
   methods: {
     switchTheme () {
       this.$store.commit('switchTheme');
+    },
+    stopPropagation (e) {
+      e.stopPropagation();
+    },
+    dropdownMenuDeactivate (e) {
+      this.isMenuOpened = false;
+      document.removeEventListener('click', this.dropdownMenuDeactivate);
+    },
+    dropdownMenuActivate () {
+      this.isMenuOpened = true;
+      document.addEventListener('click', this.dropdownMenuDeactivate);
+    },
+    dropdownMenuTrigger (e) {
+      e.stopPropagation();
+      (this.isMenuOpened ? this.dropdownMenuDeactivate : this.dropdownMenuActivate)();
+    },
+    signout () {
+      // TODO
     }
   }
 };
@@ -60,6 +96,8 @@ div.st-header {
     padding-left: 15px;
     white-space: nowrap;
     position: relative;
+    display: flex;
+    align-items: center;
 
     h1 {
       display: inline-block;
@@ -76,7 +114,7 @@ div.st-header {
       right: 0;
     }
 
-    div.left.links {
+    div.links {
       margin-left: 7px;
     }
 
@@ -109,6 +147,7 @@ div.st-header {
 
     div.input {
       display: inline-block;
+      margin: 0 10px;
       input, input:active {
         border: none;
         outline-width: 0;
@@ -134,6 +173,69 @@ div.st-header {
         }
       }
     }
+
+    $avatar_width: 30px;
+    $avatar_height: 30px;
+    div.avatar {
+      width: $avatar_width;
+      height: $avatar_height;
+      border-radius: $avatar_width / 2;
+      overflow: hidden;
+      cursor: pointer;
+
+      .avatar-image {
+        width: $avatar_width;
+        height: $avatar_height;
+        background-size: cover;
+      }
+    }
+
+    div.menu-wrapper {
+      width: 0;
+      height: 0;
+      position: relative;
+      display: block;
+    }
+
+    div.menu {
+      $width: 120px;
+      position: absolute;
+      top: 8px;
+      // left: -$width / 2 + $avatar_width / 2;
+      right: -$avatar_width;
+      width: $width;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+
+      transition: all ease 0.2s;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+
+    li {
+      text-align: center;
+      font-size: 0.9em;
+      height: 1.8em;
+      line-height: 1.8em;
+
+      a {
+        color: mix($theme_color, black, 80%);
+        cursor: pointer;
+      }
+
+      a:hover {
+        color: mix($theme_color, black, 80%);
+      }
+    }
+
+    li:hover {
+      background-color: mix($theme_color, white, 10%);
+    }
   }
 }
 
@@ -141,7 +243,7 @@ div.st-header {
   div.st-header {
     background-color: $theme_color;
     box-shadow: 0 2px 2px $theme_color;
-    div.links {
+    a {
       color: $link_color;
     }
     a:hover {

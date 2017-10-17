@@ -30,8 +30,17 @@ function signin (param) {
   });
 }
 
+function fetchMe (param) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}${config.api.version}/member/me`)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchDiscussionsCreatedByMember,
-  signin
+  signin,
+  fetchMe
 };

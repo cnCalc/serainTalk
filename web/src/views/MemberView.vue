@@ -245,7 +245,7 @@ div.member-activity {
       }
 
       li.activity-item:not(:last-child) {
-        border-bottom: 2px solid rgba(grey, 0.3);
+        border-bottom: 1px solid rgba(grey, 0.3);
       }
     }
   }

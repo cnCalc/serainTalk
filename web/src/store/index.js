@@ -8,7 +8,7 @@ import actions from './actions';
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   state: {
     members: {},
     member: {
@@ -28,3 +28,5 @@ export default new Vuex.Store({
   mutations,
   actions,
 });
+
+export default store;
