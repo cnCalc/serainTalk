@@ -9,6 +9,8 @@ const dbTool = require('../../utils/database');
 const express = require('express');
 const validation = require('express-validation');
 const dataInterface = require('../../dataInterface');
+const { middleware } = require('../../utils');
+
 const router = express.Router();
 
 /**
@@ -56,18 +58,13 @@ async function getLatestDiscussionList (req, res) {
     ).toArray();
     resloveMembersInDiscussionArray(results, (err, members) => {
       if (err) {
-        errorHandler(err, errorMessages.DB_ERROR, 500, res);
-        return;
+        /* istanbul ignore next */
+        return errorHandler(err, errorMessages.DB_ERROR, 500, res);
       }
-      res.send({
-        status: 'ok',
-        discussions: results,
-        members
-      });
+      return res.send({ status: 'ok', discussions: results, members });
     });
   } catch (err) {
-    errorHandler(err, errorMessages.DB_ERROR, 500, res);
-    return;
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 }
 
@@ -98,13 +95,16 @@ function getDiscussionById (req, res) {
     }
   ]).toArray((err, results) => {
     if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-    } else if (results.length === 0) {
-      errorHandler(err, errorMessages.NOT_FOUND, 404, res);
-    } else {
-      let result = Object.assign({ status: 'ok' }, results[0]);
-      res.send(result);
+      /* istanbul ignore next */
+      return errorHandler(err, errorMessages.DB_ERROR, 500, res);
     }
+
+    if (results.length === 0) {
+      return errorHandler(err, errorMessages.NOT_FOUND, 404, res);
+    }
+
+    let result = Object.assign({ status: 'ok' }, results[0]);
+    res.send(result);
   });
 }
 
@@ -135,8 +135,8 @@ function getDiscussionPostsById (req, res) {
     } else {
       resloveMembersInDiscussion(results[0], (err, members) => {
         if (err) {
-          errorHandler(err, errorMessages.DB_ERROR, 500, res);
-          return;
+          /* istanbul ignore next */
+          return errorHandler(err, errorMessages.DB_ERROR, 500, res);
         }
         res.send({
           status: 'ok',
@@ -148,6 +148,14 @@ function getDiscussionPostsById (req, res) {
   });
 }
 
+/**
+ * [处理函数] 创建新讨论
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ * @returns
+ */
 let createDiscussion = async (req, res, next) => {
   let now = Date.now();
   let discussionInfo = {
@@ -170,22 +178,48 @@ let createDiscussion = async (req, res, next) => {
         encoding: req.body.content.encoding,
         content: req.body.content.content,
         allowScript: false,
-        votes: [],
-        index: 1
+        votes: []
       },
     ]
   };
   try {
-    let newDiscussion = await dbTool.discussion.insertOne(discussionInfo);
-    return res.status(201).send({ status: 'ok', discussion: newDiscussion });
+    await dbTool.discussion.insertOne(discussionInfo);
+    return res.status(201).send({ status: 'ok', discussion: discussionInfo });
   } catch (err) {
-    return errorHandler(null, err.message, 500, res);
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 };
 
+let createPost = async (req, res, next) => {
+  let postInfo = {
+    user: req.member._id,
+    createDate: Date.now(),
+    encoding: req.body.encoding,
+    content: req.body.content,
+    allowScript: false,
+    votes: [],
+    status: null
+  };
+
+  // 追加一个 Post
+  try {
+    await dbTool.discussion.updateOne(
+      { _id: ObjectID(req.params.id) },
+      { $push: { posts: postInfo }}
+    );
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+
+  return res.status(201).send({ status: 'ok', newPost: postInfo });
+};
+
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
-router.get('/:id', getDiscussionById);
 router.get('/:id/posts', getDiscussionPostsById);
-router.post('/', validation(dataInterface.discussion.createOne), createDiscussion);
+router.get('/:id', getDiscussionById);
+router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
+router.post('/', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
 
 module.exports = router;

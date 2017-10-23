@@ -37,6 +37,14 @@ describe('member part', () => {
     });
   });
 
+  it('signup twice.', async () => {
+    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+      await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+        testTools.member.checkMemberInfo(newMemberInfo);
+      });
+    });
+  });
+
   it('member login', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       let url = '/api/v1/member/login';

@@ -8,8 +8,10 @@ module.exports = {
   LACK_INFO: 'need more information.',
   MEMBER_EXIST: 'member is exist.',
   ALREADY_MIGRATED: 'member already migrated.',
-  TIME_OUT: 'data is invalid.',
+  TIME_OUT: 'time out.',
   PERMISSION_DENIED: 'permission denied.',
   SERVER_ERROR: 'server error.',
-  NO_SUCH_MEMBER: 'no such member.'
+  NO_SUCH_MEMBER: 'no such member.',
+  TOO_FREQUENT: 'Requests are too frequent.',
+  VALIDATION_ERROR: 'validation error.'
 };

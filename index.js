@@ -9,7 +9,7 @@ const app = express();
 if (process.env.DEV) {
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    next();
+    return next();
   });
 }
 
@@ -19,7 +19,7 @@ app.use(require('./utils/log'));
 
 app.use(async (req, res, next) => {
   await require('./utils/database').prepare();
-  next();
+  return next();
 });
 app.use(bodyParser.json());
 app.use('/api', require('./handlers'));

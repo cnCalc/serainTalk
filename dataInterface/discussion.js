@@ -7,9 +7,6 @@ const interfaceUtils = require('./interfaceUtils');
 exports = module.exports = {};
 
 let getLatestList = {
-  member: {
-    role: joi.string().valid(['admin', 'member']),
-  },
   query: {
     tag: joi.array().items(joi.string().valid(config.discussion.category.whiteList)),
     memberid: interfaceUtils.mongoId,
@@ -19,10 +16,7 @@ let getLatestList = {
 };
 exports.getLatestList = getLatestList;
 
-let createOne = {
-  member: {
-    _id: interfaceUtils.mongoId
-  },
+let createDiscussion = {
   body: {
     title: joi.string().required(),
     tags: joi.array().items(joi.string()).required(),
@@ -33,4 +27,15 @@ let createOne = {
     }
   }
 };
-exports.createOne = createOne;
+exports.createDiscussion = createDiscussion;
+
+let createPost = {
+  body: {
+    encoding: joi.string().required(),
+    content: joi.string().required()
+  },
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.createPost = createPost;

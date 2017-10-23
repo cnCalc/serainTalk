@@ -10,26 +10,24 @@ const errorHandler = require('./error-handler');
  * @param {Object.<String, Member>} members 保存用户信息的对象
  * @param {String} memberId 待获取信息的用户 ID
  */
-function fetchOneMember (db, members, memberId) {
-  return new Promise((resolve, reject) => {
-    if (members[memberId]) {
-      resolve();
-    } else {
-      db.collection('common_member').findOne({
-        _id: memberId
-      }, {
-        username: 1, uid: 1, avatar: 1,
-      }).then(data => {
+async function fetchOneMember (db, members, memberId) {
+  if (members[memberId]) {
+    return;
+  } else {
+    try {
+      let data = await db.collection('common_member').findOne(
+        { _id: memberId },
+        { username: 1, uid: 1, avatar: 1 }
+      );
+      if (data) {
         delete data._id;
         members[memberId] = data;
-        resolve();
-      }).catch(err => {
-        errorHandler(err);
-        members[memberId] = {};
-        resolve();
-      });
-    }
-  });
+      }
+    } catch (err) {
+      errorHandler(err);
+      members[memberId] = {};
+    };
+  }
 };
 
 /**

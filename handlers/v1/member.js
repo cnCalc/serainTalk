@@ -263,16 +263,7 @@ let signup = async (req, res) => {
   memberInfo.lastlogintime = Date.now();
 
   try {
-    let existMember = await dbTool.commonMember.findAndModify(
-      { username: memberInfo.username },
-      [['_id', 'asc']],
-      { $setOnInsert: memberInfo },
-      {
-        new: true,
-        upsert: true
-      }
-    );
-    console.log(existMember);
+    await dbTool.commonMember.findOne({ username: memberInfo.username });
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
