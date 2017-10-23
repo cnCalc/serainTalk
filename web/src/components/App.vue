@@ -15,6 +15,10 @@ export default {
   name: 'app',
   components: {
     NavBar, GlobalTitle
+  },
+  beforeMount () {
+    // reload session info.
+    this.$store.dispatch('fetchCurrentSigninedMemberInfo');
   }
 };
 </script>

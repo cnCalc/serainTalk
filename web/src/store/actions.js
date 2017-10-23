@@ -120,4 +120,13 @@ export default {
       return Promise.resolve(data.count);
     });
   },
+
+  /**
+   * 获取当前用户信息（仅根组件创建、即首次打开时）
+   */
+  fetchCurrentSigninedMemberInfo: state => {
+    return api.v1.member.fetchMe({}).then(data => {
+      state.commit('setCurrentSigninedMemberInfo', data.memberInfo);
+    });
+  }
 };
