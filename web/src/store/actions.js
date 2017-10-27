@@ -128,5 +128,5 @@ export default {
     return api.v1.member.fetchMe({}).then(data => {
       state.commit('setCurrentSigninedMemberInfo', data.memberInfo);
     });
-  }
+  },
 };

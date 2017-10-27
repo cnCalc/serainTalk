@@ -5,16 +5,20 @@
     div.container
       keep-alive: router-view(v-if="$route.meta.keepAlive")
       router-view(v-if="!$route.meta.keepAlive")
+    div.editor-wrapper
+      div.editor-container
+        editor
 </template>
 
 <script>
 import NavBar from './NavBar.vue';
 import GlobalTitle from './GlobalTitle.vue';
+import Editor from './Editor.vue';
 
 export default {
   name: 'app',
   components: {
-    NavBar, GlobalTitle
+    NavBar, GlobalTitle, Editor
   },
   beforeMount () {
     // reload session info.
@@ -44,6 +48,22 @@ body {
 
 #app.dark-theme {
   background: #222;
+}
+
+div.editor-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+div.editor-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 </style>

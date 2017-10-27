@@ -98,6 +98,13 @@ let mutations = {
    */
   setCurrentSigninedMemberInfo: (state, me) => {
     state.me = me;
+  },
+
+  /**
+   * 修改编辑器的显示模式
+   */
+  updateEditorDisplay: (state, display) => {
+    state.editor.display = display;
   }
 };
 

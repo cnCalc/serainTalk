@@ -23,6 +23,10 @@ const store = new Vuex.Store({
     busy: false,
     discussionMeta: {},
     discussionPosts: {},
+    editor: {
+      mode: 'CREATE_DISCUSSION',
+      display: 'none',
+    },
     autoLoadOnScroll: window.localStorage['experimental-auto-load-on-scroll'] === 'on',
   },
   mutations,
