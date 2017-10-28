@@ -25,7 +25,9 @@ const store = new Vuex.Store({
     discussionPosts: {},
     editor: {
       mode: 'CREATE_DISCUSSION',
+      discussionId: null,
       display: 'none',
+      index: 0,
     },
     autoLoadOnScroll: window.localStorage['experimental-auto-load-on-scroll'] === 'on',
   },

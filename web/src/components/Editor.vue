@@ -1,21 +1,37 @@
 <template lang="pug">
-  div.editor(v-show="display !== 'none'")
+  div.editor
     div.resize
     div.mode
       span(v-if="mode === 'CREATE_DISCUSSION'") 创建新讨论
-    div.row
+      span(v-if="mode === 'REPLY_TO_INDEX'") 回复：{{ $store.state.discussionMeta.title }} # {{ $store.state.editor.index }}
+    div.row(v-if="mode === 'CREATE_DISCUSSION'")
       input(placeholder="输入标题")
       select
         option(v-for="category in categories") {{ category.name }}
     div.textarea
       textarea(placeholder="说些什么吧")
-      div.preview(v-html="preview === '' ? '说些什么吧' : preview")
+      div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview")
     div.footer
       button 提交
       button(@click="hide") 隐藏窗口
 </template>
 
 <script>
+const app = document.querySelector('div#app');
+const hljs = window.hljs;
+const md = window.markdownit({
+  html: false,
+  highlight (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value;
+      } catch (__) {}
+    }
+
+    return '';
+  }
+});
+
 export default {
   name: 'editor',
   data () {
@@ -27,9 +43,11 @@ export default {
     const resize = document.querySelector('div.resize');
     const editor = document.querySelector('div.editor');
     const textarea = document.querySelector('textarea');
-    const md = window.markdownit({ html: false });
+    const app = document.querySelector('#app');
     const dragStep = e => {
-      editor.style.top = `${Math.max(e.clientY - 6, 50)}px`;
+      const height = Math.max(window.innerHeight - Math.max(e.clientY - 6, 50), 180);
+      editor.style.top = `${window.innerHeight - height}px`;
+      app.style.marginBottom = `${height}px`;
     }
     const dragStop = e => {
       document.removeEventListener('mousemove', dragStep);
@@ -46,13 +64,31 @@ export default {
     })
     textarea.addEventListener('keyup', e => {
       this.preview = md.render(e.target.value);
-    })    
+    })
   },
   computed: {
     mode () { return this.$store.state.editor.mode; },
     display () { return this.$store.state.editor.display; },
     categories () {
       return this.$store.state.categoriesGroup.reduce((a, b) => [...a, ...b.items], []).filter(c => c.type === 'category');
+    }
+  },
+  watch: {
+    display (val) {
+      const editor = document.querySelector('div.editor');
+      const app = document.querySelector('#app');
+
+      editor.style.transition = 'all ease 0.2s';
+      setTimeout(() => {
+        editor.style.transition = '';
+      }, 200);
+
+      if (val === 'none') {
+        app.style.marginBottom = '';
+        editor.style.top = '100vh';
+      } else {
+        app.style.marginBottom = editor.style.top = '50vh';
+      }
     }
   },
   methods: {
@@ -69,11 +105,12 @@ export default {
 
 <style lang="scss">
 @import '../styles/global.scss';
+@import '../styles/post-content.scss';
 
 div.editor {
   position: absolute;
   bottom: 0;
-  top: 50vh;
+  top: 100vh;
   left: 0;
   right: 0;
   background: #eee;
@@ -97,6 +134,7 @@ div.editor {
   div.mode {
     font-size: 0.9em;
     color: $theme_color;
+    margin: 4px 0;
   }
 
   div.row {

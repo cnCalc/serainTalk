@@ -22,7 +22,7 @@ export default {
   },
   beforeMount () {
     // reload session info.
-    this.$store.dispatch('fetchCurrentSigninedMemberInfo');
+    this.$store.dispatch('fetchCurrentSigninedMemberInfo').catch(e => {});
   }
 };
 </script>

@@ -22,7 +22,7 @@
               //-   button.button.cheer 0
               //-   button.button.emmmm 0
               //- div.button-right-container
-              button.button 回复
+              button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.index)") 回复
               button.button 复制链接
               button.button 编辑
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
@@ -104,6 +104,10 @@ export default {
       // 变更右侧边栏的固定模式
       this.fixedSlideBar = window.scrollY > 120 + 15;
     },
+    activateEditor (mode, id, idx) {
+      this.$store.commit('updateEditorMode', mode, id, idx);
+      this.$store.commit('updateEditorDisplay', 'show');
+    }
   },
   computed: {
     discussionMeta () {
@@ -318,18 +322,6 @@ div.discussion-view {
 }
 
 .light-theme div.discussion-view {
-  blockquote {
-    background-color: mix($theme_color, white, 10%);
-  }
-  div.discussion-post-container {
-    border-bottom: mix($theme_color, white, 10%) solid 1px;
-  }
-  td {
-    border: 1px solid mix($theme_color, white, 30%);
-  }
-  a {
-    color: $theme_color;
-  }
   li.highlight {
     background-color: rgba(255, 255, 0, 0.15);
   }
@@ -340,22 +332,13 @@ div.discussion-view {
   button.button:hover {
     background-color: mix($theme_color, white, 20%);
   }
+  div.discussion-post-container {
+    border-bottom: mix($theme_color, white, 10%) solid 1px;
+  }
 }
 
 .dark-theme div.discussion-view {
-  color: lightgray;
-  blockquote {
-    background-color: #111;
-  }
-  div.discussion-post-container {
-    border-bottom:  solid 1px #444;
-  }
-  td {
-    border: 1px solid #444;
-  }
-  a {
-    color: white;
-  }
+  color: lightgrey;
   li.highlight {
     background-color: rgba(255, 255, 0, 0.1);
   }
@@ -365,6 +348,9 @@ div.discussion-view {
   }
   button.button:hover {
     background-color: #555;
+  }
+  div.discussion-post-container {
+    border-bottom:  solid 1px #444;
   }
 }
 </style>

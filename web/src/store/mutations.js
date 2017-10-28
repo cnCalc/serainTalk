@@ -105,6 +105,15 @@ let mutations = {
    */
   updateEditorDisplay: (state, display) => {
     state.editor.display = display;
+  },
+
+  /**
+   * 修改编辑器的模式
+   */
+  updateEditorMode: (state, mode, discussionId, index) => {
+    state.editor.mode = mode;
+    state.editor.discussionId = discussionId;
+    state.editor.index = index;
   }
 };
 
