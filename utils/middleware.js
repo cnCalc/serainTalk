@@ -6,6 +6,7 @@ const config = require('./../config');
 const errorHandler = require('./error-handler');
 const errorMessages = require('./error-messages');
 const dbTool = require('../utils/database');
+const isProd = process.env.NODE_ENV === 'PRODUCTION';
 
 exports = module.exports = {};
 
@@ -93,6 +94,11 @@ exports.verifyMember = verifyMember;
  * @returns
  */
 let checkDiscussionFreq = async (req, res, next) => {
+  if (!isProd) {
+    // 开发环境，不做检查。
+    return next();
+  }
+
   // 没登录没法查频率
   if (!req.member._id) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
@@ -120,6 +126,11 @@ exports.checkDiscussionFreq = checkDiscussionFreq;
  * @returns
  */
 let checkPostFreq = async (req, res, next) => {
+  if (!isProd) {
+    // 开发环境，不做检查。
+    return next();
+  }
+
   // 没登录没法查频率
   if (!req.member._id) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);

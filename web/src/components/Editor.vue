@@ -5,18 +5,20 @@
       span(v-if="mode === 'CREATE_DISCUSSION'") 创建新讨论
       span(v-if="mode === 'REPLY_TO_INDEX'") 回复：{{ $store.state.discussionMeta.title }} # {{ $store.state.editor.index }}
     div.row(v-if="mode === 'CREATE_DISCUSSION'")
-      input(placeholder="输入标题")
-      select
-        option(v-for="category in categories") {{ category.name }}
+      input(placeholder="输入标题", v-model="title")
+      select(v-model="category")
+        option(v-for="category in categories" :value="category.name") {{ category.name }}
     div.textarea
-      textarea(placeholder="说些什么吧")
+      textarea(placeholder="说些什么吧", v-model="content")
       div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview")
     div.footer
-      button 提交
+      button(@click="submit") 提交
       button(@click="hide") 隐藏窗口
 </template>
 
 <script>
+import api from '../api';
+
 const app = document.querySelector('div#app');
 const hljs = window.hljs;
 const md = window.markdownit({
@@ -37,6 +39,9 @@ export default {
   data () {
     return {
       preview: '',
+      title: '',
+      category: '',
+      content: '',
     }
   },
   mounted () {
@@ -97,6 +102,29 @@ export default {
     },
     hide () {
       this.$store.commit('updateEditorDisplay', 'none');
+    },
+    createDiscussion () {
+      const payload = {
+        title: this.title,
+        category: this.category,
+        content: {
+          content: this.content,
+          encoding: 'markdown',
+        },
+        tags: [],
+      }
+      api.v1.discussion.createDiscussion({ discussion: payload }).then(() => {
+        // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
+        // 此处先直接将浏览器刷新，不管后续了
+        window.location.href = window.location.href;
+      });
+    },
+    submit () {
+      switch (this.mode) {
+        case 'CREATE_DISCUSSION':
+          this.createDiscussion();
+          break;
+      }
     }
   }
 };

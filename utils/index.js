@@ -13,4 +13,5 @@ module.exports = {
   createRandomString: require('./random-string'),
   datacheck: require('./data-check'),
   cookie: require('./cookie'),
+  renderer: require('./renderer'),
 };

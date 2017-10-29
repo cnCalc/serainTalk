@@ -9,7 +9,8 @@ const dbTool = require('../../utils/database');
 const express = require('express');
 const validation = require('express-validation');
 const dataInterface = require('../../dataInterface');
-const { middleware } = require('../../utils');
+const utils = require('../../utils');
+const { middleware } = utils;
 
 const router = express.Router();
 
@@ -41,7 +42,7 @@ async function getLatestDiscussionList (req, res) {
     query.creater = { $eq: req.query.memberid };
   }
   let pagesize = req.query.pagesize || config.pagesize;
-  let offset = req.query.page - 1 || 0;
+  let offset = req.query.page - 1 || 0; console.log({ 'req.query.pagesize': req.query.pagesize, 'config.pagesize': config.pagesize, pagesize: req.query.pagesize || config.pagesize });
 
   try {
     let results = await dbTool.discussion.find(
@@ -140,7 +141,7 @@ function getDiscussionPostsById (req, res) {
         }
         res.send({
           status: 'ok',
-          posts: results[0].posts,
+          posts: utils.renderer.renderPosts(results[0].posts),
           members
         });
       });
@@ -175,9 +176,9 @@ let createDiscussion = async (req, res, next) => {
       {
         user: req.member._id,
         createDate: now,
-        encoding: req.body.content.encoding,
+        encoding: req.body.content.encoding,  // TODO: 这里需要检查一下用户所在组，管理员以上才可以指定 encoding，否则只可以为 markdown。
         content: req.body.content.content,
-        allowScript: false,
+        allowScript: false,                   // TODO: 同上
         votes: []
       },
     ]

@@ -7,7 +7,7 @@ exports = module.exports = {};
 let mongoId = joi.string().hex().length(24);
 exports.mongoId = mongoId;
 
-let pagesize = joi.number().default(20);
+let pagesize = joi.number().default(10);
 exports.pagesize = pagesize;
 
 let offset = joi.number().default(0);
