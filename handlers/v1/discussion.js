@@ -42,7 +42,7 @@ async function getLatestDiscussionList (req, res) {
     query.creater = { $eq: req.query.memberid };
   }
   let pagesize = req.query.pagesize || config.pagesize;
-  let offset = req.query.page - 1 || 0; console.log({ 'req.query.pagesize': req.query.pagesize, 'config.pagesize': config.pagesize, pagesize: req.query.pagesize || config.pagesize });
+  let offset = req.query.page - 1 || 0;
 
   try {
     let results = await dbTool.discussion.find(

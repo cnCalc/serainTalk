@@ -26,13 +26,17 @@ const md = window.markdownit({
   highlight (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(lang, str).value;
+        return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
       } catch (__) {}
     }
 
     return '';
   }
 });
+
+function addSpanEachLine (html) {
+  return html.split('\n').map(l => `<span class="__line">${l}</span>`).join('\n');
+}
 
 export default {
   name: 'editor',

@@ -6,12 +6,16 @@ const md = mdit({
   highlight (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(lang, str).value;
+        return addSpanEachLine(hljs.highlight(lang, str).value);
       } catch (__) {}
     }
     return '';
   }
 });
+
+function addSpanEachLine (html) {
+  return html.split('\n').map(l => `<span class="__line">${l}</span>`).join('\n');
+}
 
 function renderPosts (posts) {
   if (!posts instanceof Array) {

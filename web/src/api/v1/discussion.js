@@ -29,7 +29,6 @@ function fetchDiscussionPostsById (param) {
           post.index = ((param.page || 1) - 1) * config.api.pagesize + idx + 1;
         });
       }
-      console.log(data);
       resolve(data);
     })
     .catch(error => reject(error));

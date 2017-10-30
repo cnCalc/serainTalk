@@ -54,3 +54,25 @@ a:hover {
   opacity: 0;
 }
 
+// scroll bar
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+::-webkit-scrollbar-thumb {
+  background: lightgrey;
+  border: 0px none #fff;
+  transition: all ease 0.1s;
+  cursor: pointer;
+  border-radius: 7px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: darkgray;
+}
+::-webkit-scrollbar-thumb:active {
+  background: gray;
+}

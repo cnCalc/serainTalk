@@ -29,7 +29,6 @@ div.post-content {
     border-radius: 5px;
     font-size: 0.95em;
     line-height: 1.5em;
-    color: #999;
     br {
       margin: 0em;
     }
@@ -47,10 +46,14 @@ div.post-content {
     border-spacing: 0;
     border-collapse: collapse;
   }
-  td {
+  td, th {
     border-spacing: 0px;
     padding: 5px;
+    min-width: 60px;
+  }
+  th {
     text-align: center;
+    font-weight: 700;    
   }
   a {
     transition: all linear 0.3s;
@@ -58,15 +61,33 @@ div.post-content {
   a:hover {
     text-decoration: underline;
   }
-  pre.code {
+  pre {
     font-family: Consolas, Courier New, Courier, monospace;
     font-size: 0.9em;
-    line-height: 0.8em;
-    padding: 1rem 1rem 0.3rem 1rem;
+    line-height: 1.5em;
+    padding: 1rem 1rem 0.3rem 0rem;
     border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.021);
     position: relative;
     overflow-x: scroll;
+    counter-reset: line;
+    br { font-size: 0; }
+  }
+  pre.code {
+    // Codes from Discuz
+    padding: 1rem 1rem 0.3rem 1rem;
+  }
+  /** line numbers **/
+  pre span.__line:before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    border-right: 1px solid #ddd;
+    width: 20px;
+    text-align: right;
+    padding: 0 .5em;
+    margin-right: .5em;
+    color: #888
   }
 }
 
@@ -75,7 +96,7 @@ div.post-content {
   blockquote {
     background-color: #111;
   }
-  td {
+  td, th {
     border: 1px solid #444;
   }
   a {
@@ -86,10 +107,14 @@ div.post-content {
 
 .light-theme div.post-content {
   blockquote {
-    background-color: mix($theme_color, white, 10%);
+    background-color: mix($theme_color, white, 8%);
+    color: #777;
   }
-  td {
-    border: 1px solid mix($theme_color, white, 30%);
+  td, th {
+    border: 1px solid mix($theme_color, white, 20%);
+  }
+  tr:nth-child(2n) {
+    background-color: mix($theme_color, white, 8%);
   }
   a {
     color: $theme_color;

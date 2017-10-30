@@ -13,7 +13,7 @@
               span.discussion-post-index {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content")
             footer.discussion-post-info
-              div.discussion-post-date 最后编辑于 {{ new Date(1000 * post.createDate).toLocaleDateString() }}
+              div.discussion-post-date 最后编辑于 {{ new Date(post.createDate).toLocaleDateString() }}
               div.button-left-container
               //-   button.button.vote-up 0
               //-   button.button.vote-down 0
@@ -51,12 +51,13 @@ export default {
   },
   data () {
     return {
-      pageSize: config.api.pagesize,
+      pagesize: config.api.pagesize,
       minPage: null,  // 当前已加载的最小页数，仅在滚动自加载模式中有效
       maxPage: null,  // 当前已加载的最大页数，仅在滚动自加载模式中有效
       currentPage: null,
       fixedSlideBar: false,
       pagesCount: 0,  // 总页数
+      pageLoaded: {}, // 已经加载了的页面
     };
   },
   methods: {
@@ -74,23 +75,12 @@ export default {
         this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.minPage })
         .then(() => {
           window.scrollTo(0, document.body.clientHeight - diff);
-          // this.$nextTick(() => {
-          //   window.scrollTo(0, document.body.clientHeight - diff);
-          //   // this.$nextTick(() => {
-          //   //   if (window.scrollY < config.discussionView.boundingThreshold.top / 2) {
-          //   //     window.scrollTo(0, config.discussionView.boundingThreshold.top / 2);
-          //   //   }
-          //   // });
-          // })
         });
       }
     },
     loadPage (page) {
       scrollToTop(1000);
       this.$router.push({ path: `/d/${this.$route.params.discussionId}/${page}` });
-      // this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page }).then(() => {
-      //   this.currentPage = page;
-      // });
     },
     scrollWatcher () {
       if (this.$store.state.autoLoadOnScroll) {
@@ -114,7 +104,9 @@ export default {
       return this.$store.state.discussionMeta;
     },
     discussionPosts () {
-      return this.$store.state.discussionPosts;
+      return this.$store.state.autoLoadOnScroll
+       ? this.$store.state.discussionPosts
+       : this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize);
     },
     members () {
       return this.$store.state.members;
@@ -130,9 +122,15 @@ export default {
     },
     '$route': function (route) {
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
-      // this.$options.asyncData({ store: this.$store, route });
-      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, overwrite: true, page: route.params.page }).then(() => {
-        this.currentPage = route.params.page || 1;
+      
+      if (this.pageLoaded[Number(route.params.page) || 1]) {
+        this.currentPage = Number(route.params.page) || 1;
+        return;
+      }
+
+      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: route.params.page }).then(() => {
+        this.currentPage = Number(route.params.page) || 1;
+        this.pageLoaded[this.currentPage] = true;
       });
     }
   },
@@ -140,13 +138,14 @@ export default {
     window.addEventListener('scroll', this.scrollWatcher);
     this.maxPage = indexToPage(this.$route.params.index) || 1;
     this.minPage = indexToPage(this.$route.params.index) || 1;
-    this.currentPage = this.$route.params.page || 1;
+    this.currentPage = Number(this.$route.params.page) || 1;
+    this.pageLoaded[this.currentPage] = true;
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
   asyncData ({ store, route }) {
-    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: route.params.page || 1 }).then(() => {
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: Number(route.params.page) || 1 }).then(() => {
       if (window.location.hash) {
         let el = document.querySelector(window.location.hash);
         el.classList.add('highlight');
