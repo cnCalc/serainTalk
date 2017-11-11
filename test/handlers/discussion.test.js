@@ -9,7 +9,7 @@ let agent = supertest.agent(require('../../index'));
 
 describe('discussion part', async () => {
   it('add a discussion', async () => {
-    await testTools.member.createOneMember(agent, async (newDiscussionInfo) => {
+    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
     });
   });
 
@@ -52,7 +52,7 @@ describe('discussion part', async () => {
           .expect(201);
 
         // FIXME 检查数据是否成功添加
-
+        console.log(postRes);
         // 恢复发帖频率限制
         config.discussion.freqLimit = tempLimit;
         return;
@@ -75,4 +75,19 @@ describe('discussion part', async () => {
       });
     });
   });
+
+  // it('add votes', async () => {
+  //   await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+  //     await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+  //       let voteUrl = `/api/v1/discussions/${newMemberInfo.id}/post/1`;
+  //       let voteInfo = {
+  //         vote: 'up'
+  //       };
+  //       let voteRes = await agent
+  //         .post(voteUrl)
+  //         .send(voteInfo);
+  //       console.log(voteRes);
+  //     });
+  //   });
+  // });
 });

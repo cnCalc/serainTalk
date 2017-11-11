@@ -217,9 +217,20 @@ let createPost = async (req, res, next) => {
   return res.status(201).send({ status: 'ok', newPost: postInfo });
 };
 
+let votePost = async (req, res, next) => {
+  let _disId = ObjectID(req.params.id);
+  let postInfo = await dbTool.discussion.aggregate(
+    { $match: { '_id': _disId }},
+    { $unwind: 'posts' },
+    { $sort: { createDate: 1, user: 1 }}
+  ).toArray();
+  console.log(postInfo);
+};
+
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 router.get('/:id/posts', getDiscussionPostsById);
 router.get('/:id', getDiscussionById);
+router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
 router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
 router.post('/', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
 

@@ -19,6 +19,16 @@ let config = {
     category: {
       whiteList: 'loading'
     },
+    post: {
+      vote: [
+        'up',
+        'down',
+        'laugh',
+        'hooray',
+        'confused',
+        'heart'
+      ]
+    },
     freqLimit: 1000 * 60 * 3, // 发帖间隔
     reset: 'loading'
   },

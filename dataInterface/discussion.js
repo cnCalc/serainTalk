@@ -39,3 +39,14 @@ let createPost = {
   }
 };
 exports.createPost = createPost;
+
+let votePost = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+    postIndex: joi.number().min(1).required()
+  },
+  body: {
+    vote: joi.string().allow(config.discussion.post.vote).required()
+  }
+};
+exports.votePost = votePost;
