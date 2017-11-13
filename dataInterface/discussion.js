@@ -32,7 +32,11 @@ exports.createDiscussion = createDiscussion;
 let createPost = {
   body: {
     encoding: joi.string().required(),
-    content: joi.string().required()
+    content: joi.string().required(),
+    replyTo: {
+      type: joi.string().allow(['index']).required(),
+      value: joi.number().required()
+    }
   },
   params: {
     id: interfaceUtils.mongoId.required()

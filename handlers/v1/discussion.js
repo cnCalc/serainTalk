@@ -179,6 +179,7 @@ let createDiscussion = async (req, res, next) => {
         encoding: req.body.content.encoding,  // TODO: 这里需要检查一下用户所在组，管理员以上才可以指定 encoding，否则只可以为 markdown。
         content: req.body.content.content,
         allowScript: false,                   // TODO: 同上
+        index: 1,
         votes: []
       },
     ]
@@ -193,28 +194,54 @@ let createDiscussion = async (req, res, next) => {
 };
 
 let createPost = async (req, res, next) => {
+  let _id = ObjectID(req.params.id);
+  let now = Date.now();
+
   let postInfo = {
     user: req.member._id,
-    createDate: Date.now(),
+    createDate: now,
     encoding: req.body.encoding,
     content: req.body.content,
     allowScript: false,
     votes: [],
-    status: null
+    status: null,
   };
+  if (req.body.replyTo) postInfo.replyTo = req.body.replyTo;
 
   // 追加一个 Post
   try {
     await dbTool.discussion.updateOne(
-      { _id: ObjectID(req.params.id) },
+      { _id: _id },
       { $push: { posts: postInfo }}
     );
+
+    // 动态生成楼层号
+    let discussionInfo = await dbTool.discussion.findOne({
+      _id: _id
+    });
+    let postList = discussionInfo.posts;
+    for (let i = postList.length - 1; i >= 0; i--) {
+      if (postList[i].index === undefined) {
+        let updateInfo = { $set: {}};
+        updateInfo.$set[`posts.${i}.index`] = i + 1;
+        await dbTool.discussion.update(
+          { _id: _id },
+          updateInfo
+        );
+
+        // 为返回结果添上楼层号
+        // 筛选添加的楼层
+        if (postList[i].createDate === now && postList[i].user.toString() === req.member._id.toString()) {
+          postInfo.index = i + 1;
+        }
+      } else break;
+    }
+
+    return res.status(201).send({ status: 'ok', newPost: postInfo });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
-
-  return res.status(201).send({ status: 'ok', newPost: postInfo });
 };
 
 let votePost = async (req, res, next) => {

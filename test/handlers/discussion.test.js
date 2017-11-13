@@ -10,6 +10,9 @@ let agent = supertest.agent(require('../../index'));
 describe('discussion part', async () => {
   it('add a discussion', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+        expect(newDisscussionInfo.posts[0].index).to.be.equal(1);
+      });
     });
   });
 
@@ -39,17 +42,20 @@ describe('discussion part', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
-        let postPayload = {
-          encoding: 'html',
-          content: 'hello test'
-        };
-        let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
-        let postRes = await agent.post(url)
-          .send(postPayload)
-          .expect(201);
+          let postPayload = {
+            encoding: 'html',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let postRes = await agent.post(url)
+            .send(postPayload)
+            .expect(201);
 
-        // FIXME 检查数据是否成功添加
-        console.log(postRes);
+          // 检查是否有 index 字段
+          let postInfo = postRes.body.newPost;
+          expect(postInfo.index).to.be.ok;
+          // FIXME 检查数据是否成功添加
+          console.log(postRes);
         });
       });
     });
@@ -71,6 +77,30 @@ describe('discussion part', async () => {
     });
   });
 
+  it('reply post by index.', async () => {
+    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+        await testTools.discussion.closeFreqLimit(async () => {
+          let postPayload = {
+            encoding: 'html',
+            content: 'hello test',
+            replyTo: {
+              type: 'index',
+              value: 1
+            }
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let postRes = await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // 检查是否有 replyTo 字段
+          let postInfo = postRes.body.newPost;
+          expect(postInfo.replyTo).to.be.ok;
+        });
+      });
+    });
+  });
   // it('add votes', async () => {
   //   await testTools.member.createOneMember(agent, async (newMemberInfo) => {
   //     await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
