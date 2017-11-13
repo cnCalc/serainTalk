@@ -19,6 +19,17 @@ export default {
   watch: {
     content () {
       this.html = this.content;
+    },
+    html () {
+      // 让 KaTeX 自动渲染 DOM 中的公式
+      this.$nextTick(() => {
+        try {
+          renderMathInElement(document.body);
+        } catch (e) {
+          console.log(e);
+          // 渲染出错，大概率是用户打了一半没打完，直接忽略即可
+        }
+      });
     }
   },
   methods: {

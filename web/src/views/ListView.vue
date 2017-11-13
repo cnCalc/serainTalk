@@ -61,7 +61,8 @@ export default {
       }
     },
     showEditor () {
-      this.$store.commit('updateEditorDisplay', 'show')
+      this.$store.commit('updateEditorDisplay', 'show');
+      this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
     },
     flushGlobalTitles () {
       if (!this.slug) {

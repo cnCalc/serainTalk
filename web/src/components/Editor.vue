@@ -3,7 +3,7 @@
     div.resize
     div.mode
       span(v-if="mode === 'CREATE_DISCUSSION'") 创建新讨论
-      span(v-if="mode === 'REPLY_TO_INDEX'") 回复：{{ $store.state.discussionMeta.title }} # {{ $store.state.editor.index }}
+      span(v-if="mode === 'REPLY_TO_INDEX'") 回复：{{ $store.state.editor.discussionTitle }} # {{ $store.state.editor.index }}
     div.row(v-if="mode === 'CREATE_DISCUSSION'")
       input(placeholder="输入标题", v-model="title")
       select(v-model="category")
@@ -30,7 +30,7 @@ const md = window.markdownit({
       } catch (__) {}
     }
 
-    return '';
+    return addSpanEachLine(str.trim());;
   }
 });
 
@@ -69,10 +69,10 @@ export default {
       document.addEventListener('mouseup', dragStop);
     });
     textarea.addEventListener('change', e => {
-      this.preview = md.render(e.target.value);
+      this.updatePreview();
     })
     textarea.addEventListener('keyup', e => {
-      this.preview = md.render(e.target.value);
+      this.updatePreview();
     })
   },
   computed: {
@@ -97,10 +97,45 @@ export default {
         editor.style.top = '100vh';
       } else {
         app.style.marginBottom = editor.style.top = '50vh';
+
+        const editorState = this.$store.state.editor;
+        const members = this.$store.state.members;
+
+        if (editorState.index) {
+          // 回复，加入默认@
+          this.content = `@${editorState.memberId}#${editorState.discussionId}#${editorState.index}\n`;
+          this.updatePreview();
+        }
       }
     }
   },
   methods: {
+    updatePreview () {
+      const editorState = this.$store.state.editor;
+      const members = this.$store.state.members;
+      const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+      let preview = '';
+
+      // 渲染 Markdown
+      preview = md.render(this.content);
+
+      // 将开头的回复代码渲染成一个 span
+      if (this.content.match(replyReg)) {
+        const match = this.content.match(replyReg);
+        preview = preview.replace(`@${match[1]}#${match[2]}#${match[3]}`, `<span class="reply-to">${members[match[1]].username}</span>`)
+      }
+
+      this.preview = preview;
+
+      // 让 KaTeX 自动渲染 DOM 中的公式
+      this.$nextTick(() => {
+        try {
+          renderMathInElement(document.body);
+        } catch (e) {
+          // 渲染出错，大概率是用户打了一半没打完，直接忽略即可
+        }
+      });
+    },
     maximum () {
       document.querySelector('div.editor').style.top = '50px';
     },
