@@ -3,6 +3,8 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const validation = require('express-validation');
+const errorHandler = require('../../utils/error-handler');
 
 const app = express();
 
@@ -34,6 +36,20 @@ app.use(express.static('web'));
 
 app.use((req, res) => {
   res.sendFile('./web/index.html', { root: __dirname });
+});
+
+// 请求错误处理
+app.use((err, req, res, next) => {
+  return errorHandler(err, err.message, 400, res);
+});
+
+// 数据校验禁止附带多余字段
+validation.options({
+  allowUnknownHeaders: false,
+  allowUnknownBody: false,
+  allowUnknownQuery: false,
+  allowUnknownParams: false,
+  allowUnknownCookies: false
 });
 
 app.listen(process.env.PORT || 8000);
