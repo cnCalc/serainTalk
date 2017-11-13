@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import api from '../api';
+
 export default {
   name: 'nav-bar',
   data () {
@@ -66,7 +68,10 @@ export default {
       (this.isMenuOpened ? this.dropdownMenuDeactivate : this.dropdownMenuActivate)();
     },
     signout () {
-      // TODO
+      api.v1.member.signout().then(() => {
+        // refresh
+        window.location.href = window.location.href;
+      });
     }
   }
 };

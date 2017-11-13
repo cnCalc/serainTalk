@@ -22,8 +22,8 @@
               //-   button.button.cheer 0
               //-   button.button.emmmm 0
               //- div.button-right-container
-              button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.index)") 回复
-              button.button 复制链接
+              button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
+              button.button(@click="copyLink(post.index)") 复制链接
               button.button 编辑
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
@@ -39,6 +39,7 @@
 import LoadingIcon from '../components/LoadingIcon.vue';
 import PostContent from '../components/PostContent.vue';
 import Pagination from '../components/Pagination.vue';
+import copyToClipboard from '../utils/clipboard';
 
 import config from '../config';
 import { indexToPage } from '../utils/filters';
@@ -61,7 +62,7 @@ export default {
     };
   },
   methods: {
-    indexToPage, scrollToTop,
+    indexToPage, scrollToTop, copyToClipboard,
     loadNextPage () {
       if (this.maxPage < indexToPage(this.discussionMeta.postsCount) && !this.busy) {
         this.maxPage++;
@@ -94,9 +95,12 @@ export default {
       // 变更右侧边栏的固定模式
       this.fixedSlideBar = window.scrollY > 120 + 15;
     },
-    activateEditor (mode, id, idx) {
-      this.$store.commit('updateEditorMode', mode, id, idx);
+    activateEditor (mode, discussionId, memberId, index) {
+      this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
+    },
+    copyLink(idx) {
+      copyToClipboard(`${window.location.origin}/d/${this.discussionMeta._id}#index-${idx}`);
     }
   },
   computed: {
@@ -213,12 +217,13 @@ div.discussion-view {
     transition: all ease 0.5s;
 
     li {
+      transition: background ease 0.5s;
       div.discussion-post-container {
         display: flex;
         padding: 15px 0 15px 15px;
       }
 
-      $avatar-size: 50px;
+      $avatar-size: 60px;
       a.discussion-post-avater {
         width: $avatar-size;
         height: $avatar-size;
@@ -252,7 +257,7 @@ div.discussion-view {
         flex-grow: 1;
         flex-shrink: 1;
         margin-left: 15px;
-        padding: 5px;
+        // padding: 5px;
 
         span.discussion-post-member {
           font-size: 0.9em;

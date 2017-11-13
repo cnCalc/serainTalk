@@ -30,6 +30,14 @@ function signin (param) {
   });
 }
 
+function signout (param) {
+  return new Promise((resolve, reject) => {
+    axios.delete(`${config.api.url}${config.api.version}/member/login`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 function fetchMe (param) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}${config.api.version}/member/me`)
@@ -41,6 +49,6 @@ function fetchMe (param) {
 export default {
   fetchMemberInfoById,
   fetchDiscussionsCreatedByMember,
-  signin,
+  signin, signout,
   fetchMe
 };

@@ -1,6 +1,6 @@
 <template lang="pug">
   div.signin-view
-    div.signin-box
+    div.signin-box: form(v-on:submit.prevent="doSignin")
       h2 登录 
       label.block(for="name") 用户名或电子邮件地址
       input(id="name", placeholder="", type="text", v-model="credentials.name")
@@ -37,6 +37,7 @@ export default {
     async doSignin () {
       api.v1.member.signin(this.credentials).then(response => {
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
+        this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
       }).catch(e => {
         alert('密码错误');
       });

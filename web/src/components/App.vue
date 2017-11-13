@@ -1,5 +1,7 @@
 <template lang="pug">
   div#app(v-bind:class="{ 'dark-theme': $store.state.theme === 'dark', 'light-theme': $store.state.theme === 'light' }")
+    link(v-if="$store.state.theme === 'light'" href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-light.min.css" rel="stylesheet")
+    link(v-else href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-dark.min.css" rel="stylesheet")
     nav-bar
     global-title
     div.container

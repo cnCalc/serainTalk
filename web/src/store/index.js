@@ -26,6 +26,7 @@ const store = new Vuex.Store({
     editor: {
       mode: 'CREATE_DISCUSSION',
       discussionId: null,
+      memberId: null,
       display: 'none',
       index: 0,
     },

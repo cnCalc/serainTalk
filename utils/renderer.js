@@ -6,10 +6,10 @@ const md = mdit({
   highlight (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return addSpanEachLine(hljs.highlight(lang, str).value);
+        return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
       } catch (__) {}
     }
-    return '';
+    return addSpanEachLine(str.trim());
   }
 });
 
