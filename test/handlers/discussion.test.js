@@ -70,7 +70,7 @@ describe('discussion part', async () => {
             return;
           });
         } catch (err) {
-          expect(err.message).to.be.equal('create new discussion error.');
+          expect(err.message).to.be.equal(errorMessages.TOO_FREQUENT);
         }
       });
     });

@@ -34,10 +34,13 @@ let createOneDiscussion = async (agent, next, discussionInfo = testTools.testObj
     .post(url)
     .send(discussionInfo);
   try {
+    if (newDiscussionRes.body.status === 'error') {
+      throw new Error(newDiscussionRes.body.message);
+    }
     expect(newDiscussionRes.statusCode).to.be.equal(201);
     expect(newDiscussionRes.body.status).to.equal('ok');
   } catch (err) {
-    throw new Error('create new discussion error.');
+    throw err;
   }
   let discussionId = newDiscussionRes._id;
   try {
