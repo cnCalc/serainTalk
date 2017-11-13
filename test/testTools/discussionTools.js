@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const dbTool = require('../../utils/database');
 const testTools = require('./');
 const { ObjectID } = require('mongodb');
+const config = require('../../config');
 
 exports = module.exports = {};
 
@@ -57,3 +58,23 @@ let createOneDiscussion = async (agent, next, discussionInfo = testTools.testObj
   return;
 };
 exports.createOneDiscussion = createOneDiscussion;
+  return;
+};
+exports.createOneDiscussion = createOneDiscussion;
+
+/**
+ * [工具] 暂时关闭发布频率限制。
+ * 后续操作完成后将重新开启。
+ *
+ * @param {Promise} next 后续操作函数（需为 Promise）。
+ * @returns
+ */
+let closeFreqLimit = async (next) => {
+  let tempLimit = config.discussion.freqLimit;
+  config.discussion.freqLimit = 0;
+
+  await next();
+
+  config.discussion.freqLimit = tempLimit;
+};
+exports.closeFreqLimit = closeFreqLimit;

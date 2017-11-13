@@ -3,7 +3,7 @@
 const supertest = require('supertest');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
-const config = require('../../config');
+const errorMessages = require('../../utils/error-messages');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -28,7 +28,7 @@ describe('discussion part', async () => {
     });
   });
 
-  // FIX ME
+  // FIXME 添加一些数据校验
   it('whitelist test.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       return;
@@ -38,10 +38,7 @@ describe('discussion part', async () => {
   it('add a post.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
-        // 连续发帖，暂时取消发送频率限制
-        let tempLimit = config.discussion.freqLimit;
-        config.discussion.freqLimit = 0;
-
+        await testTools.discussion.closeFreqLimit(async () => {
         let postPayload = {
           encoding: 'html',
           content: 'hello test'
@@ -53,9 +50,7 @@ describe('discussion part', async () => {
 
         // FIXME 检查数据是否成功添加
         console.log(postRes);
-        // 恢复发帖频率限制
-        config.discussion.freqLimit = tempLimit;
-        return;
+        });
       });
     });
   });
