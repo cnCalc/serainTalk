@@ -23,8 +23,10 @@ exports.discussionFakeInfo = discussionFakeInfo;
  * [工具] 快速新建讨论。
  * 后续操作完成后会将该讨论销毁。
  *
- * @param {any} next 新建完成后需要执行的操作函数（需为 Promise）。会将新讨论的信息作为参数传入。
- * @param {any} userinfo 选填，按指定讨论信息新建讨论。会更新默认讨论的信息。
+ * @param {any} agent 传入 superTest 的 agent 以传递 Token
+ * @param {Promise} next 新建完成后需要执行的操作函数。会将新讨论的信息作为参数传入。
+ * @param {any} [discussionInfo=testTools.testObject.discussionInfo] 选填，按指定讨论信息新建讨论。会更新默认讨论的信息。
+ * @returns
  */
 let createOneDiscussion = async (agent, next, discussionInfo = testTools.testObject.discussionInfo) => {
   await dbTool.prepare();
@@ -55,10 +57,6 @@ let createOneDiscussion = async (agent, next, discussionInfo = testTools.testObj
   }
 
   await dbTool.discussion.removeOne({ _id: discussionId });
-  return;
-};
-exports.createOneDiscussion = createOneDiscussion;
-  return;
 };
 exports.createOneDiscussion = createOneDiscussion;
 

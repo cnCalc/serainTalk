@@ -47,7 +47,7 @@ exports.checkMemberInfo = checkMemberInfo;
  * [工具] 快速新建成员。
  * 后续操作完成后会将该成员销毁。
  *
- * @param {any} next 新建完成后需要执行的操作函数（需为 Promise）。会将新用户的信息作为参数传入。
+ * @param {Promise} next 新建完成后需要执行的操作函数。会将新用户的信息作为参数传入。
  * @param {any} userinfo 选填，按指定用户信息新建用户。会更新自带成员的信息。
  */
 let createOneMember = async (agent, next, tempMemberInfo = memberInfo) => {
