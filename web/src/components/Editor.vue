@@ -158,11 +158,28 @@ export default {
         window.location.href = window.location.href;
       });
     },
+    replyToIndex () {
+      const editorState = this.$store.state.editor;
+      api.v1.discussion.replyToDiscussion({
+        id: editorState.discussionId,
+        encoding: 'markdown',
+        content: this.content,
+        replyTo: {
+          type: 'index',
+          value: editorState.index
+        }
+      }).then(() => {
+        // 同上
+        window.location.href = window.location.href;
+      });;
+    },
     submit () {
       switch (this.mode) {
         case 'CREATE_DISCUSSION':
           this.createDiscussion();
           break;
+        case 'REPLY_TO_INDEX':
+          this.replyToIndex();
       }
     }
   }

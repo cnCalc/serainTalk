@@ -2,7 +2,7 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts.slice((currentPage - 1) * pagesize + 1, currentPage * pagesize)" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
@@ -11,7 +11,7 @@
             header.discussion-post-info
               span.discussion-post-member {{ members[post.user].username }}
               span.discussion-post-index {{ `#${post.index}` }}
-            post-content.discussion-post-content(:content="post.content")
+            post-content.discussion-post-content(:content="post.content" :reply-to="post.replyTo")
             footer.discussion-post-info
               div.discussion-post-date 最后编辑于 {{ new Date(post.createDate).toLocaleDateString() }}
               div.button-left-container
@@ -44,6 +44,22 @@ import copyToClipboard from '../utils/clipboard';
 import config from '../config';
 import { indexToPage } from '../utils/filters';
 import scrollToTop from '../utils/scrollToTop';
+
+function scrollToHash (hash) { console.log(`GOTO ${hash}`);
+  let el = document.querySelector(hash);
+  if (!el) {
+    console.log('element not found!');
+    return;
+  }
+  el.classList.add('highlight');
+  setTimeout(() => {
+    el.classList.remove('highlight');
+  }, 2000);
+  el.scrollIntoView();
+  if (el.getBoundingClientRect().top === 0) {
+    window.scrollTo(0, window.scrollY - 60); // Height of NavBar
+  }
+}
 
 export default {
   name: 'discussion-view',
@@ -81,7 +97,7 @@ export default {
     },
     loadPage (page) {
       scrollToTop(1000);
-      this.$router.push({ path: `/d/${this.$route.params.discussionId}/${page}` });
+      this.$router.push(`/d/${this.$route.params.discussionId}/${page}`);
     },
     scrollWatcher () {
       if (this.$store.state.autoLoadOnScroll) {
@@ -108,9 +124,7 @@ export default {
       return this.$store.state.discussionMeta;
     },
     discussionPosts () {
-      return this.$store.state.autoLoadOnScroll
-       ? this.$store.state.discussionPosts
-       : this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize);
+      return this.$store.state.discussionPosts;
     },
     members () {
       return this.$store.state.members;
@@ -129,13 +143,18 @@ export default {
       
       if (this.pageLoaded[Number(route.params.page) || 1]) {
         this.currentPage = Number(route.params.page) || 1;
+        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
         return;
       }
 
       this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: route.params.page }).then(() => {
         this.currentPage = Number(route.params.page) || 1;
         this.pageLoaded[this.currentPage] = true;
+        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
       });
+    },
+    '$route.hash': function (hash) {
+      hash && scrollToHash(hash);
     }
   },
   mounted () {
@@ -151,15 +170,7 @@ export default {
   asyncData ({ store, route }) {
     return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page: Number(route.params.page) || 1 }).then(() => {
       if (window.location.hash) {
-        let el = document.querySelector(window.location.hash);
-        el.classList.add('highlight');
-        setTimeout(() => {
-          el.classList.remove('highlight');
-        }, 2000);
-        el.scrollIntoView();
-        if (el.getBoundingClientRect().top === 0) {
-          window.scrollTo(0, window.scrollY - 60); // Height of NavBar
-        }
+        scrollToHash(window.location.hash);
       }
     });
   }

@@ -44,9 +44,26 @@ function createDiscussion (param) {
   });
 }
 
+function replyToDiscussion (param) {
+  if (!param.id) return Promise.reject('discussion id is required.');
+  return new Promise((resolve, reject) => {
+    const payload = {
+      content: param.content,
+      encoding: param.encoding,
+    };
+    if (param.replyTo) {
+      payload.replyTo = param.replyTo;
+    }
+    axios.post(`${config.api.url}/${config.api.version}/discussion/${param.id}/post`, payload)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
   fetchDiscussionPostsById,
   createDiscussion,
+  replyToDiscussion,
 };
