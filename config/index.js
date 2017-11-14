@@ -41,12 +41,10 @@ exports = module.exports = config;
 
 if (process.env.NODE_ENV === 'PROCDUCT') {
   _.merge(config, procduct);
-}
-if (process.env.NODE_ENV === 'DEV') {
-  _.merge(config, dev);
-}
-if (process.env.NODE_ENV === 'MOCHA') {
+} else if (process.env.NODE_ENV === 'MOCHA') {
   _.merge(config, mocha);
+} else {
+  _.merge(config, dev);
 }
 
 /**
