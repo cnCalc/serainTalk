@@ -26,9 +26,9 @@ let config = {
         'up',
         'down',
         'laugh',
-        'hooray',
-        'confused',
-        'heart'
+        'doubt',
+        'cheer',
+        'emmmm',
       ]
     },
     freqLimit: 1000 * 60 * 3, // 发帖间隔
