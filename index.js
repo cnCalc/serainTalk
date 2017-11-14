@@ -4,7 +4,6 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const validation = require('express-validation');
-const errorHandler = require('./utils/error-handler');
 
 const app = express();
 
