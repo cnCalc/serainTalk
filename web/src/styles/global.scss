@@ -35,6 +35,7 @@ a:hover {
 
 .hide {
   opacity: 0;
+  transition: none;
 }
 
 .fade-enter-active, .fade-leave-active {

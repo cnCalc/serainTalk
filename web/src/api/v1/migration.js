@@ -9,7 +9,7 @@ function requestMigration (param) {
   };
 
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}${config.api.version}/migration/verify`, requestPayload)
+    axios.post(`${config.api.url}/${config.api.version}/migration/verify`, requestPayload)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -23,7 +23,7 @@ function performMigration (param) {
   };
 
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}${config.api.version}/migration/perform`, requestPayload)
+    axios.post(`${config.api.url}/${config.api.version}/migration/perform`, requestPayload)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

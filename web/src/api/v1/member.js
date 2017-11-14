@@ -3,7 +3,7 @@ import config from '../../config.js';
 
 function fetchMemberInfoById (param) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}${config.api.version}/member/${param.id}?recent=on`)
+    axios.get(`${config.api.url}/${config.api.version}/member/${param.id}?recent=on`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -11,7 +11,7 @@ function fetchMemberInfoById (param) {
 
 function fetchDiscussionsCreatedByMember (param) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}${config.api.version}/member/${param.id}/discussions?page=${param.page || 1}`)
+    axios.get(`${config.api.url}/${config.api.version}/member/${param.id}/discussions?page=${param.page || 1}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -24,7 +24,7 @@ function signin (param) {
   };
 
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}${config.api.version}/member/login`, credentials)
+    axios.post(`${config.api.url}/${config.api.version}/member/login`, credentials)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -32,7 +32,7 @@ function signin (param) {
 
 function signout (param) {
   return new Promise((resolve, reject) => {
-    axios.delete(`${config.api.url}${config.api.version}/member/login`)
+    axios.delete(`${config.api.url}/${config.api.version}/member/login`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -40,7 +40,7 @@ function signout (param) {
 
 function fetchMe (param) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}${config.api.version}/member/me`)
+    axios.get(`${config.api.url}/${config.api.version}/member/me`)
       .then(response => resolve(response.data))
       .catch(reject);
   });

@@ -142,10 +142,12 @@ div.post-content {
     display: inline-block;
     background-color: mix($theme_color, white, 12%);
     border-radius: 4px;
-    padding: 0.05em 0.5em;
-    font-size: 0.9em;
+    padding: 0 0.4em;
+    line-height: 1.32rem;
+    font-size: 0.95em;
     color: $theme_color;
     font-weight: 700;
+    margin-right: 0.2em;
   }
   span.reply-to::before {
     width: 1em;

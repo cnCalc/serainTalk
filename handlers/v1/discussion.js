@@ -254,7 +254,7 @@ let votePost = async (req, res, next) => {
   console.log(postInfo);
 };
 
-router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
+router.get('/latest', /* validation(dataInterface.discussion.getLatestList), */getLatestDiscussionList);
 router.get('/:id/posts', getDiscussionPostsById);
 router.get('/:id', getDiscussionById);
 router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
