@@ -200,9 +200,9 @@ let createPost = async (req, res, next) => {
   let postInfo = {
     user: req.member._id,
     createDate: now,
-    encoding: req.body.encoding,
     content: req.body.content,
-    allowScript: false,
+    encoding: req.member.role === 'admin' ? req.body.encoding : 'markdown',
+    allowScript: req.member.role === 'admin',
     votes: [],
     status: null,
   };

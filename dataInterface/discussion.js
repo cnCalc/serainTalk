@@ -35,7 +35,8 @@ let createPost = {
     content: joi.string().required(),
     replyTo: {
       type: joi.string().allow(['index']).required(),
-      value: joi.number().required()
+      value: joi.number().required(),
+      memberid: interfaceUtils.mongoId.required()
     }
   },
   params: {
