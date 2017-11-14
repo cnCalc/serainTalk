@@ -3,6 +3,7 @@
 const dev = require('./dev');
 const procduct = require('./procduct');
 const _ = require('lodash');
+const mocha = require('./mocha');
 
 let config = {
   database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',

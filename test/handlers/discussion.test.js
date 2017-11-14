@@ -86,7 +86,8 @@ describe('discussion part', async () => {
             content: 'hello test',
             replyTo: {
               type: 'index',
-              value: 1
+              value: 1,
+              memberid: newMemberInfo.id
             }
           };
           let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
