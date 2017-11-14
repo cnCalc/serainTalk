@@ -86,7 +86,8 @@ describe('discussion part', async () => {
             content: 'hello test',
             replyTo: {
               type: 'index',
-              value: 1
+              value: 1,
+              memberid: newMemberInfo.id
             }
           };
           let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
@@ -97,6 +98,7 @@ describe('discussion part', async () => {
           // 检查是否有 replyTo 字段
           let postInfo = postRes.body.newPost;
           expect(postInfo.replyTo).to.be.ok;
+          expect(postInfo.encoding).to.be.equal('markdown');
         });
       });
     });
