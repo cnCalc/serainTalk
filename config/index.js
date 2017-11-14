@@ -2,6 +2,7 @@
 
 const dev = require('./dev');
 const procduct = require('./procduct');
+const _ = require('lodash');
 
 let config = {
   database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
@@ -38,9 +39,13 @@ let config = {
 exports = module.exports = config;
 
 if (process.env.NODE_ENV === 'PROCDUCT') {
-  Object.assign(config, procduct);
-} else {
-  Object.assign(config, dev);
+  _.merge(config, procduct);
+}
+if (process.env.NODE_ENV === 'DEV') {
+  _.merge(config, dev);
+}
+if (process.env.NODE_ENV === 'MOCHA') {
+  _.merge(config, mocha);
 }
 
 /**

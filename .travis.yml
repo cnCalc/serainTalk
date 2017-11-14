@@ -4,7 +4,7 @@ node_js:
 install:
   - npm i
 script:
-  - export NODE_ENV = "DEV"
+  - export NODE_ENV = "MOCHA"
   - npm run lint
   - npm run build
   - npm run test
