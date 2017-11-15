@@ -10,7 +10,7 @@ let agent = supertest.agent(require('../../index'));
 describe('discussion part', async () => {
   it('add a discussion', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         expect(newDisscussionInfo.posts[0].index).to.be.equal(1);
       });
     });
@@ -39,7 +39,7 @@ describe('discussion part', async () => {
 
   it('add a post.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'html',
@@ -62,9 +62,9 @@ describe('discussion part', async () => {
 
   it('add posts frequent.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         try {
-          await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
             let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
             await agent.post(url);
             return;
@@ -78,7 +78,7 @@ describe('discussion part', async () => {
 
   it('reply post by index.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'html',
@@ -104,7 +104,7 @@ describe('discussion part', async () => {
   });
   // it('add votes', async () => {
   //   await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-  //     await testTools.discussion.createOneDiscussion(agent, async (newDisscussionInfo) => {
+  //     await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
   //       let voteUrl = `/api/v1/discussions/${newMemberInfo.id}/post/1`;
   //       let voteInfo = {
   //         vote: 'up'
