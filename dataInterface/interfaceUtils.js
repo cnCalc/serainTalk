@@ -11,5 +11,5 @@ exports.mongoId = mongoId;
 let pagesize = joi.number().default(config.pagesize);
 exports.pagesize = pagesize;
 
-let offset = joi.number().default(0);
+let offset = joi.number().default(1);
 exports.offset = offset;

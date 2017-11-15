@@ -26,23 +26,22 @@ const router = express.Router();
 async function getLatestDiscussionList (req, res) {
   let query = {};
 
-  if (req.query.tag) {
+  if (req.query.category) {
     // 非管理只显示白名单中的标签
     if (req.member.role !== 'admin') {
-      req.query.tag = req.query.tag.filter(
+      req.query.category = req.query.category.filter(
         item => config.discussion.category.whiteList.includes(item)
       );
     }
-    query.tags = {
-      $in: req.query.tag
-    };
+    query.category = { $in: req.query.category };
   }
   if (req.query.memberid) {
     req.query.memberid = ObjectID(req.query.memberid);
     query.creater = { $eq: req.query.memberid };
   }
-  let pagesize = req.query.pagesize || config.pagesize;
-  let offset = req.query.page - 1 || 0;
+  let pagesize = req.query.pagesize;
+  let offset = req.query.page - 1;
+  if (req.query.tag) query.tags = { $in: req.query.tag };
 
   try {
     let results = await dbTool.discussion.find(
@@ -254,7 +253,7 @@ let votePost = async (req, res, next) => {
   console.log(postInfo);
 };
 
-router.get('/latest', /* validation(dataInterface.discussion.getLatestList), */getLatestDiscussionList);
+router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 router.get('/:id/posts', getDiscussionPostsById);
 router.get('/:id', getDiscussionById);
 router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);

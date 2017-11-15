@@ -8,7 +8,8 @@ exports = module.exports = {};
 
 let getLatestList = {
   query: {
-    tag: joi.array().items(joi.string().valid(config.discussion.category.whiteList)),
+    tag: joi.array().items(joi.string()),
+    category: joi.array().items(joi.string()),
     memberid: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     offset: interfaceUtils.offset

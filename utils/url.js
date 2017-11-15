@@ -9,7 +9,8 @@
 let createRESTfulUrl = (url, params) => {
   url += '?';
   Object.keys(params).forEach(key => {
-    url += `${key}=${params[key]}&`;
+    let tempstr = Array.isArray(params[key]) ? JSON.stringify(params[key]) : params[key];
+    url += `${key}=${tempstr}&`;
   });
   url = url.slice(0, -1);
   url = encodeURI(url);

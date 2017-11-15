@@ -5,6 +5,7 @@ const dbTool = require('../../utils/database');
 const testTools = require('./');
 const { ObjectID } = require('mongodb');
 const config = require('../../config');
+const _ = require('lodash');
 
 exports = module.exports = {};
 
@@ -18,6 +19,17 @@ let discussionFakeInfo = {
   }
 };
 exports.discussionFakeInfo = discussionFakeInfo;
+/**
+ * [工具] 校验两个讨论是否完全相同
+ *
+ * @param {Discussion} a 获取到的完整对象
+ * @param {Discussion} b 想要校验的字段
+ * @returns {boolean}
+ */
+let isSameDiscussion = (a, b) => {
+  return !!_.find([a], b);
+};
+exports.isSameDiscussion = isSameDiscussion;
 
 /**
  * [工具] 快速新建讨论。
@@ -26,7 +38,6 @@ exports.discussionFakeInfo = discussionFakeInfo;
  * @param {any} agent 传入 superTest 的 agent 以传递 Token
  * @param {any} [discussionInfo=testTools.testObject.discussionInfo] 按指定讨论信息新建讨论。null 则以默认模板创建。
  * @param {Promise} next 新建完成后需要执行的操作函数。会将新讨论的信息作为参数传入。
- * @param {any} [discussionInfo=testTools.testObject.discussionInfo] 选填，按指定讨论信息新建讨论。会更新默认讨论的信息。
  * @returns
  */
 let createOneDiscussion = async (agent, discussionInfo, next) => {

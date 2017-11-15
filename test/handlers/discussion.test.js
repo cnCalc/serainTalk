@@ -4,6 +4,8 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
+const config = require('../../config');
+const utils = require('../../utils');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -18,22 +20,62 @@ describe('discussion part', async () => {
 
   it('get latest discussion list by memberid.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      let url = `/api/v1/discussions/latest?${newMemberInfo.id}`;
-      let discussionList = await agent
-        .get(url)
-        .expect(200);
-      expect(discussionList.body.status).to.be.equal('ok');
-      discussionList = discussionList.body;
-
-      // FIXME 补充测试
-      // console.log(discussionList);
+      let tempWhiteList = config.discussion.category.whiteList;
+      config.discussion.category.whiteList = ['test'];
+      let testDiscussion = {
+        title: 'test title',
+        tags: ['temp tag'],
+        category: 'test',
+        content: {
+          encoding: 'markdown',
+          content: 'test text',
+        }
+      };
+      await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
+        let payload = {
+          category: ['test'],
+          memberid: newMemberInfo.id
+        };
+        let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        expect(discussionRes.body.status).to.be.equal('ok');
+        let discussions = discussionRes.body.discussions;
+        delete testDiscussion.content;
+        expect(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion)).to.be.ok;
+      });
+      config.discussion.category.whiteList = tempWhiteList;
     });
   });
 
   // FIXME 添加一些数据校验
   it('whitelist test.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      return;
+      let tempWhiteList = config.discussion.category.whiteList;
+      config.discussion.category.whiteList = ['notest'];
+      let testDiscussion = {
+        title: 'test title',
+        tags: ['temp tag'],
+        category: 'test',
+        content: {
+          encoding: 'markdown',
+          content: 'test text',
+        }
+      };
+      await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
+        let payload = {
+          category: ['test'],
+          memberid: newMemberInfo.id
+        };
+        let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        expect(discussionRes.body.status).to.be.equal('ok');
+        expect(discussionRes.body.discussions.length).to.be.equal(0);
+      });
+      config.discussion.category.whiteList = tempWhiteList;
     });
   });
 
