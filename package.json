@@ -12,7 +12,9 @@
     "test": "nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web && npm i",
-    "build": "cd web && npm run build"
+    "build": "cd web && npm run build",
+    "dev": "export NODE_ENV=\"DEV\" && node ./index.js",
+    "procduct": "export NODE_ENV=\"PROCDUCT\" && node ./index.js"
   },
   "nyc": {
     "require": [
