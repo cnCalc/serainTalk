@@ -17,7 +17,7 @@ const router = express.Router();
 /**
  * 获取最新的讨论
  * /api/v1/discussions/latest
- * query : [tag][memberid][page][pagesize]
+ * query : [tag][memberId][page][pagesize]
  * 当没有参数时，查询整站的讨论
  * 按照最新回复排序
  * @param {Request} req
@@ -35,9 +35,9 @@ async function getLatestDiscussionList (req, res) {
     }
     query.category = { $in: req.query.category };
   }
-  if (req.query.memberid) {
-    req.query.memberid = ObjectID(req.query.memberid);
-    query.creater = { $eq: req.query.memberid };
+  if (req.query.memberId) {
+    req.query.memberId = ObjectID(req.query.memberId);
+    query.creater = { $eq: req.query.memberId };
   }
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;

@@ -18,7 +18,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('get latest discussion list by memberid.', async () => {
+  it('get latest discussion list by memberId.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       let tempWhiteList = config.discussion.category.whiteList;
       config.discussion.category.whiteList = ['test'];
@@ -34,7 +34,7 @@ describe('discussion part', async () => {
       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
         let payload = {
           category: ['test'],
-          memberid: newMemberInfo.id
+          memberId: newMemberInfo.id
         };
         let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent
@@ -66,7 +66,7 @@ describe('discussion part', async () => {
       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
         let payload = {
           category: ['test'],
-          memberid: newMemberInfo.id
+          memberId: newMemberInfo.id
         };
         let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent

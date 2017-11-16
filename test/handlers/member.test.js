@@ -90,7 +90,7 @@ describe('member part', () => {
     });
   });
 
-  it('get member info by mongoid.', async () => {
+  it('get member info by mongoId.', async () => {
     await testTools.member.createOneMember(agent, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
       let memberBody = await agent

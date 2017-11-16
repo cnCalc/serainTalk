@@ -10,7 +10,7 @@ let getLatestList = {
   query: {
     tag: joi.array().items(joi.string()),
     category: joi.array().items(joi.string()),
-    memberid: interfaceUtils.mongoId,
+    memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page
   }
