@@ -51,7 +51,7 @@ let getMemberInfoById = async (req, res) => {
       if (req.query.recent === 'on') {
         dbTool.db.collection('discussion').aggregate([{
           $match: {
-            'participants': memberId
+            'posts.user': memberId
           }
         }, {
           $project: {
@@ -228,6 +228,13 @@ let login = async (req, res) => {
 
   // 删除登录凭证。
   delete memberInfo.credentials;
+
+  // 更新最后一次登录时间
+  await dbTool.commonMember.updateOne({
+    _id: memberInfo._id,
+  }, {
+    $set: { lastlogintime: new Date().getTime() }
+  });
 
   // 插入 memberToken 作为身份识别码。
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);

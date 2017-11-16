@@ -38,7 +38,7 @@ export default {
       passwd: '',
       repeatPasswd: '',
       step: 'verify',
-    }
+    };
   },
   methods: {
     doVerifyRequest () {
@@ -53,17 +53,17 @@ export default {
         console.error(e);
         switch (e.response.status) {
         case 404:
-          alert('用户不存在的。');
+          window.alert('用户不存在的。');
           break;
         case 400:
-          alert('密码好像不对啊。');
+          window.alert('密码好像不对啊。');
           break;
         }
-      })
+      });
     },
     doPerformMigration () {
       if (this.passwd !== this.repeatPasswd) {
-        alert('两次密码不一致！');
+        window.alert('两次密码不一致！');
         return;
       }
       const payload = {
@@ -73,14 +73,14 @@ export default {
       };
       api.v1.migration.performMigration(payload).then(response => {
         if (response.status === 'ok') {
-          alert('迁移成功');
+          window.alert('迁移成功');
         }
       }).catch(e => {
-        alert('出现问题，请联系管理员');
+        window.alert('出现问题，请联系管理员');
       });
     }
   }
-}
+};
 </script>
 
 

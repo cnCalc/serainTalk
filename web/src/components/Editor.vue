@@ -19,7 +19,6 @@
 <script>
 import api from '../api';
 
-const app = document.querySelector('div#app');
 const hljs = window.hljs;
 const md = window.markdownit({
   html: false,
@@ -30,7 +29,7 @@ const md = window.markdownit({
       } catch (__) {}
     }
 
-    return addSpanEachLine(str.trim());;
+    return addSpanEachLine(str.trim());
   }
 });
 
@@ -46,7 +45,7 @@ export default {
       title: '',
       category: '',
       content: '',
-    }
+    };
   },
   mounted () {
     const resize = document.querySelector('div.resize');
@@ -57,12 +56,12 @@ export default {
       const height = Math.max(window.innerHeight - Math.max(e.clientY - 6, 50), 180);
       editor.style.top = `${window.innerHeight - height}px`;
       app.style.marginBottom = `${height}px`;
-    }
+    };
     const dragStop = e => {
       document.removeEventListener('mousemove', dragStep);
       document.removeEventListener('mouseup', dragStop);
       document.body.style.userSelect = '';
-    }
+    };
     resize.addEventListener('mousedown', e => {
       document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', dragStep);
@@ -70,10 +69,10 @@ export default {
     });
     textarea.addEventListener('change', e => {
       this.updatePreview();
-    })
+    });
     textarea.addEventListener('keyup', e => {
       this.updatePreview();
-    })
+    });
   },
   computed: {
     mode () { return this.$store.state.editor.mode; },
@@ -99,7 +98,6 @@ export default {
         app.style.marginBottom = editor.style.top = '50vh';
 
         const editorState = this.$store.state.editor;
-        const members = this.$store.state.members;
 
         if (editorState.index) {
           // 回复，加入默认@
@@ -111,7 +109,6 @@ export default {
   },
   methods: {
     updatePreview () {
-      const editorState = this.$store.state.editor;
       const members = this.$store.state.members;
       const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       let preview = '';
@@ -122,7 +119,7 @@ export default {
       // 将开头的回复代码渲染成一个 span
       if (this.content.match(replyReg)) {
         const match = this.content.match(replyReg);
-        preview = preview.replace(`@${match[1]}#${match[2]}#${match[3]}`, `<span class="reply-to">${members[match[1]].username}</span>`)
+        preview = preview.replace(`@${match[1]}#${match[2]}#${match[3]}`, `<span class="reply-to">${members[match[1]].username}</span>`);
       }
 
       this.preview = preview;
@@ -130,7 +127,7 @@ export default {
       // 让 KaTeX 自动渲染 DOM 中的公式
       this.$nextTick(() => {
         try {
-          renderMathInElement(document.body);
+          window.renderMathInElement(document.body);
         } catch (e) {
           // 渲染出错，大概率是用户打了一半没打完，直接忽略即可
         }
@@ -151,7 +148,7 @@ export default {
           encoding: 'markdown',
         },
         tags: [],
-      }
+      };
       api.v1.discussion.createDiscussion({ discussion: payload }).then(() => {
         // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
         // 此处先直接将浏览器刷新，不管后续了
@@ -172,15 +169,15 @@ export default {
       }).then(() => {
         // 同上
         window.location.href = window.location.href;
-      });;
+      });
     },
     submit () {
       switch (this.mode) {
-        case 'CREATE_DISCUSSION':
-          this.createDiscussion();
-          break;
-        case 'REPLY_TO_INDEX':
-          this.replyToIndex();
+      case 'CREATE_DISCUSSION':
+        this.createDiscussion();
+        break;
+      case 'REPLY_TO_INDEX':
+        this.replyToIndex();
       }
     }
   }

@@ -39,7 +39,7 @@ export default {
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
       }).catch(e => {
-        alert('密码错误');
+        window.alert('密码错误');
       });
     }
   }

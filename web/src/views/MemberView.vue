@@ -8,7 +8,7 @@ div
     div.name-and-bio-container
       h1.member-name {{ member.username }}
       h2.member-bio {{ member.bio }}
-      div.member-other-info 加入于{{ timeAgo(member.regdate) }}
+      div.member-other-info 加入于{{ timeAgo(member.regdate) }} | 最后访问于{{ timeAgo(member.lastlogintime) }}
   div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
@@ -159,7 +159,7 @@ div.member-info {
     white-space: nowrap;
     text-overflow: ellipsis;
     h1.member-name {
-      font-weight: normal;
+      font-weight: 300;
       margin: 0;
       line-height: $avatar-size / 2;
       height: $avatar-size / 2;
@@ -174,6 +174,7 @@ div.member-info {
       line-height: $avatar-size / 4;
     }
     div.member-other-info {
+      // color: #888;
       font-size: 14px;
       line-height: $avatar-size / 4;
       height: $avatar-size / 4;

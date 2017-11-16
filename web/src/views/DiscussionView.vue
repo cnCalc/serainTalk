@@ -24,7 +24,7 @@
               //- div.button-right-container
               button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
               button.button(@click="copyLink(post.index)") 复制链接
-              button.button 编辑
+              button.button(v-if="$store.state.me && post.user === $store.state.me._id") 编辑
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
@@ -45,7 +45,7 @@ import config from '../config';
 import { indexToPage } from '../utils/filters';
 import scrollToTop from '../utils/scrollToTop';
 
-function scrollToHash (hash) { console.log(`GOTO ${hash}`);
+function scrollToHash (hash) {
   let el = document.querySelector(hash);
   if (!el) {
     console.log('element not found!');
@@ -60,7 +60,7 @@ function scrollToHash (hash) { console.log(`GOTO ${hash}`);
     if (el.getBoundingClientRect().top < 60) {
       window.scrollTo(0, window.scrollY - 60); // Height of NavBar
     }
-  }, 0)
+  }, 0);
 }
 
 export default {
@@ -117,7 +117,7 @@ export default {
       this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
     },
-    copyLink(idx) {
+    copyLink (idx) {
       copyToClipboard(`${window.location.origin}/d/${this.discussionMeta._id}#index-${idx}`);
     }
   },
@@ -142,7 +142,7 @@ export default {
     },
     '$route': function (route) {
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
-      
+
       if (this.pageLoaded[Number(route.params.page) || 1]) {
         this.currentPage = Number(route.params.page) || 1;
         this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));

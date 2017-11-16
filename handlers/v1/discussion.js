@@ -210,11 +210,18 @@ let createPost = async (req, res, next) => {
     postInfo.replyTo.memberId = ObjectID(postInfo.replyTo.memberId);
   }
 
-  // 追加一个 Post
+  // 追加一个 Post，同时更新一些元数据
   try {
     await dbTool.discussion.updateOne(
       { _id: _id },
-      { $push: { posts: postInfo }}
+      {
+        $push: { posts: postInfo },
+        $inc: { replies: 1 },
+        $set: {
+          lastMember: req.member._id,
+          lastDate: new Date().getTime()
+        }
+      }
     );
 
     // 动态生成楼层号

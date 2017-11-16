@@ -32,19 +32,17 @@ div.jumbotron {
   margin-left: calc(50% - 50vw);
   overflow: hidden;
   transition: background linear 0.2s;
+  text-shadow: 0 0 5px black;
 
-  h1, h2 {
-    font-weight: normal;
-    margin: 0;
-  }
   h1 {
-    padding-top: 1em;
     font-size: 24px;
-    line-height: 2em;
+    font-weight: 400;
+    margin-top: 1.5rem;
   }
   h2 {
     font-size: 18px;
-    line-height: 1.2em;
+    font-weight: 300;
+    margin-bottom: 1.2rem;
   }
 }
 

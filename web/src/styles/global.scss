@@ -3,6 +3,10 @@ $link_color: rgb(114, 185, 237);
 $width-medium: 768px;
 $width-small: 400px;
 
+body {
+  font-family: "Noto Sans CJK", "Noto Sans CJK SC", "Source Han Sans", "Source Han Sans CN", "思源黑体", "思源黑体 CN", "WenQuanYi Micro Hei", "Microsoft Yahei UI", "Microsoft Yahei", "微软雅黑", "SimHei", sans-serif;
+}
+
 div.container {
   margin: 0 auto;
   max-width: 1080px;

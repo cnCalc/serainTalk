@@ -25,16 +25,16 @@ export default {
   beforeMount () {
     // reload session info.
     this.$store.dispatch('fetchCurrentSigninedMemberInfo').catch(e => {});
-    
+
     // keep SPA
     window.addEventListener('click', event => {
-      let target = event.target
-      while (target != null && target.tagName != 'A') {
+      let target = event.target;
+      while (target !== null && target.tagName !== 'A') {
         target = target.parentNode;
       }
       if (target && target.href && target.href.indexOf(window.location.origin) === 0) {
         event.preventDefault();
-        let url = new URL(target.href);
+        let url = new window.URL(target.href);
         this.$router.push(url.href.replace(url.origin, ''));
       }
     });
