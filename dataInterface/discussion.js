@@ -17,6 +17,13 @@ let getLatestList = {
 };
 exports.getLatestList = getLatestList;
 
+let getDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.getDiscussion = getDiscussion;
+
 let createDiscussion = {
   body: {
     title: joi.string().required(),

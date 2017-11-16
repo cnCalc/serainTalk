@@ -11,7 +11,7 @@ let agent = supertest.agent(require('../../index'));
 
 describe('discussion part', async () => {
   it('add a discussion', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         expect(newDisscussionInfo.posts[0].index).to.be.equal(1);
       });
@@ -19,7 +19,7 @@ describe('discussion part', async () => {
   });
 
   it('get latest discussion list by memberId.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let tempWhiteList = config.discussion.category.whiteList;
       config.discussion.category.whiteList = ['test'];
       let testDiscussion = {
@@ -49,9 +49,25 @@ describe('discussion part', async () => {
     });
   });
 
+  it('get discussion by id', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let url = `/api/v1/discussions/${newDiscussionInfo.id}`;
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        expect(discussionRes.body.status).to.be.equal('ok');
+        delete discussionRes.body.status;
+        let tempDiscussion = JSON.parse(JSON.stringify(testTools.testObject.discussionInfo));
+        delete tempDiscussion.content;
+        expect(testTools.discussion.isSameDiscussion(discussionRes.body, tempDiscussion)).to.be.ok;
+      });
+    });
+  });
+
   // FIXME 添加一些数据校验
   it('whitelist test.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let tempWhiteList = config.discussion.category.whiteList;
       config.discussion.category.whiteList = ['notest'];
       let testDiscussion = {
@@ -80,7 +96,7 @@ describe('discussion part', async () => {
   });
 
   it('add a post.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
@@ -103,7 +119,7 @@ describe('discussion part', async () => {
   });
 
   it('add posts frequent.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         try {
           await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
@@ -119,7 +135,7 @@ describe('discussion part', async () => {
   });
 
   it('reply post by index.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
@@ -145,7 +161,7 @@ describe('discussion part', async () => {
     });
   });
   // it('add votes', async () => {
-  //   await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+  //   await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
   //     await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
   //       let voteUrl = `/api/v1/discussions/${newMemberInfo.id}/post/1`;
   //       let voteInfo = {

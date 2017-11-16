@@ -64,6 +64,7 @@ async function getLatestDiscussionList (req, res) {
       return res.send({ status: 'ok', discussions: results, members });
     });
   } catch (err) {
+    /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 }
@@ -79,8 +80,8 @@ function getDiscussionById (req, res) {
   try {
     discussionId = ObjectID(req.params.id);
   } catch (err) {
-    errorHandler(err, 'invalid discussion id', 400, res);
-    return;
+    /* istanbul ignore next */
+    return errorHandler(err, 'invalid discussion id', 400, res);
   }
 
   dbTool.db.collection('discussion').aggregate([
@@ -104,7 +105,7 @@ function getDiscussionById (req, res) {
     }
 
     let result = Object.assign({ status: 'ok' }, results[0]);
-    res.send(result);
+    return res.status(200).send(result);
   });
 }
 
@@ -121,8 +122,8 @@ function getDiscussionPostsById (req, res) {
   try {
     discussionId = ObjectID(req.params.id);
   } catch (err) {
-    errorHandler(err, 'invalid discussion id', 400, res);
-    return;
+    /* istanbul ignore next */
+    return errorHandler(err, 'invalid discussion id', 400, res);
   }
   dbTool.db.collection('discussion').aggregate([
     { $match: { _id: discussionId }},
@@ -265,7 +266,7 @@ let votePost = async (req, res, next) => {
 
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 router.get('/:id/posts', getDiscussionPostsById);
-router.get('/:id', getDiscussionById);
+router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
 router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
 router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
 router.post('/', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);

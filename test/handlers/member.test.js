@@ -16,12 +16,12 @@ describe('member part', () => {
   });
 
   it('member signup', async () => {
-    await dbTool.commonMember.removeOne({ username: testTools.member.memberInfo.username });
+    await dbTool.commonMember.removeOne({ username: testTools.testObject.memberInfo.username });
 
     let url = '/api/v1/member/signup';
     let signupBody = await agent
       .post(url)
-      .send(testTools.member.memberInfo)
+      .send(testTools.testObject.memberInfo)
       .expect(201);
     expect(signupBody.body.status).to.equal('ok');
     expect(signupBody.header['set-cookie']).to.be.ok;
@@ -32,21 +32,21 @@ describe('member part', () => {
   });
 
   it('test my member tools', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       testTools.member.checkMemberInfo(newMemberInfo);
     });
   });
 
   it('signup twice.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
-      await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
         testTools.member.checkMemberInfo(newMemberInfo);
       });
     });
   });
 
   it('member login', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = '/api/v1/member/login';
       let loginBody = await agent
         .post(url)
@@ -63,7 +63,7 @@ describe('member part', () => {
   });
 
   it('member logout', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let loginUrl = '/api/v1/member/login';
       let loginBody = await agent
         .post(loginUrl)
@@ -91,7 +91,7 @@ describe('member part', () => {
   });
 
   it('get member info by mongoId.', async () => {
-    await testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
       let memberBody = await agent
         .get(url)
@@ -104,7 +104,7 @@ describe('member part', () => {
   });
 
   it('get member with recent.', async () => {
-    testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
       let tempInfo = await agent
         .get(url)
@@ -114,7 +114,7 @@ describe('member part', () => {
   });
 
   it('get member with device', async () => {
-    testTools.member.createOneMember(agent, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/members?device=${encodeURI(newMemberInfo.device)}`;
       let memberBody = await agent
         .get(url)
@@ -123,7 +123,7 @@ describe('member part', () => {
       delete memberBody.body.status;
       let memberList = memberBody.body.list;
       for (let member of memberList) {
-        expect(member.device).to.equal(testTools.memberInfo.device);
+        expect(member.device).to.equal(testTools.testObject.memberInfo.device);
       }
     });
   });

@@ -2,6 +2,7 @@
 
 const expect = require('chai').expect;
 const dbTool = require('../../utils/database');
+const testTools = require('./');
 const { ObjectID } = require('mongodb');
 
 const signupUrl = '/api/v1/member/signup';
@@ -9,30 +10,14 @@ const loginUrl = '/api/v1/member/login';
 
 exports = module.exports = {};
 
-let memberInfo = {
-  gender: 2,
-  birthyear: 1996,
-  birthmonth: 8,
-  birthday: 14,
-  qq: '914714146',
-  site: 'https://www.ntzyz.cn/',
-  bio: '弱菜',
-  username: 'test.zyz',
-  email: 'ljy99041@163.com',
-  regip: '114.232.38.5',
-  regdate: 1335761157,
-  device: 'Nspire CX CAS',
-  password: 'fork you.'
-};
-exports.memberInfo = memberInfo;
-
 /**
  * [校验函数] 校验收到的成员信息是否与已知的相同。
  *
  * @param {any} receiveInfo 收到的成员信息。
  * @param {any} memberInfo 选填，原本的成员信息。默认为自带成员。
  */
-let checkMemberInfo = (receiveInfo, tempMemberInfo = memberInfo) => {
+let checkMemberInfo = (receiveInfo, tempMemberInfo) => {
+  tempMemberInfo = tempMemberInfo || testTools.testObject.memberInfo;
   let _memberInfo = Object.assign({}, tempMemberInfo);
   expect(receiveInfo._id).to.not.be.null;
   expect(receiveInfo.credentials).to.not.be.ok;
@@ -50,9 +35,11 @@ exports.checkMemberInfo = checkMemberInfo;
  * @param {Promise} next 新建完成后需要执行的操作函数。会将新用户的信息作为参数传入。
  * @param {any} userinfo 选填，按指定用户信息新建用户。会更新自带成员的信息。
  */
-let createOneMember = async (agent, next, tempMemberInfo = memberInfo) => {
+let createOneMember = async (agent, tempMemberInfo, next) => {
   // 初始化数据库
   await dbTool.prepare();
+
+  tempMemberInfo = tempMemberInfo || testTools.testObject.memberInfo;
 
   // 用户已存在则转为登录
   let newMemberBody;
