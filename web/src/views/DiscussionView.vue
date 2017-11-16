@@ -2,7 +2,7 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts.slice((currentPage - 1) * pagesize + 1, currentPage * pagesize)" :id="`index-${post.index}`" v-if="post")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts.slice((currentPage - 1) * pagesize + 1, currentPage * pagesize + 1)" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
             div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
@@ -56,9 +56,11 @@ function scrollToHash (hash) { console.log(`GOTO ${hash}`);
     el.classList.remove('highlight');
   }, 2000);
   el.scrollIntoView();
-  if (el.getBoundingClientRect().top === 0) {
-    window.scrollTo(0, window.scrollY - 60); // Height of NavBar
-  }
+  setTimeout(() => {
+    if (el.getBoundingClientRect().top < 60) {
+      window.scrollTo(0, window.scrollY - 60); // Height of NavBar
+    }
+  }, 0)
 }
 
 export default {
@@ -267,7 +269,7 @@ div.discussion-view {
         order: 2;
         flex-grow: 1;
         flex-shrink: 1;
-        margin-left: 15px;
+        margin: 0 15px;
         // padding: 5px;
 
         span.discussion-post-member {

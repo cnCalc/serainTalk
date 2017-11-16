@@ -12,7 +12,7 @@ let getLatestList = {
     category: joi.array().items(joi.string()),
     memberid: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
-    offset: interfaceUtils.offset
+    page: interfaceUtils.page
   }
 };
 exports.getLatestList = getLatestList;
@@ -37,7 +37,7 @@ let createPost = {
     replyTo: {
       type: joi.string().allow(['index']).required(),
       value: joi.number().required(),
-      memberid: interfaceUtils.mongoId.required()
+      memberId: interfaceUtils.mongoId.required()
     }
   },
   params: {

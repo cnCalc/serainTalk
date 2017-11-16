@@ -2,6 +2,7 @@
 
 const dbTool = require('./database');
 const errorHandler = require('./error-handler');
+const { ObjectID } = require('mongodb');
 
 /**
  * 从数据库中获取一个用户的信息，并将结果保存至 members 数组中。
@@ -54,8 +55,8 @@ function resloveMembersInDiscussionArray (discussions, callback) {
  */
 function resloveMembersInDiscussion (discussion, callback) {
   let members = {};
-  let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user]), []);
-  Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId))).then(() => {
+  let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user.toString(), post.replyTo ? post.replyTo.memberId.toString() : null]), []);
+  Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(memberId => fetchOneMember(dbTool.db, members, ObjectID(memberId)))).then(() => {
     callback(null, members);
   }).catch(err => {
     callback(err);

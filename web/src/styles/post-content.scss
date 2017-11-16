@@ -51,7 +51,6 @@ div.post-content {
     min-width: 60px;
   }
   th {
-    text-align: center;
     font-weight: 700;    
   }
   a {
@@ -97,8 +96,14 @@ div.post-content {
   pre {
     background: rgba(0, 0, 0, 0.2);
   }
-  td, th {
-    border: 1px solid #444;
+  th {
+    border-bottom: 3px solid #444;
+  }
+  td {
+    border-bottom: 1px solid #444;
+  }
+  tr:hover {
+    background-color: #282828;
   }
   a {
     color: white;
@@ -121,11 +126,14 @@ div.post-content {
     border-left: 2px solid #888;
     color: #777;
   }
-  td, th {
-    border: 1px solid mix($theme_color, white, 20%);
+  th {
+    border-bottom: 3px solid mix($theme_color, white, 20%);
   }
-  tr:nth-child(2n) {
-    background-color: mix($theme_color, white, 8%);
+  td {
+    border-bottom: 1px solid mix($theme_color, white, 20%);
+  }
+  tr:hover {
+    background-color: mix($theme_color, white, 3%);
   }
   a {
     color: $theme_color;

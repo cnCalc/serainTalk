@@ -205,7 +205,10 @@ let createPost = async (req, res, next) => {
     votes: [],
     status: null,
   };
-  if (req.body.replyTo) postInfo.replyTo = req.body.replyTo;
+  if (req.body.replyTo) {
+    postInfo.replyTo = req.body.replyTo;
+    postInfo.replyTo.memberId = ObjectID(postInfo.replyTo.memberId);
+  }
 
   // 追加一个 Post
   try {

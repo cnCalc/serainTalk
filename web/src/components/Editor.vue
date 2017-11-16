@@ -166,7 +166,8 @@ export default {
         content: this.content,
         replyTo: {
           type: 'index',
-          value: editorState.index
+          value: editorState.index,
+          memberId: this.$store.state.editor.memberId,
         }
       }).then(() => {
         // 同上
