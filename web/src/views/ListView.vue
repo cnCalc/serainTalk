@@ -65,7 +65,7 @@ export default {
       this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
     },
     flushGlobalTitles () {
-      if (!this.slug) {
+      if (!this.slug && this.$route.fullPath === '/') {
         return this.$store.commit('setGlobalTitles', []);
       }
       let categoriesGroup = this.$store.state.categoriesGroup;

@@ -1,6 +1,8 @@
 @import './global.scss';
 
 div.post-content {
+  word-break: break-word;
+
   img {
     max-width: 70%;
     // height: 400px;

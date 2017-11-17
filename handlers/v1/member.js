@@ -40,9 +40,7 @@ let getMemberInfoById = async (req, res) => {
         status: 'ok',
       });
     } else {
-      let result = Object.assign({
-        status: 'ok'
-      }, results[0]);
+      let result = results[0];
 
       // 删除用户的登陆凭据部分
       delete result['credentials'];
@@ -69,18 +67,40 @@ let getMemberInfoById = async (req, res) => {
             'posts.createDate': -1
           }
         }, {
-          $limit: 50
+          $limit: 20
         }]).toArray((err, docs) => {
           if (err) {
             result.recentActivities = null;
           } else {
             result.recentActivities = docs;
+            result.recentActivities.forEach(discussion => {
+              discussion.posts = utils.renderer.renderPosts(discussion.posts);
+            });
+
+            let tempPosts = [];
+
+            result.recentActivities.forEach(discussion => {
+              tempPosts = [...tempPosts, ...discussion.posts];
+            });
+
+            resloveMembersInDiscussion({ posts: tempPosts }, (err, members) => {
+              if (err) {
+                members = {};
+              }
+              res.send({
+                status: 'ok',
+                member: result,
+                members: members,
+              });
+            });
           }
-          res.send(result);
         });
       } else {
         // 不需要，直接发送
-        res.send(result);
+        res.send({
+          status: 'ok',
+          member: result,
+        });
       }
     }
   } catch (err) {

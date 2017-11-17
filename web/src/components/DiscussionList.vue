@@ -15,7 +15,7 @@
           div.discussion-meta-other
             span.discussion-last-reply
               router-link(:to="'/m/' + discussion.lastMember")
-                span.discussion-user {{ members[discussion.lastMember].username || 'undefined' }} 
+                span.discussion-user {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
               |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
             span.discussion-tags(v-for="tag in discussion.tags") {{ tag }}
             span.discussion-tags 假装有tag

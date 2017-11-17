@@ -97,8 +97,8 @@ export default {
     state.commit('setBusy', true);
     state.commit('setMember', {});
     return api.v1.member.fetchMemberInfoById(param).then(data => {
-      delete data.status;
-      state.commit('setMember', data);
+      state.commit('setMember', data.member);
+      state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);
     });
   },

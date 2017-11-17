@@ -5,7 +5,7 @@
 <script>
 export default {
   name: 'post-content',
-  props: ['content', 'noattach', 'reply-to'],
+  props: ['content', 'noattach', 'reply-to', 'discussion-id'],
   data () {
     return {
       html: '',
@@ -21,7 +21,7 @@ export default {
       if (!this.replyTo) {
         return html;
       }
-      const pattern = `@${this.replyTo.memberId}#${this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
+      const pattern = `@${this.replyTo.memberId}#${this.discussionId || this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
       console.log(pattern);
       const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       if (html.match(replyReg)) {

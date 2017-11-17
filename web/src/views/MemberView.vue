@@ -7,7 +7,7 @@ div
       div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
     div.name-and-bio-container
       h1.member-name {{ member.username }}
-      h2.member-bio {{ member.bio }}
+      h2.member-bio(:title="member.bio") {{ member.bio }}
       div.member-other-info 加入于{{ timeAgo(member.regdate) }} | 最后访问于{{ timeAgo(member.lastlogintime) }}
   div.member-activity(v-if="member._id")
     div.member-activity-container
@@ -17,8 +17,14 @@ div
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'"): ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
-          router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.post-title {{ activity.title }}
-          post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true")
+          router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.discussion-title {{ activity.title }}
+          div.activity-info
+            router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
+              div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+              div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
+            div(style="padding-left: 6px; flex-grow: 1; flex-shrink: 1;")
+              div: b {{ member.username }}
+              post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true" :reply-to="activity.posts[activity.posts.length - 1].replyTo" :discussion-id="activity._id")
       div.member-recent-posts(v-else)
         discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
@@ -169,6 +175,8 @@ div.member-info {
     }
     h2.member-bio {
       font-weight: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-size: 16px;
       margin: 0;
       line-height: $avatar-size / 4;
@@ -205,6 +213,14 @@ div.member-activity {
       }
     }
 
+    div.member-recent-activity h3.discussion-title {
+      padding-left: 20px;
+      font-weight: normal;
+      font-size: 16px;
+      margin: 0 0 0.5em 0;
+      padding-left: 20px;
+    }
+
     div.member-recent-activity, div.member-recent-posts {
       flex-grow: 1;
       flex-shrink: 1;
@@ -217,13 +233,6 @@ div.member-activity {
         padding: 0;
       }
 
-      h3.post-title {
-        padding-left: 20px;
-        font-weight: normal;
-        margin: 0 0 0.5em 0;
-        padding-left: 20px;
-      }
-
       span.activity-time {
         display: block;
         color: #bbb;
@@ -233,21 +242,55 @@ div.member-activity {
 
       li.activity-item {
         display: block;
-        padding-bottom: 20px;
+        padding-bottom: 12px;
         margin-bottom: 12px;
 
         div.post-content {
-          padding: 20px;
+          padding: 10px 0;
           font-size: 14px;
-          background-color: rgba(grey, 0.15);
-          border-radius: 5px;
+          // background-color: rgba(black, 0.05);
+          // border-left: 1px dashed grey;
+          // border-radius: 6px;
           overflow: hidden;
         }
       }
 
-      li.activity-item:not(:last-child) {
-        border-bottom: 1px solid rgba(grey, 0.3);
+      div.activity-info {
+        display: flex;
       }
+
+      $avatar-size: 50px;
+      a.discussion-post-avater {
+        width: $avatar-size;
+        height: $avatar-size;
+        display: block;
+        margin-left: 20px;
+        margin-right: 10px;
+      }
+
+      div.discussion-post-avater {
+        position: relative;
+        order: 1;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: $avatar-size;
+        height: $avatar-size;
+        border-radius: $avatar-size / 2;
+        background-color: mix($theme_color, white, 80%);
+        text-align: center;
+        color: white;
+        line-height: $avatar-size;
+        font-size: $avatar-size * 0.45;
+        overflow: hidden;
+
+        div.avatar-image {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background-size: cover;
+        }
+      }
+
     }
   }
 
@@ -266,11 +309,17 @@ div.member-activity {
   a {
     color: white;
   }
+  li.activity-item:not(:last-child) {
+    border-bottom: 1px solid #555;
+  }
 }
 
 .light-theme div.member-info, .light-theme div.member-activity {
   a {
     color: $theme_color;
+  }
+  li.activity-item:not(:last-child) {
+    border-bottom: 1px solid rgba($theme_color, 0.3);
   }
 }
 </style>
