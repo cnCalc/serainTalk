@@ -85,7 +85,7 @@ function getDiscussionById (req, res) {
   }
 
   dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId }},
+    { $match: { _id: discussionId } },
     {
       $project: {
         creater: 1, title: 1, createDate: 1,
@@ -126,8 +126,8 @@ function getDiscussionPostsById (req, res) {
     return errorHandler(err, 'invalid discussion id', 400, res);
   }
   dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId }},
-    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] }}}
+    { $match: { _id: discussionId } },
+    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
   ]).toArray((err, results) => {
     if (err) {
       errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -232,7 +232,7 @@ let createPost = async (req, res, next) => {
     let postList = discussionInfo.posts;
     for (let i = postList.length - 1; i >= 0; i--) {
       if (postList[i].index === undefined) {
-        let updateInfo = { $set: {}};
+        let updateInfo = { $set: {} };
         updateInfo.$set[`posts.${i}.index`] = i + 1;
         await dbTool.discussion.update(
           { _id: _id },
@@ -257,9 +257,9 @@ let createPost = async (req, res, next) => {
 let votePost = async (req, res, next) => {
   let _disId = ObjectID(req.params.id);
   let postInfo = await dbTool.discussion.aggregate(
-    { $match: { '_id': _disId }},
+    { $match: { '_id': _disId } },
     { $unwind: 'posts' },
-    { $sort: { createDate: 1, user: 1 }}
+    { $sort: { createDate: 1, user: 1 } }
   ).toArray();
   console.log(postInfo);
 };
