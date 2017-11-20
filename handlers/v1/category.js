@@ -101,29 +101,26 @@ function getDiscussionsUnderSpecifiedCategory (req, res) {
         status: 'ok',
       });
     } else {
-      dbTool.db.collection('discussion').find({
-        category
-      }, {
-        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
-      }, {
-        limit: pagesize,
-        skip: offset * pagesize,
-        sort: [['lastDate', 'desc']]
-      }).toArray((err, results) => {
+      dbTool.discussion.find(
+        { category },
+        { creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, },
+        {
+          limit: pagesize,
+          skip: offset * pagesize,
+          sort: [['lastDate', 'desc']]
+        }
+      ).toArray((err, results) => {
         if (err) {
           errorHandler(err, errorMessages.DB_ERROR, 500, res);
           return;
         }
-        resloveMembersInDiscussionArray(results, (err, members) => {
+        resloveMembersInDiscussionArray(results).then(members => {
+          return res.send({ status: 'ok', discussions: results, members });
+        }).catch(err => {
           if (err) {
-            errorHandler(err, errorMessages.DB_ERROR, 500, res);
-            return;
+            /* istanbul ignore next */
+            return errorHandler(err, errorMessages.DB_ERROR, 500, res);
           }
-          res.send({
-            status: 'ok',
-            discussions: results,
-            members
-          });
         });
       });
     }
