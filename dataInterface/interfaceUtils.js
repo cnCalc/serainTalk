@@ -13,3 +13,6 @@ exports.pagesize = pagesize;
 
 let page = joi.number().default(1);
 exports.page = page;
+
+let flag = joi.string().allow(['on', 'off']);
+exports.flag = flag;

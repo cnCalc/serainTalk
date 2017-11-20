@@ -1,7 +1,6 @@
 'use strict';
 
 const joi = require('joi');
-const config = require('../config');
 const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
@@ -28,6 +27,23 @@ let signup = {
   }
 };
 exports.signup = signup;
+
+// region 成员信息部分
+
+let info = {};
+
+info.get = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  },
+  query: {
+    recent: interfaceUtils.flag
+  }
+};
+
+exports.info = info;
+
+// endregion
 
 // #region 成员密码部分
 let password = {};
