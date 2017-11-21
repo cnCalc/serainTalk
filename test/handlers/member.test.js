@@ -93,12 +93,12 @@ describe('member part', () => {
   it('get member info by mongoId.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
-      let memberBody = await agent
+      let memberRes = await agent
         .get(url)
         .expect(200);
-      expect(memberBody.body.status).to.equal('ok');
-      delete memberBody.body.status;
-      let memberInfo = memberBody.body;
+      expect(memberRes.body.status).to.equal('ok');
+      delete memberRes.body.status;
+      let memberInfo = memberRes.body.memberinfo;
       testTools.member.checkMemberInfo(memberInfo);
     });
   });

@@ -22,32 +22,23 @@ let router = express.Router();
  * @param {Request} req
  * @param {Response} res
  */
-let getMemberInfoById = async (req, res) => {
-  if (!req.params.id) {
-    return errorHandler(null, 'missing member id', 400, res);
-  }
-  let memberId;
-  try {
-    memberId = ObjectID(req.params.id);
-  } catch (err) {
-    return errorHandler(null, 'invalid member id', 400, res);
-  }
+let getMemberInfoById = async (req, res, next) => {
+  let memberId = ObjectID(req.params.id);
+
   // 查询用户的基础信息
   try {
-    let results = await dbTool.db.collection('common_member').find({ _id: memberId }).toArray();
-    if (results.length !== 1) {
-      res.send({
-        status: 'ok',
-      });
-    } else {
-      let result = results[0];
+    let memberInfo = await dbTool.commonMember.findOne({ _id: memberId });
+    if (!memberInfo) {
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
+    }
 
-      // 删除用户的登陆凭据部分
-      delete result['credentials'];
+    // 删除用户的登陆凭据部分
+    delete memberInfo['credentials'];
 
-      // 获得此用户最近的帖子（如果需要）
-      if (req.query.recent === 'on') {
-        dbTool.db.collection('discussion').aggregate([{
+    // 获得此用户最近的帖子（如果需要）
+    if (req.query.recent === 'on') {
+      let recentPosts = await dbTool.db.collection('discussion').aggregate([
+        {
           $match: {
             'posts.user': memberId
           }
@@ -67,42 +58,30 @@ let getMemberInfoById = async (req, res) => {
             'posts.createDate': -1
           }
         }, {
-          $limit: 20
-        }]).toArray((err, docs) => {
-          if (err) {
-            result.recentActivities = null;
-          } else {
-            result.recentActivities = docs;
-            result.recentActivities.forEach(discussion => {
-              discussion.posts = utils.renderer.renderPosts(discussion.posts);
-            });
+          $limit: config.pagesize
+        }
+      ]).toArray();
+      memberInfo.recentActivities = recentPosts;
+      memberInfo.recentActivities.forEach(discussion => {
+        discussion.posts = utils.renderer.renderPosts(discussion.posts);
+      });
 
-            let tempPosts = [];
+      let tempPosts = [];
+      memberInfo.recentActivities.forEach(discussion => {
+        tempPosts = [...tempPosts, ...discussion.posts];
+      });
 
-            result.recentActivities.forEach(discussion => {
-              tempPosts = [...tempPosts, ...discussion.posts];
-            });
-
-            resloveMembersInDiscussion({ posts: tempPosts }, (err, members) => {
-              if (err) {
-                members = {};
-              }
-              res.send({
-                status: 'ok',
-                member: result,
-                members: members,
-              });
-            });
-          }
-        });
-      } else {
-        // 不需要，直接发送
-        res.send({
-          status: 'ok',
-          member: result,
-        });
+      let members;
+      try {
+        members = await resloveMembersInDiscussion({ posts: tempPosts });
+      } catch (err) {
+        members = {};
       }
+      return res.status(200).send({ status: 'ok', member: memberInfo, members: members });
     }
+
+    // 不需要，直接发送
+    return res.status(200).send({ status: 'ok', memberinfo: memberInfo });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
@@ -167,33 +146,18 @@ let getDiscussionUnderMember = async (req, res) => {
 
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
-  let cursor = null;
-  let discussions, count;
   try {
-    cursor = dbTool.db.collection('discussion').find({
-      creater: memberId
-    }, {
-      creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-    }).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
-    discussions = await cursor.toArray();
-    count = await cursor.count();
-  } catch (e) {
-    console.log(e);
+    let cursor = dbTool.discussion.find(
+      { creater: memberId },
+      { creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1 }
+    ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+    let discussions = await cursor.toArray();
+    let count = await cursor.count();
+    let members = await resloveMembersInDiscussionArray(discussions);
+    return res.send({ status: 'ok', discussions, members, count });
+  } catch (err) {
     return errorHandler(null, errorMessages.DB_ERROR, 500, res);
   }
-
-  resloveMembersInDiscussionArray(discussions, (err, members) => {
-    if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      return;
-    }
-    res.send({
-      status: 'ok',
-      discussions,
-      members,
-      count
-    });
-  });
 };
 
 /**

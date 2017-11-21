@@ -56,13 +56,8 @@ async function getLatestDiscussionList (req, res) {
         sort: [['lastDate', 'desc']]
       }
     ).toArray();
-    resloveMembersInDiscussionArray(results, (err, members) => {
-      if (err) {
-        /* istanbul ignore next */
-        return errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      }
-      return res.send({ status: 'ok', discussions: results, members });
-    });
+    let members = await resloveMembersInDiscussionArray(results);
+    return res.send({ status: 'ok', discussions: results, members });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -115,7 +110,7 @@ function getDiscussionById (req, res) {
  * @param {Request} req
  * @param {Response} res
  */
-function getDiscussionPostsById (req, res) {
+async function getDiscussionPostsById (req, res) {
   let pagesize = Number(req.query.pagesize) || config.pagesize;
   let offset = Number(req.query.page - 1) || 0;
   let discussionId;
@@ -125,28 +120,24 @@ function getDiscussionPostsById (req, res) {
     /* istanbul ignore next */
     return errorHandler(err, 'invalid discussion id', 400, res);
   }
-  dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId } },
-    { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
-  ]).toArray((err, results) => {
-    if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-    } else if (results.length === 0) {
-      errorHandler(err, errorMessages.NOT_FOUND, 404, res);
-    } else {
-      resloveMembersInDiscussion(results[0], (err, members) => {
-        if (err) {
-          /* istanbul ignore next */
-          return errorHandler(err, errorMessages.DB_ERROR, 500, res);
-        }
-        res.send({
-          status: 'ok',
-          posts: utils.renderer.renderPosts(results[0].posts),
-          members
-        });
-      });
+  try {
+    let results = await dbTool.db.collection('discussion').aggregate([
+      { $match: { _id: discussionId } },
+      { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
+    ]).toArray();
+    if (results.length === 0) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     }
-  });
+    let members = await resloveMembersInDiscussion(results[0]);
+    return res.status(200).send({
+      status: 'ok',
+      posts: utils.renderer.renderPosts(results[0].posts),
+      members
+    });
+  } catch (err) {
+    /* istanbul ignore next */
+    errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
 }
 
 /**

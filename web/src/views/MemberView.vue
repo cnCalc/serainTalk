@@ -16,7 +16,9 @@ div
         div: router-link(:to="`/m/${$route.params.memberId}/discussions`") 创建的讨论
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'"): ul
         li.activity-item(v-for="activity in member.recentActivities")
-          span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}发表回复：
+          span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}
+            span.activity-type(v-if="activity.posts[activity.posts.length - 1].index === 1") 发起讨论：
+            span.activity-type(v-else) 发表回复：
           router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.discussion-title {{ activity.title }}
           div.activity-info
             router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
@@ -99,7 +101,7 @@ export default {
   },
   activated () {
     if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
-      this.$options.asyncData({ store: this.$store, route: this.$route });
+      // this.$options.asyncData({ store: this.$store, route: this.$route });
       this.firstIn = true;
       this.canLoadMore = true;
     }
@@ -123,6 +125,7 @@ div.member-info {
   text-align: left;
   $avatar-size: 120px;
   display: flex;
+  padding: 0 15px;
   div.avatar {
     width: $avatar-size;
     height: $avatar-size;
@@ -214,11 +217,13 @@ div.member-activity {
     }
 
     div.member-recent-activity h3.discussion-title {
-      padding-left: 20px;
       font-weight: normal;
       font-size: 16px;
       margin: 0 0 0.5em 0;
-      padding-left: 20px;
+    }
+
+    div.member-recent-activity {
+      padding: 0 20px;
     }
 
     div.member-recent-activity, div.member-recent-posts {
@@ -237,12 +242,11 @@ div.member-activity {
         display: block;
         color: #bbb;
         font-size: 12px;
-        padding-left: 20px;
       }
 
       li.activity-item {
         display: block;
-        padding-bottom: 12px;
+        padding-bottom: 24px;
         margin-bottom: 12px;
 
         div.post-content {
@@ -264,7 +268,7 @@ div.member-activity {
         width: $avatar-size;
         height: $avatar-size;
         display: block;
-        margin-left: 20px;
+        margin-left: 0px;
         margin-right: 10px;
       }
 

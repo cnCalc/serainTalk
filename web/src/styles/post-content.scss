@@ -26,7 +26,7 @@ div.post-content {
   }
 
   blockquote {
-    margin: 0;
+    margin: 0.5em 0;
     padding: 9px 12px;
     font-size: 0.95em;
     line-height: 1.5em;
@@ -75,7 +75,11 @@ div.post-content {
   }
   pre.code {
     // Codes from Discuz
-    padding: 1rem 1rem 0.3rem 1rem;
+    padding: 1rem 20px 0.3rem 20px;
+  }
+  pre > code {
+    display: block;
+    margin-left: 20px;
   }
   /** line numbers **/
   pre span.__line:before {
@@ -84,8 +88,9 @@ div.post-content {
     display: inline-block;
     width: 20px;
     text-align: right;
-    padding: 0 .5em;
-    margin-right: .5em;
+    padding: 0 5px;
+    margin-right: 5px;
+    margin-left: -15px;
     color: #888
   }
 }

@@ -35,32 +35,26 @@ async function fetchOneMember (db, members, memberId) {
  * 解析一组讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
  *
  * @param {Array.<Discussion>} discussions
- * @param {Function(err, Object.<String, Member>)} callback
+ * @returns {Promise<Array<Member>>)}
  */
-function resloveMembersInDiscussionArray (discussions, callback) {
+async function resloveMembersInDiscussionArray (discussions) {
   let members = {};
   let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
-  Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId))).then(() => {
-    callback(null, members);
-  }).catch(err => {
-    callback(err);
-  });
+  await Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId)));
+  return members;
 }
 
 /**
  * 解析单个讨论内所有出现的用户信息，在回调中返回ID为Key的用户信息对象
  *
  * @param {Discussion} discussion
- * @param {Function(err, Object.<String, Member>)} callback
- */
-function resloveMembersInDiscussion (discussion, callback) {
+ * @returns {Promise<Array<Member>>}
+*/
+async function resloveMembersInDiscussion (discussion) {
   let members = {};
   let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user.toString(), post.replyTo ? post.replyTo.memberId.toString() : null]), []);
-  Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(memberId => fetchOneMember(dbTool.db, members, ObjectID(memberId)))).then(() => {
-    callback(null, members);
-  }).catch(err => {
-    callback(err);
-  });
+  await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(memberId => fetchOneMember(dbTool.db, members, ObjectID(memberId))));
+  return members;
 }
 
 module.exports = {
