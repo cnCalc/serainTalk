@@ -4,14 +4,14 @@
       loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
       ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts.slice((currentPage - 1) * pagesize + 1, currentPage * pagesize + 1)" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
-          router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
-            div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
-            div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
           article.discussion-post-body
             header.discussion-post-info
+              router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
+                div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
+                div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
               span.discussion-post-member {{ members[post.user].username }}
               span.discussion-post-index {{ `#${post.index}` }}
-            post-content.discussion-post-content(:content="post.content" :reply-to="post.replyTo")
+            post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
             footer.discussion-post-info
               div.discussion-post-date 最后编辑于 {{ new Date(post.createDate).toLocaleDateString() }}
               div.button-left-container
@@ -200,6 +200,13 @@ div.discussion-view {
     order: 2;
     width: $right_width;
     position: relative;
+    @include respond-to(phone){
+      display: none;
+    }
+
+    @include respond-to(tablet) {
+      display: none;
+    }
 
     div.functions-slide-bar-container {
       width: $right_width;
@@ -233,13 +240,71 @@ div.discussion-view {
       transition: background ease 0.5s;
       div.discussion-post-container {
         display: flex;
-        padding: 15px 0 15px 15px;
+        padding: 15px 0;
       }
 
-      $avatar-size: 60px;
-      a.discussion-post-avater {
-        width: $avatar-size;
-        height: $avatar-size;
+      @mixin set-avatar-size($avatar-size) {
+        a.discussion-post-avater {
+          width: $avatar-size;
+          height: $avatar-size;
+        }
+        div.discussion-post-avater {
+          width: $avatar-size;
+          height: $avatar-size;
+          border-radius: $avatar-size / 2;
+          line-height: $avatar-size;
+          font-size: $avatar-size * 0.45;
+        }
+        span.discussion-post-member {
+          padding: 0 0.3em;
+        }
+      }
+
+      @mixin set-avatar-outside($avatar-size) {
+        a.discussion-post-avater {
+          display: block;
+          width: 0;
+          height: 0;
+          overflow: show;
+        }
+        div.discussion-post-avater {
+          margin-left: -$avatar-size - 8px;
+          margin-top: -10px;
+        }
+        .discussion-post-body > * {
+          margin-left: $avatar-size + 8px;
+        }
+      }
+
+      @include respond-to(phone) {
+        @include set-avatar-size(32px);
+      }
+
+      @include respond-to(tablet) {
+        @include set-avatar-size(50px);
+        @include set-avatar-outside(50px);
+      }
+
+      @include respond-to(laptop) {
+        @include set-avatar-size(60px);
+        @include set-avatar-outside(60px);
+      }
+
+      header.discussion-post-info {
+        display: flex;
+        align-items: center;
+      }
+
+      span.discussion-post-member {
+        flex-grow: 1;
+        flex-shrink: 1;
+        font-size: 0.9em;
+        font-weight: bold;
+      }
+
+      span.discussion-post-index {
+        margin-right: 0.5em;
+        font-size: 0.9em;
       }
 
       div.discussion-post-avater {
@@ -247,14 +312,9 @@ div.discussion-view {
         order: 1;
         flex-grow: 0;
         flex-shrink: 0;
-        width: $avatar-size;
-        height: $avatar-size;
-        border-radius: $avatar-size / 2;
         background-color: mix($theme_color, white, 80%);
         text-align: center;
         color: white;
-        line-height: $avatar-size;
-        font-size: $avatar-size * 0.45;
         overflow: hidden;
 
         div.avatar-image {
@@ -269,19 +329,7 @@ div.discussion-view {
         order: 2;
         flex-grow: 1;
         flex-shrink: 1;
-        margin: 0 15px;
         // padding: 5px;
-
-        span.discussion-post-member {
-          font-size: 0.9em;
-          font-weight: bold;
-        }
-
-        span.discussion-post-index {
-          float: right;
-          margin-right: 0.5em;
-          font-size: 0.9em;
-        }
 
         span.discussion-post-date {
           margin-left: 0.5em;
@@ -294,6 +342,7 @@ div.discussion-view {
           font-size: 14px;
           word-wrap: break-word;
           box-sizing: border-box;
+          padding: 0.5em 0.3em;
         }
 
         footer.discussion-post-info {
