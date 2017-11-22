@@ -52,12 +52,22 @@ let sendMessage = async (req, res, next) => {
 let getMessage = async (req, res, next) => {
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
-  let cursor = dbTool.commonMember.find(
-    { _id: req.member._id },
-    { limit: config.pagesize }
-  ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
-  let messages = await cursor.toArray();
-  let count = await cursor.count();
+  let messages = await dbTool.commonMember.aggregate([
+    { $match: { _id: req.member._id } },
+    { $project: { messages: 1, _id: 0 } },
+    { $unwind: '$messages' },
+    { $sort: { 'messages.date': -1 } },
+    { $limit: pagesize },
+    { $skip: offset }
+  ]).toArray();
+  let count = await dbTool.commonMember.aggregate([
+    { $match: { _id: req.member._id } },
+    { $project: { messages: 1, _id: 0 } },
+    { $unwind: '$messages' },
+    { $count: 'count' }
+  ]).toArray();
+  messages = messages.map(message => message.messages);
+  count = count[0].count;
   return res.status(200).send({ status: 'ok', messages: messages, count: count });
 };
 

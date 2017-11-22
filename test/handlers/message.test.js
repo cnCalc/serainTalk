@@ -3,6 +3,7 @@
 const supertest = require('supertest');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
+const config = require('../../config');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -49,14 +50,19 @@ describe('message part', async () => {
       let payload = {
         message: 'hello, here is test message.'
       };
-      await agent.post(postUrl)
-        .send(payload)
-        .expect(201);
+      for (let i = 0; i < config.pagesize + 1; i++) {
+        await agent.post(postUrl)
+          .send(payload)
+          .expect(201);
+      }
       let getUrl = '/api/v1/message';
       let messageRes = await agent.get(getUrl)
         .expect(200);
       messageRes = messageRes.body;
-      console.log(messageRes);
+      let messages = messageRes.messages;
+      let count = messageRes.count;
+      expect(messages.length).to.be.equal(config.pagesize);
+      expect(count).to.be.equal(config.pagesize + 1);
     });
   });
 });
