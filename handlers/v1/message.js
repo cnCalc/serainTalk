@@ -2,7 +2,6 @@
 
 const { ObjectID } = require('mongodb');
 const config = require('../../config');
-const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
@@ -13,10 +12,22 @@ const utils = require('../../utils');
 const { middleware } = utils;
 
 const router = express.Router();
-
+/**
+ * 发送一条消息给指定成员
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ * @returns
+ */
 let sendMessage = async (req, res, next) => {
   let message = {
     date: Date.now(),
+    from: {
+      _id: req.member._id,
+      username: req.member.username,
+      avatar: req.member.avatar
+    },
     message: req.body.message,
     href: req.body.href,
     unread: true
@@ -31,7 +42,26 @@ let sendMessage = async (req, res, next) => {
   }
   return res.status(201).send({ status: 'ok', newMessage: message });
 };
+/**
+ * 获取自己的消息列表
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ */
+let getMessage = async (req, res, next) => {
+  let pagesize = req.query.pagesize;
+  let offset = req.query.page - 1;
+  let cursor = dbTool.commonMember.find(
+    { _id: req.member._id },
+    { limit: config.pagesize }
+  ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+  let messages = await cursor.toArray();
+  let count = await cursor.count();
+  return res.status(200).send({ status: 'ok', messages: messages, count: count });
+};
 
-router.post('/:id', validation(dataInterface.message.sendMessage), sendMessage);
+router.post('/:id', middleware.verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
+router.get('/', middleware.verifyMember, validation(dataInterface.message.getMessage), getMessage);
 
 module.exports = router;

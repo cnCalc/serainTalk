@@ -212,6 +212,8 @@ let login = async (req, res) => {
 
   // 删除登录凭证。
   delete memberInfo.credentials;
+  // 删除消息队列
+  delete memberInfo.messages;
 
   // 更新最后一次登录时间
   await dbTool.commonMember.updateOne({
@@ -262,7 +264,10 @@ let signup = async (req, res) => {
 
   await dbTool.commonMember.insertOne(memberInfo);
 
+  // 删除身份信息
   delete memberInfo.credentials;
+  // 删除消息队列
+  delete memberInfo.messages;
 
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
@@ -342,6 +347,8 @@ let resetPassword = async (req, res) => {
 
   // 删除登录凭证。
   delete memberInfo.credentials;
+  // 删除消息队列
+  delete memberInfo.messages;
 
   // 返回登录 token
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);

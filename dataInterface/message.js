@@ -15,3 +15,11 @@ let sendMessage = {
   }
 };
 exports.sendMessage = sendMessage;
+
+let getMessage = {
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  }
+};
+exports.getMessage = getMessage;
