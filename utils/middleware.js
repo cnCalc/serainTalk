@@ -102,8 +102,8 @@ let checkDiscussionFreq = async (req, res, next) => {
   }
 
   let latestDiscussion = await dbTool.discussion.aggregate([
-    { $match: { 'creater': req.member._id }},
-    { $sort: { 'createDate': -1 }},
+    { $match: { 'creater': req.member._id } },
+    { $sort: { 'createDate': -1 } },
     { $limit: 1 }
   ]).toArray();
   if (latestDiscussion.length === 0) return next();
@@ -132,7 +132,7 @@ let checkPostFreq = async (req, res, next) => {
   }
 
   let latestPost = await dbTool.discussion.aggregate([
-    { $match: { 'participants': req.member._id }},
+    { $match: { 'participants': req.member._id } },
     {
       $project: {
         posts: {
@@ -153,7 +153,7 @@ let checkPostFreq = async (req, res, next) => {
       }
     },
     { $unwind: '$posts' },
-    { $sort: { 'posts.createDate': -1 }},
+    { $sort: { 'posts.createDate': -1 } },
     { $limit: 1 }
   ]).toArray();
   if (latestPost.length === 0) return next();
@@ -183,7 +183,7 @@ let checkCommitFreq = async (req, res, next) => {
   }
 
   let latestPost = await dbTool.discussion.aggregate([
-    { $match: { 'participants': req.member._id }},
+    { $match: { 'participants': req.member._id } },
     {
       $project: {
         posts: {
@@ -198,7 +198,7 @@ let checkCommitFreq = async (req, res, next) => {
       }
     },
     { $unwind: '$posts' },
-    { $sort: { 'posts.createDate': -1 }},
+    { $sort: { 'posts.createDate': -1 } },
     { $limit: 1 }
   ]).toArray();
   if (latestPost.length === 0) return next();
