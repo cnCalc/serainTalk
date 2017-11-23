@@ -7,27 +7,22 @@ const { ObjectID } = require('mongodb');
 /**
  * 从数据库中获取一个用户的信息，并将结果保存至 members 数组中。
  *
- * @param {MongoConnecton} db 数据库链接
- * @param {Object.<String, Member>} members 保存用户信息的对象
- * @param {String} memberId 待获取信息的用户 ID
+ * @param {MongoID} memberId 待获取信息的用户 ID
  */
-async function fetchOneMember (db, members, memberId) {
-  if (members[memberId]) {
-    return;
-  } else {
-    try {
-      let data = await db.collection('common_member').findOne(
-        { _id: memberId },
-        { username: 1, uid: 1, avatar: 1 }
-      );
-      if (data) {
-        delete data._id;
-        members[memberId] = data;
-      }
-    } catch (err) {
-      errorHandler(err);
-      members[memberId] = {};
-    };
+let fetchOneMember = async (memberId) => {
+  try {
+    let memberInfo = await dbTool.commonMember.findOne(
+      { _id: memberId },
+      { username: 1, uid: 1, avatar: 1, _id: 0 }
+    );
+    delete memberInfo._id;
+    if (!memberInfo) return {};
+    else return memberInfo;
+  } catch (err) {
+    /* istanbul ignore next */
+    errorHandler(err);
+    /* istanbul ignore next */
+    return {};
   }
 };
 
@@ -40,7 +35,7 @@ async function fetchOneMember (db, members, memberId) {
 async function resloveMembersInDiscussionArray (discussions) {
   let members = {};
   let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
-  await Promise.all([...new Set(membersToFetch)].map(memberId => fetchOneMember(dbTool.db, members, memberId)));
+  await Promise.all([...new Set(membersToFetch)].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
   return members;
 }
 
@@ -53,7 +48,7 @@ async function resloveMembersInDiscussionArray (discussions) {
 async function resloveMembersInDiscussion (discussion) {
   let members = {};
   let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user.toString(), post.replyTo ? post.replyTo.memberId.toString() : null]), []);
-  await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(memberId => fetchOneMember(dbTool.db, members, ObjectID(memberId))));
+  await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
   return members;
 }
 
