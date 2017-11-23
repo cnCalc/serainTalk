@@ -69,14 +69,6 @@ let createOneMember = async (agent, tempMemberInfo, next) => {
   // 补全必要信息
   newMemberInfo.password = tempMemberInfo.password;
 
-  let url = `/api/v1/message/${newMemberInfo.id}`;
-  let payload = {
-    message: 'hello, here is test message.'
-  };
-  await agent.post(url)
-    .send(payload)
-    .expect(201);
-
   try {
     // 执行后续操作
     await next(newMemberInfo);
