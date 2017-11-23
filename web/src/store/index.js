@@ -17,8 +17,11 @@ const store = new Vuex.Store({
     me: {},
     discussions: [],
     categoriesGroup: [],
-    globalTitle: '',
-    globalSubtitle: '',
+    globalTitle: {
+      title: '',
+      subtitle: '',
+      isMobileMemberView: false
+    },
     theme: window.localStorage['theme'] || 'light',
     busy: false,
     discussionMeta: {},

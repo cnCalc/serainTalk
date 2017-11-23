@@ -2,6 +2,7 @@
 
 div.post-content {
   word-break: break-word;
+  width: 100%;
 
   img {
     max-width: 70%;
@@ -80,6 +81,7 @@ div.post-content {
   pre > code {
     display: block;
     margin-left: 20px;
+    width: fit-content;
   }
   /** line numbers **/
   pre span.__line:before {
@@ -101,7 +103,7 @@ div.post-content {
     border-left: 2px solid #888;
   }
   pre {
-    background: rgba(0, 0, 0, 0.2);
+    background: #282828;
   }
   th {
     border-bottom: 3px solid #444;
@@ -116,7 +118,6 @@ div.post-content {
     color: white;
   }
   code {
-    background-color: rgba(0, 0, 0, 0.2);
     color: #aaa;
   }
   pre > code {

@@ -24,7 +24,7 @@ div.container {
   text-align: center;
   box-sizing: border-box;
   cursor: pointer;
-  transition: background-color ease 0.2s;
+  transition: all ease 0.2s;
 }
 
 a:link, a:active, a:hover, a:visited {
@@ -85,7 +85,7 @@ a:hover {
 // responsive mixins
 @mixin respond-to($media) {
   $break-small: 480px;
-  $break-large: 768px;
+  $break-large: 800px;
   @if $media == phone {
     @media only screen and (max-width: $break-small) { @content; }
   }

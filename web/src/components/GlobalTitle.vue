@@ -1,7 +1,8 @@
 <template lang="pug">
-  div.jumbotron(v-if="globalTitle !== ''")
-    h1 {{ decodeHTML(globalTitle) }}
-    h2 {{ decodeHTML(globalSubtitle) }}
+  div.jumbotron(v-if="title !== ''")
+    div.mobile-member-view-placeholder(v-if="isMobileMemberView")
+    h1 {{ decodeHTML(title) }}
+    h2 {{ decodeHTML(subtitle) }}
 </template>
 
 <script>
@@ -10,11 +11,14 @@ import decodeHTML from '../utils/decodeHTML';
 export default {
   name: 'global-title',
   computed: {
-    globalTitle () {
-      return this.$store.state.globalTitle;
+    title () {
+      return this.$store.state.globalTitle.title || '';
     },
-    globalSubtitle () {
-      return this.$store.state.globalSubtitle;
+    subtitle () {
+      return this.$store.state.globalTitle.subtitle || '';
+    },
+    isMobileMemberView () {
+      return this.$store.state.globalTitle.isMobileMemberView;
     }
   },
   methods: {
@@ -39,10 +43,17 @@ div.jumbotron {
     font-weight: 400;
     margin-top: 1.5rem;
   }
+
   h2 {
     font-size: 18px;
     font-weight: 300;
     margin-bottom: 1.2rem;
+  }
+
+  div.mobile-member-view-placeholder {
+    @include respond-to(phone) {
+      height: 300px;
+    }
   }
 }
 

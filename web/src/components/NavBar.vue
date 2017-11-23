@@ -98,7 +98,7 @@ div.st-header {
     text-align: left;
     height: 50px;
     vertical-align: top;
-    padding-left: 15px;
+    padding: 0 15px;
     white-space: nowrap;
     position: relative;
     display: flex;

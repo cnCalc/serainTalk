@@ -12,8 +12,8 @@ div
   div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
-        div: router-link(:to="`/m/${$route.params.memberId}`") 最近的活动
-        div: router-link(:to="`/m/${$route.params.memberId}/discussions`") 创建的讨论
+        div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
+        div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode !== 'posts' }") 创建的讨论
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'"): ul
         li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}
@@ -21,12 +21,13 @@ div
             span.activity-type(v-else) 发表回复：
           router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.discussion-title {{ activity.title }}
           div.activity-info
-            router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
-              div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
-              div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
-            div(style="padding-left: 6px; flex-grow: 1; flex-shrink: 1;")
-              div: b {{ member.username }}
-              post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true" :reply-to="activity.posts[activity.posts.length - 1].replyTo" :discussion-id="activity._id")
+            div.activity-member-info
+              router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
+                div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+                div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
+              div.activity-member-name
+                b {{ member.username }} 
+            post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true" :reply-to="activity.posts[activity.posts.length - 1].replyTo" :discussion-id="activity._id")
       div.member-recent-posts(v-else)
         discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
@@ -105,7 +106,7 @@ export default {
       this.firstIn = true;
       this.canLoadMore = true;
     }
-    this.$store.commit('setGlobalTitles', [' ']);
+    this.$store.commit('setGlobalTitles', [' ', ' ', true]);
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
@@ -126,12 +127,26 @@ div.member-info {
   $avatar-size: 120px;
   display: flex;
   padding: 0 15px;
+  @include respond-to(phone) {
+    flex-direction: column;
+    align-items: center;
+    height: 270px;
+    box-sizing: content-box;
+    margin-top: -270px;
+  }
+  > * {
+    @include respond-to(laptop) {
+      margin-top: -$avatar-size / 2;
+    }
+    @include respond-to(tablet) {
+      margin-top: -$avatar-size / 2;
+    }
+  }
   div.avatar {
     width: $avatar-size;
     height: $avatar-size;
     position: relative;
     border-radius: $avatar-size / 2;
-    margin-top: -$avatar-size / 2;
     overflow: hidden;
     display: inline-block;
     box-shadow: 0 0 10px black;
@@ -162,11 +177,15 @@ div.member-info {
     flex-grow: 1;
     flex-shrink: 1;
     padding-left: 1em;
-    margin-top: -$avatar-size / 2;
     vertical-align: top;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    @include respond-to(phone) {
+      width: 100%;
+      padding: 0.2em;
+      text-align: center;
+    }
     h1.member-name {
       font-weight: 300;
       margin: 0;
@@ -183,12 +202,20 @@ div.member-info {
       font-size: 16px;
       margin: 0;
       line-height: $avatar-size / 4;
+      @include respond-to(phone) {
+        color: white;
+        text-shadow: 0 0 5px black;
+      }
     }
     div.member-other-info {
       // color: #888;
       font-size: 14px;
       line-height: $avatar-size / 4;
       height: $avatar-size / 4;
+      @include respond-to(phone) {
+        color: white;
+        text-shadow: 0 0 5px black;
+      }
     }
   }
 }
@@ -199,31 +226,69 @@ div.member-activity {
   div.member-activity-container {
     margin-top: 10px;
     display: flex;
+    @include respond-to(phone) {
+      flex-direction: column;
+    }
 
     div.member-side-nav {
       flex-grow: 0;
       flex-shrink: 0;
-      width: 120px;
       order: 1;
       text-align: center;
-
-      padding-top: 20px;
       line-height: 20px;
+      padding: 0.3rem;
+
+      @include respond-to(tablet) {
+        width: 120px;
+      }
+      @include respond-to(laptop) {
+        padding-top: 20px;
+        width: 120px;
+      }
+
+      @include respond-to(phone) {
+        display: flex;
+        > * {
+          // flex-grow: 1;
+        }
+      }
 
       a {
         cursor: pointer;
         font-size: 0.9em;
+        line-height: 0.9em;
+        color: white;
+      }
+
+      button.button.active {
+        background: $theme_color;
+        color: white;
+      }
+
+      button.button {
+        background: rgba(0, 0, 0, 0);
+        margin: 0.3rem;
+        padding: 0.3em 0.5em;
+        width: 100px;
+        color: $theme_color;
+        border: none;
+
+        &:focus {
+          outline: none;
+        }
       }
     }
 
-    div.member-recent-activity h3.discussion-title {
-      font-weight: normal;
-      font-size: 16px;
-      margin: 0 0 0.5em 0;
+    div.member-recent-activity {
+      overflow: hidden;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
 
-    div.member-recent-activity {
-      padding: 0 20px;
+    div.member-recent-activity h3.discussion-title {
+      font-weight: 400;
+      font-size: 18px;
+      margin: 5px 0;
     }
 
     div.member-recent-activity, div.member-recent-posts {
@@ -252,24 +317,69 @@ div.member-activity {
         div.post-content {
           padding: 10px 0;
           font-size: 14px;
-          // background-color: rgba(black, 0.05);
-          // border-left: 1px dashed grey;
-          // border-radius: 6px;
-          overflow: hidden;
         }
       }
 
       div.activity-info {
         display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
 
-      $avatar-size: 50px;
+      div.activity-member-info {
+        display: flex;
+        align-items: center;
+      }
+
+      div.activity-member-name {
+        @include respond-to(phone) {
+          padding-left: 8px;
+        }
+      }
+
+      @mixin set-avatar ($avatar-size) {
+        a.discussion-post-avater {
+          width: $avatar-size;
+          height: $avatar-size;
+        }
+        div.discussion-post-avater {
+          width: $avatar-size;
+          height: $avatar-size;
+          border-radius: $avatar-size / 2;
+          line-height: $avatar-size;
+          font-size: $avatar-size * 0.45;
+        }
+      }
+
+      @mixin set-avatar-outside($avatar-size) {
+        $avatar-padding: 12px;
+        .activity-info {
+          padding-left: $avatar-size + $avatar-padding;
+        }
+        a.discussion-post-avater {
+          width: 0;
+          height: 0;
+        }
+        div.discussion-post-avater {
+          margin-left: -$avatar-size - $avatar-padding;
+          margin-top: -4px;
+        }
+      }
+
+      @include respond-to(phone) {
+        @include set-avatar(32px);
+      }
+      @include respond-to(tablet) {
+        @include set-avatar(50px);
+        @include set-avatar-outside(50px);
+      }
+      @include respond-to(laptop) {
+        @include set-avatar(60px);
+        @include set-avatar-outside(60px);
+      }
+
       a.discussion-post-avater {
-        width: $avatar-size;
-        height: $avatar-size;
         display: block;
-        margin-left: 0px;
-        margin-right: 10px;
       }
 
       div.discussion-post-avater {
@@ -277,14 +387,9 @@ div.member-activity {
         order: 1;
         flex-grow: 0;
         flex-shrink: 0;
-        width: $avatar-size;
-        height: $avatar-size;
-        border-radius: $avatar-size / 2;
         background-color: mix($theme_color, white, 80%);
         text-align: center;
         color: white;
-        line-height: $avatar-size;
-        font-size: $avatar-size * 0.45;
         overflow: hidden;
 
         div.avatar-image {
@@ -294,7 +399,6 @@ div.member-activity {
           background-size: cover;
         }
       }
-
     }
   }
 

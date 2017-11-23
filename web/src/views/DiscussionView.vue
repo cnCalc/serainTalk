@@ -191,6 +191,8 @@ div.discussion-view {
     flex-grow: 1;
     flex-shrink: 1;
     order: 1;
+    overflow: hidden;
+    padding-right: 5px;
   }
 
   $right_width: 100px;
@@ -268,11 +270,11 @@ div.discussion-view {
           overflow: show;
         }
         div.discussion-post-avater {
-          margin-left: -$avatar-size - 8px;
+          margin-left: -$avatar-size - 12px;
           margin-top: -10px;
         }
         .discussion-post-body > * {
-          margin-left: $avatar-size + 8px;
+          padding-left: $avatar-size + 12px;
         }
       }
 
@@ -329,6 +331,7 @@ div.discussion-view {
         order: 2;
         flex-grow: 1;
         flex-shrink: 1;
+        max-width: 100%;
         // padding: 5px;
 
         span.discussion-post-date {
@@ -342,7 +345,6 @@ div.discussion-view {
           font-size: 14px;
           word-wrap: break-word;
           box-sizing: border-box;
-          padding: 0.5em 0.3em;
         }
 
         footer.discussion-post-info {

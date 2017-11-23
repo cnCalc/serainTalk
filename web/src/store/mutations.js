@@ -9,9 +9,10 @@ let mutations = {
   /**
    * 设置页面巨幕的标题和副标题
    */
-  setGlobalTitles: (state, [title, subtitle]) => {
-    state.globalTitle = title || '';
-    state.globalSubtitle = subtitle || '';
+  setGlobalTitles: (state, [title, subtitle, isMobileMemberView]) => {
+    state.globalTitle = {
+      title, subtitle, isMobileMemberView,
+    };
   },
 
   /**
