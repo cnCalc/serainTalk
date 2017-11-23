@@ -33,7 +33,7 @@ let getMemberInfoById = async (req, res, next) => {
     }
 
     // 删除用户的登陆凭据部分
-    delete memberInfo['credentials'];
+    utils.member.removePrivateField(memberInfo);
 
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent === 'on') {
@@ -108,17 +108,21 @@ let getMemberInfoGeneric = (req, res) => {
     return;
   }
 
-  dbTool.db.collection('common_member').find(query, {
-    limit: pagesize,
-    skip: offset * pagesize,
-    sort: [['date', 'desc']]
-  }).toArray((err, results) => {
+  dbTool.db.collection('common_member').find(
+    query,
+    { messages: 0 },
+    {
+      limit: pagesize,
+      skip: offset * pagesize,
+      sort: [['date', 'desc']]
+    }
+  ).toArray((err, results) => {
     /* istanbul ignore if */
     if (err) {
       errorHandler(null, errorMessages.DB_ERROR, 500, res);
     } else {
       // 删除所有用户的凭据部分
-      results.forEach(result => delete result['credentials']);
+      results.forEach(result => utils.member.removePrivateField(result));
       res.send({
         status: 'ok',
         list: results
@@ -183,7 +187,7 @@ let login = async (req, res) => {
   let memberInfo = {};
 
   try {
-    memberInfo = await dbTool.commonMember.findOne({ username: req.body.name });
+    memberInfo = await dbTool.commonMember.findOne({ username: req.body.name }, { messages: 0 });
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
@@ -210,10 +214,7 @@ let login = async (req, res) => {
     }
   }
 
-  // 删除登录凭证。
-  delete memberInfo.credentials;
-  // 删除消息队列
-  delete memberInfo.messages;
+  utils.member.removePrivateField(memberInfo);
 
   // 更新最后一次登录时间
   await dbTool.commonMember.updateOne({
@@ -256,7 +257,7 @@ let signup = async (req, res) => {
   memberInfo.lastlogintime = Date.now();
 
   try {
-    await dbTool.commonMember.findOne({ username: memberInfo.username });
+    await dbTool.commonMember.findOne({ username: memberInfo.username }, { messages: 0 });
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
@@ -264,10 +265,7 @@ let signup = async (req, res) => {
 
   await dbTool.commonMember.insertOne(memberInfo);
 
-  // 删除身份信息
-  delete memberInfo.credentials;
-  // 删除消息队列
-  delete memberInfo.messages;
+  utils.member.removePrivateField(memberInfo);
 
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
@@ -345,10 +343,7 @@ let resetPassword = async (req, res) => {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
 
-  // 删除登录凭证。
-  delete memberInfo.credentials;
-  // 删除消息队列
-  delete memberInfo.messages;
+  utils.member.removePrivateField(memberInfo);
 
   // 返回登录 token
   let memberToken = jwt.sign(memberInfo, config.jwtSecret);

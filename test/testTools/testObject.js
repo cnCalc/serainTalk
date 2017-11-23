@@ -25,7 +25,7 @@ let memberInfo = {
   email: 'ljy99041@163.com',
   regip: '114.232.38.5',
   regdate: 1335761157,
-  device: 'Nspire CX CAS',
+  device: 'R20',
   password: 'fork you.'
 };
 exports.memberInfo = memberInfo;

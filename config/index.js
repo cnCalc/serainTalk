@@ -17,6 +17,9 @@ let config = {
   password: {
     resetPasswordPage: 'https://www.cncalc.org/resetpassword.html'
   },
+  member: {
+    privateField: ['credentials', 'messages']
+  },
   discussion: {
     category: {
       whiteList: 'loading'
@@ -240,11 +243,11 @@ exports.discussion.reset = resetDiscussionConfig;
  */
 let setDiscussionCategoryWhiteList = async () => {
   let whiteList = await dbTool.generic.aggregate([
-    { $match: { key: 'pinned-categories' }},
+    { $match: { key: 'pinned-categories' } },
     { $unwind: '$groups' },
     { $unwind: '$groups.items' },
-    { $match: { 'groups.items.type': 'category' }},
-    { $project: { name: '$groups.items.name', _id: 0 }}
+    { $match: { 'groups.items.type': 'category' } },
+    { $project: { name: '$groups.items.name', _id: 0 } }
   ]).toArray();
   whiteList = whiteList.map(item => item.name);
   config.discussion.category.whiteList = whiteList;
