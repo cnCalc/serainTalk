@@ -14,7 +14,9 @@ let mongoConnect = async () => {
   try {
     db = await MongoClient.connect(config.database);
   } catch (err) {
+    /* istanbul ignore next */
     console.error(err);
+    /* istanbul ignore next */
     process.exit(10);
   }
   _db = db;

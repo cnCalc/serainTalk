@@ -43,10 +43,12 @@ let config = {
 exports = module.exports = config;
 
 if (process.env.NODE_ENV === 'PROCDUCT') {
+  /* istanbul ignore next */
   _.merge(config, procduct);
 } else if (process.env.NODE_ENV === 'MOCHA') {
   _.merge(config, mocha);
 } else {
+  /* istanbul ignore next */
   _.merge(config, dev);
 }
 
@@ -55,6 +57,7 @@ if (process.env.NODE_ENV === 'PROCDUCT') {
  *
  * @returns 重置后的 discussion 配置信息
  */
+/* istanbul ignore next */
 let resetDiscussionConfig = async () => {
   await dbTool.prepare();
   let originSetting = {
