@@ -80,6 +80,10 @@ let mutations = {
     state.member = memberInfo;
   },
 
+  appendMemberRecentActivity: (state, aciticities) => {
+    state.member.recentActivities.push(...aciticities);
+  },
+
   /**
    * 设置帖子列表正在展示的帖子
    */

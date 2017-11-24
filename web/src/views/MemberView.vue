@@ -14,12 +14,12 @@ div
       div.member-side-nav
         div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
         div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode !== 'posts' }") 创建的讨论
-      div.member-recent-activity(v-if="$route.meta.mode === 'posts'"): ul
-        li.activity-item(v-for="activity in member.recentActivities")
-          span.activity-time {{ timeAgo(activity.posts[activity.posts.length - 1].createDate) }}
-            span.activity-type(v-if="activity.posts[activity.posts.length - 1].index === 1") 发起讨论：
+      div.member-recent-activity(v-if="$route.meta.mode === 'posts'")
+        ul: li.activity-item(v-for="activity in member.recentActivities")
+          span.activity-time {{ timeAgo(activity.posts.createDate) }}
+            span.activity-type(v-if="activity.posts.index === 1") 发起讨论：
             span.activity-type(v-else) 发表回复：
-          router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts[activity.posts.length - 1].index)}#index-${activity.posts[activity.posts.length - 1].index}`"): h3.discussion-title {{ activity.title }}
+          router-link(:to="`/d/${activity._id}/${indexToPage(activity.posts.index)}#index-${activity.posts.index}`"): h3.discussion-title {{ activity.title }}
           div.activity-info
             div.activity-member-info
               router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
@@ -27,11 +27,15 @@ div
                 div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
               div.activity-member-name
                 b {{ member.username }} 
-            post-content(:content="activity.posts[activity.posts.length - 1].content" noattach="true" :reply-to="activity.posts[activity.posts.length - 1].replyTo" :discussion-id="activity._id")
+            post-content(:content="activity.posts.content" noattach="true" :reply-to="activity.posts.replyTo" :discussion-id="activity._id")
+        div.list-nav(v-if="canLoadMoreActivities")
+          loading-icon(v-if="busy")
+          button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
+        div.list-nav(v-else): span.already-max 没有更多了
       div.member-recent-posts(v-else)
         discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
-        div.list-nav(v-if="canLoadMore")
+        div.list-nav(v-if="canLoadMorePosts")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
 </template>
@@ -40,6 +44,7 @@ div
 import LoadingIcon from '../components/LoadingIcon.vue';
 import PostContent from '../components/PostContent.vue';
 import DiscussionList from '../components/DiscussionList.vue';
+import api from '../api';
 
 import { timeAgo, indexToPage } from '../utils/filters';
 
@@ -51,7 +56,8 @@ export default {
   data () {
     return {
       currentPage: 1,
-      canLoadMore: true,
+      canLoadMorePosts: true,
+      canLoadMoreActivities: true,
       currentMember: null,
       firstIn: true,
     };
@@ -73,8 +79,25 @@ export default {
       this.currentPage++;
       this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId, page: this.currentPage, append: true }).then(count => {
         if (indexToPage(count) <= this.currentPage) {
-          this.canLoadMore = false;
+          this.canLoadMorePosts = false;
         }
+      });
+    },
+    loadMoreRecentActivity () {
+      if (!this.canLoadMoreActivities) {
+        return;
+      }
+
+      this.$store.commit('setBusy', true);
+
+      const lastDate = this.member.recentActivities[this.member.recentActivities.length - 1].posts.createDate;
+      api.v1.member.fetchMoreMemberRecentActivityById({ id: this.member._id, before: lastDate }).then(recentActivities => {
+        if (recentActivities.length === 0) {
+          this.canLoadMoreActivities = false;
+        } else {
+          this.$store.commit('appendMemberRecentActivity', recentActivities);
+        }
+        this.$store.commit('setBusy', false);
       });
     }
   },
@@ -92,7 +115,7 @@ export default {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
             this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
-            this.canLoadMore = true;
+            this.canLoadMorePosts = true;
           }
           this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           this.currentPage = 1;
@@ -104,7 +127,7 @@ export default {
     if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
       // this.$options.asyncData({ store: this.$store, route: this.$route });
       this.firstIn = true;
-      this.canLoadMore = true;
+      this.canLoadMorePosts = true;
     }
     this.$store.commit('setGlobalTitles', [' ', ' ', true]);
   },
@@ -323,7 +346,7 @@ div.member-activity {
       div.activity-info {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: show;
       }
 
       div.activity-member-info {

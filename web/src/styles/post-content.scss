@@ -5,10 +5,16 @@ div.post-content {
   width: 100%;
 
   img {
-    max-width: 70%;
-    // height: 400px;
-    // display: block;
-  }
+    @include respond-to(phone) {
+      max-width: 100%;
+    }
+    @include respond-to(tablet) {
+      max-width: 85%;
+    }
+    @include respond-to(laptop) {
+      max-width: 70%;
+    }
+  }  
 
   .attachment {
     display: block;

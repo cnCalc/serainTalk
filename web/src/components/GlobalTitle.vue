@@ -38,6 +38,10 @@ div.jumbotron {
   transition: background linear 0.2s;
   text-shadow: 0 0 5px black;
 
+  h1, h2 {
+    padding: 0 1em;
+  }
+
   h1 {
     font-size: 24px;
     font-weight: 400;

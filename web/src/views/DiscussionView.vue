@@ -13,7 +13,9 @@
               span.discussion-post-index {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
             footer.discussion-post-info
-              div.discussion-post-date 最后编辑于 {{ new Date(post.createDate).toLocaleDateString() }}
+              div.discussion-post-date
+                span 创建于 {{ new Date(post.createDate).toLocaleDateString() }}
+                span(v-if="post.updateDate") ，编辑于 {{ new Date(post.updateDate).toLocaleDateString() }}
               div.button-left-container
               //-   button.button.vote-up 0
               //-   button.button.vote-down 0
@@ -257,9 +259,6 @@ div.discussion-view {
           line-height: $avatar-size;
           font-size: $avatar-size * 0.45;
         }
-        span.discussion-post-member {
-          padding: 0 0.3em;
-        }
       }
 
       @mixin set-avatar-outside($avatar-size) {
@@ -280,6 +279,9 @@ div.discussion-view {
 
       @include respond-to(phone) {
         @include set-avatar-size(32px);
+        span.discussion-post-member {
+          padding: 0 0.3em;
+        }
       }
 
       @include respond-to(tablet) {

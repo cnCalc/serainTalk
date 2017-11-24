@@ -9,6 +9,14 @@ function fetchMemberInfoById (param) {
   });
 }
 
+function fetchMoreMemberRecentActivityById (param) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/member/${param.id}?recent=on&before=${param.before}`)
+      .then(response => resolve(response.data.member.recentActivities))
+      .catch(error => reject(error));
+  });
+}
+
 function fetchDiscussionsCreatedByMember (param) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/member/${param.id}/discussions?page=${param.page || 1}`)
@@ -48,6 +56,7 @@ function fetchMe (param) {
 
 export default {
   fetchMemberInfoById,
+  fetchMoreMemberRecentActivityById,
   fetchDiscussionsCreatedByMember,
   signin, signout,
   fetchMe

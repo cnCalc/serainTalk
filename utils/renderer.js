@@ -29,6 +29,13 @@ function renderPosts (posts) {
   return posts;
 }
 
+function renderPost (post) {
+  post.encoding === 'markdown' && (post.content = md.render(post.content));
+
+  return post;
+}
+
 module.exports = {
-  renderPosts
+  renderPosts,
+  renderPost
 };

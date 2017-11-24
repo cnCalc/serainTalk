@@ -37,6 +37,7 @@ let getMemberInfoById = async (req, res, next) => {
 
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent === 'on') {
+      let beforeDate = req.query.before ? Number(req.query.before) : new Date().getTime();
       let recentPosts = await dbTool.db.collection('discussion').aggregate([
         {
           $match: {
@@ -54,8 +55,14 @@ let getMemberInfoById = async (req, res, next) => {
             }
           }
         }, {
+          $unwind: '$posts'
+        }, {
           $sort: {
             'posts.createDate': -1
+          }
+        }, {
+          $match: {
+            'posts.createDate': { $lt: beforeDate }
           }
         }, {
           $limit: config.pagesize
@@ -63,12 +70,12 @@ let getMemberInfoById = async (req, res, next) => {
       ]).toArray();
       memberInfo.recentActivities = recentPosts;
       memberInfo.recentActivities.forEach(discussion => {
-        discussion.posts = utils.renderer.renderPosts(discussion.posts);
+        discussion.posts = utils.renderer.renderPost(discussion.posts);
       });
 
       let tempPosts = [];
       memberInfo.recentActivities.forEach(discussion => {
-        tempPosts = [...tempPosts, ...discussion.posts];
+        tempPosts.push(discussion.posts);
       });
 
       let members;

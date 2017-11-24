@@ -2,6 +2,7 @@ const element = document.createElement('INPUT');
 element.style.position = 'absolute';
 element.style.left = '-1000px';
 element.style.top = '-1000px';
+element.setAttribute('readonly', 'true');
 document.body.appendChild(element);
 
 export default function copyToClipboard (text) {
