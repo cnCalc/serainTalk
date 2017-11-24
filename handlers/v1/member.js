@@ -256,6 +256,8 @@ let logout = async (req, res) => {
 let signup = async (req, res) => {
   let memberInfo = req.body;
 
+  memberInfo.role = 'member';
+
   // 生成成员身份信息
   memberInfo.credentials = {};
   memberInfo.credentials.salt = utils.createRandomString();

@@ -17,5 +17,6 @@ router.use('/tags', require('./tags'));
 router.use('/migration', require('./migration'));
 router.use(['/settings', '/setting'], require('./settings'));
 router.use(['/message', '/messages'], require('./message'));
+router.use(['/notification', '/notifications'], require('./notification'));
 
 module.exports = router;
