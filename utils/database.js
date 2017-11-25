@@ -34,6 +34,7 @@ let prepare = async () => {
   exports.mail = _db.collection('mail');
   exports.temppost = _db.collection('temppost');
   exports.config = _db.collection('config');
+  exports.message = _db.collection('message');
 };
 
 mongoConnect();
@@ -50,6 +51,7 @@ exports = module.exports = {
   mail: 'loading',
   temppost: 'loading',
   config: 'loading',
+  message: 'loading',
 
   prepare
 };
