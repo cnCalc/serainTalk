@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('./../config');
 const errorHandler = require('./error-handler');
 const errorMessages = require('./error-messages');
-const dbTool = require('../utils/database');
+const dbTool = require('./database');
 
 exports = module.exports = {};
 

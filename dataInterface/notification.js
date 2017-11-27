@@ -5,16 +5,18 @@ const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
-let sendNotification = {
-  params: {
-    id: interfaceUtils.mongoId
-  },
-  body: {
-    content: joi.string().required(),
-    href: joi.string(),
-  }
-};
-exports.sendNotification = sendNotification;
+// region 发送通知（暂不启用）
+// let sendNotification = {
+//   params: {
+//     id: interfaceUtils.mongoId
+//   },
+//   body: {
+//     content: joi.string().required(),
+//     href: joi.string(),
+//   }
+// };
+// exports.sendNotification = sendNotification;
+// endregion
 
 let getNotification = {
   query: {
@@ -24,3 +26,10 @@ let getNotification = {
   }
 };
 exports.getNotification = getNotification;
+
+let readNotification = {
+  params: {
+    index: joi.number().min(0).required()
+  }
+};
+exports.readNotification = readNotification;

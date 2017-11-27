@@ -15,5 +15,6 @@ module.exports = {
   datacheck: require('./data-check'),
   cookie: require('./cookie'),
   renderer: require('./renderer'),
-  object: require('./object')
+  object: require('./object'),
+  notification: require('./notification')
 };
