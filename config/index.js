@@ -18,7 +18,7 @@ let config = {
     resetPasswordPage: 'https://www.cncalc.org/resetpassword.html'
   },
   member: {
-    privateField: ['credentials', 'messages']
+    privateField: ['credentials', 'notifications']
   },
   discussion: {
     category: {
