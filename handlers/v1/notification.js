@@ -96,18 +96,18 @@ let getNotification = async (req, res, next) => {
 
 let readNotification = async (req, res, next) => {
   let data = {};
-  data[`notification.${req.params.index}.hasRead`] = true;
+  data[`notifications.${req.params.index - 1}.hasRead`] = true;
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
     { $set: data }
   );
 
   let resinfo = await dbTool.commonMember.findOne({ _id: req.member._id });
-  return resinfo;
+  return res.status(201).send(resinfo.notifications[req.params.index]);
 };
 
 // router.post('/:id', middleware.verifyAdmin, validation(dataInterface.notification.sendNotification), sendNotification);
 router.get('/', middleware.verifyMember, validation(dataInterface.notification.getNotification), getNotification);
-router.post('/:index/read', middleware.verifyMember, readNotification);// validation(),
+router.post('/:index/read', middleware.verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
 
 module.exports = router;
