@@ -298,7 +298,7 @@ let resetPassword = async (req, res) => {
   // 身份验证
   let tokenInfo;
   try {
-    tokenInfo = jwt.sign(mailToken, config.jwtSecret);
+    tokenInfo = jwt.verify(mailToken, config.jwtSecret);
   } catch (err) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
@@ -369,7 +369,7 @@ let resetPassword = async (req, res) => {
 let resetPasswordApplication = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne({
-      name: req.body.membername
+      username: req.body.memberName
     });
     if (memberInfo) {
       let emailPayload = {
