@@ -10,8 +10,7 @@ let sendMessage = {
     id: interfaceUtils.mongoId
   },
   body: {
-    message: joi.string().required(),
-    href: joi.string(),
+    content: joi.string().required()
   }
 };
 exports.sendMessage = sendMessage;

@@ -12,57 +12,38 @@ describe('message part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/message/${newMemberInfo.id}`;
       let payload = {
-        message: 'hello, here is test message.',
-        href: 'hello.test.org'
+        content: 'hello, here is test message.'
       };
       let messageRes = await agent.post(url)
         .send(payload)
         .expect(201);
       messageRes = messageRes.body;
       expect(messageRes.status).to.be.equal('ok');
-      expect(payload.message).to.be.equal(messageRes.newMessage.message);
-      expect(payload.href).to.be.equal(messageRes.newMessage.href);
-      expect(messageRes.newMessage.href).to.be.ok;
-      expect(messageRes.newMessage.unread).to.be.ok;
+      expect(payload.content).to.be.equal(messageRes.newMessage.content);
     });
   });
 
-  it('send message without href.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      let url = `/api/v1/message/${newMemberInfo.id}`;
-      let payload = {
-        message: 'hello, here is test message.'
-      };
-      let messageRes = await agent.post(url)
-        .send(payload)
-        .expect(201);
-      messageRes = messageRes.body;
-      expect(messageRes.status).to.be.equal('ok');
-      expect(payload.message).to.be.equal(messageRes.newMessage.message);
-      expect(messageRes.newMessage.href).to.not.be.ok;
-      expect(messageRes.newMessage.unread).to.be.ok;
-    });
-  });
-
-  it('get message', async () => {
+  it('get message list', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let postUrl = `/api/v1/message/${newMemberInfo.id}`;
       let payload = {
-        message: 'hello, here is test message.'
+        content: 'hello, here is test message.'
       };
-      for (let i = 0; i < config.pagesize + 1; i++) {
-        await agent.post(postUrl)
-          .send(payload)
-          .expect(201);
-      }
-      let getUrl = '/api/v1/message';
+      await agent.post(postUrl)
+        .send(payload)
+        .expect(201);
+      let getUrl = '/api/v1/messages';
       let messageRes = await agent.get(getUrl)
         .expect(200);
       messageRes = messageRes.body;
       let messages = messageRes.messages;
       let count = messageRes.count;
-      expect(messages.length).to.be.equal(config.pagesize);
-      expect(count).to.be.equal(config.pagesize + 1);
+      expect(messages).to.be.an('array');
+      expect(messages[0]).to.be.ok;
+      expect(messages[0]._id).to.be.ok;
+      expect(messages[0].participatesInfo).to.be.an('array');
+      expect(messages[0].participatesInfo.length).to.be.equal(2);
+      expect(count).to.be.ok;
     });
   });
 });

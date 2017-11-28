@@ -1,9 +1,5 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
-const config = require('../../config');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
 const express = require('express');
 const validation = require('express-validation');
