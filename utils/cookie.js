@@ -1,6 +1,6 @@
 'use strict';
 
-let parseCookie = (cookieString = '') => {
+let parseCookie = (cookieString) => {
   let cookies = {};
   let cookieList = cookieString.split(';');
   cookieList.forEach((cookie) => {

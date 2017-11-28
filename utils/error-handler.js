@@ -9,7 +9,10 @@
  * @param {*} res HTTP 响应对象
  */
 function errorHandler (err, message, code, res) {
-  err && console.error(err);
+  /* istanbul ignore if */
+  if (err) console.error(err);
+
+  /* istanbul ignore else */
   if (res) {
     code && res.status && res.status(code);
     res.send({

@@ -12,7 +12,6 @@ module.exports = {
   TIME_OUT: 'time out.',
   PERMISSION_DENIED: 'permission denied.',
   SERVER_ERROR: 'server error.',
-  NO_SUCH_MEMBER: 'no such member.',
   TOO_FREQUENT: 'Requests are too frequent.',
   VALIDATION_ERROR: 'validation error.'
 };
