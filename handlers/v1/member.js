@@ -212,12 +212,12 @@ let login = async (req, res) => {
   if (memberInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 400, res);
+      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
     }
   } else {
     password = MD5(memberInfo.credentials.salt + password);
     if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 400, res);
+      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
     }
   }
 
@@ -382,7 +382,7 @@ let resetPasswordApplication = async (req, res) => {
       await utils.mail.sendMessage(memberInfo.email, url);
       return res.status(201).send({ status: 'ok' });
     } else {
-      return errorHandler(null, errorMessages.NO_SUCH_MEMBER, 400, res);
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
     }
   } catch (err) {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
