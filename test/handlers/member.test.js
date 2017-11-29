@@ -7,6 +7,8 @@ const { ObjectID } = require('mongodb');
 const dbTool = require('../../utils/database');
 const testTools = require('../testTools');
 const utils = require('../../utils');
+const config = require('../../config');
+const jwt = require('jsonwebtoken');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -59,6 +61,200 @@ describe('member part', () => {
       expect(loginBody.header['set-cookie']).to.be.ok;
       let loginInfo = loginBody.body.memberinfo;
       testTools.member.checkMemberInfo(loginInfo);
+    });
+  });
+
+  it('member login with wrong password.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let url = '/api/v1/member/login';
+      let loginBody = await agent
+        .post(url)
+        .send({
+          name: newMemberInfo.username,
+          password: 'fakepassword'
+        })
+        .expect(401);
+      expect(loginBody.body.status).to.equal('error');
+      expect(loginBody.header['set-cookie']).to.not.be.ok;
+      expect(loginBody.body.memberinfo).to.not.be.ok;
+    });
+  });
+
+  it('reset password application to a wrong member.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let url = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(url)
+        .send({
+          memberName: utils.createRandomString(70)
+        })
+        .expect(400);
+      expect(applicationRes.body.status).to.be.equal('error');
+      expect(applicationRes.body.message).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST);
+    });
+  });
+
+  it('reset password.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let applicationUrl = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(applicationUrl)
+        .send({
+          memberName: newMemberInfo.username
+        })
+        .expect(201);
+      expect(applicationRes.body.status).to.be.equal('ok');
+
+      newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
+      let emailPayload = {
+        memberId: newMemberInfo._id,
+        password: newMemberInfo.credentials.password,
+        time: Date.now()
+      };
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let resetUrl = '/api/v1/member/password/reset';
+      let newPassword = utils.createRandomString(20);
+      let resetPayload = {
+        token: emailToken,
+        password: newPassword
+      };
+      let resetRes = await agent.post(resetUrl)
+        .send(resetPayload)
+        .expect(201);
+      expect(resetRes.body.status).to.be.equal('ok');
+
+      let loginUrl = '/api/v1/member/login';
+      let loginBody = await agent
+        .post(loginUrl)
+        .send({
+          name: newMemberInfo.username,
+          password: newPassword
+        })
+        .expect(201);
+      expect(loginBody.body.status).to.equal('ok');
+      expect(loginBody.header['set-cookie']).to.be.ok;
+      let loginInfo = loginBody.body.memberinfo;
+      testTools.member.checkMemberInfo(loginInfo);
+    });
+  });
+
+  it('reset password with bad token.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let applicationUrl = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(applicationUrl)
+        .send({
+          memberName: newMemberInfo.username
+        })
+        .expect(201);
+      expect(applicationRes.body.status).to.be.equal('ok');
+
+      newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
+      let emailPayload = utils.createRandomString(80);
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let resetUrl = '/api/v1/member/password/reset';
+      let newPassword = utils.createRandomString(20);
+      let resetPayload = {
+        token: emailToken,
+        password: newPassword
+      };
+      let resetRes = await agent.post(resetUrl)
+        .send(resetPayload)
+        .expect(400);
+      expect(resetRes.body.status).to.be.equal('error');
+      expect(resetRes.body.message).to.be.equal(utils.errorMessages.BAD_REQUEST);
+    });
+  });
+
+  it('reset password without token.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let applicationUrl = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(applicationUrl)
+        .send({
+          memberName: newMemberInfo.username
+        })
+        .expect(201);
+      expect(applicationRes.body.status).to.be.equal('ok');
+
+      newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
+      let emailPayload = '';
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let resetUrl = '/api/v1/member/password/reset';
+      let newPassword = utils.createRandomString(20);
+      let resetPayload = {
+        token: emailToken,
+        password: newPassword
+      };
+      let resetRes = await agent.post(resetUrl)
+        .send(resetPayload)
+        .expect(400);
+      expect(resetRes.body.status).to.be.equal('error');
+      expect(resetRes.body.message).to.be.equal(utils.errorMessages.BAD_REQUEST);
+    });
+  });
+
+  it('reset password with wrong member.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let applicationUrl = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(applicationUrl)
+        .send({
+          memberName: newMemberInfo.username
+        })
+        .expect(201);
+      expect(applicationRes.body.status).to.be.equal('ok');
+
+      newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
+      let emailPayload = {
+        memberId: '5a1d7e01975cb8140be61322',
+        password: newMemberInfo.credentials.password,
+        time: Date.now()
+      };
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let resetUrl = '/api/v1/member/password/reset';
+      let newPassword = utils.createRandomString(20);
+      let resetPayload = {
+        token: emailToken,
+        password: newPassword
+      };
+      let resetRes = await agent.post(resetUrl)
+        .send(resetPayload)
+        .expect(400);
+      expect(resetRes.body.status).to.be.equal('error');
+      expect(resetRes.body.message).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST);
+    });
+  });
+
+  it('reset password with time out.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let applicationUrl = '/api/v1/member/password/reset/application';
+      let applicationRes = await agent
+        .post(applicationUrl)
+        .send({
+          memberName: newMemberInfo.username
+        })
+        .expect(201);
+      expect(applicationRes.body.status).to.be.equal('ok');
+
+      newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
+      let emailPayload = {
+        memberId: newMemberInfo._id,
+        password: newMemberInfo.credentials.password,
+        time: -10000
+      };
+      let emailToken = jwt.sign(emailPayload, config.jwtSecret);
+      let resetUrl = '/api/v1/member/password/reset';
+      let newPassword = utils.createRandomString(20);
+      let resetPayload = {
+        token: emailToken,
+        password: newPassword
+      };
+      let resetRes = await agent.post(resetUrl)
+        .send(resetPayload)
+        .expect(403);
+      expect(resetRes.body.status).to.be.equal('error');
+      expect(resetRes.body.message).to.be.equal(utils.errorMessages.TIME_OUT);
     });
   });
 

@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 /**
  * 规范化基础参数
  * 将传入的 object 中的所有属性由 string 转化为 int

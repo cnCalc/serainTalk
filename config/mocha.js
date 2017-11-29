@@ -1,5 +1,5 @@
 module.exports = {
   email: {
-    Token: 'devToken'
+    token: 'devToken'
   }
 };

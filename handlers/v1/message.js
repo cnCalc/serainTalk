@@ -14,6 +14,35 @@ const { middleware } = utils;
 const router = express.Router();
 
 /**
+ * 根据 id 获取详细消息
+ *
+ * @param {MongoID} _messageId
+ */
+let getTimeLine = async (_messageId, page, pagesize) => {
+  // 获取 timeline
+  let timeline = await dbTool.message.aggregate([
+    { $match: { _id: _messageId } },
+    { $project: { timeline: 1, _id: 0 } },
+    { $unwind: '$timeline' },
+    { $sort: { 'timeline.date': -1 } },
+    { $skip: page * pagesize },
+    { $limit: pagesize }
+  ]).toArray();
+  timeline = timeline.map(message => message.timeline);
+
+  // 获取计数
+  let count = await dbTool.message.aggregate([
+    { $match: { _id: _messageId } },
+    { $project: { timeline: 1, _id: 0 } },
+    { $unwind: '$timeline' },
+    { $count: 'count' }
+  ]).toArray();
+  count = count[0].count;
+
+  return { timeline, count };
+};
+
+/**
  * 发送一条消息给指定成员
  *
  * @param {any} req
@@ -69,17 +98,18 @@ let sendMessage = async (req, res, next) => {
   }
   return res.status(201).send({ status: 'ok', newMessage: _.last(updateRes.value.timeline) });
 };
+
 /**
- * 获取自己的消息列表
+ * 获取自己所有的消息摘要
  *
  * @param {any} req
  * @param {any} res
  * @param {any} next
  */
-let getMessages = async (req, res, next) => {
+let getMessagesInfo = async (req, res, next) => {
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
-  let messages = await dbTool.message.aggregate([
+  let messagesInfo = await dbTool.message.aggregate([
     {
       $match: {
         $or: [
@@ -99,10 +129,76 @@ let getMessages = async (req, res, next) => {
       { 'participates.1': req.member._id }
     ]
   });
-  return res.status(200).send({ status: 'ok', messages: messages, count: count });
+  return res.status(200).send({ status: 'ok', messagesInfo: messagesInfo, count: count });
+};
+
+/**
+ * 获取与指定成员的消息记录
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ */
+let getMessageByMemberId = async (req, res, next) => {
+  let { page, pagesize } = req.query;
+  page -= 1;
+  let _id = ObjectID(req.params.id);
+  let participates = [req.member._id, _id];
+
+  // 获取 message 摘要
+  let messageInfo = await dbTool.message.aggregate([
+    {
+      $match: {
+        $and: [
+          { 'participates.0': { $in: participates } },
+          { 'participates.1': { $in: participates } }
+        ]
+      }
+    },
+    { $project: { timeline: 0 } }
+  ]).toArray();
+  if (messageInfo.length !== 1) {
+    return errorHandler(new Error(`there is ${messageInfo.length} messages belongs to the same couple.`), errorMessages.SERVER_ERROR, 500, res);
+  }
+  messageInfo = messageInfo[0];
+
+  let { timeline, count } = await getTimeLine(messageInfo._id, page, pagesize);
+  let message = Object.assign({}, messageInfo, { timeline });
+
+  return res.status(200).send({ status: 'ok', message: message, count: count });
+};
+
+/**
+ * 获取指定 id 的消息记录
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ */
+let getMessageById = async (req, res, next) => {
+  let { page, pagesize } = req.query;
+  page -= 1;
+  let _messageId = ObjectID(req.params.id);
+
+  // 获取 message 摘要
+  let messageInfo = await dbTool.message.aggregate([
+    { $match: { _id: _messageId } },
+    { $project: { timeline: 0 } }
+  ]).toArray();
+  if (messageInfo.length !== 1) {
+    return errorHandler(new Error(`there is ${messageInfo.length} messages belongs to the same couple.`), errorMessages.SERVER_ERROR, 500, res);
+  }
+  messageInfo = messageInfo[0];
+
+  let { timeline, count } = await getTimeLine(messageInfo._id, page, pagesize);
+  let message = Object.assign({}, messageInfo, { timeline });
+
+  return res.status(200).send({ status: 'ok', message: message, count: count });
 };
 
 router.post('/:id', middleware.verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
-router.get('/', middleware.verifyMember, validation(dataInterface.message.getMessage), getMessages);
+router.get('/member/:id', middleware.verifyMember, validation(dataInterface.message.getMessageByMemberId), getMessageByMemberId);
+router.get('/:id', middleware.verifyMember, validation(dataInterface.message.getMessageById), getMessageById);
+router.get('/', middleware.verifyMember, validation(dataInterface.message.getMessagesInfo), getMessagesInfo);
 
 module.exports = router;

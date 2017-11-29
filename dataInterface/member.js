@@ -56,11 +56,12 @@ password.modify = {
 // 申请重置密码
 password.resetApplication = {
   body: {
-    membername: joi.string().required()
+    memberName: joi.string().required()
   }
 };
+// 重置密码
 password.reset = {
-  query: {
+  body: {
     token: joi.string().required(),
     password: joi.string().required()
   }

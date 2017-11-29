@@ -212,12 +212,12 @@ let login = async (req, res) => {
   if (memberInfo.credentials.salt === null) {
     password = MD5(MD5(password).toLowerCase());
     if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 400, res);
+      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
     }
   } else {
     password = MD5(memberInfo.credentials.salt + password);
     if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 400, res);
+      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
     }
   }
 
@@ -298,19 +298,19 @@ let resetPassword = async (req, res) => {
   // 身份验证
   let tokenInfo;
   try {
-    tokenInfo = jwt.sign(mailToken, config.jwtSecret);
+    tokenInfo = jwt.verify(mailToken, config.jwtSecret);
+    delete tokenInfo.iat;
+    // 校验 token 数据
+    joi.validate(tokenInfo, {
+      memberId: dataInterface.object.mongoId.required(),
+      password: joi.string().required(),
+      time: joi.number().required()
+    }, (err) => {
+      if (err) throw err;
+    });
   } catch (err) {
-    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
   }
-
-  // 校验 token 数据
-  joi.validate(tokenInfo, {
-    memberId: dataInterface.object.mongoId.required(),
-    password: joi.string().required(),
-    time: joi.number().required()
-  }, (err) => {
-    return errorHandler(err, errorMessages.BAD_REQUEST, 400, res);
-  });
 
   // 超时则报错
   if (Date.now() - tokenInfo.time > config.tokenValidTime) {
@@ -321,7 +321,7 @@ let resetPassword = async (req, res) => {
   tokenInfo.memberId = ObjectID(tokenInfo.memberId);
   let memberInfo = await dbTool.commonMember.findOne({ _id: tokenInfo.memberId });
   if (!memberInfo) {
-    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
   }
 
   // 密码不匹配则报错
@@ -349,6 +349,7 @@ let resetPassword = async (req, res) => {
       }
     );
   } catch (err) {
+    /* istanbul ignore next */
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
 
@@ -369,7 +370,7 @@ let resetPassword = async (req, res) => {
 let resetPasswordApplication = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne({
-      name: req.body.membername
+      username: req.body.memberName
     });
     if (memberInfo) {
       let emailPayload = {
@@ -377,14 +378,16 @@ let resetPasswordApplication = async (req, res) => {
         password: memberInfo.credentials.password,
         time: Date.now()
       };
+
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let url = `${config.password.resetPasswordPage}?token='${emailToken}'`;
       await utils.mail.sendMessage(memberInfo.email, url);
       return res.status(201).send({ status: 'ok' });
     } else {
-      return errorHandler(null, errorMessages.NO_SUCH_MEMBER, 400, res);
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
     }
   } catch (err) {
+    /* istanbul ignore next */
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
 };

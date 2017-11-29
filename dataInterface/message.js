@@ -15,10 +15,32 @@ let sendMessage = {
 };
 exports.sendMessage = sendMessage;
 
-let getMessage = {
+let getMessagesInfo = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page
   }
 };
-exports.getMessage = getMessage;
+exports.getMessagesInfo = getMessagesInfo;
+
+let getMessageByMemberId = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  },
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  }
+};
+exports.getMessageByMemberId = getMessageByMemberId;
+
+let getMessageById = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  },
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  }
+};
+exports.getMessageById = getMessageById;

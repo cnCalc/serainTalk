@@ -29,42 +29,38 @@ describe('notification part', async () => {
 
   it('send notification without href.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
-        let notification = {
-          content: 'hello world',
-          href: 'cncalc.org'
-        };
-        await utils.notification.sendNotification(newMemberInfo._id, notification);
-        let getUrl = '/api/v1/notification';
-        let notificationRes = await agent.get(getUrl)
-          .expect(200);
-        let notifications = notificationRes.body.notifications;
-        expect(notifications).to.be.an('array');
-        expect(_.last(notifications)).include(notification);
-        expect(_.last(notifications).index).to.be.equal(notifications.length);
-      });
+      let notification = {
+        content: 'hello world',
+        href: 'cncalc.org'
+      };
+      await utils.notification.sendNotification(newMemberInfo._id, notification);
+      let getUrl = '/api/v1/notification';
+      let notificationRes = await agent.get(getUrl)
+        .expect(200);
+      let notifications = notificationRes.body.notifications;
+      expect(notifications).to.be.an('array');
+      expect(_.last(notifications)).include(notification);
+      expect(_.last(notifications).index).to.be.equal(notifications.length);
     });
   });
 
   it('get notification.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
-        let notification = {
-          content: 'hello world',
-          href: 'cncalc.org'
-        };
-        for (let i = 0; i < config.pagesize + 1; i++) {
-          await utils.notification.sendNotification(newMemberInfo._id, notification);
-        }
-        let getUrl = '/api/v1/notification';
-        let nitificationRes = await agent.get(getUrl)
-          .expect(200);
-        nitificationRes = nitificationRes.body;
-        let notifications = nitificationRes.notifications;
-        let count = nitificationRes.count;
-        expect(notifications.length).to.be.equal(config.pagesize);
-        expect(count).to.be.equal(config.pagesize + 1);
-      });
+      let notification = {
+        content: 'hello world',
+        href: 'cncalc.org'
+      };
+      for (let i = 0; i < config.pagesize + 1; i++) {
+        await utils.notification.sendNotification(newMemberInfo._id, notification);
+      }
+      let getUrl = '/api/v1/notification';
+      let nitificationRes = await agent.get(getUrl)
+        .expect(200);
+      nitificationRes = nitificationRes.body;
+      let notifications = nitificationRes.notifications;
+      let count = nitificationRes.count;
+      expect(notifications.length).to.be.equal(config.pagesize);
+      expect(count).to.be.equal(config.pagesize + 1);
     });
   });
 

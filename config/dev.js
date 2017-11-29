@@ -1,6 +1,6 @@
 module.exports = {
   email: {
-    Token: 'devToken'
+    token: 'devToken'
   },
   discussion: {
     freqLimit: 0, // 发帖间隔
