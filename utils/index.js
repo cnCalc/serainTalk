@@ -16,5 +16,6 @@ module.exports = {
   cookie: require('./cookie'),
   renderer: require('./renderer'),
   object: require('./object'),
+  time: require('./time'),
   notification: require('./notification')
 };

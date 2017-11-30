@@ -4,14 +4,30 @@ const expect = require('chai').expect;
 const dbTool = require('../../utils/database');
 const testTools = require('./');
 const { ObjectID } = require('mongodb');
+const randomString = require('../../utils/random-string');
 
 const signupUrl = '/api/v1/member/signup';
 const loginUrl = '/api/v1/member/login';
 
 exports = module.exports = {};
+/**
+ * [工具函数] 将成员信息转换为注册请求可接受的格式
+ *
+ * @param {any} memberInfo 成员信息
+ * @return {any}
+ */
+let info2signup = (memberInfo) => {
+  let allowKeys = ['username', 'password', 'email', 'gender', 'birthyear', 'birthmonth',
+    'birthday', 'address', 'qq', 'site', 'bio', 'regip', 'regdate', 'secques', 'device'];
+  let tempMemberInfo = {};
+  for (let key of allowKeys) {
+    if (memberInfo[key]) tempMemberInfo[key] = memberInfo[key];
+  }
+  return tempMemberInfo;
+};
 
 /**
- * [校验函数] 校验收到的成员信息是否与已知的相同。
+ * [工具函数] 校验收到的成员信息是否与已知的相同。
  *
  * @param {any} receiveInfo 收到的成员信息。
  * @param {any} memberInfo 选填，原本的成员信息。默认为自带成员。
@@ -64,20 +80,19 @@ let createOneMember = async (agent, memberInfo, next) => {
 
   memberInfo = memberInfo || testTools.testObject.memberInfo;
 
-  // 用户已存在则转为登录
+  // name 已存在则随机生成一个新的 name
   let newMemberBody;
   try {
     newMemberBody = await agent
       .post(signupUrl)
-      .send(memberInfo)
+      .send(info2signup(memberInfo))
       .expect(201);
   } catch (err) {
+    let tempMemberInfo = Object.assign({}, memberInfo);
+    tempMemberInfo.username = randomString();
     newMemberBody = await agent
-      .post(loginUrl)
-      .send({
-        name: memberInfo.username,
-        password: memberInfo.password
-      })
+      .post(signupUrl)
+      .send(info2signup(tempMemberInfo))
       .expect(201);
   }
 

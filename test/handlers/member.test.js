@@ -40,11 +40,23 @@ describe('member part', () => {
   });
 
   it('signup twice.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-        testTools.member.checkMemberInfo(newMemberInfo);
-      });
-    });
+    let url = '/api/v1/member/signup';
+    let signupBody = await agent
+      .post(url)
+      .send(testTools.testObject.memberInfo)
+      .expect(201);
+    expect(signupBody.body.status).to.equal('ok');
+    expect(signupBody.header['set-cookie']).to.be.ok;
+
+    let signupInfo = signupBody.body.memberinfo;
+    testTools.member.checkMemberInfo(signupInfo);
+
+    await agent
+      .post(url)
+      .send(testTools.testObject.memberInfo)
+      .expect(400);
+
+    await dbTool.commonMember.removeOne({ _id: ObjectID(signupInfo._id) });
   });
 
   it('member login', async () => {
@@ -266,8 +278,8 @@ describe('member part', () => {
         .send({
           name: newMemberInfo.username,
           password: newMemberInfo.password
-        })
-        .expect(201);
+        });
+      // .expect(201);
       expect(loginBody.body.status).to.equal('ok');
       let loginCookies = {};
       loginBody.header['set-cookie'].forEach(function (cookie) {

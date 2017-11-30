@@ -266,7 +266,8 @@ let signup = async (req, res) => {
   memberInfo.lastlogintime = Date.now();
 
   try {
-    await dbTool.commonMember.findOne({ username: memberInfo.username }, { messages: 0 });
+    let tempMemberInfo = await dbTool.commonMember.findOne({ username: memberInfo.username }, { messages: 0 });
+    if (tempMemberInfo) return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
