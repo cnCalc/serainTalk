@@ -47,7 +47,7 @@ export default {
 
 body {
   margin: 0;
-  overflow-y: scroll;
+  overflow-y: overlay;
   overflow-x: hidden;
 }
 

@@ -15,14 +15,27 @@
       div(v-if="typeof me._id === 'undefined'")
         router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
-      div(v-else)
-        div.avatar(@click="dropdownMenuTrigger")
-          div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
-          div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
-        div.menu-wrapper: div.menu(v-bind:style="{ opacity: isMenuOpened ? 1 : 0, transform: `translateY(${ isMenuOpened ? '0px' : '-6px' })`, pointerEvents: isMenuOpened ? '' : 'none' }"): ul
-          li.member: router-link(:to="`/m/${me._id}`") 我的主页
-          li.settings: a 个人设置
-          li.signout: a(@click="signout") 退出登录
+      div(v-else, style="display: flex;")
+        div.notification-container
+          button.notification(@click="dropdownMenuTrigger($event, 'notification')")
+          div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()" v-bind:style="{ opacity: menuOpened === 'notification' ? 1 : 0, transform: `translateY(${ menuOpened === 'notification' ? '0px' : '-6px' })`, pointerEvents: menuOpened === 'notification' ? '' : 'none' }")
+            header
+              h3 消息通知
+              span(style="font-family: consolas") √
+            ul.scrollable(v-on:mousewheel="scrollHelper")
+              li.new 您在帖子「新版9750GII(02.02.0701)刷机工具+教程」被提及。
+              li 您关注的帖子「TI-Nspire 系列新人引导帖（程序、游戏、模拟器资源）」有新的回复。
+              li 您在帖子「cnCalc改版通知」的跟帖有新的回复。
+              li 邮件地址确认成功，您的账户已可以使用。
+              li 欢迎来到 cnCalc，在发帖之前，我们建议您点击此处阅读论坛细则。
+        div.avatar-container
+          div.avatar(@click="dropdownMenuTrigger($event, 'avatar')")
+            div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
+            div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
+          div.dropdown-wrapper: div.menu(v-bind:style="{ opacity: menuOpened === 'avatar' ? 1 : 0, transform: `translateY(${ menuOpened  === 'avatar'? '0px' : '-6px' })`, pointerEvents: menuOpened === 'avatar' ? '' : 'none' }"): ul
+            li.member: router-link(:to="`/m/${me._id}`") 我的主页
+            li.settings: a 个人设置
+            li.signout: a(@click="signout") 退出登录
 </template>
 
 <script>
@@ -37,7 +50,7 @@ export default {
         { href: 'https://github.com/cnCalc', external: true, text: 'GitHub' },
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ],
-      isMenuOpened: false
+      menuOpened: null
     };
   },
   computed: {
@@ -56,22 +69,40 @@ export default {
       e.stopPropagation();
     },
     dropdownMenuDeactivate (e) {
-      this.isMenuOpened = false;
+      this.menuOpened = null;
       document.removeEventListener('click', this.dropdownMenuDeactivate);
+      document.body.style.overflow = '';
+      document.body.style.position = '';
     },
-    dropdownMenuActivate () {
-      this.isMenuOpened = true;
+    dropdownMenuActivate (target) {
+      this.menuOpened = target;
       document.addEventListener('click', this.dropdownMenuDeactivate);
+      // document.body.style.overflow = 'hidden';
+      // document.body.style.position = 'fixed';
     },
-    dropdownMenuTrigger (e) {
+    dropdownMenuTrigger (e, target) {
       e.stopPropagation();
-      (this.isMenuOpened ? this.dropdownMenuDeactivate : this.dropdownMenuActivate)();
+      this.menuOpened ? this.dropdownMenuDeactivate() : this.dropdownMenuActivate(target);
     },
     signout () {
       api.v1.member.signout().then(() => {
         // refresh
         window.location.href = window.location.href;
       });
+    },
+    scrollHelper (e) {
+      e.stopPropagation();
+
+      const node = this.$el.querySelector('ul.scrollable');
+      const delta = e.wheelDelta || e.detail || 0;
+
+      if (node.scrollTop === 0 && delta > 0) {
+        e.preventDefault();
+        return false;
+      } else if (node.clientHeight + node.scrollTop >= node.scrollHeight && delta < 0) {
+        e.preventDefault();
+        return false;
+      }
     }
   }
 };
@@ -179,6 +210,80 @@ div.st-header {
       }
     }
 
+    button.notification {
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: none;
+      border-radius: 100%;
+      margin-right: 10px;
+      background-image: url(../assets/notification.svg);
+      background-size: 25px;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: all ease 0.2s;
+
+      &:hover, &:focus {
+        background-color: mix($theme_color, black, 80%);
+        outline: none;
+      }
+    }
+
+    div.notification-list {
+      width: 320px;
+      position: absolute;
+      top: 8px;
+      right: -15px;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+      transition: all ease 0.2s;
+      overflow: hidden;
+
+      header {
+        padding: .5em .7em 0.3em;
+        display: flex;
+        border-bottom: 1px solid mix($theme_color, white, 30%);
+        color: $theme_color;
+      }
+
+      h3 {
+        flex-grow: 1;
+        flex-shrink: 1;
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      ul {
+        margin: 0;
+        height: 250px;
+        overflow-y: scroll;
+      }
+
+      li {
+        text-align: left;
+        white-space: normal;
+        font-size: 13px;
+        padding: 1em 1em;
+        user-select: none;
+        cursor: pointer;
+        transition: background-color ease 0.2s;
+      }
+
+      li:not(:first-child) {
+        border-top: 1px solid #eee;
+      }
+
+      li.new {
+        background-color: mix($theme_color, white, 8%);
+      }
+
+      li:hover {
+        background-color: mix($theme_color, white, 15%);
+      }
+    }
+
     $avatar_width: 30px;
     $avatar_height: 30px;
     div.avatar {
@@ -195,7 +300,7 @@ div.st-header {
       }
     }
 
-    div.menu-wrapper {
+    div.dropdown-wrapper {
       width: 0;
       height: 0;
       position: relative;
@@ -214,62 +319,62 @@ div.st-header {
       border-radius: 4px;
 
       transition: all ease 0.2s;
+
+      li {
+        text-align: center;
+        font-size: 0.9em;
+        height: 2.2em;
+        line-height: 2.2em;
+
+        a {
+          color: mix($theme_color, black, 80%);
+          cursor: pointer;
+        }
+
+        a:hover {
+          color: mix($theme_color, black, 80%);
+        }
+      }
+
+      li:hover {
+        background-color: mix($theme_color, white, 10%);
+      }
+
+      li::before {
+        content: '';
+        display: inline-block;
+        background-size: cover;
+        width: 1em;
+        height: 1em;
+        margin-right: .5em;
+        vertical-align: baseline;
+      }
+
+      li::after {
+        content: '';
+        display: inline-block;
+        width: 0.5em;
+      }
+
+      li.member::before {
+        background-image: url(../assets/member.svg);
+      }
+
+      li.settings::before {
+        background-image: url(../assets/settings.svg);
+      }
+
+      li.signout::before {
+        background-image: url(../assets/signout.svg);
+        // Fix to baseline
+        margin-bottom: -2px;
+      }
     }
 
     ul {
       list-style: none;
       padding: 0;
       margin: 10px 0;
-    }
-
-    li {
-      text-align: center;
-      font-size: 0.9em;
-      height: 2.2em;
-      line-height: 2.2em;
-
-      a {
-        color: mix($theme_color, black, 80%);
-        cursor: pointer;
-      }
-
-      a:hover {
-        color: mix($theme_color, black, 80%);
-      }
-    }
-
-    li:hover {
-      background-color: mix($theme_color, white, 10%);
-    }
-
-    li::before {
-      content: '';
-      display: inline-block;
-      background-size: cover;
-      width: 1em;
-      height: 1em;
-      margin-right: .5em;
-      vertical-align: baseline;
-    }
-
-    li::after {
-      content: '';
-      display: inline-block;
-      width: 0.5em;
-    }
-
-    li.member::before {
-      background-image: url(../assets/member.svg);
-    }
-
-    li.settings::before {
-      background-image: url(../assets/settings.svg);
-    }
-
-    li.signout::before {
-      background-image: url(../assets/signout.svg);
-      // Fix to baseline
-      margin-bottom: -2px;
     }
   }
 }
@@ -314,6 +419,9 @@ div.st-header {
     }
     input::placeholder {
       color: #bbb;
+    }
+    button.notification {
+      filter: grayscale(100%);
     }
   }
 }
