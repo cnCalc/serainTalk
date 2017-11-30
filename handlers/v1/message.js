@@ -14,32 +14,26 @@ const { middleware } = utils;
 const router = express.Router();
 
 /**
- * 根据 id 获取详细消息
+ * [工具函数] 根据 messageId 获取详细消息
+ * 由 beforeDate 向前取 pagesize 条 line
  *
- * @param {MongoID} _messageId
+ * @param {MongoID} _messageId 消息 id
+ * @param {number} beforeDate 由此日期向前
+ * @param {number} pagesize 获取的 line 数量
+ * @returns {timeline}
  */
-let getTimeLine = async (_messageId, page, pagesize) => {
+let getTimeLine = async (_messageId, beforeDate, pagesize) => {
   // 获取 timeline
   let timeline = await dbTool.message.aggregate([
     { $match: { _id: _messageId } },
     { $project: { timeline: 1, _id: 0 } },
     { $unwind: '$timeline' },
+    { $match: { 'timeline.date': { $lt: beforeDate } } },
     { $sort: { 'timeline.date': -1 } },
-    { $skip: page * pagesize },
     { $limit: pagesize }
   ]).toArray();
   timeline = timeline.map(message => message.timeline);
-
-  // 获取计数
-  let count = await dbTool.message.aggregate([
-    { $match: { _id: _messageId } },
-    { $project: { timeline: 1, _id: 0 } },
-    { $unwind: '$timeline' },
-    { $count: 'count' }
-  ]).toArray();
-  count = count[0].count;
-
-  return { timeline, count };
+  return timeline;
 };
 
 /**
@@ -57,27 +51,16 @@ let sendMessage = async (req, res, next) => {
   if (!recipientInfo) return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
 
   // 生成基础 message
-  let participates = [req.member._id, _recipientId];
+  let members = [req.member._id, _recipientId];
   let updateRes = await dbTool.message.findOneAndUpdate(
     {
       $and: [
-        { 'participates.0': { $in: participates } },
-        { 'participates.1': { $in: participates } }
+        { 'members.0': { $in: members } },
+        { 'members.1': { $in: members } }
       ]
     }, {
       $setOnInsert: {
-        participates: [req.member._id, _recipientId],
-        participatesInfo: [
-          {
-            _id: req.member._id,
-            username: req.member.username,
-            avatar: req.member.avatar
-          }, {
-            _id: recipientInfo._id,
-            username: recipientInfo.username,
-            avatar: recipientInfo.avatar
-          }
-        ]
+        members: [req.member._id, _recipientId]
       },
       $push: {
         timeline: utils.object.removeUndefined({
@@ -96,7 +79,8 @@ let sendMessage = async (req, res, next) => {
   if (updateRes.ok !== 1) {
     return errorHandler(null, errorMessages.SERVER_ERROR, 400, res);
   }
-  return res.status(201).send({ status: 'ok', newMessage: _.last(updateRes.value.timeline) });
+
+  return res.status(201).send({ status: 'ok', messageId: updateRes.value._id });
 };
 
 /**
@@ -113,20 +97,20 @@ let getMessagesInfo = async (req, res, next) => {
     {
       $match: {
         $or: [
-          { 'participates.0': req.member._id },
-          { 'participates.1': req.member._id }
+          { 'members.0': req.member._id },
+          { 'members.1': req.member._id }
         ]
       }
     },
     { $sort: { 'timeline.0.date': -1 } },
-    { $project: { participatesInfo: 1 } },
+    { $project: { members: 1 } },
     { $limit: pagesize },
     { $skip: offset }
   ]).toArray();
   let count = await dbTool.message.count({
     $or: [
-      { 'participates.0': req.member._id },
-      { 'participates.1': req.member._id }
+      { 'members.0': req.member._id },
+      { 'members.1': req.member._id }
     ]
   });
   return res.status(200).send({ status: 'ok', messagesInfo: messagesInfo, count: count });
@@ -140,32 +124,33 @@ let getMessagesInfo = async (req, res, next) => {
  * @param {any} next
  */
 let getMessageByMemberId = async (req, res, next) => {
-  let { page, pagesize } = req.query;
-  page -= 1;
+  let { beforeDate, pagesize } = req.query;
+  beforeDate = beforeDate || Date.now();
   let _id = ObjectID(req.params.id);
-  let participates = [req.member._id, _id];
+  let members = [req.member._id, _id];
 
   // 获取 message 摘要
   let messageInfo = await dbTool.message.aggregate([
     {
       $match: {
         $and: [
-          { 'participates.0': { $in: participates } },
-          { 'participates.1': { $in: participates } }
+          { 'members.0': { $in: members } },
+          { 'members.1': { $in: members } }
         ]
       }
     },
     { $project: { timeline: 0 } }
   ]).toArray();
+  /* istanbul ignore if */
   if (messageInfo.length !== 1) {
     return errorHandler(new Error(`there is ${messageInfo.length} messages belongs to the same couple.`), errorMessages.SERVER_ERROR, 500, res);
   }
   messageInfo = messageInfo[0];
 
-  let { timeline, count } = await getTimeLine(messageInfo._id, page, pagesize);
+  let timeline = await getTimeLine(messageInfo._id, beforeDate, pagesize);
   let message = Object.assign({}, messageInfo, { timeline });
 
-  return res.status(200).send({ status: 'ok', message: message, count: count });
+  return res.status(200).send({ status: 'ok', message: message });
 };
 
 /**
@@ -176,8 +161,8 @@ let getMessageByMemberId = async (req, res, next) => {
  * @param {any} next
  */
 let getMessageById = async (req, res, next) => {
-  let { page, pagesize } = req.query;
-  page -= 1;
+  let { beforeDate, pagesize } = req.query;
+  beforeDate = beforeDate || Date.now();
   let _messageId = ObjectID(req.params.id);
 
   // 获取 message 摘要
@@ -190,10 +175,10 @@ let getMessageById = async (req, res, next) => {
   }
   messageInfo = messageInfo[0];
 
-  let { timeline, count } = await getTimeLine(messageInfo._id, page, pagesize);
+  let timeline = await getTimeLine(messageInfo._id, beforeDate, pagesize);
   let message = Object.assign({}, messageInfo, { timeline });
 
-  return res.status(200).send({ status: 'ok', message: message, count: count });
+  return res.status(200).send({ status: 'ok', message: message });
 };
 
 router.post('/:id', middleware.verifyMember, validation(dataInterface.message.sendMessage), sendMessage);

@@ -5,6 +5,7 @@ const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
+// 发送一条私信
 let sendMessage = {
   params: {
     id: interfaceUtils.mongoId
@@ -15,6 +16,7 @@ let sendMessage = {
 };
 exports.sendMessage = sendMessage;
 
+// 获取自己所有的私信列表（摘要）
 let getMessagesInfo = {
   query: {
     pagesize: interfaceUtils.pagesize,
@@ -23,24 +25,26 @@ let getMessagesInfo = {
 };
 exports.getMessagesInfo = getMessagesInfo;
 
+// 获取与指定的人的私信记录
 let getMessageByMemberId = {
   params: {
     id: interfaceUtils.mongoId.required()
   },
   query: {
-    pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    beforeDate: joi.number(),
+    pagesize: interfaceUtils.pagesize
   }
 };
 exports.getMessageByMemberId = getMessageByMemberId;
 
+// 获取指定 ID 的私信
 let getMessageById = {
   params: {
     id: interfaceUtils.mongoId.required()
   },
   query: {
-    pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    beforeDate: joi.number(),
+    pagesize: interfaceUtils.pagesize
   }
 };
 exports.getMessageById = getMessageById;
