@@ -83,8 +83,8 @@ describe('notification part', async () => {
         .expect(200);
       nitificationRes = nitificationRes.body;
       let notifications = nitificationRes.notifications;
-      expect(notifications[1]).to.includes({ index: 1, hasRead: true });
-      expect(notifications[0]).to.includes({ index: 2, hasRead: false });
+      expect(notifications.find((item) => item.index === 1)).to.includes({ index: 1, hasRead: true });
+      expect(notifications.find((item) => item.index === 2)).to.includes({ index: 2, hasRead: false });
     });
   });
 });

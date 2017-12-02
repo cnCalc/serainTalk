@@ -36,20 +36,20 @@ exports.isSameDiscussion = isSameDiscussion;
  * 后续操作完成后会将该讨论销毁。
  *
  * @param {any} agent 传入 superTest 的 agent 以传递 Token
- * @param {any} [discussionInfo=testTools.testObject.discussionInfo] 按指定讨论信息新建讨论。null 则以默认模板创建。
+ * @param {any} [tempDiscussionInfo=testTools.testObject.discussionInfo] 按指定讨论信息新建讨论。null 则以默认模板创建。
  * @param {Promise} next 新建完成后需要执行的操作函数。会将新讨论的信息作为参数传入。
  * @returns
  */
 let createOneDiscussion = async (agent, discussionInfo, next) => {
   await dbTool.prepare();
-
-  if (!discussionInfo) discussionInfo = testTools.testObject.discussionInfo;
+  let tempDiscussionInfo = JSON.parse(JSON.stringify(testTools.testObject.discussionInfo));
+  if (discussionInfo) Object.assign(tempDiscussionInfo, discussionInfo);
 
   let url = '/api/v1/discussion';
 
   let newDiscussionRes = await agent
     .post(url)
-    .send(discussionInfo);
+    .send(tempDiscussionInfo);
   try {
     if (newDiscussionRes.body.status === 'error') {
       throw new Error(newDiscussionRes.body.message);
@@ -59,18 +59,19 @@ let createOneDiscussion = async (agent, discussionInfo, next) => {
   } catch (err) {
     throw err;
   }
-  let discussionId = newDiscussionRes._id;
+  let discussionId = newDiscussionRes.body.discussion._id;
+  let _discussionId = ObjectID(discussionId);
   try {
     let newDiscussionInfo = newDiscussionRes.body.discussion;
     newDiscussionInfo.id = newDiscussionInfo._id;
     newDiscussionInfo._id = ObjectID(newDiscussionInfo._id);
     await next(newDiscussionInfo);
   } catch (err) {
-    await dbTool.discussion.removeOne({ _id: discussionId });
+    await dbTool.discussion.removeOne({ _id: _discussionId });
     throw err;
   }
 
-  await dbTool.discussion.removeOne({ _id: discussionId });
+  await dbTool.discussion.removeOne({ _id: _discussionId });
 };
 exports.createOneDiscussion = createOneDiscussion;
 

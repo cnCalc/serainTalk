@@ -7,8 +7,8 @@ const validation = require('express-validation');
 
 const app = express();
 
+/* istanbul ignore if */
 if (process.env.DEV) {
-  /* istanbul ignore next */
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     return next();

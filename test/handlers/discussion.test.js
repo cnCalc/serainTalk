@@ -65,7 +65,6 @@ describe('discussion part', async () => {
     });
   });
 
-  // FIXME 添加一些数据校验
   it('whitelist test.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let tempWhiteList = config.discussion.category.whiteList;
