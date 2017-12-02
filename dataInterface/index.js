@@ -5,5 +5,6 @@ module.exports = {
   member: require('./member'),
   object: require('./interfaceUtils'),
   message: require('./message'),
-  notification: require('./notification')
+  notification: require('./notification'),
+  category: require('./category')
 };

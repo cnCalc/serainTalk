@@ -60,6 +60,7 @@ if (process.env.NODE_ENV === 'PROCDUCT') {
 let resetDiscussionConfig = async () => {
   await dbTool.prepare();
   let originSetting = require('./category.json');
+  originSetting.key = 'pinned-categories';
   await dbTool.generic.updateMany(
     {
       key: 'pinned-categories'

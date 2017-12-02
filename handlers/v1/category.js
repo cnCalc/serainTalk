@@ -1,11 +1,13 @@
 'use strict';
 
-const config = require('../../config');
 const { resloveMembersInDiscussionArray } = require('../../utils/resolve-members');
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const validation = require('express-validation');
+const dataInterface = require('../../dataInterface');
 const express = require('express');
+
 const router = express.Router();
 
 /**
@@ -106,7 +108,7 @@ let getDiscussionsUnderSpecifiedCategory = async (req, res, next) => {
   }
 };
 
-router.get('/', getCategoryList);
-router.get('/:slug/discussions', getDiscussionsUnderSpecifiedCategory);
+router.get('/', validation(dataInterface.category.getCategoryList), getCategoryList);
+router.get('/:slug/discussions', validation(dataInterface.category.getDiscussionsUnderSpecifiedCategory), getDiscussionsUnderSpecifiedCategory);
 
 module.exports = router;

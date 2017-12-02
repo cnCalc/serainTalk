@@ -15,3 +15,6 @@ let getDiscussionsUnderSpecifiedCategory = {
   }
 };
 exports.getDiscussionsUnderSpecifiedCategory = getDiscussionsUnderSpecifiedCategory;
+
+let getCategoryList = {};
+exports.getCategoryList = getCategoryList;
