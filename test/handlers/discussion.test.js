@@ -145,8 +145,7 @@ describe('discussion part', async () => {
   it('get discussion by wrong id.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        // TODO 先用用户 id 顶着。需要一个 mongoId 生成器
-        let url = `/api/v1/discussions/${newMemberInfo.id}`;
+        let url = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}`;
         let discussionRes = await agent
           .get(url)
           .expect(404);
@@ -177,8 +176,7 @@ describe('discussion part', async () => {
   it('get discussion posts by wrong id.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        // TODO 先用用户 id 顶着。需要一个 mongoId 生成器
-        let url = `/api/v1/discussions/${newMemberInfo.id}/posts`;
+        let url = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/posts`;
         let discussionRes = await agent
           .get(url)
           .expect(404);
@@ -370,8 +368,7 @@ describe('discussion part', async () => {
   it('vote for wrong discussion.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        // TODO 先用用户 id 顶着。需要一个 mongoId 生成器
-        let voteUrl = `/api/v1/discussions/${newMemberInfo.id}/post/1/vote`;
+        let voteUrl = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/post/1/vote`;
         let voteType = config.discussion.post.vote.slice();
         let voteInfo = {
           vote: voteType[0]
