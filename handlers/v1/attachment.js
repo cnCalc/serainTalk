@@ -3,7 +3,10 @@
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const validation = require('express-validation');
+const dataInterface = require('../../dataInterface');
 const express = require('express');
+
 const router = express.Router();
 
 /**
@@ -11,22 +14,17 @@ const router = express.Router();
  * @param {Request} req
  * @param {Response} res
  */
-function getAttachmentByAid (req, res) {
+let getAttachmentByAid = async (req, res) => {
   let attachmentId = req.query.aid;
-  if (typeof attachmentId === 'undefined') {
-    errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
-    return;
-  }
-  dbTool.db.collection('attachment').findOne({ aid: Number(attachmentId) }).then(doc => {
-    res.send({
-      status: 'ok',
-      attachment: doc,
-    });
-  }).catch(err => {
+  try {
+    let attachmentInfo = await dbTool.attachment.findOne({ aid: attachmentId });
+    return res.status(200).send({ status: 'ok', attachment: attachmentInfo, });
+  } catch (err) {
+    /* istanbul ignore next */
     errorHandler(err, errorMessages.DB_ERROR, 500, res);
-  });
-}
+  };
+};
 
-router.get('/', getAttachmentByAid);
+router.get('/', validation(dataInterface.attachment.getAttachment), getAttachmentByAid);
 
 module.exports = router;

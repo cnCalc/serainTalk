@@ -6,5 +6,6 @@ module.exports = {
   object: require('./interfaceUtils'),
   message: require('./message'),
   notification: require('./notification'),
-  category: require('./category')
+  category: require('./category'),
+  attachment: require('./attachment')
 };
