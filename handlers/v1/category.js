@@ -65,8 +65,8 @@ let slugToCategory = async (slug) => {
  */
 let getCategoryList = async (req, res, next) => {
   try {
-    let doc = await dbTool.generic.findOne({ key: 'pinned-categories' });
-    return res.status(200).send({ status: 'ok', groups: doc.groups });
+    let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
+    return res.status(200).send({ status: 'ok', groups: categoryDoc.groups });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

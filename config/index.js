@@ -60,8 +60,7 @@ if (process.env.NODE_ENV === 'PROCDUCT') {
 let resetDiscussionConfig = async () => {
   await dbTool.prepare();
   let originSetting = require('./category.json');
-  originSetting.key = 'pinned-categories';
-  await dbTool.generic.updateMany(
+  let genericDoc = await dbTool.generic.updateMany(
     {
       key: 'pinned-categories'
     },
@@ -69,6 +68,11 @@ let resetDiscussionConfig = async () => {
       $set: originSetting
     }
   );
+  /* istanbul ignore next */
+  if (genericDoc.matchedCount === 0) {
+    originSetting.key = 'pinned-categories';
+    await dbTool.generic.insertOne(originSetting);
+  }
   await setDiscussionCategoryWhiteList();
 
   return originSetting;
