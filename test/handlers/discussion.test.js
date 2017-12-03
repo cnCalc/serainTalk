@@ -6,6 +6,7 @@ const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
 const utils = require('../../utils');
+const _ = require('lodash');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -159,18 +160,128 @@ describe('discussion part', async () => {
       });
     });
   });
-  // it('add votes', async () => {
-  //   await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-  //     await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
-  //       let voteUrl = `/api/v1/discussions/${newMemberInfo.id}/post/1`;
-  //       let voteInfo = {
-  //         vote: 'up'
-  //       };
-  //       let voteRes = await agent
-  //         .post(voteUrl)
-  //         .send(voteInfo);
-  //       console.log(voteRes);
-  //     });
-  //   });
-  // });
+
+  it('add votes.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
+        let voteType = config.discussion.post.vote.slice();
+        for (let vote of voteType) {
+          let voteInfo = {
+            vote: vote
+          };
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+        }
+        let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        discussionRes = discussionRes.body;
+        let votes = discussionRes.posts[0].votes;
+        for (let vote of voteType) {
+          expect(votes[vote][0]).to.be.equal(newMemberInfo.id);
+        }
+      });
+    });
+  });
+
+  it('remove votes.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
+        let voteType = config.discussion.post.vote.slice();
+        for (let vote of voteType) {
+          let voteInfo = {
+            vote: vote
+          };
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+        }
+        let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        discussionRes = discussionRes.body;
+        let votes = discussionRes.posts[0].votes;
+        for (let vote of voteType) {
+          expect(votes[vote].length).to.be.equal(0);
+        }
+      });
+    });
+  });
+
+  it('votes three times.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
+        let voteType = config.discussion.post.vote.slice();
+        for (let vote of voteType) {
+          let voteInfo = {
+            vote: vote
+          };
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+        }
+        let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        discussionRes = discussionRes.body;
+        let votes = discussionRes.posts[0].votes;
+        for (let vote of voteType) {
+          expect(votes[vote][0]).to.be.equal(newMemberInfo.id);
+        }
+      });
+    });
+  });
+
+  it('multiple member votes.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
+        let voteType = config.discussion.post.vote.slice();
+        for (let vote of voteType) {
+          let voteInfo = {
+            vote: vote
+          };
+          await agent
+            .post(voteUrl)
+            .send(voteInfo);
+        }
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+          for (let vote of voteType) {
+            let voteInfo = {
+              vote: vote
+            };
+            await agent
+              .post(voteUrl)
+              .send(voteInfo);
+          }
+          let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+          let discussionRes = await agent
+            .get(url)
+            .expect(200);
+          discussionRes = discussionRes.body;
+          let votes = discussionRes.posts[0].votes;
+          for (let vote of voteType) {
+            expect(votes[vote]).include(newMemberInfoA.id);
+            expect(votes[vote]).include(newMemberInfoB.id);
+          }
+        });
+      });
+    });
+  });
 });

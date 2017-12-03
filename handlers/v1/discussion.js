@@ -11,6 +11,7 @@ const validation = require('express-validation');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../utils');
 const { middleware } = utils;
+const _ = require('lodash');
 
 const router = express.Router();
 
@@ -246,13 +247,39 @@ let createPost = async (req, res, next) => {
 };
 
 let votePost = async (req, res, next) => {
-  let _disId = ObjectID(req.params.id);
-  let postInfo = await dbTool.discussion.aggregate(
-    { $match: { '_id': _disId } },
-    { $unwind: 'posts' },
-    { $sort: { createDate: 1, user: 1 } }
-  ).toArray();
-  console.log(postInfo);
+  try {
+    let _discussionId = ObjectID(req.params.id);
+    // 检索 post 是否存在
+    let postInfo = await dbTool.discussion.aggregate([
+      { $match: { _id: _discussionId } },
+      { $unwind: '$posts' },
+      { $match: { 'posts.index': req.params.postIndex } },
+      { $project: { posts: 1 } }
+    ]).toArray();
+    if (postInfo.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+
+    // 移除所有之前的已提交
+    let removeVoteInfo = { $pull: {} };
+    removeVoteInfo.$pull[`posts.${req.params.postIndex - 1}.votes.${req.body.vote}`] = req.member._id;
+    let removeDoc = await dbTool.discussion.updateOne(
+      { _id: _discussionId },
+      removeVoteInfo
+    );
+    // 如果之前存在提交，已抹除成功。
+    if (removeDoc.modifiedCount === 1) return res.status(201).send({ status: 'ok' });
+
+    // 新增 vote
+    let addVoteInfo = { $push: {} };
+    addVoteInfo.$push[`posts.${req.params.postIndex - 1}.votes.${req.body.vote}`] = req.member._id;
+    await dbTool.discussion.updateOne(
+      { _id: _discussionId },
+      addVoteInfo
+    );
+    return res.status(201).send({ status: 'ok' });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
 };
 
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
