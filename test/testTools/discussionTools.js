@@ -43,7 +43,7 @@ exports.isSameDiscussion = isSameDiscussion;
 let createOneDiscussion = async (agent, discussionInfo, next) => {
   await dbTool.prepare();
   let tempDiscussionInfo = JSON.parse(JSON.stringify(testTools.testObject.discussionInfo));
-  if (discussionInfo) Object.assign(tempDiscussionInfo, discussionInfo);
+  if (discussionInfo) _.merge(tempDiscussionInfo, discussionInfo);
 
   let url = '/api/v1/discussion';
 

@@ -24,6 +24,17 @@ let getDiscussion = {
 };
 exports.getDiscussion = getDiscussion;
 
+let getPostsById = {
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  },
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.getPostsById = getPostsById;
+
 let createDiscussion = {
   body: {
     title: joi.string().required(),

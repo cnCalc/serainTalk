@@ -15,7 +15,6 @@ let fetchOneMember = async (memberId) => {
       { _id: memberId },
       { username: 1, uid: 1, avatar: 1, _id: 0 }
     );
-    delete memberInfo._id;
     if (!memberInfo) return {};
     else return memberInfo;
   } catch (err) {

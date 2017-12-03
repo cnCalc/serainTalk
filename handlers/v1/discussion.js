@@ -11,7 +11,6 @@ const validation = require('express-validation');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../utils');
 const { middleware } = utils;
-const _ = require('lodash');
 
 const router = express.Router();
 
@@ -24,27 +23,28 @@ const router = express.Router();
  * @param {Request} req
  * @param {Response} res
  */
-async function getLatestDiscussionList (req, res) {
-  let query = {};
-
-  if (req.query.category) {
-    // 非管理只显示白名单中的标签
-    if (req.member.role !== 'admin') {
-      req.query.category = req.query.category.filter(
-        item => config.discussion.category.whiteList.includes(item)
-      );
-    }
-    query.category = { $in: req.query.category };
-  }
-  if (req.query.memberId) {
-    req.query.memberId = ObjectID(req.query.memberId);
-    query.creater = { $eq: req.query.memberId };
-  }
+let getLatestDiscussionList = async (req, res) => {
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
-  if (req.query.tag) query.tags = { $in: req.query.tag };
 
   try {
+    let query = {};
+    // 非管理只显示白名单中的分类
+    if (req.query.category) {
+      if (req.member.role !== 'admin') {
+        req.query.category = req.query.category.filter(
+          item => config.discussion.category.whiteList.includes(item)
+        );
+      }
+      query.category = { $in: req.query.category };
+    }
+    // 检索其发出的 discussion
+    if (req.query.memberId) {
+      req.query._memberId = ObjectID(req.query.memberId);
+      query.creater = { $eq: req.query._memberId };
+    }
+    // 检索指定的 tag
+    if (req.query.tag) query.tags = { $in: req.query.tag };
     let results = await dbTool.discussion.find(
       query,
       {
@@ -63,7 +63,7 @@ async function getLatestDiscussionList (req, res) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
-}
+};
 
 /**
  * 根据 ID 获得指定讨论的信息，不包含帖子列表
@@ -71,39 +71,29 @@ async function getLatestDiscussionList (req, res) {
  * @param {Request} req
  * @param {Response} res
  */
-function getDiscussionById (req, res) {
-  let discussionId;
+let getDiscussionById = async (req, res) => {
   try {
-    discussionId = ObjectID(req.params.id);
+    let _discussionId = ObjectID(req.params.id);
+    let discussionDoc = await dbTool.discussion.aggregate([
+      { $match: { _id: _discussionId } },
+      {
+        $project: {
+          creater: 1, title: 1, createDate: 1,
+          lastDate: 1, views: 1, tags: 1,
+          status: 1, lastMember: 1, category: 1,
+          postsCount: { $size: '$posts' },
+        }
+      }
+    ]).toArray();
+    if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+
+    let result = Object.assign({ status: 'ok' }, discussionDoc[0]);
+    return res.status(200).send(result);
   } catch (err) {
     /* istanbul ignore next */
-    return errorHandler(err, 'invalid discussion id', 400, res);
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
-
-  dbTool.db.collection('discussion').aggregate([
-    { $match: { _id: discussionId } },
-    {
-      $project: {
-        creater: 1, title: 1, createDate: 1,
-        lastDate: 1, views: 1, tags: 1,
-        status: 1, lastMember: 1, category: 1,
-        postsCount: { $size: '$posts' },
-      }
-    }
-  ]).toArray((err, results) => {
-    if (err) {
-      /* istanbul ignore next */
-      return errorHandler(err, errorMessages.DB_ERROR, 500, res);
-    }
-
-    if (results.length === 0) {
-      return errorHandler(err, errorMessages.NOT_FOUND, 404, res);
-    }
-
-    let result = Object.assign({ status: 'ok' }, results[0]);
-    return res.status(200).send(result);
-  });
-}
+};
 
 /**
  * 根据 ID 获得指定讨论的帖子
@@ -111,35 +101,28 @@ function getDiscussionById (req, res) {
  * @param {Request} req
  * @param {Response} res
  */
-async function getDiscussionPostsById (req, res) {
-  let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page - 1) || 0;
-  let discussionId;
+let getDiscussionPostsById = async (req, res) => {
+  let pagesize = req.query.pagesize;
+  let offset = req.query.page - 1;
   try {
-    discussionId = ObjectID(req.params.id);
-  } catch (err) {
-    /* istanbul ignore next */
-    return errorHandler(err, 'invalid discussion id', 400, res);
-  }
-  try {
-    let results = await dbTool.db.collection('discussion').aggregate([
-      { $match: { _id: discussionId } },
+    let _discussionId = ObjectID(req.params.id);
+    let postsRes = await dbTool.discussion.aggregate([
+      { $match: { _id: _discussionId } },
       { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
     ]).toArray();
-    if (results.length === 0) {
-      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
-    }
-    let members = await resloveMembersInDiscussion(results[0]);
+    if (postsRes.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+
+    let members = await resloveMembersInDiscussion(postsRes[0]);
     return res.status(200).send({
       status: 'ok',
-      posts: utils.renderer.renderPosts(results[0].posts),
+      posts: utils.renderer.renderPosts(postsRes[0].posts),
       members
     });
   } catch (err) {
     /* istanbul ignore next */
-    errorHandler(err, errorMessages.DB_ERROR, 500, res);
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
-}
+};
 
 /**
  * [处理函数] 创建新讨论
@@ -168,11 +151,11 @@ let createDiscussion = async (req, res, next) => {
       {
         user: req.member._id,
         createDate: now,
-        encoding: req.body.content.encoding,  // TODO: 这里需要检查一下用户所在组，管理员以上才可以指定 encoding，否则只可以为 markdown。
+        encoding: req.member.role === 'admin' ? req.body.content.encoding : 'markdown',
         content: req.body.content.content,
-        allowScript: false,                   // TODO: 同上
+        allowScript: req.member.role === 'admin',
         index: 1,
-        votes: []
+        votes: {}
       },
     ]
   };
@@ -195,7 +178,7 @@ let createPost = async (req, res, next) => {
     content: req.body.content,
     encoding: req.member.role === 'admin' ? req.body.encoding : 'markdown',
     allowScript: req.member.role === 'admin',
-    votes: [],
+    votes: {},
     status: null,
   };
   if (req.body.replyTo) {
@@ -233,6 +216,7 @@ let createPost = async (req, res, next) => {
 
         // 为返回结果添上楼层号
         // 筛选添加的楼层
+        /* istanbul ignore else */
         if (postList[i].createDate === now && postList[i].user.toString() === req.member._id.toString()) {
           postInfo.index = i + 1;
         }
@@ -283,7 +267,7 @@ let votePost = async (req, res, next) => {
 };
 
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
-router.get('/:id/posts', getDiscussionPostsById);
+router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
 router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
 router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
 router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
