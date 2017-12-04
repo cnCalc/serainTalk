@@ -19,22 +19,31 @@
         "${workspaceRoot}/test"
       ],
       "env": {
-        "NODE_ENV": "DEV"
+        "NODE_ENV": "MOCHA"
       },
-      "internalConsoleOptions": "openOnSessionStart"
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": [
+        "${workspaceRoot}/node_modules/**/*.js",
+        "<node_internals>/**/*.js"
+      ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "启动程序",
-      "program": "${file}"
+      "name": "启动程序 - DEV",
+      "program": "${workspaceFolder}/index",
+      "env": {
+        "NODE_ENV": "DEV"
+      }
     },
     {
       "type": "node",
-      "request": "attach",
-      "name": "附加到端口",
-      "address": "localhost",
-      "port": 5858
+      "request": "launch",
+      "name": "启动程序 - PROCDUCT",
+      "program": "${workspaceFolder}/index",
+      "env": {
+        "NODE_ENV": "PROCDUCT"
+      }
     }
   ]
 }

@@ -1,8 +1,8 @@
 export default {
   api: {
-    url: '/api/',
+    url: '/api',
     version: 'v1',
-    pagesize: 20,
+    pagesize: 10,
   },
   discussionView: {
     boundingThreshold: {

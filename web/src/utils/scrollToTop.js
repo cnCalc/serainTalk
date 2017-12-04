@@ -8,7 +8,7 @@ function scrollToTop (duration, fps = 60) {
     currentTop -= step;
     window.scrollTo(0, window.scrollY - window.scrollY * count / frames);
     count++;
-    if (count === frames) {
+    if (count === frames || window.scrollY === 0) {
       clearInterval(id);
     }
   }, duration / frames);

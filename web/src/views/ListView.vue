@@ -2,7 +2,7 @@
   div.list-view
     div.nav
       div.left
-        div.button.create-discussion 创建新帖
+        div.button.create-discussion(@click="showEditor") 创建新帖
         category-list
       div.right
         discussion-list
@@ -60,8 +60,12 @@ export default {
         });
       }
     },
+    showEditor () {
+      this.$store.commit('updateEditorDisplay', 'show');
+      this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
+    },
     flushGlobalTitles () {
-      if (!this.slug) {
+      if (!this.slug && this.$route.fullPath === '/') {
         return this.$store.commit('setGlobalTitles', []);
       }
       let categoriesGroup = this.$store.state.categoriesGroup;

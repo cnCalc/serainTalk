@@ -1,11 +1,13 @@
 'use strict';
 
-const config = require('../../config');
 const { resloveMembersInDiscussionArray } = require('../../utils/resolve-members');
 const errorHandler = require('../../utils/error-handler');
 const errorMessages = require('../../utils/error-messages');
 const dbTool = require('../../utils/database');
+const validation = require('express-validation');
+const dataInterface = require('../../dataInterface');
 const express = require('express');
+
 const router = express.Router();
 
 /**
@@ -17,43 +19,35 @@ let slugCache = {};
  * 刷新内存里的 slug 缓存
  * @param {Function} callback
  */
-function flushCache (callback) {
-  dbTool.db.collection('generic').findOne({ key: 'pinned-categories' }).then(doc => {
-    let cache = {};
-    // 遍历保存
-    for (let group of doc.groups) {
-      for (let item of group.items) {
-        if (item.type === 'category')
-          cache[item.slug] = item.name;
+let flushCache = async () => {
+  let doc = await dbTool.generic.findOne({ key: 'pinned-categories' });
+  let cache = {};
+  // 遍历保存
+  for (let group of doc.groups) {
+    for (let item of group.items) {
+      if (item.type === 'category') {
+        cache[item.slug] = item.name;
       }
     }
-    slugCache = cache;
-    callback(null);
-  }).catch(err => {
-    callback(err);
-  });
-}
+  }
+  slugCache = cache;
+};
 
 /**
  * 将分区的 slug 转化为完整的分区名
  * @param {String} slug
  * @param {Function} callback
  */
-function slugToCategory (slug, callback) {
+let slugToCategory = async (slug) => {
   if (slugCache[slug]) {
     // 缓存命中，直接调用 callback 返回结果
-    callback(null, slugCache[slug]);
+    return slugCache[slug];
   } else {
     // 刷新缓存
-    flushCache(err => {
-      if (err) {
-        callback(err);
-      } else {
-        callback(null, slugCache[slug]);
-      }
-    });
+    await flushCache();
+    return slugCache[slug];
   }
-}
+};
 
 // 立即刷新一次分区 slug 的缓存
 // flushCache(err => {
@@ -69,17 +63,15 @@ function slugToCategory (slug, callback) {
  * @param {Request} req
  * @param {Response} res
  */
-function getCategoryList (req, res) {
-  dbTool.db.collection('generic').findOne({ key: 'pinned-categories' }).then(doc => {
-    res.send({
-      status: 'ok',
-      groups: doc.groups,
-    });
-  }).catch(err => {
-    errorHandler(err, errorMessages.DB_ERROR, 500, res);
-    return;
-  });
-}
+let getCategoryList = async (req, res, next) => {
+  try {
+    let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
+    return res.status(200).send({ status: 'ok', groups: categoryDoc.groups });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
 
 /**
  * 获得指定分区下的所有讨论
@@ -87,49 +79,36 @@ function getCategoryList (req, res) {
  * @param {Request} req
  * @param {Response} res
  */
-function getDiscussionsUnderSpecifiedCategory (req, res) {
-  let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page - 1) || 0;
+let getDiscussionsUnderSpecifiedCategory = async (req, res, next) => {
+  let pagesize = req.query.pagesize;
+  let offset = req.query.page - 1;
 
-  slugToCategory(req.params.slug, (err, category) => {
-    if (err) {
-      errorHandler(err, errorMessages.DB_ERROR, 500, res);
-      return;
-    } else if (typeof category === 'undefined') {
-      res.send({
-        status: 'ok',
-      });
-    } else {
-      dbTool.db.collection('discussion').find({
-        category
-      }, {
-        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
-      }, {
+  try {
+    let category = await slugToCategory(req.params.slug);
+    /* istanbul ignore if */
+    if (typeof category === 'undefined') {
+      return res.status(200).send({ status: 'ok' });
+    }
+
+    let discussions = await dbTool.discussion.find(
+      { category: category },
+      { creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, },
+      {
         limit: pagesize,
         skip: offset * pagesize,
         sort: [['lastDate', 'desc']]
-      }).toArray((err, results) => {
-        if (err) {
-          errorHandler(err, errorMessages.DB_ERROR, 500, res);
-          return;
-        }
-        resloveMembersInDiscussionArray(results, (err, members) => {
-          if (err) {
-            errorHandler(err, errorMessages.DB_ERROR, 500, res);
-            return;
-          }
-          res.send({
-            status: 'ok',
-            discussions: results,
-            members
-          });
-        });
-      });
-    }
-  });
-}
+      }
+    ).toArray();
 
-router.get('/', getCategoryList);
-router.get('/:slug/discussions', getDiscussionsUnderSpecifiedCategory);
+    let members = await resloveMembersInDiscussionArray(discussions);
+    return res.send({ status: 'ok', discussions: discussions, members: members });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+router.get('/', validation(dataInterface.category.getCategoryList), getCategoryList);
+router.get('/:slug/discussions', validation(dataInterface.category.getDiscussionsUnderSpecifiedCategory), getDiscussionsUnderSpecifiedCategory);
 
 module.exports = router;

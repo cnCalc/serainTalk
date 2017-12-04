@@ -5,7 +5,7 @@
 <script>
 export default {
   name: 'post-content',
-  props: ['content', 'noattach'],
+  props: ['content', 'noattach', 'reply-to', 'discussion-id'],
   data () {
     return {
       html: '',
@@ -14,87 +14,42 @@ export default {
     };
   },
   created () {
-    this.html = this.content;
+    this.html = this.replaceReplyTag(this.content);
+  },
+  methods: {
+    replaceReplyTag (html) {
+      if (!this.replyTo) {
+        return html;
+      }
+      const pattern = `@${this.replyTo.memberId}#${this.discussionId || this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
+      console.log(pattern);
+      const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+      if (html.match(replyReg)) {
+        const match = html.match(replyReg);
+        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${this.$store.state.discussionMeta._id}#index-${this.replyTo.value}`}"><span class="reply-to">${this.$store.state.members[this.replyTo.memberId].username}</span></a>`);
+      }
+      return html;
+    }
   },
   watch: {
     content () {
-      this.html = this.content;
+      this.html = this.replaceReplyTag(this.content);
+    },
+    html () {
+      // 让 KaTeX 自动渲染 DOM 中的公式
+      this.$nextTick(() => {
+        try {
+          window.renderMathInElement(this.$el);
+        } catch (e) {
+          console.log(e);
+        }
+      });
     }
-  },
-  methods: {
   }
 };
 </script>
 
 <style lang="scss">
-div.post-content {
-  img {
-    max-width: 70%;
-    // height: 400px;
-    // display: block;
-  }
-
-  .attachment {
-    display: block;
-  }
-
-  .invalid-attachment {
-    color: #d00 !important;
-    cursor: not-allowed;
-  }
-
-  br {
-      content: "";
-      margin: 2em;
-      display: block;
-      font-size: 24%;
-  }
-
-  blockquote {
-    margin: 0;
-    padding: 9px 16px 9px 16px;
-    border-radius: 5px;
-    font-size: 0.95em;
-    line-height: 1.5em;
-    color: #999;
-    br {
-      margin: 0em;
-    }
-  }
-
-  attach, inject {
-    display: none;
-  }
-
-  p {
-    margin-top: 0.35em;
-    margin-bottom: 0.35em;
-  }
-  table { 
-    border-spacing: 0;
-    border-collapse: collapse;
-  }
-  td {
-    border-spacing: 0px;
-    padding: 5px;
-    text-align: center;
-  }
-  a {
-    transition: all linear 0.3s;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  pre.code {
-    font-family: Consolas, Courier New, Courier, monospace;
-    font-size: 0.9em;
-    line-height: 0.8em;
-    padding: 1rem 1rem 0.3rem 1rem;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.1);
-    position: relative;
-    overflow-x: scroll;
-  }
-}
+@import '../styles/post-content.scss';
 </style>
 

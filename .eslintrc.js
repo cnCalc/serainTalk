@@ -25,6 +25,10 @@ module.exports = {
             "error",
             "always"
         ],
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
         "no-console": 0,
         "comma-dangle": 0,
         "prefer-const": 0,

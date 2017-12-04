@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 /**
  * 规范化基础参数
  * 将传入的 object 中的所有属性由 string 转化为 int
@@ -76,9 +78,18 @@ let expectArray = (values) => {
   return values;
 };
 
+let checkUndefined = (values) => {
+  Object.keys(values).forEach(key => {
+    if (typeof values[key] === 'undefined') {
+      throw new Error(`'${key}' shall not be undefined`);
+    }
+  });
+};
+
 module.exports = {
   expectInt,
   expectSameLength,
   expectDefined,
-  expectArray
+  expectArray,
+  checkUndefined
 };

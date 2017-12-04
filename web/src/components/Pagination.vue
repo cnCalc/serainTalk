@@ -47,6 +47,7 @@ nav.pagination {
   $size: 28px;
 
   position: relative;
+  user-select: none;
   margin: 0;
   padding: 20px;
   height: $size;

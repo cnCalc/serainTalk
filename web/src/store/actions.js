@@ -97,8 +97,8 @@ export default {
     state.commit('setBusy', true);
     state.commit('setMember', {});
     return api.v1.member.fetchMemberInfoById(param).then(data => {
-      delete data.status;
-      state.commit('setMember', data);
+      state.commit('setMember', data.member);
+      state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);
     });
   },
@@ -119,5 +119,14 @@ export default {
       state.commit('setBusy', false);
       return Promise.resolve(data.count);
     });
-  }
+  },
+
+  /**
+   * 获取当前用户信息（仅根组件创建、即首次打开时）
+   */
+  fetchCurrentSigninedMemberInfo: state => {
+    return api.v1.member.fetchMe({}).then(data => {
+      state.commit('setCurrentSigninedMemberInfo', data.memberInfo);
+    });
+  },
 };

@@ -1,0 +1,186 @@
+@import './global.scss';
+
+div.post-content {
+  word-break: break-word;
+  width: 100%;
+
+  img {
+    @include respond-to(phone) {
+      max-width: 100%;
+    }
+    @include respond-to(tablet) {
+      max-width: 85%;
+    }
+    @include respond-to(laptop) {
+      max-width: 70%;
+    }
+  }  
+
+  .attachment {
+    display: block;
+  }
+
+  .invalid-attachment {
+    color: #d00 !important;
+    cursor: not-allowed;
+  }
+
+  br {
+      content: "";
+      margin: 1em;
+      display: block;
+      font-size: 24%;
+  }
+
+  blockquote {
+    margin: 0.5em 0;
+    padding: 9px 12px;
+    font-size: 0.95em;
+    line-height: 1.5em;
+    br {
+      margin: 0em;
+    }
+  }
+
+  attach, inject {
+    display: none;
+  }
+
+  p {
+    margin-top: 0.35em;
+    margin-bottom: 0.35em;
+  }
+  table { 
+    border-spacing: 0;
+    border-collapse: collapse;
+  }
+  td, th {
+    border-spacing: 0px;
+    padding: 5px;
+    min-width: 60px;
+  }
+  th {
+    font-weight: 700;    
+  }
+  a {
+    transition: all linear 0.3s;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  pre {
+    font-family: Consolas, Courier New, Courier, monospace;
+    font-size: 0.9em;
+    line-height: 1.5em;
+    padding: 1rem 1rem 0.3rem 0rem;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow-x: scroll;
+    counter-reset: line;
+    br { font-size: 0; }
+  }
+  pre.code {
+    // Codes from Discuz
+    padding: 1rem 20px 0.3rem 20px;
+  }
+  pre > code {
+    display: block;
+    margin-left: 20px;
+    width: fit-content;
+  }
+  /** line numbers **/
+  pre span.__line:before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 20px;
+    text-align: right;
+    padding: 0 5px;
+    margin-right: 5px;
+    margin-left: -15px;
+    color: #888
+  }
+}
+
+.dark-theme div.post-content {
+  color: lightgray;
+  blockquote {
+    border-left: 2px solid #888;
+  }
+  pre {
+    background: #282828;
+  }
+  th {
+    border-bottom: 3px solid #444;
+  }
+  td {
+    border-bottom: 1px solid #444;
+  }
+  tr:hover {
+    background-color: #282828;
+  }
+  a {
+    color: white;
+  }
+  code {
+    color: #aaa;
+  }
+  pre > code {
+    color: inherit;
+    background-color: initial;
+  }
+  pre span.__line:before {
+    border-right: 1px solid #555;
+  }
+}
+
+.light-theme div.post-content {
+  blockquote {
+    border-left: 2px solid #888;
+    color: #777;
+  }
+  th {
+    border-bottom: 3px solid mix($theme_color, white, 20%);
+  }
+  td {
+    border-bottom: 1px solid mix($theme_color, white, 20%);
+  }
+  tr:hover {
+    background-color: mix($theme_color, white, 3%);
+  }
+  a {
+    color: $theme_color;
+  }
+  code {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: $theme_color;
+  }
+  pre > code {
+    color: inherit;
+    background-color: initial;
+  }
+  span.reply-to {
+    display: inline-block;
+    background-color: mix($theme_color, white, 12%);
+    border-radius: 4px;
+    padding: 0 0.4em;
+    line-height: 1.32rem;
+    font-size: 0.95em;
+    color: $theme_color;
+    font-weight: 700;
+    margin-right: 0.2em;
+  }
+  span.reply-to::before {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.2em;
+    content: ' ';
+    display: inline-block;
+    background-image: url(../assets/reply.svg);
+    background-size: cover;
+  }
+  pre span.__line:before {
+    border-right: 1px solid #ddd;
+  }
+}

@@ -41,13 +41,13 @@ interface Post {
   createDate: number,             // 创建日期，UNIX 时间戳
   allowScript?: boolean,          // 是否允许脚本，默认 false，undefined 看做 false
   votes: {
-    vote_up: number,              // 投票支持的数量
-    vote_down: number,            // 投票反对的数量
-    laugh: number,                // 投票😄 的数量
-    doubt: number,                // 投票😕 的数量
-    love: number,                 // 投票❤️ 的数量
-    cheer: number,                // 投票🎉 的数量
-    emmmm: number,                // 投票🌚 的数量
+    vote_up: array,              // 投票支持的成员列表
+    vote_down: array,            // 投票反对的成员列表
+    laugh: array,                // 投票😄 的成员列表
+    doubt: array,                // 投票😕 的成员列表
+    love: array,                 // 投票❤️ 的成员列表
+    cheer: array,                // 投票🎉 的成员列表
+    emmmm: array,                // 投票🌚 的成员列表
   },
   status: string,                 // 状态，hidden 为隐藏，lock 为锁定（不允许编辑）
   encoding: string,               // 内容的格式，允许值为 HTML 和 Markdown，非管理员只可以选择 Markdown

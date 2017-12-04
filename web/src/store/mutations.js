@@ -9,9 +9,10 @@ let mutations = {
   /**
    * 设置页面巨幕的标题和副标题
    */
-  setGlobalTitles: (state, [title, subtitle]) => {
-    state.globalTitle = title || '';
-    state.globalSubtitle = subtitle || '';
+  setGlobalTitles: (state, [title, subtitle, isMobileMemberView]) => {
+    state.globalTitle = {
+      title, subtitle, isMobileMemberView,
+    };
   },
 
   /**
@@ -79,6 +80,10 @@ let mutations = {
     state.member = memberInfo;
   },
 
+  appendMemberRecentActivity: (state, aciticities) => {
+    state.member.recentActivities.push(...aciticities);
+  },
+
   /**
    * 设置帖子列表正在展示的帖子
    */
@@ -93,6 +98,30 @@ let mutations = {
     state.member.discussions = [...state.member.discussions, ...discussions];
   },
 
+  /**
+   * 更新当前登陆的用户细心
+   */
+  setCurrentSigninedMemberInfo: (state, me) => {
+    state.me = me;
+  },
+
+  /**
+   * 修改编辑器的显示模式
+   */
+  updateEditorDisplay: (state, display) => {
+    state.editor.display = display;
+  },
+
+  /**
+   * 修改编辑器的模式
+   */
+  updateEditorMode: (state, { mode, discussionId, discussionTitle, memberId, index }) => {
+    state.editor.mode = mode;
+    state.editor.discussionId = discussionId;
+    state.editor.discussionTitle = discussionTitle;
+    state.editor.memberId = memberId;
+    state.editor.index = index;
+  }
 };
 
 export default mutations;

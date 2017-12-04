@@ -7,8 +7,11 @@ module.exports = {
   BAD_PASSWORD: 'invalid password.',
   LACK_INFO: 'need more information.',
   MEMBER_EXIST: 'member is exist.',
+  MEMBER_NOT_EXIST: 'member not exist.',
   ALREADY_MIGRATED: 'member already migrated.',
-  TIME_OUT: 'data is invalid.',
+  TIME_OUT: 'time out.',
   PERMISSION_DENIED: 'permission denied.',
-  SERVER_ERROR: 'server error.'
+  SERVER_ERROR: 'server error.',
+  TOO_FREQUENT: 'Requests are too frequent.',
+  VALIDATION_ERROR: 'validation error.'
 };

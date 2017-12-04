@@ -3,6 +3,10 @@ $link_color: rgb(114, 185, 237);
 $width-medium: 768px;
 $width-small: 400px;
 
+body {
+  font-family: "Noto Sans CJK", "Noto Sans CJK SC", "Source Han Sans", "Source Han Sans CN", "思源黑体", "思源黑体 CN", "WenQuanYi Micro Hei", "Microsoft Yahei UI", "Microsoft Yahei", "微软雅黑", "SimHei", sans-serif;
+}
+
 div.container {
   margin: 0 auto;
   max-width: 1080px;
@@ -20,7 +24,7 @@ div.container {
   text-align: center;
   box-sizing: border-box;
   cursor: pointer;
-  transition: background-color ease 0.2s;
+  transition: all ease 0.2s;
 }
 
 a:link, a:active, a:hover, a:visited {
@@ -35,6 +39,7 @@ a:hover {
 
 .hide {
   opacity: 0;
+  transition: none;
 }
 
 .fade-enter-active, .fade-leave-active {
@@ -54,3 +59,40 @@ a:hover {
   opacity: 0;
 }
 
+// scroll bar
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+::-webkit-scrollbar-thumb {
+  background: lightgrey;
+  border: 0px none #fff;
+  transition: all ease 0.1s;
+  cursor: pointer;
+  border-radius: 7px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: darkgray;
+}
+::-webkit-scrollbar-thumb:active {
+  background: gray;
+}
+
+// responsive mixins
+@mixin respond-to($media) {
+  $break-small: 480px;
+  $break-large: 800px;
+  @if $media == phone {
+    @media only screen and (max-width: $break-small) { @content; }
+  }
+  @else if $media == tablet {
+    @media only screen and (min-width: $break-small + 1) and (max-width: $break-large - 1) { @content; }
+  }
+  @else if $media == laptop {
+    @media only screen and (min-width: $break-large) { @content; }
+  }
+}

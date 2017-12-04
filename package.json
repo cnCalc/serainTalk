@@ -3,13 +3,18 @@
   "description": "Next generation forum engine designed for cnCalc.org",
   "version": "1.0.0",
   "author": "ntzyz <ntzyz@live.cn>",
+  "contributors": [
+    "kasora <kasorasun@gmail.com>"
+  ],
   "private": true,
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js web/src/views/*.vue",
-    "test": "nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
+    "test": "export NODE_ENV='MOCHA' && nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web && npm i",
-    "build": "cd web && npm run build"
+    "build": "cd web && npm run build",
+    "dev": "export NODE_ENV=\"DEV\" && node ./index.js",
+    "procduct": "export NODE_ENV=\"PROCDUCT\" && node ./index.js"
   },
   "nyc": {
     "require": [
@@ -23,9 +28,15 @@
     "instrument": false
   },
   "dependencies": {
+    "body-parser": "^1.18.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
+    "express-validation": "^1.0.2",
+    "highlight.js": "^9.12.0",
+    "joi": "^11.0.1",
     "jsonwebtoken": "^7.4.1",
+    "lodash": "^4.17.4",
+    "markdown-it": "^8.4.0",
     "mongodb": "^2.2.26"
   },
   "devDependencies": {

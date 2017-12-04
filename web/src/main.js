@@ -9,6 +9,8 @@ import ErrorView from './views/ErrorView.vue';
 import DiscussionView from './views/DiscussionView.vue';
 import MemberView from './views/MemberView.vue';
 import ListView from './views/ListView.vue';
+import SigninView from './views/SigninView.vue';
+import MigrationView from './views/MigrationView.vue';
 
 Vue.use(VueRouter);
 
@@ -39,6 +41,12 @@ const router = new VueRouter({
       path: '/m/:memberId/discussions',
       component: MemberView,
       meta: { keepAlive: true, mode: 'discussions' }
+    }, {
+      path: '/signin',
+      component: SigninView,
+    }, {
+      path: '/migration',
+      component: MigrationView,
     }, {
       path: '/400',
       component: ErrorView,

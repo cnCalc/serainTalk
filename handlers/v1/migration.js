@@ -11,17 +11,20 @@ let router = express.Router();
 let migrateTokens = {};
 
 /**
- * 验证 Discuz 用户的信息，验证其用户和密码
+ * [处理函数] 验证 Discuz 用户的信息
+ * get: /api/v1/migration/verify?name=<name>&password=<password>
+ *
+ * 验证其用户和密码
  * 若通过，则返回一个随机 token，用于完成下一步转换
  * @param {Request} req
  * @param {Response} res
  */
 async function verifyDiscuzMemberInfo (req, res) {
   let memberInfo = {};
-  let { name, password } = req.data;
+  let { name, password, email } = req.data;
 
   try {
-    utils.datacheck.checkUndefined({ name, password });
+    utils.datacheck.checkUndefined({ name, password, email });
   } catch (err) {
     return utils.errorHandler(null, err.message, 400, res);
   }
@@ -30,6 +33,10 @@ async function verifyDiscuzMemberInfo (req, res) {
     memberInfo = await dbTool.db.collection('common_member').findOne({ username: name });
   } catch (err) {
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
+  }
+
+  if (!memberInfo) {
+    return utils.errorHandler(null, utils.errorMessages.NOT_FOUND, 404, res);
   }
 
   if (memberInfo.credentials.type !== 'discuz') {
@@ -50,33 +57,40 @@ async function verifyDiscuzMemberInfo (req, res) {
   }
 
   // 保存迁移 token，留着下一步使用
-  let token = utils.createRandomString(20);
-  while (!migrateTokens[token]) {
-    token = utils.createRandomString(20);
+  // TODO: 将 token 保存至数据库中，防止服务器重启导致数据丢失
+  let token = utils.createRandomString(6);
+  while (migrateTokens[token]) {
+    token = utils.createRandomString(6);
   }
   migrateTokens[token] = {
     name: name,
     timestamp: new Date().getTime(),
+    email: email
   };
+
+  // 将 token 发送至新的邮箱地址
+  await utils.mail.sendVerificationCode(email, token);
 
   return res.send({
     status: 'ok',
-    token,
   });
 }
 
 /**
- * 执行迁移，此时允许用户设置全新的用户名和密码，以及自己的 E-Mail
+ * [处理函数] 执行迁移
+ * get: /api/v1/migration/perform
+ *
+ * 此时允许用户设置全新的用户名和密码，以及自己的 E-Mail
  * 当然用户名不能与其他用户重名
  * @param {Request} req
  * @param {Response} res
  */
 async function performMingration (req, res) {
   let memberInfo = {};
-  let token = req.data;
+  let { token, name } = req.data;
 
   try {
-    utils.datacheck.checkUndefined({ token: migrateTokens[token] });
+    utils.datacheck.checkUndefined({ token, name });
     if (Date.now() - migrateTokens[token].timestamp > config.tokenValidTime) {
       throw new Error(utils.errorMessages.TIME_OUT);
     }
@@ -97,8 +111,8 @@ async function performMingration (req, res) {
   // 加密密码，采用和新的密码杂凑方式
   let salt = utils.createRandomString();
   let newMemberInfo = {
-    username: req.data.name,
-    email: req.data.email,
+    username: name,
+    email: migrateTokens[token].email,
     credentials: {
       type: 'seraintalk',
       salt,
@@ -120,7 +134,7 @@ async function performMingration (req, res) {
   return res.send({ status: 'ok' });
 }
 
-router.get('/verify', verifyDiscuzMemberInfo);
-router.get('/perform', performMingration);
+router.post('/verify', verifyDiscuzMemberInfo);
+router.post('/perform', performMingration);
 
 module.exports = router;
