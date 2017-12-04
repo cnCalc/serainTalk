@@ -41,14 +41,12 @@ let config = {
 
 // 优先导出部分基础配置信息
 exports = module.exports = config;
-// console.log(process.env.NODE_ENV);
+console.log(process.env.NODE_ENV);
 /* istanbul ignore next */
-if (process.env.NODE_ENV === 'PROCDUCT') {
-  _.merge(config, procduct);
-} else if (process.env.NODE_ENV === 'MOCHA') {
-  _.merge(config, mocha);
-} else {
-  _.merge(config, dev);
+switch (process.env.NODE_ENV) {
+  case 'PROCDUCT': _.merge(config, procduct); break;
+  case 'MOCHA': _.merge(config, mocha); break;
+  default: _.merge(config, dev);
 }
 
 /**
