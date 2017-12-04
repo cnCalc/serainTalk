@@ -15,7 +15,7 @@ let router = express.Router();
 
 let sudo = async (req, res, next) => {
   try {
-    let _id = req.params.id ? ObjectID(req.params.id) : req.member._id;
+    let _id = req.query.id ? ObjectID(req.query.id) : req.member._id;
 
     let memberInfo = await dbTool.commonMember.findOne({ _id: _id });
     if (!memberInfo) return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
@@ -34,11 +34,16 @@ let sudo = async (req, res, next) => {
 
 let sendNotification = async (req, res, next) => {
   let _id = ObjectID(req.params.id);
-  await utils.notification.sendNotification(_id, req.body);
+  await utils.notification.sendNotification(_id, req.query);
   return res.status(201).send({ status: 'ok' });
 };
 
-router.post('/sudo', validation(dataInterface.debug.sudo), sudo);
-router.post('/notification/:id', validation(dataInterface.debug.sendNotification), sendNotification);
+let isAdmin = async (req, res, next) => {
+  return res.status(200).send({ status: 'ok', isAdmin: req.member.role === 'admin' });
+};
+
+router.get('/sudo', validation(dataInterface.debug.sudo), sudo);
+router.get('/notification/:id', validation(dataInterface.debug.sendNotification), sendNotification);
+router.get('/isadmin', isAdmin);
 
 module.exports = router;

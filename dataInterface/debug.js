@@ -6,7 +6,7 @@ const interfaceUtils = require('./interfaceUtils');
 exports = module.exports = {};
 
 let sudo = {
-  body: {
+  query: {
     id: interfaceUtils.mongoId
   }
 };
@@ -16,7 +16,7 @@ let sendNotification = {
   params: {
     id: interfaceUtils.mongoId
   },
-  body: {
+  query: {
     content: joi.string().required(),
     href: joi.string(),
   }

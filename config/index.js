@@ -41,7 +41,7 @@ let config = {
 
 // 优先导出部分基础配置信息
 exports = module.exports = config;
-console.log(process.env.NODE_ENV);
+// console.log(process.env.NODE_ENV);
 /* istanbul ignore next */
 switch (process.env.NODE_ENV) {
   case 'PROCDUCT': _.merge(config, procduct); break;
