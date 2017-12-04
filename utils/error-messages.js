@@ -12,6 +12,7 @@ module.exports = {
   TIME_OUT: 'time out.',
   PERMISSION_DENIED: 'permission denied.',
   SERVER_ERROR: 'server error.',
-  TOO_FREQUENT: 'Requests are too frequent.',
-  VALIDATION_ERROR: 'validation error.'
+  TOO_FREQUENT: 'requests are too frequent.',
+  VALIDATION_ERROR: 'validation error.',
+  WRONG_ENV: 'the api don\'t open on procduct.'
 };

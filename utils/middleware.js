@@ -84,6 +84,12 @@ let verifyMember = (req, res, next) => {
 };
 exports.verifyMember = verifyMember;
 
+let checkEnv = (req, res, next) => {
+  if (process.env.NODE_ENV === 'DEV') return next();
+  return errorHandler(null, errorMessages.WRONG_ENV, 410, res);
+};
+exports.checkEnv = checkEnv;
+
 /**
  * [中间件] 检查发布 Discussion 的频率
  *

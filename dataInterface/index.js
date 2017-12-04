@@ -7,5 +7,6 @@ module.exports = {
   message: require('./message'),
   notification: require('./notification'),
   category: require('./category'),
-  attachment: require('./attachment')
+  attachment: require('./attachment'),
+  debug: require('./debug')
 };

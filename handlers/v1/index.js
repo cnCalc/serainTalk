@@ -18,5 +18,6 @@ router.use('/migration', require('./migration'));
 router.use(['/settings', '/setting'], require('./settings'));
 router.use(['/message', '/messages'], require('./message'));
 router.use(['/notification', '/notifications'], require('./notification'));
+router.use('/debug', utils.middleware.checkEnv, require('./debug'));
 
 module.exports = router;
