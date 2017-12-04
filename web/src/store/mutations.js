@@ -121,6 +121,25 @@ let mutations = {
     state.editor.discussionTitle = discussionTitle;
     state.editor.memberId = memberId;
     state.editor.index = index;
+  },
+
+  /**
+   * 更新通知列表
+   */
+  setNotifications: (state, { notifications, count }) => {
+    state.notifications = {
+      list: notifications,
+      count,
+      new: !notifications.reduce((a, b) => a && b.hasRead, true)
+    }
+  },
+
+  updateNofitication: (state, { index }) => {
+    const item = state.notifications.list.filter(item => item.index === index)[0];
+    if (item) {
+      item.hasRead = true;
+      state.notifications.new = !state.notifications.list.reduce((a, b) => a && b.hasRead, true)
+    }
   }
 };
 

@@ -129,4 +129,23 @@ export default {
       state.commit('setCurrentSigninedMemberInfo', data.memberInfo);
     });
   },
+
+  /**
+   * 
+   */
+  fetchNotifications: (state, param = {}) => {
+    return api.v1.notification.fetchNotification(param).then(data => {
+      const { notifications, count } = data;
+      state.commit('setNotifications', { notifications, count });
+    })
+  },
+
+  /**
+   * 
+   */
+  readNotification: (state, param = {}) => {
+    return api.v1.notification.readNotification(param).then(data => {
+      state.commit('updateNofitication', param);
+    })
+  }
 };

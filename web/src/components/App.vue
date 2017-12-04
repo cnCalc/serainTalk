@@ -25,6 +25,7 @@ export default {
   beforeMount () {
     // reload session info.
     this.$store.dispatch('fetchCurrentSigninedMemberInfo').catch(e => {});
+    this.$store.dispatch('fetchNotifications');
 
     // keep SPA
     window.addEventListener('click', event => {
@@ -47,7 +48,7 @@ export default {
 
 body {
   margin: 0;
-  overflow-y: overlay;
+  overflow-y: scroll;
   overflow-x: hidden;
 }
 

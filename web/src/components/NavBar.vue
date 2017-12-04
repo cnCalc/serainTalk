@@ -17,23 +17,25 @@
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
       div(v-else, style="display: flex;")
         div.notification-container
-          button.notification(@click="dropdownMenuTrigger($event, 'notification')")
-          div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()" v-bind:style="{ opacity: menuOpened === 'notification' ? 1 : 0, transform: `translateY(${ menuOpened === 'notification' ? '0px' : '-6px' })`, pointerEvents: menuOpened === 'notification' ? '' : 'none' }")
+          button.notification(@click="dropdownMenuTrigger($event, 'notification')",
+            v-bind:class="{ active: menuOpened === 'notification', new: notifications.new }")
+          div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()"
+            v-bind:style="{ opacity: menuOpened === 'notification' ? 1 : 0, transform: `translateY(${ menuOpened === 'notification' ? '0px' : '-6px' })`, pointerEvents: menuOpened === 'notification' ? '' : 'none' }")
             header
               h3 消息通知
               span(style="font-family: consolas") √
-            ul.scrollable(v-on:mousewheel="scrollHelper")
-              li.new 您在帖子「新版9750GII(02.02.0701)刷机工具+教程」被提及。
-              li 您关注的帖子「TI-Nspire 系列新人引导帖（程序、游戏、模拟器资源）」有新的回复。
-              li 您在帖子「cnCalc改版通知」的跟帖有新的回复。
-              li 邮件地址确认成功，您的账户已可以使用。
-              li 欢迎来到 cnCalc，在发帖之前，我们建议您点击此处阅读论坛细则。
+            ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.list")
+              li(v-for="item in notifications.list"
+                v-bind:class="{ new: !item.hasRead }"
+                v-on:click="readNotification(item)"
+                v-bind:style="{ cursor: item.href || !item.hasRead ? 'pointer' : 'initial' }") {{ item.content }}
         div.avatar-container
           div.avatar(@click="dropdownMenuTrigger($event, 'avatar')")
             div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
             div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
           div.dropdown-wrapper: div.menu(v-bind:style="{ opacity: menuOpened === 'avatar' ? 1 : 0, transform: `translateY(${ menuOpened  === 'avatar'? '0px' : '-6px' })`, pointerEvents: menuOpened === 'avatar' ? '' : 'none' }"): ul
             li.member: router-link(:to="`/m/${me._id}`") 我的主页
+            li: a 站内消息
             li.settings: a 个人设置
             li.signout: a(@click="signout") 退出登录
 </template>
@@ -50,7 +52,8 @@ export default {
         { href: 'https://github.com/cnCalc', external: true, text: 'GitHub' },
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ],
-      menuOpened: null
+      menuOpened: null,
+      haveNewNotification: false,
     };
   },
   computed: {
@@ -59,11 +62,23 @@ export default {
     },
     me () {
       return this.$store.state.me;
+    },
+    notifications () {
+      return this.$store.state.notifications;
     }
   },
   methods: {
     switchTheme () {
       this.$store.commit('switchTheme');
+    },
+    readNotification (notification) {
+      if (!notification.hasRead) {
+        this.$store.dispatch('readNotification', { index: notification.index });
+      }
+
+      if (notification.href) {
+        this.$router.push(notification.href);
+      }
     },
     stopPropagation (e) {
       e.stopPropagation();
@@ -71,14 +86,10 @@ export default {
     dropdownMenuDeactivate (e) {
       this.menuOpened = null;
       document.removeEventListener('click', this.dropdownMenuDeactivate);
-      document.body.style.overflow = '';
-      document.body.style.position = '';
     },
     dropdownMenuActivate (target) {
       this.menuOpened = target;
       document.addEventListener('click', this.dropdownMenuDeactivate);
-      // document.body.style.overflow = 'hidden';
-      // document.body.style.position = 'fixed';
     },
     dropdownMenuTrigger (e, target) {
       e.stopPropagation();
@@ -223,10 +234,18 @@ div.st-header {
       background-repeat: no-repeat;
       transition: all ease 0.2s;
 
-      &:hover, &:focus {
+      &:hover, &.active {
         background-color: mix($theme_color, black, 80%);
-        outline: none;
       }
+
+      &:focus {
+        outline: none;
+        background-color: mix($theme_color, black, 80%);
+      }
+    }
+
+    button.notification.new {
+      background-image: url(../assets/notification-new.svg);
     }
 
     div.notification-list {
@@ -258,7 +277,7 @@ div.st-header {
       ul {
         margin: 0;
         height: 250px;
-        overflow-y: scroll;
+        overflow-y: overlay;
       }
 
       li {
