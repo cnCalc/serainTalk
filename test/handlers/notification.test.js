@@ -3,6 +3,7 @@
 const supertest = require('supertest');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
+const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
 const utils = require('../../utils');
 const _ = require('lodash');
@@ -44,6 +45,20 @@ describe('notification part', async () => {
     });
   });
 
+  it('send wrong notification.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let notification = {
+        content: 'hello world'
+      };
+      try {
+        await utils.notification.sendNotification(utils.createRandomString(24, { hax: true }), notification);
+        throw new Error('it should be wrong.');
+      } catch (err) {
+        expect(err.message).to.be.equal(errorMessages.MEMBER_NOT_EXIST);
+      }
+    });
+  });
+
   it('get notification.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
@@ -61,6 +76,19 @@ describe('notification part', async () => {
       let count = nitificationRes.count;
       expect(notifications.length).to.be.equal(config.pagesize);
       expect(count).to.be.equal(config.pagesize + 1);
+    });
+  });
+
+  it('get empty notification list.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let getUrl = '/api/v1/notification';
+      let nitificationRes = await agent.get(getUrl)
+        .expect(200);
+      nitificationRes = nitificationRes.body;
+      let notifications = nitificationRes.notifications;
+      let count = nitificationRes.count;
+      expect(notifications.length).to.be.equal(0);
+      expect(count).to.be.equal(0);
     });
   });
 
