@@ -51,7 +51,7 @@ export default {
 @import '../styles/global.scss';
 
 div.discussion-list {
-  padding-bottom: 20px;
+  padding-bottom: 10px;
   ul {
     margin: 0;
     padding: 0;
@@ -59,7 +59,19 @@ div.discussion-list {
     div.discussion-list-item {
       padding: 12px;
       margin-bottom: 5px;
+      @include respond-to(phone) {
+        padding: 6px;
+      }
     }
+  }
+
+  @mixin set-avatar($avatar_size) {
+    width: $avatar_size;
+    height: $avatar_size;
+    font-size: $avatar_size * 0.55;
+    line-height: $avatar_size;
+    border-radius: $avatar_size / 2;
+    text-align: center;
   }
 
   div.discussion-list-item {
@@ -75,16 +87,19 @@ div.discussion-list {
     display: inline-block;
     position: relative;
     margin: 3px;
-    width: $avatar_size;
-    height: $avatar_size;
-    font-size: $avatar_size * 0.55;
-    line-height: $avatar_size;
-    text-align: center;
-    border-radius: $avatar_size / 2;
     background-color: mix($theme_color, white, 80%);
     color: white;
     cursor: pointer;
     overflow: hidden;
+    @include respond-to(phone) {
+      @include set-avatar(35px);
+    }
+    @include respond-to(tablet) {
+      @include set-avatar(40px);
+    }
+    @include respond-to(laptop) {
+      @include set-avatar(40px);
+    }
 
     div.avatar-image {
       position: absolute;
@@ -143,6 +158,9 @@ div.discussion-list {
 
   div.discussion-meta {
     padding-left: 12px;
+    @include respond-to(phone) {
+      padding-left: 6px;
+    }
     display: inline-block;
     order: 2;
     flex-shrink: 2;
@@ -171,10 +189,20 @@ div.discussion-list {
     }
   }
 
+  @media only screen and (max-width: 720px) {
+    div.discussion-meta-right {
+      display: none;
+    }
+  }
+
+
   h3.discussion-title {
     white-space: nowrap;
     font-weight: normal;
     font-size: 16px;
+    @include respond-to(phone) {
+      font-size: 14px;
+    }
     margin: 0;
     transition: color ease 0.2s;
     overflow: hidden;
@@ -224,8 +252,10 @@ div.discussion-list {
 
 .light-theme div.discussion-list {
   color: black;
-  div.discussion-list-item:hover {
-    background-color: rgba($theme_color, 0.1);
+  @include respond-to (laptop) {
+    div.discussion-list-item:hover {
+      background-color: rgba($theme_color, 0.1);
+    }
   }
   span.discussion-category {
     background-color: $theme_color;
@@ -237,15 +267,9 @@ div.discussion-list {
   span.discussion-user, span.discussion-tags {
     color: mix($theme_color, white, 90%);
   }
-  // span.discussion-tags {
-  //   background: mix($theme_color, white, 15%);
-  // }
   span.discussion-user {
     color: mix($theme_color, black, 75%);
   }
-  // span.discussion-tags:hover {
-  //   background: mix($theme_color, white, 30%);
-  // }
   div.discussion-button {
     color: mix($theme_color, black, 90%);
     background: mix($theme_color, white, 15%);
@@ -260,8 +284,10 @@ div.discussion-list {
 
 .dark-theme div.discussion-list {
   color: lightgray;
-  div.discussion-list-item:hover {
-    background-color: #333; 
+  @include respond-to (laptop) {
+    div.discussion-list-item:hover {
+      background-color: #333; 
+    }
   }
   span.discussion-category {
     background-color: mix($theme_color, black, 10%); 

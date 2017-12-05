@@ -39,13 +39,18 @@ div.categories-list {
   width: 90%;
 
   h2.block-name {
-    padding-top: 15px;
     font-size: 12px;
     font-weight: normal;
     padding-left: 5px;
     color: grayscale($theme_color);
+    padding-top: 15px;
   }
-  a.category-name {
+
+  div.categories-block:first-child > .block-name {
+    padding-top: 0px;
+  }
+
+a.category-name {
     display: block;
     font-size: 13px;
     line-height: 1.8em;

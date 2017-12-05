@@ -1,50 +1,37 @@
 <template lang="pug">
   div.st-header
     div.container
-      router-link(to="/" title="cnCalc"): h1 cnCalc.org
-      div.links
-        template(v-for="link in links")
-          a(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
-          router-link(v-else :to="link.href" :title="link.text") {{ link.text }}
-      div(style="flex-grow: 1; flex-shrink: 1;")
-      a.theme-switch(@click="switchTheme")
-        span(v-if="$store.state.theme !== 'dark'") 夜间模式
-        span(v-else) 正常模式
-      div.input
-        input(type="text", placeholder="搜索")
-      div(v-if="typeof me._id === 'undefined'")
+      div.drawer-trigger(@click="categoryDrawerTrigger"): svg.drawer-trigger(viewBox="0 0 33.866666 33.866668"): g(transform="translate(0,-263.13332)")
+        rect(width="28.965336" height="5.5324793" x="2.4506655" y="277.30042")
+        rect(width="28.965336" height="5.5324793" x="2.4506655" y="267.77527")
+        rect(width="28.965336" height="5.5324793" x="2.4506655" y="286.82556")
+      router-link.title(to="/?refresh" title="cnCalc"): h1 cnCalc.org
+      template(v-for="link in links")
+        a.extra-link(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
+        router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
+      div.spring
+      input.search(type="text", placeholder="搜索")
+      template(v-if="typeof me._id === 'undefined'")
         router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
-      div(v-else, style="display: flex;")
-        div.notification-container
-          button.notification(@click="dropdownMenuTrigger($event, 'notification')",
-            v-bind:class="{ active: menuOpened === 'notification', new: notifications.new }")
-          div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()"
-            v-bind:style="{ opacity: menuOpened === 'notification' ? 1 : 0, transform: `translateY(${ menuOpened === 'notification' ? '0px' : '-6px' })`, pointerEvents: menuOpened === 'notification' ? '' : 'none' }")
-            header
-              h3 消息通知
-              span(style="font-family: consolas") √
-            ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.list")
-              li(v-for="item in notifications.list"
-                v-bind:class="{ new: !item.hasRead }"
-                v-on:click="readNotification(item)"
-                v-bind:style="{ cursor: item.href || !item.hasRead ? 'pointer' : 'initial' }") {{ item.content }}
-        div.avatar-container
-          div.avatar(@click="dropdownMenuTrigger($event, 'avatar')")
-            div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
-            div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
-          div.dropdown-wrapper: div.menu(v-bind:style="{ opacity: menuOpened === 'avatar' ? 1 : 0, transform: `translateY(${ menuOpened  === 'avatar'? '0px' : '-6px' })`, pointerEvents: menuOpened === 'avatar' ? '' : 'none' }"): ul
-            li.member: router-link(:to="`/m/${me._id}`") 我的主页
-            li: a 站内消息
-            li.settings: a 个人设置
-            li.signout: a(@click="signout") 退出登录
+      template(v-else)
+        notification-control
+        member-control
+      div.mobile-drawer-overlay(v-bind:class="{ active: isCategoryDrawerActivated }")
+      div.mobile-drawer(v-bind:class="{ active: isCategoryDrawerActivated }")
+        div.category-list: category-list
 </template>
 
 <script>
-import api from '../api';
+import CategoryList from '../components/CategoryList.vue';
+import NotificationControl from './NotificationControl.vue';
+import MemberControl from './MemberControl.vue';
 
 export default {
   name: 'nav-bar',
+  components: {
+    CategoryList, NotificationControl, MemberControl
+  },
   data () {
     return {
       links: [
@@ -52,8 +39,7 @@ export default {
         { href: 'https://github.com/cnCalc', external: true, text: 'GitHub' },
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ],
-      menuOpened: null,
-      haveNewNotification: false,
+      isCategoryDrawerActivated: false,
     };
   },
   computed: {
@@ -63,57 +49,22 @@ export default {
     me () {
       return this.$store.state.me;
     },
-    notifications () {
-      return this.$store.state.notifications;
-    }
   },
   methods: {
-    switchTheme () {
-      this.$store.commit('switchTheme');
-    },
-    readNotification (notification) {
-      if (!notification.hasRead) {
-        this.$store.dispatch('readNotification', { index: notification.index });
-      }
-
-      if (notification.href) {
-        this.$router.push(notification.href);
+    categoryDrawerTrigger () {
+      if (!this.isCategoryDrawerActivated) {
+        this.categoryDrawerActivate();
       }
     },
-    stopPropagation (e) {
-      e.stopPropagation();
-    },
-    dropdownMenuDeactivate (e) {
-      this.menuOpened = null;
-      document.removeEventListener('click', this.dropdownMenuDeactivate);
-    },
-    dropdownMenuActivate (target) {
-      this.menuOpened = target;
-      document.addEventListener('click', this.dropdownMenuDeactivate);
-    },
-    dropdownMenuTrigger (e, target) {
-      e.stopPropagation();
-      this.menuOpened ? this.dropdownMenuDeactivate() : this.dropdownMenuActivate(target);
-    },
-    signout () {
-      api.v1.member.signout().then(() => {
-        // refresh
-        window.location.href = window.location.href;
+    categoryDrawerActivate () {
+      this.isCategoryDrawerActivated = true;
+      this.$nextTick(() => {
+        document.addEventListener('click', this.categoryDrawerDeactivate);
       });
     },
-    scrollHelper (e) {
-      e.stopPropagation();
-
-      const node = this.$el.querySelector('ul.scrollable');
-      const delta = e.wheelDelta || e.detail || 0;
-
-      if (node.scrollTop === 0 && delta > 0) {
-        e.preventDefault();
-        return false;
-      } else if (node.clientHeight + node.scrollTop >= node.scrollHeight && delta < 0) {
-        e.preventDefault();
-        return false;
-      }
+    categoryDrawerDeactivate () {
+      this.isCategoryDrawerActivated = false;
+      document.removeEventListener('click', this.categoryDrawerDeactivate);
     }
   }
 };
@@ -132,22 +83,30 @@ div.st-header {
   text-align: center;
   z-index: 10;
 
-  a.theme-switch {
-    cursor: pointer;
-  }
-
   div.container {
     text-align: left;
     height: 50px;
     vertical-align: top;
-    padding: 0 15px;
+    padding: 0 5px;
     white-space: nowrap;
     position: relative;
     display: flex;
     align-items: center;
 
+    > * {
+      margin: 0 5px;
+    }
+
+    a.title {
+    }
+
+    a.extra-link {
+      @include respond-to(phone) {
+        display: none;
+      }
+    }
+
     h1 {
-      display: inline-block;
       font-size: 1.5em;
       color: white;
       padding: 0; 
@@ -156,244 +115,91 @@ div.st-header {
       line-height: 50px;
     }
 
-    a.right {
-      margin-right: 10px;
-      transition: color ease 0.3s;
-    }
-
-    div.links {
-      margin-left: 7px;
-    }
-
-    @media screen and (max-width: $width-small) {
-      div.left.links {
-        display: none;
-      }
-    }
-
-    div.links {
-      display: inline-block;
-      font-size: 0.9em;
-      vertical-align: top;
-      line-height: 50px;
-      a {
-        transition: color ease 0.3s;
-        display: inline-block;
-        min-width: 40px;
-        margin-left: 5px;
-        margin-right: 5px;
-        text-align: center;
-        border-radius: 2px;
-      }
-    }
-
-    a.theme-switch {
-      display: inline-block;
-      cursor: pointer;
-    }
-
-    div.input {
-      display: inline-block;
-      margin: 0 10px;
-      input, input:active {
-        border: none;
-        outline-width: 0;
-      }
-      input:focus {
-        width: 250px;
-      }
-      input {
-        padding: 7px;
-        border-radius: 4px;
-        color: white;
-        width: 150px;
-        transition: all ease 0.3s;
-        margin-right: 0.5em;
-        margin-left: 0.5em;
-      }
-      @media screen and (max-width: $width-medium) {
-        input {
-          width: 30px;
-        }
-        input:focus {
-          width: 150px;
-        }
-      }
-    }
-
-    button.notification {
-      width: 30px;
-      height: 30px;
-      background: none;
+    input.search {
       border: none;
-      border-radius: 100%;
-      margin-right: 10px;
-      background-image: url(../assets/notification.svg);
-      background-size: 25px;
-      background-position: center;
-      background-repeat: no-repeat;
-      transition: all ease 0.2s;
-
-      &:hover, &.active {
-        background-color: mix($theme_color, black, 80%);
+      padding: 5px;
+      border-radius: 5px;
+      color: white;
+      transition: all ease 0.4s;
+      width: 180px;
+      @include respond-to(phone) {
+        flex-grow: 1;
+        flex-shrink: 1;
+        width: 100%;
       }
 
       &:focus {
         outline: none;
-        background-color: mix($theme_color, black, 80%);
-      }
-    }
-
-    button.notification.new {
-      background-image: url(../assets/notification-new.svg);
-    }
-
-    div.notification-list {
-      width: 320px;
-      position: absolute;
-      top: 8px;
-      right: -15px;
-      background: white;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-      border-radius: 4px;
-      transition: all ease 0.2s;
-      overflow: hidden;
-
-      header {
-        padding: .5em .7em 0.3em;
-        display: flex;
-        border-bottom: 1px solid mix($theme_color, white, 30%);
-        color: $theme_color;
-      }
-
-      h3 {
-        flex-grow: 1;
-        flex-shrink: 1;
-        margin: 0;
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      ul {
-        margin: 0;
-        height: 250px;
-        overflow-y: overlay;
-      }
-
-      li {
-        text-align: left;
-        white-space: normal;
-        font-size: 13px;
-        padding: 1em 1em;
-        user-select: none;
-        cursor: pointer;
-        transition: background-color ease 0.2s;
-      }
-
-      li:not(:first-child) {
-        border-top: 1px solid #eee;
-      }
-
-      li.new {
-        background-color: mix($theme_color, white, 8%);
-      }
-
-      li:hover {
-        background-color: mix($theme_color, white, 15%);
-      }
-    }
-
-    $avatar_width: 30px;
-    $avatar_height: 30px;
-    div.avatar {
-      width: $avatar_width;
-      height: $avatar_height;
-      border-radius: $avatar_width / 2;
-      overflow: hidden;
-      cursor: pointer;
-
-      .avatar-image {
-        width: $avatar_width;
-        height: $avatar_height;
-        background-size: cover;
-      }
-    }
-
-    div.dropdown-wrapper {
-      width: 0;
-      height: 0;
-      position: relative;
-      display: block;
-    }
-
-    div.menu {
-      $width: 150px;
-      position: absolute;
-      top: 8px;
-      // left: -$width / 2 + $avatar_width / 2;
-      right: -$avatar_width;
-      width: $width;
-      background: white;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-      border-radius: 4px;
-
-      transition: all ease 0.2s;
-
-      li {
-        text-align: center;
-        font-size: 0.9em;
-        height: 2.2em;
-        line-height: 2.2em;
-
-        a {
-          color: mix($theme_color, black, 80%);
-          cursor: pointer;
-        }
-
-        a:hover {
-          color: mix($theme_color, black, 80%);
+        width: 260px;
+        @include respond-to(phone) {
+          width: 100%;
         }
       }
+    }
 
-      li:hover {
-        background-color: mix($theme_color, white, 10%);
-      }
-
-      li::before {
-        content: '';
-        display: inline-block;
-        background-size: cover;
-        width: 1em;
-        height: 1em;
-        margin-right: .5em;
-        vertical-align: baseline;
-      }
-
-      li::after {
-        content: '';
-        display: inline-block;
-        width: 0.5em;
-      }
-
-      li.member::before {
-        background-image: url(../assets/member.svg);
-      }
-
-      li.settings::before {
-        background-image: url(../assets/settings.svg);
-      }
-
-      li.signout::before {
-        background-image: url(../assets/signout.svg);
-        // Fix to baseline
-        margin-bottom: -2px;
+    div.spring {
+      flex-grow: 1;
+      flex-shrink: 1;
+      @include respond-to(phone) {
+        display: none;
       }
     }
 
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 10px 0;
+    div.mobile-drawer-overlay, div.mobile-drawer {
+      @include respond-to(tablet) { display: none; }
+      @include respond-to(laptop) { display: none; }
+
+      margin: 0;
+      position: fixed;
+      box-sizing: border-box;
+      top: 50px; left: 0; bottom: 0;
+      transition: all ease 0.2s;
+    }
+
+    div.mobile-drawer {
+      width: 260px;
+      transform: translateX(-260px);
+      overflow-y: scroll;
+      background: white;
+      padding: 10px;
+      pointer-events: none;
+
+      &.active {
+        transform: initial;
+        pointer-events: initial;
+      }
+    }
+
+    div.mobile-drawer-overlay {
+      width: 100vw;
+      pointer-events: none;
+
+      &.active {
+        background: rgba(black, 0.3);
+        pointer-events: initial;
+      }
+    }
+
+    div.drawer-trigger {
+      @include respond-to(tablet) { display: none; }
+      @include respond-to(laptop) { display: none; }
+
+      width: 30px;
+      height: 50px;
+      padding: 15px 5px;
+      box-sizing: border-box;
+      font-size: 0;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      g {
+        fill: white;
+        fill-opacity: 0.8;
+        stroke: none;
+      }
     }
   }
 }
@@ -401,7 +207,7 @@ div.st-header {
 .light-theme {
   div.st-header {
     background-color: $theme_color;
-    box-shadow: 0 2px 2px $theme_color;
+    // box-shadow: 0 2px 2px $theme_color;
     a {
       color: $link_color;
     }
@@ -423,7 +229,7 @@ div.st-header {
 .dark-theme {
   div.st-header {
     background-color: #555;
-    box-shadow: 0 2px 2px #555;
+    // box-shadow: 0 2px 2px #555;
     a {
       color: #bbb;
     }

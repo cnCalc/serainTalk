@@ -1,7 +1,11 @@
 <template lang="pug">
   div#app(v-bind:class="{ 'dark-theme': $store.state.theme === 'dark', 'light-theme': $store.state.theme === 'light' }")
-    link(v-if="$store.state.theme === 'light'" href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-light.min.css" rel="stylesheet")
-    link(v-else href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-dark.min.css" rel="stylesheet")
+    template(v-if="$store.state.theme === 'light'")
+      link(href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-light.min.css" rel="stylesheet")
+      meta(name="theme-color" content="#1770B3")
+    template(v-else)
+      link(href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-dark.min.css" rel="stylesheet")
+      meta(name="theme-color" content="#555555")
     nav-bar
     global-title
     div.container
@@ -24,8 +28,9 @@ export default {
   },
   beforeMount () {
     // reload session info.
-    this.$store.dispatch('fetchCurrentSigninedMemberInfo').catch(e => {});
-    this.$store.dispatch('fetchNotifications');
+    this.$store.dispatch('fetchCurrentSigninedMemberInfo')
+      .then(() => { this.$store.dispatch('fetchNotifications'); })
+      .catch(e => {});
 
     // keep SPA
     window.addEventListener('click', event => {
