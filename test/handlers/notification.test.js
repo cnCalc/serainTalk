@@ -87,4 +87,71 @@ describe('notification part', async () => {
       expect(notifications.find((item) => item.index === 2)).to.includes({ index: 2, hasRead: false });
     });
   });
+
+  it('read all notification.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let notification = {
+        content: 'hello world',
+        href: 'cncalc.org'
+      };
+      for (let i = 0; i < 5; i++) {
+        await utils.notification.sendNotification(newMemberInfo._id, notification);
+      }
+
+      let readUrl = '/api/v1/notification/all/read';
+      await agent.post(readUrl)
+        .expect(201);
+
+      let getUrl = '/api/v1/notification?pagesize=5';
+      let nitificationRes = await agent.get(getUrl)
+        .expect(200);
+      nitificationRes = nitificationRes.body;
+      let notifications = nitificationRes.notifications;
+      for (let notification of notifications) {
+        expect(notification.hasRead).to.be.equal(true);
+      }
+    });
+  });
+
+  it('only read your notification.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      let notification = {
+        content: 'hello world',
+        href: 'cncalc.org'
+      };
+      let getUrl = '/api/v1/notification?pagesize=10';
+      for (let i = 0; i < 5; i++) {
+        await utils.notification.sendNotification(newMemberInfoA._id, notification);
+      }
+
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+        for (let i = 0; i < 5; i++) {
+          await utils.notification.sendNotification(newMemberInfoB._id, notification);
+        }
+        let readUrl = '/api/v1/notification/all/read';
+        await agent.post(readUrl)
+          .expect(201);
+
+        let nitificationRes = await agent.get(getUrl)
+          .expect(200);
+        nitificationRes = nitificationRes.body;
+        let notifications = nitificationRes.notifications;
+        for (let notification of notifications) {
+          expect(notification.hasRead).to.be.equal(true);
+        }
+      });
+
+      // A 重新登录
+      await testTools.member.login(agent, newMemberInfoA);
+
+      // 验证 A 的通知是否被误读
+      let nitificationRes = await agent.get(getUrl)
+        .expect(200);
+      nitificationRes = nitificationRes.body;
+      let notifications = nitificationRes.notifications;
+      for (let notification of notifications) {
+        expect(notification.hasRead).to.be.equal(false);
+      }
+    });
+  });
 });

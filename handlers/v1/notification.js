@@ -3,6 +3,8 @@
 const dbTool = require('../../utils/database');
 const express = require('express');
 const validation = require('express-validation');
+const errorHandler = require('../../utils/error-handler');
+const errorMessages = require('../../utils/error-messages');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../utils');
 const { middleware } = utils;
@@ -67,43 +69,78 @@ const router = express.Router();
  * @param {any} next
  */
 let getNotification = async (req, res, next) => {
-  let pagesize = req.query.pagesize;
-  let offset = req.query.page - 1;
-  let notifications = await dbTool.commonMember.aggregate([
-    { $match: { _id: req.member._id } },
-    { $project: { notifications: 1, _id: 0 } },
-    { $unwind: '$notifications' },
-    { $match: { 'notifications.date': { $gt: req.query.after } } },
-    { $sort: { 'notifications.date': -1 } },
-    { $limit: pagesize },
-    { $skip: offset }
-  ]).toArray();
-  let count = await dbTool.commonMember.aggregate([
-    { $match: { _id: req.member._id } },
-    { $project: { notifications: 1, _id: 0 } },
-    { $unwind: '$notifications' },
-    { $match: { 'notifications.date': { $gt: req.query.after } } },
-    { $count: 'count' }
-  ]).toArray();
-  notifications = notifications.map(notificationItem => notificationItem.notifications);
-  count = count[0] ? count[0].count : 0;
-  return res.status(200).send({ status: 'ok', notifications: notifications, count: count });
+  try {
+    let pagesize = req.query.pagesize;
+    let offset = req.query.page - 1;
+    let notifications = await dbTool.commonMember.aggregate([
+      { $match: { _id: req.member._id } },
+      { $project: { notifications: 1, _id: 0 } },
+      { $unwind: '$notifications' },
+      { $match: { 'notifications.date': { $gt: req.query.after } } },
+      { $sort: { 'notifications.date': -1 } },
+      { $limit: pagesize },
+      { $skip: offset }
+    ]).toArray();
+    let count = await dbTool.commonMember.aggregate([
+      { $match: { _id: req.member._id } },
+      { $project: { notifications: 1, _id: 0 } },
+      { $unwind: '$notifications' },
+      { $match: { 'notifications.date': { $gt: req.query.after } } },
+      { $count: 'count' }
+    ]).toArray();
+    notifications = notifications.map(notificationItem => notificationItem.notifications);
+    count = count[0] ? count[0].count : 0;
+    return res.status(200).send({ status: 'ok', notifications: notifications, count: count });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
 };
 
 let readNotification = async (req, res, next) => {
-  let data = {};
-  data[`notifications.${req.params.index - 1}.hasRead`] = true;
-  await dbTool.commonMember.updateOne(
-    { _id: req.member._id },
-    { $set: data }
-  );
+  try {
+    let data = {};
+    data[`notifications.${req.params.index - 1}.hasRead`] = true;
+    await dbTool.commonMember.updateOne(
+      { _id: req.member._id },
+      { $set: data }
+    );
 
-  let resinfo = await dbTool.commonMember.findOne({ _id: req.member._id });
-  return res.status(201).send(resinfo.notifications[req.params.index]);
+    let resinfo = await dbTool.commonMember.findOne({ _id: req.member._id });
+    return res.status(201).send(resinfo.notifications[req.params.index]);
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+let readAllNotification = async (req, res, next) => {
+  try {
+    let unReadList = await dbTool.commonMember.aggregate([
+      { $match: { _id: req.member._id } },
+      { $project: { notification: '$notifications' } },
+      { $unwind: '$notification' }
+    ]).toArray();
+    unReadList = unReadList.map(doc => doc.notification);
+    let updateInfo = {};
+    for (let notification of unReadList) {
+      updateInfo[`notifications.${notification.index - 1}.hasRead`] = true;
+    }
+
+    await dbTool.commonMember.updateMany(
+      { _id: req.member._id },
+      { $set: updateInfo }
+    );
+    return res.status(201).send({ status: 'ok' });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
 };
 
 // router.post('/:id', middleware.verifyAdmin, validation(dataInterface.notification.sendNotification), sendNotification);
 router.get('/', middleware.verifyMember, validation(dataInterface.notification.getNotification), getNotification);
+router.post('/all/read', middleware.verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
 router.post('/:index/read', middleware.verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
 
 module.exports = router;

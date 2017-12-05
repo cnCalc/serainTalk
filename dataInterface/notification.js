@@ -33,3 +33,6 @@ let readNotification = {
   }
 };
 exports.readNotification = readNotification;
+
+let readAllNotification = {};
+exports.readAllNotification = readAllNotification;
