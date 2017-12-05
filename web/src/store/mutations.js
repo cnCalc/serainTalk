@@ -131,14 +131,17 @@ let mutations = {
       list: notifications,
       count,
       new: !notifications.reduce((a, b) => a && b.hasRead, true)
-    }
+    };
   },
 
+  /**
+   * 更新某一个通知（标记为已读）
+   */
   updateNofitication: (state, { index }) => {
     const item = state.notifications.list.filter(item => item.index === index)[0];
     if (item) {
       item.hasRead = true;
-      state.notifications.new = !state.notifications.list.reduce((a, b) => a && b.hasRead, true)
+      state.notifications.new = !state.notifications.list.reduce((a, b) => a && b.hasRead, true);
     }
   }
 };

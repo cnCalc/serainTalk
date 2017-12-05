@@ -131,21 +131,21 @@ export default {
   },
 
   /**
-   * 
+   * 获取当前用户通知
    */
   fetchNotifications: (state, param = {}) => {
     return api.v1.notification.fetchNotification(param).then(data => {
       const { notifications, count } = data;
       state.commit('setNotifications', { notifications, count });
-    })
+    });
   },
 
   /**
-   * 
+   * 将某个通知标记为已读
    */
   readNotification: (state, param = {}) => {
     return api.v1.notification.readNotification(param).then(data => {
       state.commit('updateNofitication', param);
-    })
+    });
   }
 };

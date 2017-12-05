@@ -52,12 +52,12 @@ export default {
       }).catch(e => {
         console.error(e);
         switch (e.response.status) {
-        case 404:
-          window.alert('用户不存在的。');
-          break;
-        case 400:
-          window.alert('密码好像不对啊。');
-          break;
+          case 404:
+            window.alert('用户不存在的。');
+            break;
+          case 400:
+            window.alert('密码好像不对啊。');
+            break;
         }
       });
     },

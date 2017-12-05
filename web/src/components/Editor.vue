@@ -173,11 +173,11 @@ export default {
     },
     submit () {
       switch (this.mode) {
-      case 'CREATE_DISCUSSION':
-        this.createDiscussion();
-        break;
-      case 'REPLY_TO_INDEX':
-        this.replyToIndex();
+        case 'CREATE_DISCUSSION':
+          this.createDiscussion();
+          break;
+        case 'REPLY_TO_INDEX':
+          this.replyToIndex();
       }
     }
   }
