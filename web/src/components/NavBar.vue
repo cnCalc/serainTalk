@@ -101,6 +101,7 @@ div.st-header {
     }
 
     a.extra-link {
+      font-size: 14px;
       @include respond-to(phone) {
         display: none;
       }

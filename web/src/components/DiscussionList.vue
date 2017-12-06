@@ -1,7 +1,7 @@
 <template lang="pug">
   div.discussion-list
     ul: transition-group(name="list")
-      li(v-for="(discussion, index) in discussions" :key="discussion._id + index"): div.discussion-list-item
+      li(v-for="(discussion, index) in discussions" :key="discussion._id + index" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
             div.avatar-image(v-if="members[discussion.creater].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
@@ -11,16 +11,16 @@
             span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
         div.discussion-meta
           h3.discussion-title
-            router-link(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
+            router-link.default(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
           div.discussion-meta-other
             span.discussion-last-reply
-              router-link(:to="'/m/' + discussion.lastMember")
-                span.discussion-user {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
+              span.discussion-user
+                router-link(:to="'/m/' + discussion.lastMember") {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
               |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
-            span.discussion-tags(v-for="tag in discussion.tags") {{ tag }}
-            span.discussion-tags 假装有tag
+            span.discussion-tags(v-for="tag in discussion.tags"): a {{ tag }}
+            span.discussion-tags: a 假装有tag
         div.discussion-meta-right
-          span.discussion-category(v-if="discussion.category") {{ discussion.category }}
+          span.discussion-category(v-if="discussion.category"): a {{ discussion.category }}
 </template>
 
 <script>
@@ -43,6 +43,20 @@ export default {
   },
   methods: {
     timeAgo, decodeHTML,
+    dispatchClickToLink (e, discussion) {
+      let cursor = e.target;
+      if (e.target.tagName !== 'A') {
+        while (cursor && cursor.tagName !== 'LI') {
+          let target = cursor.querySelector('a.default');
+          if (target) {
+            target.click();
+            break;
+          } else {
+            cursor = cursor.parentNode;
+          }
+        }
+      }
+    }
   },
 };
 </script>
@@ -259,7 +273,7 @@ div.discussion-list {
   }
   span.discussion-category {
     background-color: $theme_color;
-    color: white;
+    a { color: white; }
   }
   h3.discussion-title:hover {
     color: $theme_color;
@@ -291,7 +305,7 @@ div.discussion-list {
   }
   span.discussion-category {
     background-color: mix($theme_color, black, 10%); 
-    color: grey;
+    a { color: grey; }
   }
   h3.discussion-title:hover {
     color: #eee;
