@@ -178,6 +178,7 @@ let getDiscussionUnderMember = async (req, res) => {
  * @param {any} res
  */
 let getSelf = async (req, res) => {
+  delete req.member._id;
   return res.status(200).send({ status: 'ok', memberInfo: req.member });
 };
 
@@ -194,7 +195,10 @@ let login = async (req, res) => {
   let memberInfo = {};
 
   try {
-    memberInfo = await dbTool.commonMember.findOne({ username: req.body.name }, { messages: 0 });
+    memberInfo = await dbTool.commonMember.findOne(
+      { username: req.body.name },
+      { notifications: 0 }
+    );
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
@@ -266,7 +270,10 @@ let signup = async (req, res) => {
   memberInfo.lastlogintime = Date.now();
 
   try {
-    let tempMemberInfo = await dbTool.commonMember.findOne({ username: memberInfo.username }, { messages: 0 });
+    let tempMemberInfo = await dbTool.commonMember.findOne(
+      { username: memberInfo.username },
+      { notifications: 0, credentials: 0 }
+    );
     if (tempMemberInfo) return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
   } catch (err) {
     /* istanbul ignore next */
