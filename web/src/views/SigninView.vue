@@ -36,6 +36,7 @@ export default {
   methods: {
     async doSignin () {
       api.v1.member.signin(this.credentials).then(response => {
+        this.$store.dispatch('fetchNotifications');
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
       }).catch(e => {

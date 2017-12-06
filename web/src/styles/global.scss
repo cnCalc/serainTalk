@@ -84,7 +84,7 @@ a:hover {
 
 // responsive mixins
 @mixin respond-to($media) {
-  $break-small: 480px;
+  $break-small: 600px;
   $break-large: 800px;
   @if $media == phone {
     @media only screen and (max-width: $break-small) { @content; }

@@ -26,7 +26,7 @@
               //- div.button-right-container
               button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
               button.button(@click="copyLink(post.index)") 复制链接
-              button.button(v-if="$store.state.me && post.user === $store.state.me._id") 编辑
+              button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')") 编辑
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
@@ -185,7 +185,7 @@ export default {
 @import '../styles/global.scss';
 
 div.discussion-view {
-  padding: 15px;
+  padding: 16px 8px;
   text-align: left;
   display: flex;
 
@@ -244,7 +244,7 @@ div.discussion-view {
       transition: background ease 0.5s;
       div.discussion-post-container {
         display: flex;
-        padding: 15px 0;
+        padding: 16px 8px;
       }
 
       @mixin set-avatar-size($avatar-size) {

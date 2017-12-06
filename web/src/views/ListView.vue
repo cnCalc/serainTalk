@@ -41,7 +41,7 @@ export default {
       return this.$store.state.members;
     },
     slug () {
-      return this.$route.fullPath === '/' ? '' : this.$route.params.categorySlug;
+      return this.$route.path === '/' ? '' : this.$route.params.categorySlug;
     }
   },
   methods: {
@@ -65,7 +65,7 @@ export default {
       this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
     },
     flushGlobalTitles () {
-      if (!this.slug && this.$route.fullPath === '/') {
+      if (!this.slug && this.$route.path === '/') {
         return this.$store.commit('setGlobalTitles', []);
       }
       let categoriesGroup = this.$store.state.categoriesGroup;
@@ -83,14 +83,22 @@ export default {
       if (typeof this.slug === 'undefined') {
         return;
       }
-      if (this.currentSlug === route.params.categorySlug && route.fullPath !== '/') {
+      if (this.$route.path === '/' && this.currentSlug === '' && this.$route.fullPath !== '/?refresh') {
+        return;
+      }
+      if (this.currentSlug === route.params.categorySlug) {
         return;
       }
 
       this.currentSlug = this.slug;
       this.currentPage = 1;
 
-      if (route.fullPath === '/') {
+      if (this.$route.query.refresh === null) {
+        this.$nextTick(() => { this.$router.replace('/'); });
+      }
+
+      // this.flushGlobalTitles()
+      if (route.path === '/') {
         return this.$store.dispatch('fetchLatestDiscussions');
       } else if (route.params.categorySlug) {
         return this.$store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
@@ -104,10 +112,10 @@ export default {
     }
   },
   created () {
-    this.currentSlug = this.slug;
+    this.currentSlug = this.slug || '';
   },
   asyncData ({ store, route }) {
-    if (route.fullPath === '/') {
+    if (route.path === '/') {
       return store.dispatch('fetchLatestDiscussions');
     } else {
       return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
@@ -123,7 +131,10 @@ export default {
 div.nav {
   display: flex;
   vertical-align: top;
-  padding: 15px;
+  padding: 16px;
+  @include respond-to(phone) {
+    padding: 8px;
+  }
 
   div.left {
     vertical-align: top;
@@ -131,6 +142,10 @@ div.nav {
     flex-grow: 0;
     flex-shrink: 0;
     width: 220px;
+
+    @include respond-to(phone) {
+      display: none;
+    }
   }
 
   div.right {
