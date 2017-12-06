@@ -230,6 +230,47 @@ let createPost = async (req, res, next) => {
   }
 };
 
+let updatePost = async (req, res, next) => {
+  let _id = ObjectID(req.params.id);
+  let postIndex = req.params.postIndex - 1;
+  let now = Date.now();
+
+  // 追加一个 Post，同时更新一些元数据
+  try {
+    let exactPostRes = await dbTool.discussion.aggregate([
+      { $match: { _id: _id } },
+      { $unwind: '$posts' },
+      { $match: { 'posts.index': postIndex } }
+    ]).toArray();
+    let exactPost = exactPostRes[0].posts;
+
+    /* istanbul ignore else */
+    // 只有本人才可以修改 post
+    if (exactPost.user.toString() !== req.member.id) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
+
+    let $set = {};
+    $set[`posts.${postIndex}.content`] = req.body.content;
+    $set[`posts.${postIndex}.updateDate`] = now;
+    /* istanbul ignore else */
+    if (req.body.encoding && req.member.role === 'admin') {
+      $set[`posts.${postIndex}.encoding`] = req.body.encoding;
+    }
+
+    await dbTool.discussion.updateOne(
+      { _id: _id },
+      { $set: $set },
+      { new: true }
+    );
+
+    return res.status(201).send({ status: 'ok' });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
 let votePost = async (req, res, next) => {
   try {
     let _discussionId = ObjectID(req.params.id);
@@ -272,5 +313,6 @@ router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscus
 router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
 router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
 router.post('/', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
+router.put('/:id/post/:postIndex', middleware.verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
 module.exports = router;

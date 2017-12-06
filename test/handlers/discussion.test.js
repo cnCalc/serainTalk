@@ -253,6 +253,185 @@ describe('discussion part', async () => {
     });
   });
 
+  it('update a post.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.closeFreqLimit(async () => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          let updatePayload = {
+            content: 'changed content.'
+          };
+          let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+          await agent.put(updateUrl)
+            .send(updatePayload)
+            .expect(201);
+
+          let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+          let postsRes = await agent.get(getUrl).expect(200);
+          postsRes = postsRes.body;
+
+          let exactPost = postsRes.posts[1];
+          expect(exactPost.updateDate).to.be.ok;
+          expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
+        });
+      });
+    });
+  });
+
+  it('update a post by otherone.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.closeFreqLimit(async () => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            let updatePayload = {
+              content: 'changed content.'
+            };
+            let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+            let updateRes = await agent.put(updateUrl)
+              .send(updatePayload)
+              .expect(401);
+            expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
+
+            let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+            let postsRes = await agent.get(getUrl).expect(200);
+            postsRes = postsRes.body;
+
+            let exactPost = postsRes.posts[1];
+            expect(exactPost.updateDate).to.not.be.ok;
+            expect(exactPost.content).to.be.equal('<p>hello test</p>\n');
+          });
+        });
+      });
+    });
+  });
+
+  it('update a post by admin(should be wrong).', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.closeFreqLimit(async () => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+              let updatePayload = {
+                content: 'changed content.'
+              };
+              let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+              let updateRes = await agent.put(updateUrl)
+                .send(updatePayload)
+                .expect(401);
+              expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
+
+              let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+              let postsRes = await agent.get(getUrl).expect(200);
+              postsRes = postsRes.body;
+
+              let exactPost = postsRes.posts[1];
+              expect(exactPost.updateDate).to.not.be.ok;
+              expect(exactPost.content).to.be.equal('<p>hello test</p>\n');
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('update encoding by common.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.closeFreqLimit(async () => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          let updatePayload = {
+            encoding: 'html',
+            content: 'changed content.'
+          };
+          let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+          await agent.put(updateUrl)
+            .send(updatePayload)
+            .expect(201);
+
+          let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+          let postsRes = await agent.get(getUrl).expect(200);
+          postsRes = postsRes.body;
+
+          let exactPost = postsRes.posts[1];
+          expect(exactPost.updateDate).to.be.ok;
+          expect(exactPost.encoding).to.be.equal('markdown');
+          expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
+        });
+      });
+    });
+  });
+
+  it('update encoding by common.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.member.setAdmin(agent, newMemberInfoA._id, async () => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+          await testTools.discussion.closeFreqLimit(async () => {
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test'
+            };
+            let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
+
+            let updatePayload = {
+              encoding: 'html',
+              content: 'changed content.'
+            };
+            let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+            await agent.put(updateUrl)
+              .send(updatePayload)
+              .expect(201);
+
+            let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+            let postsRes = await agent.get(getUrl).expect(200);
+            postsRes = postsRes.body;
+
+            let exactPost = postsRes.posts[1];
+            expect(exactPost.updateDate).to.be.ok;
+            expect(exactPost.encoding).to.be.equal('html');
+            expect(exactPost.content).to.be.equal('changed content.');
+          });
+        });
+      });
+    });
+  });
+
   it('add a html post by admin.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {

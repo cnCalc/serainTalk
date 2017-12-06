@@ -74,3 +74,15 @@ let votePost = {
   }
 };
 exports.votePost = votePost;
+
+let updatePost = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+    postIndex: joi.number().min(1).required()
+  },
+  body: {
+    encoding: joi.string(),
+    content: joi.string().required(),
+  }
+};
+exports.updatePost = updatePost;
