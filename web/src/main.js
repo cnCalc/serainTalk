@@ -42,6 +42,10 @@ const router = new VueRouter({
       component: MemberView,
       meta: { keepAlive: true, mode: 'discussions' }
     }, {
+      path: '/m/:memberId/settings',
+      component: MemberView,
+      meta: { keepAlive: true, mode: 'settings' }
+    }, {
       path: '/signin',
       component: SigninView,
     }, {

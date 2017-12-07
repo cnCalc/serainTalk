@@ -13,7 +13,8 @@ div
     div.member-activity-container
       div.member-side-nav
         div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
-        div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode !== 'posts' }") 创建的讨论
+        div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode === 'discussions' }") 创建的讨论
+        div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: $route.meta.mode === 'settings' }") 个人设置
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'")
         ul: li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts.createDate) }}
@@ -32,12 +33,15 @@ div
           loading-icon(v-if="busy")
           button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
-      div.member-recent-posts(v-else)
+      div.member-recent-posts(v-if="$route.meta.mode === 'discussions'")
         discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
         div.list-nav(v-if="canLoadMorePosts")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
+      div.member-settings(v-if="$route.meta.mode === 'settings' && $route.params.memberId === $store.state.me._id")
+        input#auto-scroll(type="checkbox" v-on:change="switchScrollBehavior" :checked="$store.state.autoLoadOnScroll")
+        label(for='auto-scroll') 在讨论页面中使用实验性的滚动自动加载
 </template>
 
 <script>
@@ -99,6 +103,9 @@ export default {
         }
         this.$store.commit('setBusy', false);
       });
+    },
+    switchScrollBehavior () {
+      this.$store.commit('switchScrollBehavior');
     }
   },
   created () {
@@ -314,7 +321,7 @@ div.member-activity {
       margin: 5px 0;
     }
 
-    div.member-recent-activity, div.member-recent-posts {
+    div.member-recent-activity, div.member-recent-posts, div.member-settings {
       flex-grow: 1;
       flex-shrink: 1;
       order: 2;

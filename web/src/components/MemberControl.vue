@@ -6,7 +6,7 @@
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
       li.member: router-link(:to="`/m/${me._id}`") 我的主页
       li: a 站内消息
-      li.settings: a 个人设置
+      li.settings: router-link(:to="`/m/${me._id}/settings`") 个人设置
       li: a(@click="switchTheme") 切换主题
       li.signout: a(@click="signout") 退出登录
 </template>

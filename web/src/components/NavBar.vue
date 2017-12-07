@@ -5,7 +5,7 @@
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="277.30042")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="267.77527")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="286.82556")
-      router-link.title(to="/?refresh" title="cnCalc"): h1 cnCalc.org
+      router-link.title(to="/" title="cnCalc"): h1 cnCalc.org
       template(v-for="link in links")
         a.extra-link(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
         router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
