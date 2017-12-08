@@ -143,6 +143,13 @@ let mutations = {
       item.hasRead = true;
       state.notifications.new = !state.notifications.list.reduce((a, b) => a && b.hasRead, true);
     }
+  },
+
+  switchScrollBehavior: state => {
+    state.autoLoadOnScroll = !state.autoLoadOnScroll;
+    if (state.autoLoadOnScroll) {
+      window.localStorage['experimental-auto-load-on-scroll'] = 'on';
+    }
   }
 };
 

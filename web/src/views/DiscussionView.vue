@@ -2,7 +2,7 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts.slice((currentPage - 1) * pagesize + 1, currentPage * pagesize + 1)" :id="`index-${post.index}`" v-if="post")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           article.discussion-post-body
             header.discussion-post-info
@@ -42,6 +42,7 @@ import LoadingIcon from '../components/LoadingIcon.vue';
 import PostContent from '../components/PostContent.vue';
 import Pagination from '../components/Pagination.vue';
 import copyToClipboard from '../utils/clipboard';
+import api from '../api';
 
 import config from '../config';
 import { indexToPage } from '../utils/filters';
@@ -83,6 +84,9 @@ export default {
   },
   methods: {
     indexToPage, scrollToTop, copyToClipboard,
+    preventScroll () {
+      return false;
+    },
     loadNextPage () {
       if (this.maxPage < indexToPage(this.discussionMeta.postsCount) && !this.busy) {
         this.maxPage++;
@@ -90,12 +94,23 @@ export default {
       }
     },
     loadPrevPage () {
+      const state = this.$store;
+
       if (this.minPage > 1 && !this.busy) {
         this.minPage--;
-        let diff = document.body.clientHeight - window.scrollY;
-        this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.minPage })
-        .then(() => {
-          window.scrollTo(0, document.body.clientHeight - diff);
+        state.commit('setBusy', true);
+
+        api.v1.discussion.fetchDiscussionPostsById({
+          id: this.$route.params.discussionId,
+          page: this.minPage
+        }).then(data => {
+          state.commit('mergeMembers', data.members);
+          state.commit('updateDiscussionPosts', data.posts);
+          let diff = document.body.clientHeight - window.scrollY;
+          this.$nextTick(() => {
+            window.scrollTo(0, document.body.clientHeight - diff);
+            state.commit('setBusy', false);
+          });
         });
       }
     },
@@ -128,7 +143,9 @@ export default {
       return this.$store.state.discussionMeta;
     },
     discussionPosts () {
-      return this.$store.state.discussionPosts;
+      return this.$store.state.autoLoadOnScroll
+      ? this.$store.state.discussionPosts
+      : this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize + 1);
     },
     members () {
       return this.$store.state.members;
@@ -162,10 +179,11 @@ export default {
     }
   },
   mounted () {
+    const page = Number(this.$route.params.page) || 1;
     window.addEventListener('scroll', this.scrollWatcher);
-    this.maxPage = indexToPage(this.$route.params.index) || 1;
-    this.minPage = indexToPage(this.$route.params.index) || 1;
-    this.currentPage = Number(this.$route.params.page) || 1;
+    this.maxPage = page;
+    this.minPage = page;
+    this.currentPage = page;
     this.pageLoaded[this.currentPage] = true;
   },
   beforeDestroy () {
