@@ -1,6 +1,6 @@
 'use strict';
 
-const dbTool = require('./database');
+const dbTool = require('../database');
 const object = require('./object');
 const errorMessages = require('./error-messages');
 

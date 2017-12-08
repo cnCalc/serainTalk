@@ -1,9 +1,11 @@
 'use strict';
 
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const validation = require('express-validation');
+
+const dbTool = require('./database');
 
 const app = express();
 
@@ -15,26 +17,19 @@ if (process.env.DEV) {
   });
 }
 
+app.use(bodyParser.json());
 app.use(cookieParser());
-
-app.use(require('./utils/log'));
-
 app.use(async (req, res, next) => {
-  await require('./utils/database').prepare();
+  await dbTool.prepare();
   return next();
 });
-app.use(bodyParser.json());
-app.use('/api', require('./handlers'));
+app.use(require('./app/router'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
-
 app.get('/favicon.ico', (req, res) => {
   /* istanbul ignore next */
   res.status(404).send('undefined');
 });
-
-app.use(express.static('web'));
-
 app.use((req, res) => {
   /* istanbul ignore next */
   res.sendFile('./web/index.html', { root: __dirname });

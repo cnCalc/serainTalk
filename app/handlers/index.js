@@ -2,8 +2,7 @@
 
 let express = require('express');
 let router = express.Router();
-const errorHandler = require('../utils/error-handler');
-const errorMessages = require('../utils/error-messages');
+const { errorHandler, errorMessages } = require('../../utils');
 
 router.use('/v1', require('./v1'));
 

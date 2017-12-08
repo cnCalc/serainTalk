@@ -1,15 +1,15 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const config = require('../../config');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
-const utils = require('../../utils');
+const { ObjectID } = require('mongodb');
 const validation = require('express-validation');
+
+const config = require('../../../config');
+const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
 
 let router = express.Router();
 

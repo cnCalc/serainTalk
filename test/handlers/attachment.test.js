@@ -2,7 +2,7 @@
 
 const supertest = require('supertest');
 const expect = require('chai').expect;
-const dbTool = require('../../utils/database');
+const dbTool = require('../../database');
 
 let agent = supertest.agent(require('../../index'));
 

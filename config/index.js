@@ -1,8 +1,8 @@
 'use strict';
 
+const _ = require('lodash');
 const dev = require('./dev');
 const procduct = require('./procduct');
-const _ = require('lodash');
 const mocha = require('./mocha');
 
 let config = {
@@ -102,7 +102,7 @@ let dbTool;
  *
  */
 let updateConfigFromDatabase = async () => {
-  dbTool = require('../utils/database');
+  dbTool = require('../database');
   await dbTool.prepare();
   await resetDiscussionConfig();
   setDiscussionCategoryWhiteList();

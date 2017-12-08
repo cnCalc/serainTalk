@@ -5,21 +5,18 @@ const config = require('../config');
 
 // 真实的连接对象
 let _db = null;
-
 /**
  * 连接到数据库，并将连接保存到 _db 中
  */
 let mongoConnect = async () => {
-  let db;
   try {
-    db = await MongoClient.connect(config.database);
+    _db = await MongoClient.connect(config.database);
   } catch (err) {
     /* istanbul ignore next */
     console.error(err);
     /* istanbul ignore next */
     process.exit(10);
   }
-  _db = db;
 };
 
 let prepare = async () => {
@@ -37,8 +34,6 @@ let prepare = async () => {
   exports.message = _db.collection('message');
 };
 
-mongoConnect();
-
 exports = module.exports = {
   get db () {
     return _db;
@@ -55,3 +50,5 @@ exports = module.exports = {
 
   prepare
 };
+
+prepare();

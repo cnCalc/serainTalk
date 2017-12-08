@@ -1,7 +1,7 @@
 'use strict';
 
 const expect = require('chai').expect;
-const dbTool = require('../../utils/database');
+const dbTool = require('../../database');
 const testTools = require('./');
 const { ObjectID } = require('mongodb');
 const config = require('../../config');

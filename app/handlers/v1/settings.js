@@ -1,14 +1,11 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const config = require('../../config');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
-const utils = require('../../utils');
-const MD5 = utils.md5;
+
+const config = require('../../../config');
+const utils = require('../../../utils');
+const { verifyAdmin } = require('../../middleware').permission;
+const { errorHandler, errorMessages } = utils;
 
 let router = express.Router();
 
@@ -28,12 +25,12 @@ let resetSettings = async (req, res, next) => {
   }
 };
 
-// TODO
+// TODO:
 // let setSettings = async (req, res, next) => {
 
 // };
 
-router.post('/discussion/reset', utils.middleware.verifyAdmin, resetSettings);
+router.post('/discussion/reset', verifyAdmin, resetSettings);
 // router.post('/', utils.middleware.verifyAdmin, setSettings);
 
 module.exports = router;

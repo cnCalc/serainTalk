@@ -1,12 +1,13 @@
 'use strict';
 
-const { resloveMembersInDiscussionArray } = require('../../utils/resolve-members');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
-const validation = require('express-validation');
-const dataInterface = require('../../dataInterface');
 const express = require('express');
+const validation = require('express-validation');
+
+const dbTool = require('../../../database');
+const dataInterface = require('../../dataInterface');
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
+const { resolveMembersInDiscussionArray } = utils.resolveMembers;
 
 const router = express.Router();
 
@@ -100,7 +101,7 @@ let getDiscussionsUnderSpecifiedCategory = async (req, res, next) => {
       }
     ).toArray();
 
-    let members = await resloveMembersInDiscussionArray(discussions);
+    let members = await resolveMembersInDiscussionArray(discussions);
     return res.send({ status: 'ok', discussions: discussions, members: members });
   } catch (err) {
     /* istanbul ignore next */

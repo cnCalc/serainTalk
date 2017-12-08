@@ -1,16 +1,16 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
-const config = require('../../config');
-const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
 const express = require('express');
+const { ObjectID } = require('mongodb');
 const validation = require('express-validation');
+
+const config = require('../../../config');
+const dbTool = require('../../../database');
+const { verifyMember, verifyCommitFreq } = require('../../middleware').permission;
 const dataInterface = require('../../dataInterface');
-const utils = require('../../utils');
-const { middleware } = utils;
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
+const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ let getLatestDiscussionList = async (req, res) => {
         sort: [['lastDate', 'desc']]
       }
     ).toArray();
-    let members = await resloveMembersInDiscussionArray(results);
+    let members = await resolveMembersInDiscussionArray(results);
     return res.send({ status: 'ok', discussions: results, members });
   } catch (err) {
     /* istanbul ignore next */
@@ -112,7 +112,7 @@ let getDiscussionPostsById = async (req, res) => {
     ]).toArray();
     if (postsRes.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
 
-    let members = await resloveMembersInDiscussion(postsRes[0]);
+    let members = await resolveMembersInDiscussion(postsRes[0]);
     return res.status(200).send({
       status: 'ok',
       posts: utils.renderer.renderPosts(postsRes[0].posts),
@@ -310,9 +310,9 @@ let votePost = async (req, res, next) => {
 router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
 router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
-router.post('/:id/post/:postIndex/vote', middleware.verifyMember, validation(dataInterface.discussion.votePost), votePost);
-router.post('/:id/post', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createPost), createPost);
-router.post('/', middleware.verifyMember, middleware.checkCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
-router.put('/:id/post/:postIndex', middleware.verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
+router.post('/:id/post/:postIndex/vote', verifyMember, validation(dataInterface.discussion.votePost), votePost);
+router.post('/:id/post', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createPost), createPost);
+router.post('/', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
+router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
 module.exports = router;

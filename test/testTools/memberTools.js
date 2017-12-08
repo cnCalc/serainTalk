@@ -1,12 +1,12 @@
 'use strict';
 
 const expect = require('chai').expect;
-const dbTool = require('../../utils/database');
-const testTools = require('./');
 const { ObjectID } = require('mongodb');
+const dbTool = require('../../database');
 const randomString = require('../../utils/random-string');
+const testTools = require('./');
 
-const signupUrl = '/api/v1/member/signup';
+const signUpUrl = '/api/v1/member/signup';
 const loginUrl = '/api/v1/member/login';
 
 exports = module.exports = {};
@@ -16,7 +16,7 @@ exports = module.exports = {};
  * @param {any} memberInfo 成员信息
  * @return {any}
  */
-let info2signup = (memberInfo) => {
+let info2signUp = (memberInfo) => {
   let allowKeys = ['username', 'password', 'email', 'gender', 'birthyear', 'birthmonth',
     'birthday', 'address', 'qq', 'site', 'bio', 'regip', 'regdate', 'secques', 'device'];
   let tempMemberInfo = {};
@@ -84,15 +84,15 @@ let createOneMember = async (agent, memberInfo, next) => {
   let newMemberBody;
   try {
     newMemberBody = await agent
-      .post(signupUrl)
-      .send(info2signup(memberInfo))
+      .post(signUpUrl)
+      .send(info2signUp(memberInfo))
       .expect(201);
   } catch (err) {
     let tempMemberInfo = Object.assign({}, memberInfo);
     tempMemberInfo.username = randomString();
     newMemberBody = await agent
-      .post(signupUrl)
-      .send(info2signup(tempMemberInfo))
+      .post(signUpUrl)
+      .send(info2signUp(tempMemberInfo))
       .expect(201);
   }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const dbTool = require('./database');
+const dbTool = require('../database');
 const errorHandler = require('./error-handler');
 const { ObjectID } = require('mongodb');
 
@@ -31,7 +31,7 @@ let fetchOneMember = async (memberId) => {
  * @param {Array.<Discussion>} discussions
  * @returns {Promise<Array<Member>>)}
  */
-async function resloveMembersInDiscussionArray (discussions) {
+async function resolveMembersInDiscussionArray (discussions) {
   let members = {};
   let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
   await Promise.all([...new Set(membersToFetch)].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
@@ -44,7 +44,7 @@ async function resloveMembersInDiscussionArray (discussions) {
  * @param {Discussion} discussion
  * @returns {Promise<Array<Member>>}
 */
-async function resloveMembersInDiscussion (discussion) {
+async function resolveMembersInDiscussion (discussion) {
   let members = {};
   let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user.toString(), post.replyTo ? post.replyTo.memberId.toString() : null]), []);
   await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
@@ -52,6 +52,6 @@ async function resloveMembersInDiscussion (discussion) {
 }
 
 module.exports = {
-  resloveMembersInDiscussionArray,
-  resloveMembersInDiscussion
+  resolveMembersInDiscussionArray,
+  resolveMembersInDiscussion
 };

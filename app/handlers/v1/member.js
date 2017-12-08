@@ -1,18 +1,19 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
+const joi = require('joi');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const config = require('../../config');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
-const utils = require('../../utils');
+const { ObjectID } = require('mongodb');
 const validation = require('express-validation');
+
+const config = require('../../../config');
+const dbTool = require('../../../database');
+const { verifyMember } = require('../../middleware').permission;
 const dataInterface = require('../../dataInterface');
-const joi = require('joi');
-const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = require('../../utils/resolve-members');
+const utils = require('../../../utils');
 const MD5 = utils.md5;
+const { errorHandler, errorMessages } = utils;
+const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = utils.resolveMembers;
 
 let router = express.Router();
 
@@ -431,8 +432,8 @@ let passwordModify = async (req, res) => {
 
 router.post('/password/reset/application', validation(dataInterface.member.password.resetApplication), resetPasswordApplication);
 router.post('/password/reset', resetPassword);
-router.put('/password', utils.middleware.verifyMember, validation(dataInterface.member.password.modify), passwordModify);
-router.get('/me', utils.middleware.verifyMember, getSelf);
+router.put('/password', verifyMember, validation(dataInterface.member.password.modify), passwordModify);
+router.get('/me', verifyMember, getSelf);
 router.post('/login', login);
 router.delete('/login', logout);
 router.post('/signup', validation(dataInterface.member.signup), signup);

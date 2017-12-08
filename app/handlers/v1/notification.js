@@ -1,13 +1,13 @@
 'use strict';
 
-const dbTool = require('../../utils/database');
 const express = require('express');
 const validation = require('express-validation');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
+
+const dbTool = require('../../../database');
+const { verifyMember } = require('../../middleware').permission;
 const dataInterface = require('../../dataInterface');
-const utils = require('../../utils');
-const { middleware } = utils;
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
 
 const router = express.Router();
 
@@ -139,8 +139,8 @@ let readAllNotification = async (req, res, next) => {
 };
 
 // router.post('/:id', middleware.verifyAdmin, validation(dataInterface.notification.sendNotification), sendNotification);
-router.get('/', middleware.verifyMember, validation(dataInterface.notification.getNotification), getNotification);
-router.post('/all/read', middleware.verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
-router.post('/:index/read', middleware.verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
+router.get('/', verifyMember, validation(dataInterface.notification.getNotification), getNotification);
+router.post('/all/read', verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
+router.post('/:index/read', verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
 
 module.exports = router;

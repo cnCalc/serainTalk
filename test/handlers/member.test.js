@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 const { ObjectID } = require('mongodb');
 
-const dbTool = require('../../utils/database');
+const dbTool = require('../../database');
 const testTools = require('../testTools');
 const utils = require('../../utils');
 const config = require('../../config');

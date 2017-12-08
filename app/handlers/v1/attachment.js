@@ -1,11 +1,11 @@
 'use strict';
 
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
-const validation = require('express-validation');
-const dataInterface = require('../../dataInterface');
 const express = require('express');
+const validation = require('express-validation');
+
+const dbTool = require('../../../database');
+const dataInterface = require('../../dataInterface');
+const { errorHandler, errorMessages } = require('../../../utils');
 
 const router = express.Router();
 

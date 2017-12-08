@@ -1,62 +1,11 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
-const jwt = require('jsonwebtoken');
-const config = require('./../config');
-const errorHandler = require('./error-handler');
-const errorMessages = require('./error-messages');
-const dbTool = require('./database');
+const config = require('../../config');
+const dbTool = require('../../database');
+const utils = require('../../utils');
+const { errorHandler, errorMessages } = utils;
 
 exports = module.exports = {};
-
-/**
- * [中间件]获取成员信息
- *
- * @param {any} req 请求
- * @param {any} res 回复
- * @param {any} next 传递给下一中间件
- */
-let getMemberInfo = (req, res, next) => {
-  req.member = {};
-  if (req.cookies && req.cookies.membertoken) {
-    try {
-      req.member = jwt.verify(req.cookies.membertoken, config.jwtSecret);
-      req.member.id = req.member._id;
-      req.member._id = ObjectID(req.member.id);
-    } catch (err) {
-      req.member = {};
-    }
-  }
-  return next();
-};
-exports.getMemberInfo = getMemberInfo;
-/**
- * [中间件]整理参数
- *
- * @param {any} req 请求
- * @param {any} res 回复
- * @param {any} next 传递给下一中间件
- */
-let prepareData = (req, res, next) => {
-  req.data = Object.assign({}, req.params, req.body, req.query);
-  return next();
-};
-exports.prepareData = prepareData;
-
-/**
- * [中间件]对支持的浏览器禁用缓存
- *
- * @param {any} req 请求
- * @param {any} res 回复
- * @param {any} next 传递给下一中间件
- */
-let disableCache = (req, res, next) => {
-  res.header('cache-control', 'no-cache');
-  res.header('pragma', 'no-cache');
-  res.header('expires', '0');
-  return next();
-};
-exports.disableCache = disableCache;
 
 /**
  * [中间件] 验证成员是否为管理员身份
@@ -84,12 +33,6 @@ let verifyMember = (req, res, next) => {
 };
 exports.verifyMember = verifyMember;
 
-let checkEnv = (req, res, next) => {
-  if (process.env.NODE_ENV === 'DEV') return next();
-  return errorHandler(null, errorMessages.WRONG_ENV, 410, res);
-};
-exports.checkEnv = checkEnv;
-
 /**
  * [中间件] 检查发布 Discussion 的频率
  *
@@ -98,7 +41,7 @@ exports.checkEnv = checkEnv;
  * @param {any} next
  * @returns
  */
-let checkDiscussionFreq = async (req, res, next) => {
+let verifyDiscussionFreq = async (req, res, next) => {
   // 管理员无限制
   if (req.member.role === 'admin') return next();
 
@@ -118,7 +61,7 @@ let checkDiscussionFreq = async (req, res, next) => {
   }
   return next();
 };
-exports.checkDiscussionFreq = checkDiscussionFreq;
+exports.verifyDiscussionFreq = verifyDiscussionFreq;
 
 /**
  * [中间件] 检查发布 Post 的频率
@@ -128,7 +71,7 @@ exports.checkDiscussionFreq = checkDiscussionFreq;
  * @param {any} next
  * @returns
  */
-let checkPostFreq = async (req, res, next) => {
+let verifyPostFreq = async (req, res, next) => {
   // 管理员无限制
   if (req.member.role === 'admin') return next();
 
@@ -168,7 +111,7 @@ let checkPostFreq = async (req, res, next) => {
   }
   return next();
 };
-exports.checkPostFreq = checkPostFreq;
+exports.verifyPostFreq = verifyPostFreq;
 
 /**
  * [中间件] 检查所有的提交频率
@@ -179,7 +122,7 @@ exports.checkPostFreq = checkPostFreq;
  * @param {any} next
  * @returns
  */
-let checkCommitFreq = async (req, res, next) => {
+let verifyCommitFreq = async (req, res, next) => {
   // 管理员无限制
   if (req.member.role === 'admin') return next();
 
@@ -213,4 +156,4 @@ let checkCommitFreq = async (req, res, next) => {
   }
   return next();
 };
-exports.checkCommitFreq = checkCommitFreq;
+exports.verifyCommitFreq = verifyCommitFreq;

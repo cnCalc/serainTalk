@@ -1,9 +1,10 @@
 'use strict';
 
 const express = require('express');
-const dbTool = require('../../utils/database');
-const utils = require('../../utils');
-const config = require('../../config');
+
+const config = require('../../../config');
+const dbTool = require('../../../database');
+const utils = require('../../../utils');
 const MD5 = utils.md5;
 
 let router = express.Router();

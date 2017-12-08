@@ -1,13 +1,13 @@
 'use strict';
 
 const express = require('express');
-const utils = require('../../utils');
+
+const { cache, pretreatment, environment } = require('../../middleware');
 
 let router = express.Router();
 
-router.use(utils.middleware.disableCache);
-router.use(utils.middleware.getMemberInfo);
-router.use(utils.middleware.prepareData);
+router.use(cache.disableCache);
+router.use(pretreatment.getMemberInfo);
 
 router.use(['/member', '/members'], require('./member'));
 router.use('/attachment', require('./attachment'));
@@ -18,6 +18,6 @@ router.use('/migration', require('./migration'));
 router.use(['/settings', '/setting'], require('./settings'));
 router.use(['/message', '/messages'], require('./message'));
 router.use(['/notification', '/notifications'], require('./notification'));
-router.use('/debug', utils.middleware.checkEnv, require('./debug'));
+router.use('/debug', environment.checkEnv, require('./debug'));
 
 module.exports = router;

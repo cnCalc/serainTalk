@@ -1,15 +1,14 @@
 'use strict';
 
-const { ObjectID } = require('mongodb');
-const errorHandler = require('../../utils/error-handler');
-const errorMessages = require('../../utils/error-messages');
-const dbTool = require('../../utils/database');
 const express = require('express');
+const { ObjectID } = require('mongodb');
 const validation = require('express-validation');
+
+const dbTool = require('../../../database');
+const { verifyMember } = require('../../middleware').permission;
 const dataInterface = require('../../dataInterface');
-const utils = require('../../utils');
-const _ = require('lodash');
-const { middleware } = utils;
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
 
 const router = express.Router();
 
@@ -181,9 +180,9 @@ let getMessageById = async (req, res, next) => {
   return res.status(200).send({ status: 'ok', message: message });
 };
 
-router.post('/:id', middleware.verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
-router.get('/member/:id', middleware.verifyMember, validation(dataInterface.message.getMessageByMemberId), getMessageByMemberId);
-router.get('/:id', middleware.verifyMember, validation(dataInterface.message.getMessageById), getMessageById);
-router.get('/', middleware.verifyMember, validation(dataInterface.message.getMessagesInfo), getMessagesInfo);
+router.post('/:id', verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
+router.get('/member/:id', verifyMember, validation(dataInterface.message.getMessageByMemberId), getMessageByMemberId);
+router.get('/:id', verifyMember, validation(dataInterface.message.getMessageById), getMessageById);
+router.get('/', verifyMember, validation(dataInterface.message.getMessagesInfo), getMessagesInfo);
 
 module.exports = router;
