@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const dev = require('./dev');
-const procduct = require('./procduct');
+const product = require('./product');
 const mocha = require('./mocha');
 
 let config = {
@@ -44,7 +44,7 @@ exports = module.exports = config;
 // console.log(process.env.NODE_ENV);
 /* istanbul ignore next */
 switch (process.env.NODE_ENV) {
-  case 'PROCDUCT': _.merge(config, procduct); break;
+  case 'PRODUCT': _.merge(config, product); break;
   case 'MOCHA': _.merge(config, mocha); break;
   default: _.merge(config, dev);
 }

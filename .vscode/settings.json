@@ -5,7 +5,7 @@
     "**/.git": true,
     "**/.nyc_output": true,
     "**/coverage": true,
-    "**/uploads": true,
+    // "**/uploads": true,
     "**/database-convert": true,
     "**/node_modules": true
   }
