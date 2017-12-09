@@ -441,4 +441,15 @@ router.get('/:id', getMemberInfoById);
 router.get('/', getMemberInfoGeneric);
 router.get('/:id/discussions', getDiscussionUnderMember);
 
-module.exports = router;
+module.exports = {
+  getMemberInfoById,
+  getMemberInfoGeneric,
+  getDiscussionUnderMember,
+  getSelf,
+  login,
+  logout,
+  signup,
+  resetPassword,
+  resetPasswordApplication,
+  passwordModify
+};

@@ -74,8 +74,14 @@ let getLatestDiscussionList = async (req, res) => {
 let getDiscussionById = async (req, res) => {
   try {
     let _discussionId = ObjectID(req.params.id);
+    let query = {
+      _id: _discussionId,
+      category: { $in: config.discussion.category.whiteList }
+    };
+    if (req.member.role === 'admin') delete query.category;
+
     let discussionDoc = await dbTool.discussion.aggregate([
-      { $match: { _id: _discussionId } },
+      { $match: query },
       {
         $project: {
           creater: 1, title: 1, createDate: 1,
@@ -106,6 +112,12 @@ let getDiscussionPostsById = async (req, res) => {
   let offset = req.query.page - 1;
   try {
     let _discussionId = ObjectID(req.params.id);
+    let query = {
+      _id: _discussionId,
+      category: { $in: config.discussion.category.whiteList }
+    };
+    if (req.member.role === 'admin') delete query.category;
+
     let postsRes = await dbTool.discussion.aggregate([
       { $match: { _id: _discussionId } },
       { $project: { title: 1, posts: { $slice: ['$posts', offset * pagesize, pagesize] } } }
@@ -134,6 +146,9 @@ let getDiscussionPostsById = async (req, res) => {
  */
 let createDiscussion = async (req, res, next) => {
   let now = Date.now();
+  if (config.discussion.category.whiteList.includes(req.body.category)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let discussionInfo = {
     creater: req.member._id,
     title: req.body.title,
@@ -170,6 +185,12 @@ let createDiscussion = async (req, res, next) => {
 
 let createPost = async (req, res, next) => {
   let _id = ObjectID(req.params.id);
+
+  let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
+  if (config.discussion.category.whiteList(discussionInfo.category)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
   let now = Date.now();
 
   let postInfo = {
@@ -307,12 +328,20 @@ let votePost = async (req, res, next) => {
   }
 };
 
-router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
-router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
-router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
-router.post('/:id/post/:postIndex/vote', verifyMember, validation(dataInterface.discussion.votePost), votePost);
-router.post('/:id/post', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createPost), createPost);
-router.post('/', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
-router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
+// router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
+// router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
+// router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
+// router.post('/:id/post/:postIndex/vote', verifyMember, validation(dataInterface.discussion.votePost), votePost);
+// router.post('/:id/post', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createPost), createPost);
+// router.post('/', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
+// router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
-module.exports = router;
+module.exports = {
+  getLatestDiscussionList,
+  getDiscussionById,
+  getDiscussionPostsById,
+  createDiscussion,
+  createPost,
+  updatePost,
+  votePost
+};

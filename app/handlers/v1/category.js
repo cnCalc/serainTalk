@@ -5,6 +5,7 @@ const validation = require('express-validation');
 
 const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
+const config = require('../../../config');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray } = utils.resolveMembers;
@@ -67,7 +68,11 @@ let slugToCategory = async (slug) => {
 let getCategoryList = async (req, res, next) => {
   try {
     let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
-    return res.status(200).send({ status: 'ok', groups: categoryDoc.groups });
+    let categoryGroup = categoryDoc.groups;
+    for (let group of categoryGroup) {
+      group.items = group.items.filter(category => config.discussion.category.whiteList.includes(category.name));
+    }
+    return res.status(200).send({ status: 'ok', groups: categoryGroup });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

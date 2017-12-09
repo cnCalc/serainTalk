@@ -2,13 +2,16 @@
 
 let express = require('express');
 
-const log = require('./middleware/log');
-const { errorHandler, errorMessages } = require('..//utils');
+const middleware = require('./middleware');
+const { log, cache, pretreatment } = middleware;
+const { errorHandler, errorMessages } = require('../utils');
 
 let router = express.Router();
 
 // 日志-输出到控制台
 router.use(log.consoleMiddleware);
+router.use(cache.disableCache);
+router.use(pretreatment.getMemberInfo);
 
 router.use('/api', require('./handlers'));
 router.use(express.static('public'));

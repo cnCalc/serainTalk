@@ -1,0 +1,41 @@
+{
+  "discussion": {
+    "readAllCategories": {
+      "description": "可以获取所有分类的 Discussion 和 Post。",
+      "allow": [
+        "admin"
+      ]
+    },
+    "readCategoriesInWhiteList": {
+      "description": "可以获取白名单分类中的 Discussion 和 Post。",
+      "allow": [
+        "commonMember",
+        "anonymous"
+      ]
+    },
+    "postToAllCategory": {
+      "description": "可以在所有分类中发布 Discussion 和 Post。",
+      "allow": [
+        "admin"
+      ]
+    },
+    "postToCategoryInWhiteList": {
+      "description": "可以在白名单分类中发布 Discussion 和 Post。",
+      "allow": [
+        "commonMember"
+      ]
+    },
+    "postWithFreqLimit": {
+      "description": "指定时间内不能发布过多的 Discussion 和 Post。",
+      "allow": [
+        "commonMember"
+      ]
+    },
+    "postWithoutFreqLimit": {
+      "description": "可以无间隔的连续发布 Discussion 和 Post。",
+      "allow": [
+        "admin"
+      ]
+    }
+  }
+}
