@@ -10,12 +10,12 @@
   "scripts": {
     "init": "node ./database-init/index.js",
     "lint": "node ./node_modules/.bin/eslint *.js handlers/*.js  utils/*.js web/src/*.js web/src/components/*.vue web/src/store/*.js web/src/utils/*.js web/src/views/*.vue",
-    "test": "export NODE_ENV='MOCHA' && nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
+    "test": "cross-env NODE_ENV=mocha nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web && npm i",
-    "build": "cd web && npm run build",
-    "dev": "export NODE_ENV=\"DEV\" && node ./index.js",
-    "product": "export NODE_ENV=\"PRODUCT\" && node ./index.js"
+    "build": "cd web && npm run build && cp -r {dist,index.html} ../app/public",
+    "dev": "node ./index.js",
+    "production": "cross-env NODE_ENV=production node ./index.js"
   },
   "nyc": {
     "require": [
