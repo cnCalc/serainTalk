@@ -147,9 +147,7 @@ let mutations = {
 
   switchScrollBehavior: state => {
     state.autoLoadOnScroll = !state.autoLoadOnScroll;
-    if (state.autoLoadOnScroll) {
-      window.localStorage['experimental-auto-load-on-scroll'] = 'on';
-    }
+    window.localStorage['experimental-auto-load-on-scroll'] = state.autoLoadOnScroll ? 'on' : 'off';
   }
 };
 

@@ -4,11 +4,11 @@
       div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
       div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
-      li.member: router-link(:to="`/m/${me._id}`") 我的主页
-      li: a 站内消息
-      li.settings: router-link(:to="`/m/${me._id}/settings`") 个人设置
-      li: a(@click="switchTheme") 切换主题
-      li.signout: a(@click="signout") 退出登录
+      router-link(:to="`/m/${me._id}`"): li.member 我的主页
+      a: li 站内消息
+      router-link(:to="`/m/${me._id}/settings`"): li.settings 个人设置
+      a(@click="switchTheme"): li 切换主题
+      a(@click="signout"): li.signout 退出登录
 </template>
 
 <script>
@@ -113,21 +113,17 @@ div.avatar-container {
       pointer-events: initial;
     }
 
+    a {
+      cursor: pointer;
+      display: block;
+    }
 
     li {
       text-align: center;
       font-size: 0.9em;
       height: 2.2em;
       line-height: 2.2em;
-
-      a {
-        color: mix($theme_color, black, 80%);
-        cursor: pointer;
-      }
-
-      a:hover {
-        color: mix($theme_color, black, 80%);
-      }
+      color: mix($theme_color, black, 80%);
     }
 
     li:hover {

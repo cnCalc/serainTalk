@@ -26,13 +26,6 @@ for (let routeType of Object.keys(routeConfig)) {
   }
 }
 
-// 获取静态文件
-router.use(express.static('public'));
-// 默认发送首页
-router.use((req, res) => {
-  /* istanbul ignore next */
-  res.sendFile('./public/index.html', { root: __dirname });
-});
 // 未通过验证的错误处理
 router.use((err, req, res, next) => {
   /* istanbul ignore else */

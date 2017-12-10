@@ -16,4 +16,6 @@ module.exports = {
   router: require('./router'),
   time: require('./time'),
   url: require('./url'),
+  env: require('./env'),
+  promise: require('./promise'),
 };

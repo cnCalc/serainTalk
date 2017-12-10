@@ -5,7 +5,7 @@
         div.button.create-discussion(@click="showEditor") 创建新帖
         category-list
       div.right
-        discussion-list
+        discussion-list(v-show="!busy || currentPage > 1")
         loading-icon(v-if="busy")
         div.list-nav
           button.button.load-more(@click="loadMore", v-if="!busy") 加载更多
@@ -97,7 +97,7 @@ export default {
         this.$nextTick(() => { this.$router.replace('/'); });
       }
 
-      // this.flushGlobalTitles()
+      this.flushGlobalTitles();
       if (route.path === '/') {
         return this.$store.dispatch('fetchLatestDiscussions');
       } else if (route.params.categorySlug) {
@@ -110,6 +110,9 @@ export default {
     categoriesGroup () {
       this.flushGlobalTitles();
     }
+  },
+  activated () {
+    // this.flushGlobalTitles();
   },
   created () {
     this.currentSlug = this.slug || '';

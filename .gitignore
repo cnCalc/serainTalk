@@ -7,7 +7,7 @@ npm-debug.log
 yarn-error.log
 
 uploads/*
-
+app/public/*
 coverage
 .nyc_output/*
 
