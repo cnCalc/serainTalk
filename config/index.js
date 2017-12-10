@@ -6,13 +6,16 @@ const product = require('./product');
 const mocha = require('./mocha');
 
 let config = require('./staticConfig');
+let env = require('../utils/env');
 
 // console.log(process.env.NODE_ENV);
 /* istanbul ignore next */
-switch (process.env.NODE_ENV) {
-  case 'PRODUCT': _.merge(config, product); break;
-  case 'MOCHA': _.merge(config, mocha); break;
-  default: _.merge(config, dev);
+if (env.isProd) {
+  _.merge(config, product);
+} else if (env.isProd) {
+  _.merge(config, product);
+} else {
+  _.merge(config, dev);
 }
 
 /**
