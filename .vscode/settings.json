@@ -6,7 +6,7 @@
     "**/.nyc_output": true,
     "**/coverage": true,
     // "**/uploads": true,
-    "**/database-convert": true,
+    // "**/database-convert": true,
     "**/node_modules": true
   }
 }

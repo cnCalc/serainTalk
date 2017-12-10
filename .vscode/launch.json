@@ -11,6 +11,7 @@
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
         "--recursive",
+        "-b",
         "-u",
         "tdd",
         "--timeout",
@@ -39,10 +40,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "启动程序 - PROCDUCT",
+      "name": "启动程序 - PRODUCT",
       "program": "${workspaceFolder}/index",
       "env": {
-        "NODE_ENV": "PROCDUCT"
+        "NODE_ENV": "PRODUCT"
       }
     }
   ]

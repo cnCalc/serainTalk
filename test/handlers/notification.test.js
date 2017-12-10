@@ -11,6 +11,10 @@ const _ = require('lodash');
 let agent = supertest.agent(require('../../index'));
 
 describe('notification part', async () => {
+  before(async () => {
+    await config.prepare();
+  });
+
   it('send notification.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {

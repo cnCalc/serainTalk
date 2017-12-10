@@ -27,4 +27,6 @@ let getAttachmentByAid = async (req, res) => {
 
 router.get('/', validation(dataInterface.attachment.getAttachment), getAttachmentByAid);
 
-module.exports = router;
+module.exports = {
+  getAttachmentByAid
+};

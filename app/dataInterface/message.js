@@ -8,7 +8,7 @@ exports = module.exports = {};
 // 发送一条私信
 let sendMessage = {
   params: {
-    id: interfaceUtils.mongoId
+    memberId: interfaceUtils.mongoId
   },
   body: {
     content: joi.string().required()
@@ -28,7 +28,7 @@ exports.getMessagesInfo = getMessagesInfo;
 // 获取与指定的人的私信记录
 let getMessageByMemberId = {
   params: {
-    id: interfaceUtils.mongoId.required()
+    memberId: interfaceUtils.mongoId.required()
   },
   query: {
     beforeDate: joi.number(),

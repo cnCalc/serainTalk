@@ -4,5 +4,6 @@ exports = module.exports = {
   cache: require('./cache'),
   environment: require('./environment'),
   permission: require('./permission'),
-  pretreatment: require('./pretreatment')
+  pretreatment: require('./pretreatment'),
+  log: require('./log'),
 };

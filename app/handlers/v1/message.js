@@ -1,16 +1,10 @@
 'use strict';
 
-const express = require('express');
 const { ObjectID } = require('mongodb');
-const validation = require('express-validation');
 
 const dbTool = require('../../../database');
-const { verifyMember } = require('../../middleware').permission;
-const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
-
-const router = express.Router();
 
 /**
  * [工具函数] 根据 messageId 获取详细消息
@@ -45,7 +39,7 @@ let getTimeLine = async (_messageId, beforeDate, pagesize) => {
  */
 let sendMessage = async (req, res, next) => {
   // 检查用户是否存在
-  let _recipientId = ObjectID(req.params.id);
+  let _recipientId = ObjectID(req.params.memberId);
   let recipientInfo = await dbTool.commonMember.findOne({ _id: _recipientId });
   if (!recipientInfo) return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
 
@@ -125,7 +119,7 @@ let getMessagesInfo = async (req, res, next) => {
 let getMessageByMemberId = async (req, res, next) => {
   let { beforeDate, pagesize } = req.query;
   beforeDate = beforeDate || Date.now();
-  let _id = ObjectID(req.params.id);
+  let _id = ObjectID(req.params.memberId);
   let members = [req.member._id, _id];
 
   // 获取 message 摘要
@@ -180,9 +174,14 @@ let getMessageById = async (req, res, next) => {
   return res.status(200).send({ status: 'ok', message: message });
 };
 
-router.post('/:id', verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
-router.get('/member/:id', verifyMember, validation(dataInterface.message.getMessageByMemberId), getMessageByMemberId);
-router.get('/:id', verifyMember, validation(dataInterface.message.getMessageById), getMessageById);
-router.get('/', verifyMember, validation(dataInterface.message.getMessagesInfo), getMessagesInfo);
+// router.post('/:memberId', verifyMember, validation(dataInterface.message.sendMessage), sendMessage);
+// router.get('/member/:id', verifyMember, validation(dataInterface.message.getMessageByMemberId), getMessageByMemberId);
+// router.get('/:id', verifyMember, validation(dataInterface.message.getMessageById), getMessageById);
+// router.get('/', verifyMember, validation(dataInterface.message.getMessagesInfo), getMessagesInfo);
 
-module.exports = router;
+module.exports = {
+  getMessageById,
+  getMessageByMemberId,
+  getMessagesInfo,
+  sendMessage
+};

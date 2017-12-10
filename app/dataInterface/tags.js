@@ -5,5 +5,8 @@ const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
-let getCategories = {};
-exports.getCategories = getCategories;
+let getAll = {};
+exports.getAll = getAll;
+
+let getPinned = {};
+exports.getPinned = getPinned;

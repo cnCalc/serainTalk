@@ -8,7 +8,7 @@ let agent = supertest.agent(require('../../index'));
 
 describe('categroy part.', async () => {
   it('get category list.', async () => {
-    let getUrl = '/api/v1/category/';
+    let getUrl = '/api/v1/categories';
     let categoryRes = await agent.get(getUrl)
       .expect(200);
     categoryRes = categoryRes.body;
@@ -20,7 +20,7 @@ describe('categroy part.', async () => {
   it('get discussions under specified category.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, { category: '德州仪器（TI）图形计算器' }, async (newDisscussionInfo) => {
-        let getUrl = '/api/v1/category/ticalc/discussions';
+        let getUrl = '/api/v1/categories/ticalc/discussions';
         let discussionRes = await agent.get(getUrl)
           .expect(200);
         discussionRes = discussionRes.body;
@@ -33,7 +33,7 @@ describe('categroy part.', async () => {
   });
 
   it('test cache.', async () => {
-    let getUrl = '/api/v1/category/ticalc/discussions';
+    let getUrl = '/api/v1/categories/ticalc/discussions';
     let discussionRes = await agent.get(getUrl)
       .expect(200);
     discussionRes = await agent.get(getUrl)

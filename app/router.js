@@ -1,8 +1,10 @@
 'use strict';
 
 let express = require('express');
+const validation = require('express-validation');
 
 const middleware = require('./middleware');
+const routeConfig = require('../config/route');
 const { log, cache, pretreatment } = middleware;
 const { errorHandler, errorMessages } = require('../utils');
 
@@ -12,10 +14,20 @@ let router = express.Router();
 router.use(log.consoleMiddleware);
 router.use(cache.disableCache);
 router.use(pretreatment.getMemberInfo);
+router.use(pretreatment.getPermissions);
 
-router.use('/api', require('./handlers'));
+// 根据路由表批量添加路由
+for (let routeType of Object.keys(routeConfig)) {
+  for (let routeName of Object.keys(routeConfig[routeType])) {
+    let route = routeConfig[routeType][routeName];
+    let handler = route.handler.pop();
+    route.handler.push(validation(route.schema));
+    router[route.method](route.path, ...route.handler, handler);
+  }
+}
+
+// 获取静态文件
 router.use(express.static('public'));
-
 // 默认发送首页
 router.use((req, res) => {
   /* istanbul ignore next */

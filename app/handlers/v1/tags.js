@@ -40,7 +40,10 @@ function getPinnedTags (req, res) {
   });
 }
 
-router.get('/', getAllTags);
-router.get('/pinned', getPinnedTags);
+// router.get('/', getAllTags);
+// router.get('/pinned', getPinnedTags);
 
-module.exports = router;
+module.exports = {
+  getAllTags,
+  getPinnedTags
+};

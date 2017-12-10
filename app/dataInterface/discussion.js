@@ -1,7 +1,7 @@
 'use strict';
 
 const joi = require('joi');
-const config = require('../../config');
+const config = require('../../config/staticConfig');
 const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
@@ -17,12 +17,34 @@ let getLatestList = {
 };
 exports.getLatestList = getLatestList;
 
-let getDiscussion = {
+let getDiscussionById = {
   params: {
     id: interfaceUtils.mongoId.required()
   }
 };
-exports.getDiscussion = getDiscussion;
+exports.getDiscussionById = getDiscussionById;
+
+let getDiscussionByMember = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  },
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  }
+};
+exports.getDiscussionByMember = getDiscussionByMember;
+
+let getDiscussionsByCategory = {
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page
+  },
+  params: {
+    slug: joi.string().required()
+  }
+};
+exports.getDiscussionsByCategory = getDiscussionsByCategory;
 
 let getPostsById = {
   query: {
@@ -70,7 +92,7 @@ let votePost = {
     postIndex: joi.number().min(1).required()
   },
   body: {
-    vote: joi.string().allow(config.discussion.post.vote).required()
+    vote: joi.string().allow([config.discussion.post.vote]).required()
   }
 };
 exports.votePost = votePost;

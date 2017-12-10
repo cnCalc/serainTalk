@@ -22,3 +22,6 @@ let sendNotification = {
   }
 };
 exports.sendNotification = sendNotification;
+
+let isAdmin = {};
+exports.isAdmin = isAdmin;

@@ -42,8 +42,12 @@ let isAdmin = async (req, res, next) => {
   return res.status(200).send({ status: 'ok', isAdmin: req.member.role === 'admin' });
 };
 
-router.get('/sudo', validation(dataInterface.debug.sudo), sudo);
-router.get('/notification/:id', validation(dataInterface.debug.sendNotification), sendNotification);
-router.get('/isadmin', isAdmin);
+// router.get('/sudo', validation(dataInterface.debug.sudo), sudo);
+// router.get('/notification/:id', validation(dataInterface.debug.sendNotification), sendNotification);
+// router.get('/isadmin', isAdmin);
 
-module.exports = router;
+module.exports = {
+  sudo,
+  sendNotification,
+  isAdmin
+};

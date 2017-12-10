@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const validation = require('express-validation');
 
 const dbTool = require('./database');
+const config = require('./config');
 
 const app = express();
 
@@ -21,9 +22,10 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(async (req, res, next) => {
   await dbTool.prepare();
+  await config.prepare();
   return next();
 });
-app.use(require('./app/router'));
+app.use('/api', require('./app/router'));
 
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.get('/favicon.ico', (req, res) => {

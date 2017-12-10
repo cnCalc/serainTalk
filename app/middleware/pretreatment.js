@@ -28,14 +28,15 @@ let getMemberInfo = (req, res, next) => {
 };
 exports.getMemberInfo = getMemberInfo;
 /**
- * [中间件]整理参数
+ * [中间件] 获取成员的权限
  *
  * @param {any} req 请求
  * @param {any} res 回复
  * @param {any} next 传递给下一中间件
  */
-let prepareData = (req, res, next) => {
-  req.data = Object.assign({}, req.params, req.body, req.query);
+let getPermissions = async (req, res, next) => {
+  if (!req.member._id) req.member.role = 'anonymous';
+  req.member.permissions = config.member.permissions[req.member.role];
   return next();
 };
-exports.prepareData = prepareData;
+exports.getPermissions = getPermissions;

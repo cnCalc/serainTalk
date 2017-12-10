@@ -9,7 +9,7 @@
     "readCategoriesInWhiteList": {
       "description": "可以获取白名单分类中的 Discussion 和 Post。",
       "allow": [
-        "commonMember",
+        "member",
         "anonymous"
       ]
     },
@@ -22,13 +22,13 @@
     "postToCategoryInWhiteList": {
       "description": "可以在白名单分类中发布 Discussion 和 Post。",
       "allow": [
-        "commonMember"
+        "member"
       ]
     },
     "postWithFreqLimit": {
       "description": "指定时间内不能发布过多的 Discussion 和 Post。",
       "allow": [
-        "commonMember"
+        "member"
       ]
     },
     "postWithoutFreqLimit": {

@@ -5,6 +5,7 @@ const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
 
+// region 注册登录部分
 // 成员注册
 let signup = {
   body: {
@@ -28,16 +29,41 @@ let signup = {
 };
 exports.signup = signup;
 
+// 成员登录
+let login = {
+  body: {
+    name: joi.string().required(),
+    password: joi.string().required()
+  }
+};
+exports.login = login;
+
+// 注销
+let logout = {};
+exports.logout = logout;
+// endregion
+
 // region 成员信息部分
 
-let info = {};
-
-info.get = {
-  params: {
-    id: interfaceUtils.mongoId.required()
+let info = {
+  getById: {
+    params: {
+      id: interfaceUtils.mongoId.required()
+    },
+    query: {
+      recent: interfaceUtils.flag
+    }
   },
-  query: {
-    recent: interfaceUtils.flag
+  me: {},
+  get: {
+    params: {
+      pagesize: interfaceUtils.pagesize,
+      page: interfaceUtils.page
+    },
+    query: joi.object({
+      name: joi.string(),
+      device: joi.string()
+    }).or('name', 'device')
   }
 };
 
@@ -46,25 +72,27 @@ exports.info = info;
 // endregion
 
 // #region 成员密码部分
-let password = {};
-// 修改密码
-password.modify = {
-  body: {
-    password: joi.string().required()
+let password = {
+  // 修改密码
+  modify: {
+    body: {
+      password: joi.string().required()
+    }
+  },
+  // 申请重置密码
+  resetApplication: {
+    body: {
+      memberName: joi.string().required()
+    }
+  },
+  // 重置密码
+  reset: {
+    body: {
+      token: joi.string().required(),
+      password: joi.string().required()
+    }
   }
 };
-// 申请重置密码
-password.resetApplication = {
-  body: {
-    memberName: joi.string().required()
-  }
-};
-// 重置密码
-password.reset = {
-  body: {
-    token: joi.string().required(),
-    password: joi.string().required()
-  }
-};
-// #endregion
 exports.password = password;
+// #endregion
+

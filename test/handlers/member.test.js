@@ -15,6 +15,7 @@ let agent = supertest.agent(require('../../index'));
 describe('member part', () => {
   before(async () => {
     await dbTool.prepare();
+    await config.prepare();
   });
 
   it('member signup', async () => {
@@ -321,7 +322,7 @@ describe('member part', () => {
     });
   });
 
-  it('get member with device', async () => {
+  it('get member by device', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let url = `/api/v1/members?device=${encodeURI(newMemberInfo.device)}`;
       let memberBody = await agent

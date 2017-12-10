@@ -1,13 +1,19 @@
 'use strict';
 
 const supertest = require('supertest');
+const { ObjectID } = require('mongodb');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
 const config = require('../../config');
+const dbTool = require('../../database');
 
 let agent = supertest.agent(require('../../index'));
 
 describe('message part', async () => {
+  before(async () => {
+    await config.prepare();
+  });
+
   it('send message.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {

@@ -140,51 +140,18 @@ let getMemberInfoGeneric = (req, res) => {
 };
 
 /**
- * [处理函数] 查询指定成员创建的讨论
- * GET /api/v1/member/:id/discussions
- * @param {Request} req
- * @param {Response} res
- */
-let getDiscussionUnderMember = async (req, res) => {
-  if (!req.params.id) {
-    return errorHandler(null, errorMessages.LACK_INFO, 400, res);
-  }
-  let memberId;
-  try {
-    memberId = ObjectID(req.params.id);
-  } catch (err) {
-    return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
-  }
-
-  let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page - 1) || 0;
-  try {
-    let cursor = dbTool.discussion.find(
-      { creater: memberId },
-      { creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, category: 1 }
-    ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
-    let discussions = await cursor.toArray();
-    let count = await cursor.count();
-    let members = await resloveMembersInDiscussionArray(discussions);
-    return res.send({ status: 'ok', discussions, members, count });
-  } catch (err) {
-    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
-  }
-};
-
-/**
  * [处理函数] 获取自身信息
  *
  * @param {any} req
  * @param {any} res
  */
 let getSelf = async (req, res) => {
-  delete req.member._id;
+  req.member._id = req.member.id;
+  delete req.member.id;
   return res.status(200).send({ status: 'ok', memberInfo: req.member });
 };
 
 // #region 成员登录登出部分
-
 /**
  * [处理函数] 登录
  * post: /api/v1/member/login
@@ -193,52 +160,55 @@ let getSelf = async (req, res) => {
  * @param {any} res 回复
  */
 let login = async (req, res) => {
-  let memberInfo = {};
-
   try {
-    memberInfo = await dbTool.commonMember.findOne(
+    let memberInfo = await dbTool.commonMember.findOne(
       { username: req.body.name },
       { notifications: 0 }
     );
+
+    // 不存在则报错
+    if (!memberInfo) {
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
+    };
+
+    // 如果该账号是 discuz 转入的，强制修改密码。
+    /* istanbul ignore if */
+    if (memberInfo.credentials.type === 'discuz') {
+      return utils.errorHandler(null, utils.errorMessages.RESET_PASSWORD, 400, res);
+    }
+
+    // 核对密码。
+    let password = req.body.password;
+    /* istanbul ignore if */
+    if (memberInfo.credentials.salt === null) {
+      password = MD5(MD5(password).toLowerCase());
+      if (password !== memberInfo.credentials.password) {
+        return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
+      }
+    } else {
+      password = MD5(memberInfo.credentials.salt + password);
+      if (password !== memberInfo.credentials.password) {
+        return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
+      }
+    }
+
+    // 移除敏感信息
+    utils.member.removePrivateField(memberInfo);
+
+    // 更新最后一次登录时间
+    await dbTool.commonMember.updateOne(
+      { _id: memberInfo._id },
+      { $set: { lastlogintime: Date.now() } }
+    );
+
+    // 插入 memberToken 作为身份识别码。
+    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+    return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
   } catch (err) {
     /* istanbul ignore next */
     return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
   }
-
-  // 如果该账号是 discuz 转入的，强制修改密码。
-  /* istanbul ignore if */
-  if (memberInfo.credentials.type === 'discuz') {
-    return utils.errorHandler(null, utils.errorMessages.RESET_PASSWORD, 400, res);
-  }
-
-  // 核对密码。
-  let password = req.body.password;
-  /* istanbul ignore if */
-  if (memberInfo.credentials.salt === null) {
-    password = MD5(MD5(password).toLowerCase());
-    if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
-    }
-  } else {
-    password = MD5(memberInfo.credentials.salt + password);
-    if (password !== memberInfo.credentials.password) {
-      return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
-    }
-  }
-
-  utils.member.removePrivateField(memberInfo);
-
-  // 更新最后一次登录时间
-  await dbTool.commonMember.updateOne({
-    _id: memberInfo._id,
-  }, {
-    $set: { lastlogintime: new Date().getTime() }
-  });
-
-  // 插入 memberToken 作为身份识别码。
-  let memberToken = jwt.sign(memberInfo, config.jwtSecret);
-  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
-  return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
 /**
@@ -289,11 +259,9 @@ let signup = async (req, res) => {
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
-
 // #endregion
 
 // #region 成员密码部分
-
 /**
  * [处理函数] 重置成员密码
  *
@@ -322,7 +290,7 @@ let resetPassword = async (req, res) => {
   }
 
   // 超时则报错
-  if (Date.now() - tokenInfo.time > config.tokenValidTime) {
+  if (Date.now() - tokenInfo.time > config.password.tokenValidTime) {
     return errorHandler(null, errorMessages.TIME_OUT, 403, res);
   }
 
@@ -427,24 +395,21 @@ let passwordModify = async (req, res) => {
   }
   return res.status(201).send({ status: 'ok' });
 };
-
 // #endregion
 
-router.post('/password/reset/application', validation(dataInterface.member.password.resetApplication), resetPasswordApplication);
-router.post('/password/reset', resetPassword);
-router.put('/password', verifyMember, validation(dataInterface.member.password.modify), passwordModify);
-router.get('/me', verifyMember, getSelf);
-router.post('/login', login);
-router.delete('/login', logout);
-router.post('/signup', validation(dataInterface.member.signup), signup);
-router.get('/:id', getMemberInfoById);
-router.get('/', getMemberInfoGeneric);
-router.get('/:id/discussions', getDiscussionUnderMember);
+// router.post('/password/reset/application', validation(dataInterface.member.password.resetApplication), resetPasswordApplication);
+// router.post('/password/reset', resetPassword);
+// router.put('/password', verifyMember, validation(dataInterface.member.password.modify), passwordModify);
+// router.get('/me', verifyMember, getSelf);
+// router.post('/login', login);
+// router.delete('/login', logout);
+// router.post('/signup', validation(dataInterface.member.signup), signup);
+// router.get('/:id', getMemberInfoById);
+// router.get('/', getMemberInfoGeneric);
 
 module.exports = {
   getMemberInfoById,
   getMemberInfoGeneric,
-  getDiscussionUnderMember,
   getSelf,
   login,
   logout,

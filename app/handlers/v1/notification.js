@@ -1,15 +1,8 @@
 'use strict';
 
-const express = require('express');
-const validation = require('express-validation');
-
 const dbTool = require('../../../database');
-const { verifyMember } = require('../../middleware').permission;
-const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
-
-const router = express.Router();
 
 // region 发送通知（暂不启用）
 // /**
@@ -139,8 +132,12 @@ let readAllNotification = async (req, res, next) => {
 };
 
 // router.post('/:id', middleware.verifyAdmin, validation(dataInterface.notification.sendNotification), sendNotification);
-router.get('/', verifyMember, validation(dataInterface.notification.getNotification), getNotification);
-router.post('/all/read', verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
-router.post('/:index/read', verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
+// router.get('/', verifyMember, validation(dataInterface.notification.getNotification), getNotification);
+// router.post('/all/read', verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
+// router.post('/:index/read', verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
 
-module.exports = router;
+module.exports = {
+  getNotification,
+  readNotification,
+  readAllNotification
+};

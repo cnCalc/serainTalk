@@ -1,7 +1,18 @@
 'use strict';
 
 const { MongoClient } = require('mongodb');
-const config = require('../config');
+const _ = require('lodash');
+
+// 获取数据库相关的静态数据
+const config = require('../config/staticConfig');
+const dev = require('../config/dev');
+const product = require('../config/product');
+const mocha = require('../config/mocha');
+switch (process.env.NODE_ENV) {
+  case 'PRODUCT': _.merge(config, product); break;
+  case 'MOCHA': _.merge(config, mocha); break;
+  default: _.merge(config, dev);
+}
 
 // 真实的连接对象
 let _db = null;

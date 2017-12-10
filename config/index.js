@@ -5,42 +5,8 @@ const dev = require('./dev');
 const product = require('./product');
 const mocha = require('./mocha');
 
-let config = {
-  database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
-  pagesize: 10,
-  jwtSecret: 'exampleSecret',
-  siteAddress: 'https://www.cncalc.org', // 末尾不要加'/'
-  cookie: {
-    renewTime: 86400000
-  },
-  tokenValidTime: 1000 * 60 * 10,
-  password: {
-    resetPasswordPage: 'https://www.cncalc.org/resetpassword.html'
-  },
-  member: {
-    privateField: ['credentials', 'notifications']
-  },
-  discussion: {
-    category: {
-      whiteList: 'loading'
-    },
-    post: {
-      vote: [
-        'up',
-        'down',
-        'laugh',
-        'doubt',
-        'cheer',
-        'emmmm',
-      ]
-    },
-    freqLimit: 1000 * 60 * 3, // 发帖间隔
-    reset: 'loading'
-  }
-};
+let config = require('./staticConfig');
 
-// 优先导出部分基础配置信息
-exports = module.exports = config;
 // console.log(process.env.NODE_ENV);
 /* istanbul ignore next */
 switch (process.env.NODE_ENV) {
@@ -50,65 +16,47 @@ switch (process.env.NODE_ENV) {
 }
 
 /**
- * 获取 type 为 category 的分类，并将其存入配置文件中
- *
- * @returns 读取到的讨论标签白名单
- */
-let setDiscussionCategoryWhiteList = async () => {
-  let whiteList = await dbTool.generic.aggregate([
-    { $match: { key: 'pinned-categories' } },
-    { $unwind: '$groups' },
-    { $unwind: '$groups.items' },
-    { $match: { 'groups.items.type': 'category' } },
-    { $project: { name: '$groups.items.name', _id: 0 } }
-  ]).toArray();
-  whiteList = whiteList.map(item => item.name);
-  config.discussion.category.whiteList = whiteList;
-
-  return whiteList;
-};
-
-/**
- * 使用原始配置重置讨论的配置
- *
- * @returns 重置后的 discussion 配置信息
- */
-let resetCategoryConfig = async () => {
-  await dbTool.prepare();
-  let originSetting = require('./category.json');
-  let genericDoc = await dbTool.generic.updateMany(
-    {
-      key: 'pinned-categories'
-    },
-    {
-      $set: originSetting
-    }
-  );
-  /* istanbul ignore next */
-  if (genericDoc.matchedCount === 0) {
-    originSetting.key = 'pinned-categories';
-    await dbTool.generic.insertOne(originSetting);
-  }
-  await setDiscussionCategoryWhiteList();
-
-  return originSetting;
-};
-exports.discussion.reset = resetCategoryConfig;
-
-let dbTool;
-/**
  * 从数据库读取额外配置
  *
  */
-let updateConfigFromDatabase = async () => {
-  dbTool = require('../database');
+let initConfig = async () => {
+  const dbTool = require('../database');
   await dbTool.prepare();
+  let utils = require('../utils');
 
+  const { resetCategoryConfig, createDiscussionCategoryWhiteList } = utils.category;
+
+  // 如果没有配置则初始化数据
+  let genericConfig = await dbTool.generic.find({}).toArray();
+  if (genericConfig.length === 0) await require('../database-init').init;
   // 生成讨论分类白名单
   let categoryConfig = await dbTool.generic.findOne({ key: 'pinned-categories' });
   if (!categoryConfig) await resetCategoryConfig();
-  setDiscussionCategoryWhiteList();
+  createDiscussionCategoryWhiteList();
+
+  // 生成用户权限表
+  let permissionsDoc = await dbTool.generic.findOne({ key: 'permissions' }, { _id: 0, key: 0 });
+  let permissions = permissionsDoc.permissions;
+  let memberSet = new Set();
+  let memberPermissions = {};
+  for (let permissionType of Object.keys(permissions)) {
+    for (let permissionName of Object.keys(permissions[permissionType])) {
+      for (let memberType of permissions[permissionType][permissionName].allow) {
+        memberSet.add(memberType);
+        if (memberPermissions[memberType]) memberPermissions[memberType].push(permissionName);
+        else memberPermissions[memberType] = [permissionName];
+      }
+    }
+  }
+  config.member.types = [...memberSet];
+  config.member.permissions = memberPermissions;
 };
 
-// dbTool 模块生成完成后再读取额外配置
-setTimeout(updateConfigFromDatabase, 0);
+let init = initConfig();
+module.exports = {
+  ...config,
+
+  prepare: async () => {
+    await init;
+  }
+};

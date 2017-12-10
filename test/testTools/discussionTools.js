@@ -83,6 +83,8 @@ exports.createOneDiscussion = createOneDiscussion;
  * @returns
  */
 let closeFreqLimit = async (next) => {
+  await config.prepare();
+
   let tempLimit = config.discussion.freqLimit;
   config.discussion.freqLimit = 0;
 

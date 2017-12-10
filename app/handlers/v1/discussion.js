@@ -15,6 +15,44 @@ const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.re
 const router = express.Router();
 
 /**
+ * 缓存保存对象
+ */
+let slugCache = {};
+
+/**
+ * 刷新内存里的 slug 缓存
+ * @param {Function} callback
+ */
+let flushCache = async () => {
+  let doc = await dbTool.generic.findOne({ key: 'pinned-categories' });
+  let cache = {};
+  // 遍历保存
+  for (let group of doc.groups) {
+    for (let item of group.items) {
+      if (item.type === 'category') {
+        cache[item.slug] = item.name;
+      }
+    }
+  }
+  slugCache = cache;
+};
+/**
+ * [工具函数] 将分区的 slug 转化为完整的分区名
+ * @param {String} slug
+ * @param {Function} callback
+ */
+let slugToCategory = async (slug) => {
+  if (slugCache[slug]) {
+    // 缓存命中，直接调用 callback 返回结果
+    return slugCache[slug];
+  } else {
+    // 刷新缓存
+    await flushCache();
+    return slugCache[slug];
+  }
+};
+
+/**
  * 获取最新的讨论
  * /api/v1/discussions/latest
  * query : [tag][memberId][page][pagesize]
@@ -31,7 +69,7 @@ let getLatestDiscussionList = async (req, res) => {
     let query = {};
     // 非管理只显示白名单中的分类
     if (req.query.category) {
-      if (req.member.role !== 'admin') {
+      if (!req.member.permissions.includes('postToAllCategory')) {
         req.query.category = req.query.category.filter(
           item => config.discussion.category.whiteList.includes(item)
         );
@@ -146,7 +184,8 @@ let getDiscussionPostsById = async (req, res) => {
  */
 let createDiscussion = async (req, res, next) => {
   let now = Date.now();
-  if (config.discussion.category.whiteList.includes(req.body.category)) {
+  if (!config.discussion.category.whiteList.includes(req.body.category) &&
+    !req.member.permissions.includes('postToAllCategory')) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
   let discussionInfo = {
@@ -187,7 +226,8 @@ let createPost = async (req, res, next) => {
   let _id = ObjectID(req.params.id);
 
   let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
-  if (config.discussion.category.whiteList(discussionInfo.category)) {
+  if (!config.discussion.category.whiteList.includes(discussionInfo.category) &&
+    !req.member.permissions.includes('postToAllCategory')) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
@@ -328,6 +368,68 @@ let votePost = async (req, res, next) => {
   }
 };
 
+/**
+ * [处理函数] 查询指定成员创建的讨论
+ * GET /api/v1/member/:id/discussions
+ * @param {Request} req
+ * @param {Response} res
+ */
+let getDiscussionUnderMember = async (req, res) => {
+  let memberId = ObjectID(req.params.id);
+  let { pagesize, page: offset } = req.query;
+
+  try {
+    let cursor = dbTool.discussion.find(
+      { creater: memberId },
+      {
+        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+        tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+      }
+    ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+    let discussions = await cursor.toArray();
+    let count = await cursor.count();
+    let members = await resolveMembersInDiscussionArray(discussions);
+    return res.send({ status: 'ok', discussions, members, count });
+  } catch (err) {
+    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+/**
+ * 获得指定分区下的所有讨论
+ * /api/v1/category/:slug/discussions
+ * @param {Request} req
+ * @param {Response} res
+ */
+let getDiscussionsByCategory = async (req, res, next) => {
+  let pagesize = req.query.pagesize;
+  let offset = req.query.page - 1;
+
+  try {
+    let category = await slugToCategory(req.params.slug);
+    /* istanbul ignore if */
+    if (typeof category === 'undefined') {
+      return res.status(200).send({ status: 'ok' });
+    }
+
+    let discussions = await dbTool.discussion.find(
+      { category: category },
+      { creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1, tags: 1, status: 1, lastMember: 1, replies: 1, },
+      {
+        limit: pagesize,
+        skip: offset * pagesize,
+        sort: [['lastDate', 'desc']]
+      }
+    ).toArray();
+
+    let members = await resolveMembersInDiscussionArray(discussions);
+    return res.send({ status: 'ok', discussions: discussions, members: members });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
 // router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
 // router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
 // router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
@@ -337,11 +439,13 @@ let votePost = async (req, res, next) => {
 // router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
 module.exports = {
-  getLatestDiscussionList,
-  getDiscussionById,
-  getDiscussionPostsById,
   createDiscussion,
   createPost,
+  getDiscussionById,
+  getDiscussionPostsById,
+  getDiscussionUnderMember,
+  getDiscussionsByCategory,
+  getLatestDiscussionList,
   updatePost,
-  votePost
+  votePost,
 };
