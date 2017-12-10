@@ -50,12 +50,12 @@ a:hover {
 }
 
 .list-enter-active {
-  transition: all .2s;
+  transition: all .3s;
 }
 // .list-leave-active {
-//   transition: all .1s;
+//   transition: all .08s;
 // }
-.list-enter, .list-leave-active {
+.list-enter, .list-leave-to {
   opacity: 0;
 }
 
