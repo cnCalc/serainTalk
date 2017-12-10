@@ -27,6 +27,14 @@ app.use(async (req, res, next) => {
 });
 app.use('/api', require('./app/router'));
 
+// 获取静态文件
+app.use(express.static('./app/public'));
+// 默认发送首页
+app.use((req, res) => {
+  /* istanbul ignore next */
+  res.sendFile('./public/index.html', { root: __dirname });
+});
+
 app.use('/uploads', express.static('uploads', { maxAge: '7d' }));
 app.get('/favicon.ico', (req, res) => {
   /* istanbul ignore next */
