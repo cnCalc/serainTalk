@@ -7,11 +7,13 @@ const validation = require('express-validation');
 
 const dbTool = require('./database');
 const config = require('./config');
+const utils = require('./utils');
 
 const app = express();
 
 /* istanbul ignore if */
-if (process.env.DEV) {
+if (utils.env.isDev) {
+  console.log('You are running in development mode. Access-Control-Allow-Origin will always be *.');
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     return next();

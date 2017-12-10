@@ -1,8 +1,8 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      loading-icon(v-if="busy && !$store.state.autoLoadOnScroll")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && !$store.state.autoLoadOnScroll}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
+      loading-icon(v-if="busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="post in discussionPosts" :id="`index-${post.index}`" v-if="post")
         div.discussion-post-container
           article.discussion-post-body
             header.discussion-post-info
@@ -80,6 +80,7 @@ export default {
       fixedSlideBar: false,
       pagesCount: 0,  // 总页数
       pageLoaded: {}, // 已经加载了的页面
+      currentDiscussion: null,
     };
   },
   methods: {
@@ -160,6 +161,16 @@ export default {
       this.pagesCount = indexToPage(this.discussionMeta.postsCount);
     },
     '$route': function (route) {
+      if (!route.params.discussionId) {
+        return;
+      }
+
+      if (this.currentDiscussion !== route.params.discussionId) {
+        this.$store.commit('setGlobalTitles', [' ']);
+        this.currentDiscussion = route.params.discussionId;
+        return this.$options.asyncData({ store: this.$store, route: this.$route });
+      }
+
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
 
       if (this.pageLoaded[Number(route.params.page) || 1]) {
@@ -177,6 +188,9 @@ export default {
     '$route.hash': function (hash) {
       hash && scrollToHash(hash);
     }
+  },
+  created () {
+    this.currentDiscussion = this.$route.params.discussionId;
   },
   mounted () {
     const page = Number(this.$route.params.page) || 1;
@@ -223,10 +237,6 @@ div.discussion-view {
     width: $right_width;
     position: relative;
     @include respond-to(phone){
-      display: none;
-    }
-
-    @include respond-to(tablet) {
       display: none;
     }
 
