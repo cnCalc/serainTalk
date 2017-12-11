@@ -1,21 +1,16 @@
 'use strict';
 
 const joi = require('joi');
-const express = require('express');
 const jwt = require('jsonwebtoken');
 const { ObjectID } = require('mongodb');
-const validation = require('express-validation');
 
 const config = require('../../../config');
 const dbTool = require('../../../database');
-const { verifyMember } = require('../../middleware').permission;
 const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const MD5 = utils.md5;
 const { errorHandler, errorMessages } = utils;
-const { resloveMembersInDiscussionArray, resloveMembersInDiscussion } = utils.resolveMembers;
-
-let router = express.Router();
+const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
 
 /**
  * 根据用户 ID 获得用户信息以及最近活动
@@ -81,7 +76,7 @@ let getMemberInfoById = async (req, res, next) => {
 
       let members;
       try {
-        members = await resloveMembersInDiscussion({ posts: tempPosts });
+        members = await resolveMembersInDiscussion({ posts: tempPosts });
       } catch (err) {
         members = {};
       }

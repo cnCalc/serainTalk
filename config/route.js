@@ -2,8 +2,7 @@
 
 const dataInterface = require('../app/dataInterface');
 const handlers = require('../app/handlers');
-const { verifyAdmin, verifyCommitFreq, verifyDiscussionFreq,
-  verifyMember, verifyPostFreq } = require('../app/middleware/permission');
+const { verifyCommitFreq, verifyMember } = require('../app/middleware/permission');
 
 let route = {
   discussion: {

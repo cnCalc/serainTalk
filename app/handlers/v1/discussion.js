@@ -1,18 +1,12 @@
 'use strict';
 
-const express = require('express');
 const { ObjectID } = require('mongodb');
-const validation = require('express-validation');
 
 const config = require('../../../config');
 const dbTool = require('../../../database');
-const { verifyMember, verifyCommitFreq } = require('../../middleware').permission;
-const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
-
-const router = express.Router();
 
 /**
  * 缓存保存对象
@@ -188,6 +182,7 @@ let createDiscussion = async (req, res, next) => {
     !req.member.permissions.includes('postToAllCategory')) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
+
   let discussionInfo = {
     creater: req.member._id,
     title: req.body.title,
@@ -429,14 +424,6 @@ let getDiscussionsByCategory = async (req, res, next) => {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 };
-
-// router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
-// router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
-// router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
-// router.post('/:id/post/:postIndex/vote', verifyMember, validation(dataInterface.discussion.votePost), votePost);
-// router.post('/:id/post', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createPost), createPost);
-// router.post('/', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
-// router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
 module.exports = {
   createDiscussion,
