@@ -8,7 +8,7 @@
             div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
-            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
+            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate).toLocaleDateString() }}
         div.discussion-meta
           h3.discussion-title
             router-link.default(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}

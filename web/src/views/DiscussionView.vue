@@ -32,7 +32,7 @@
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
-        button.button.quick-funcs 回复帖子
+        button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
         button.button.quick-funcs 只看楼主
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
 </template>
@@ -201,6 +201,12 @@ export default {
     this.pageLoaded[this.currentPage] = true;
   },
   beforeDestroy () {
+    window.removeEventListener('scroll', this.scrollWatcher);
+  },
+  activated () {
+    window.addEventListener('scroll', this.scrollWatcher);
+  }, 
+  deactivated () {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
   asyncData ({ store, route }) {
