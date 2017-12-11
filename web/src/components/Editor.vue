@@ -1,19 +1,19 @@
 <template lang="pug">
-  div.editor
-    div.resize
-    div.mode
-      span(v-if="mode === 'CREATE_DISCUSSION'") 创建新讨论
-      span(v-if="mode === 'REPLY_TO_INDEX'") 回复：{{ $store.state.editor.discussionTitle }} # {{ $store.state.editor.index }}
-    div.row(v-if="mode === 'CREATE_DISCUSSION'")
+  div.editor(v-bind:class="{ mini: display === 'mini' }")
+    div.resize(v-show="display !== 'mini'")
+    div.mode(v-text="editorTitle" @click="recover")
+    div.row(v-if="state.mode === 'CREATE_DISCUSSION'")
       input(placeholder="输入标题", v-model="title")
       select(v-model="category")
         option(v-for="category in categories" :value="category.name") {{ category.name }}
     div.textarea
       textarea(placeholder="说些什么吧", v-model="content")
-      div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview")
+      div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview" v-if="showPreview")
     div.footer
       button(@click="submit") 提交
-      button(@click="hide") 隐藏窗口
+      button(@click="close") 关闭
+      button(@click="minimum") 最小化
+      button(@click="togglePreview") 切换预览
 </template>
 
 <script>
@@ -45,6 +45,8 @@ export default {
       title: '',
       category: '',
       content: '',
+      state: {},
+      showPreview: true,
     };
   },
   mounted () {
@@ -75,10 +77,23 @@ export default {
     });
   },
   computed: {
-    mode () { return this.$store.state.editor.mode; },
-    display () { return this.$store.state.editor.display; },
+    mode () {
+      return this.$store.state.editor.mode;
+    },
+    display () {
+      return this.$store.state.editor.display;
+    },
     categories () {
       return this.$store.state.categoriesGroup.reduce((a, b) => [...a, ...b.items], []).filter(c => c.type === 'category');
+    },
+    editorTitle () {
+      if (this.state.mode === 'CREATE_DISCUSSION') {
+        return '创建新讨论' + (this.title.length > 0 ? `：${this.title}` : '');
+      } else if (this.state.mode === 'REPLY_TO_INDEX') {
+        return `回复：${ this.state.discussionTitle } # ${ this.state.index }`;
+      } else if (this.state.mode === 'REPLY') {
+        return `回复：${ this.state.discussionTitle }`;
+      }
     }
   },
   watch: {
@@ -94,10 +109,20 @@ export default {
       if (val === 'none') {
         app.style.marginBottom = '';
         editor.style.top = '100vh';
+        
+        this.content = '';
+        this.category = '';
+        this.title = '';
+        this.typed = false;
+
+        this.updatePreview();
+      } else if (val === 'mini') {
+        app.style.marginBottom = 'calc(1em + 12px)';
+        editor.style.top = 'calc(100vh - 1em - 12px)';
       } else {
         app.style.marginBottom = editor.style.top = '50vh';
 
-        const editorState = this.$store.state.editor;
+        const editorState = this.state = Object.assign({}, this.$store.state.editor);
 
         if (editorState.index) {
           // 回复，加入默认@
@@ -109,6 +134,9 @@ export default {
   },
   methods: {
     updatePreview () {
+      if (!this.showPreview) {
+        return;
+      }
       const members = this.$store.state.members;
       const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       let preview = '';
@@ -136,8 +164,20 @@ export default {
     maximum () {
       document.querySelector('div.editor').style.top = '50px';
     },
-    hide () {
-      this.$store.commit('updateEditorDisplay', 'none');
+    minimum () {
+      this.$store.commit('updateEditorDisplay', 'mini');
+    },
+    recover () {
+      this.display === 'mini' && this.$store.commit('updateEditorDisplay', 'show');
+    },
+    close () {
+      if (this.content.length === 0 || confirm('Are you sure you want to abandon your post?')) {
+        this.$store.commit('updateEditorDisplay', 'none');
+      }
+    },
+    togglePreview () {
+      this.showPreview = !this.showPreview;
+      this.updatePreview();
     },
     createDiscussion () {
       const payload = {
@@ -171,6 +211,17 @@ export default {
         window.location.href = window.location.href;
       });
     },
+    reply () {
+      const editorState = this.$store.state.editor;
+      api.v1.discussion.replyToDiscussion({
+        id: editorState.discussionId,
+        encoding: 'markdown',
+        content: this.content,
+      }).then(() => {
+        // 同上
+        window.location.href = window.location.href;
+      });
+    },
     submit () {
       switch (this.mode) {
         case 'CREATE_DISCUSSION':
@@ -178,6 +229,10 @@ export default {
           break;
         case 'REPLY_TO_INDEX':
           this.replyToIndex();
+          break;
+        case 'REPLY':
+          this.reply();
+          break;
       }
     }
   }
@@ -203,6 +258,15 @@ div.editor {
   padding: 0 20px 0 20px;
   display: flex;
   flex-direction: column;
+
+  &.mini {
+    background-color: $theme_color;
+    cursor: pointer;
+    opacity: 0.9;
+    .mode {
+      color: white;
+    }
+  }
 
   div.resize {
     width: 80px;
@@ -238,8 +302,13 @@ div.editor {
     width: 300px;
   }
 
+  textarea {
+    font-family: monospace;
+  }
+
   textarea, div.preview {
-    width: 50%;
+    flex-grow: 1;
+    width: 100%;
     resize: none;
     padding: 5px;
     overflow-y: auto;
