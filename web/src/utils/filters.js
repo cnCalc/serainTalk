@@ -1,6 +1,8 @@
 function timeAgo (time) {
   const between = (Date.now() - Number(time)) / 1000;
-  if (between < 3600) {
+  if (between < 120) {
+    return ' 3 分钟内';
+  } else if (between < 3600) {
     return ` ${~~(between / 60)} 分钟前`;
   } else if (between < 86400) {
     return ` ${~~(between / 3600)} 小时前`;

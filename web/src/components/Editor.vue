@@ -90,9 +90,9 @@ export default {
       if (this.state.mode === 'CREATE_DISCUSSION') {
         return '创建新讨论' + (this.title.length > 0 ? `：${this.title}` : '');
       } else if (this.state.mode === 'REPLY_TO_INDEX') {
-        return `回复：${ this.state.discussionTitle } # ${ this.state.index }`;
+        return `回复：${this.state.discussionTitle} # ${this.state.index}`;
       } else if (this.state.mode === 'REPLY') {
-        return `回复：${ this.state.discussionTitle }`;
+        return `回复：${this.state.discussionTitle}`;
       }
     }
   },
@@ -109,7 +109,7 @@ export default {
       if (val === 'none') {
         app.style.marginBottom = '';
         editor.style.top = '100vh';
-        
+
         this.content = '';
         this.category = '';
         this.title = '';
@@ -171,7 +171,7 @@ export default {
       this.display === 'mini' && this.$store.commit('updateEditorDisplay', 'show');
     },
     close () {
-      if (this.content.length === 0 || confirm('Are you sure you want to abandon your post?')) {
+      if (this.content.length === 0 || window.confirm('Are you sure you want to abandon your post?')) {
         this.$store.commit('updateEditorDisplay', 'none');
       }
     },

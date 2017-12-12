@@ -2,6 +2,7 @@
 
 const dataInterface = require('../app/dataInterface');
 const handlers = require('../app/handlers');
+const utils = require('../utils');
 const { verifyCommitFreq, verifyMember } = require('../app/middleware/permission');
 
 let route = {
@@ -453,7 +454,7 @@ let devRoute = {
   }
 };
 
-if (process.env.NODE_ENV === 'DEV') {
+if (utils.env.isDev) {
   Object.assign(route, devRoute);
 }
 

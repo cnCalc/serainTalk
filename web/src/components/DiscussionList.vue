@@ -44,11 +44,14 @@ export default {
   methods: {
     timeAgo, decodeHTML,
     dispatchClickToLink (e, discussion) {
+      e.stopPropagation();
       let cursor = e.target;
       if (e.target.tagName !== 'A') {
         while (cursor && cursor.tagName !== 'LI') {
-          let target = cursor.querySelector('a.default');
-          if (target) {
+          const target = cursor.querySelector('a.default');
+          if (cursor.tagName === 'A') {
+            break;
+          } else if (target) {
             target.click();
             break;
           } else {
