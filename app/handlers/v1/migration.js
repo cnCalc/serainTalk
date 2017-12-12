@@ -79,6 +79,8 @@ async function performMigration (req, res) {
   let { token, name, password } = req.body;
 
   if (Date.now() - migrateTokens[token].timestamp > config.password.tokenValidTime) {
+    // FIXME: 未到时间却超时
+    console.log(`now:${Date.now()}\ntoken:${token}\ninfo:${migrateTokens[token]}\nvalidTime${config.password.tokenValidTime}`);
     return errorHandler(null, errorMessages.TIME_OUT, 400, res);
   }
 
@@ -97,7 +99,7 @@ async function performMigration (req, res) {
       credentials: {
         type: 'seraintalk',
         salt,
-        password: MD5(salt + req.body.password),
+        password: MD5(salt + password),
       }
     };
 
