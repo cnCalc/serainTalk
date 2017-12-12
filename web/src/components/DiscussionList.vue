@@ -8,7 +8,7 @@
             div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
-            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate * 1000).toLocaleDateString() }}
+            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate).toLocaleDateString() }}
         div.discussion-meta
           h3.discussion-title
             router-link.default(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
@@ -44,11 +44,14 @@ export default {
   methods: {
     timeAgo, decodeHTML,
     dispatchClickToLink (e, discussion) {
+      e.stopPropagation();
       let cursor = e.target;
       if (e.target.tagName !== 'A') {
         while (cursor && cursor.tagName !== 'LI') {
-          let target = cursor.querySelector('a.default');
-          if (target) {
+          const target = cursor.querySelector('a.default');
+          if (cursor.tagName === 'A') {
+            break;
+          } else if (target) {
             target.click();
             break;
           } else {

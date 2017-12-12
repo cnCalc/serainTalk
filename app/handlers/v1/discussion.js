@@ -202,6 +202,7 @@ let createDiscussion = async (req, res, next) => {
     !utils.permission.checkPermission('discussion-postToAllCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
+
   let discussionInfo = {
     creater: req.member._id,
     title: req.body.title,
@@ -420,7 +421,7 @@ let getDiscussionUnderMember = async (req, res) => {
         creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
         tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
       }
-    ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
+    ).sort({ createDate: -1 }).limit(pagesize).skip((offset - 1) * pagesize);
     let discussions = await cursor.toArray();
     let count = await cursor.count();
     let members = await resolveMembersInDiscussionArray(discussions);

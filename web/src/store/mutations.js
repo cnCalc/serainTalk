@@ -68,6 +68,7 @@ let mutations = {
     posts.forEach(post => {
       state.discussionPosts[post.index] = post;
     });
+    state.discussionPosts = state.discussionPosts.map(el => el);
   },
 
   /** 清空帖子内容 */
@@ -116,11 +117,8 @@ let mutations = {
    * 修改编辑器的模式
    */
   updateEditorMode: (state, { mode, discussionId, discussionTitle, memberId, index }) => {
-    state.editor.mode = mode;
-    state.editor.discussionId = discussionId;
-    state.editor.discussionTitle = discussionTitle;
-    state.editor.memberId = memberId;
-    state.editor.index = index;
+    let payload = { mode, discussionId, discussionTitle, memberId, index };
+    state.editor = Object.assign(state.editor, payload);
   },
 
   /**

@@ -56,7 +56,17 @@ export default {
       return api.v1.discussion.fetchDiscussionPostsById(param);
     }).then(data => {
       state.commit('mergeMembers', data.members);
-      state.commit('setDiscussionPosts', data.posts);
+      state.commit('updateDiscussionPosts', data.posts);
+      if (param.preloadPrevPage) {
+        param.page--;
+        return api.v1.discussion.fetchDiscussionPostsById(param);
+      }
+      return Promise.resolve();
+    }).then(data => {
+      if (data) {
+        state.commit('mergeMembers', data.members);
+        state.commit('updateDiscussionPosts', data.posts);
+      }
       state.commit('setBusy', false);
     });
   },

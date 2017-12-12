@@ -314,11 +314,13 @@ describe('member part', () => {
 
   it('get member with recent.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
-      let tempInfo = await agent
-        .get(url)
-        .expect(200);
-      expect(tempInfo.body.status).to.equal('ok');
+      await testTools.discussion.createOneDiscussion(agent, null, async () => {
+        let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
+        let tempInfo = await agent
+          .get(url)
+          .expect(200);
+        expect(tempInfo.body.status).to.equal('ok');
+      });
     });
   });
 

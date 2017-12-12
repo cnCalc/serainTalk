@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { indexToPage } from '../utils/filters';
+
 export default {
   name: 'post-content',
   props: ['content', 'noattach', 'reply-to', 'discussion-id'],
@@ -26,7 +28,7 @@ export default {
       const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       if (html.match(replyReg)) {
         const match = html.match(replyReg);
-        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${this.$store.state.discussionMeta._id}#index-${this.replyTo.value}`}"><span class="reply-to">${this.$store.state.members[this.replyTo.memberId].username}</span></a>`);
+        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to">${this.$store.state.members[this.replyTo.memberId].username}</span></a>`);
       }
       return html;
     }

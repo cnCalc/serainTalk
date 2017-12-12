@@ -6,11 +6,12 @@
       header
         h3 消息通知
         span(style="font-family: consolas") √
-      ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.list")
+      ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.count !== 0")
         li(v-for="item in notifications.list"
           v-bind:class="{ new: !item.hasRead }"
           v-on:click="readNotification(item)"
           v-bind:style="{ cursor: item.href || !item.hasRead ? 'pointer' : 'initial' }") {{ item.content }}
+      div.empty(v-else) 当前没有通知
 </template>
 
 <script>
@@ -23,7 +24,7 @@ export default {
   },
   computed: {
     notifications () {
-      return this.$store.state.notifications;
+      return { count: 0, list: [], new: false }; // this.$store.state.notifications;
     }
   },
   methods: {
@@ -154,6 +155,15 @@ div.notification-container {
       overflow-y: overlay;
       list-style: none;
       padding: 0;
+    }
+
+    div.empty {
+      text-align: center;
+      padding: 80px 0;
+      font-weight: 400;
+      font-size: 1.2em;
+      color: mix($theme_color, white, 40%);
+      user-select: none;
     }
 
     li {
