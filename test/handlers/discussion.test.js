@@ -6,7 +6,6 @@ const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
 const utils = require('../../utils');
-const _ = require('lodash');
 
 let agent = supertest.agent(require('../../index'));
 

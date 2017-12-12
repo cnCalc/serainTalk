@@ -1,12 +1,8 @@
 'use strict';
 
-const express = require('express');
-
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
-
-const router = express.Router();
 
 /**
  * 获取论坛内所有的 tag

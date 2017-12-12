@@ -5,7 +5,8 @@ const validation = require('express-validation');
 
 const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
-const { errorHandler, errorMessages } = require('../../../utils');
+const utils = require('../../../utils');
+const { errorHandler, errorMessages } = utils;
 
 const router = express.Router();
 
