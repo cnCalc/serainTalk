@@ -35,5 +35,5 @@ module.exports = {
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
     reset: 'loading'
   },
-  route: 'loading'
+  permissions: 'loading'
 };

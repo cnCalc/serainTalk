@@ -12,8 +12,8 @@ let env = require('../utils/env');
 /* istanbul ignore next */
 if (env.isProd) {
   _.merge(config, product);
-} else if (env.isProd) {
-  _.merge(config, product);
+} else if (env.isMocha) {
+  _.merge(config, mocha);
 } else {
   _.merge(config, dev);
 }
@@ -31,7 +31,7 @@ let initConfig = async () => {
 
   // 如果没有配置则初始化数据
   let genericConfig = await dbTool.generic.find({}).toArray();
-  if (genericConfig.length === 0) await require('../database-init').init;
+  if (genericConfig.length === 0 || utils.env.isMocha || utils.env.isDev) await require('../database-init').init;
   // 生成讨论分类白名单
   let categoryConfig = await dbTool.generic.findOne({ key: 'pinned-categories' });
   if (!categoryConfig) await resetCategoryConfig();
@@ -40,14 +40,16 @@ let initConfig = async () => {
   // 生成用户权限表
   let permissionsDoc = await dbTool.generic.findOne({ key: 'permissions' }, { _id: 0, key: 0 });
   let permissions = permissionsDoc.permissions;
+  // 缓存一份到配置中
+  config.permissions = permissions;
   let memberSet = new Set();
   let memberPermissions = {};
   for (let permissionType of Object.keys(permissions)) {
     for (let permissionName of Object.keys(permissions[permissionType])) {
       for (let memberType of permissions[permissionType][permissionName].allow) {
         memberSet.add(memberType);
-        if (memberPermissions[memberType]) memberPermissions[memberType].push(permissionName);
-        else memberPermissions[memberType] = [permissionName];
+        if (memberPermissions[memberType]) memberPermissions[memberType].push(`${permissionType}-${permissionName}`);
+        else memberPermissions[memberType] = [`${permissionType}-${permissionName}`];
       }
     }
   }
@@ -56,10 +58,7 @@ let initConfig = async () => {
 };
 
 let init = initConfig();
-module.exports = {
-  ...config,
-
-  prepare: async () => {
-    await init;
-  }
+config.prepare = async () => {
+  await init;
 };
+module.exports = config;

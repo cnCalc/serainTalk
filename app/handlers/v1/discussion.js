@@ -1,18 +1,12 @@
 'use strict';
 
-const express = require('express');
 const { ObjectID } = require('mongodb');
-const validation = require('express-validation');
 
 const config = require('../../../config');
 const dbTool = require('../../../database');
-const { verifyMember, verifyCommitFreq } = require('../../middleware').permission;
-const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
-
-const router = express.Router();
 
 /**
  * 缓存保存对象
@@ -62,6 +56,10 @@ let slugToCategory = async (slug) => {
  * @param {Response} res
  */
 let getLatestDiscussionList = async (req, res) => {
+  // 鉴权 能否读取白名单分类中的讨论
+  if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
 
@@ -69,7 +67,8 @@ let getLatestDiscussionList = async (req, res) => {
     let query = {};
     // 非管理只显示白名单中的分类
     if (req.query.category) {
-      if (!req.member.permissions.includes('postToAllCategory')) {
+      // 鉴权 能否读取所有分类的讨论
+      if (!utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
         req.query.category = req.query.category.filter(
           item => config.discussion.category.whiteList.includes(item)
         );
@@ -111,11 +110,16 @@ let getLatestDiscussionList = async (req, res) => {
  */
 let getDiscussionById = async (req, res) => {
   try {
+    // 鉴权 能否读取白名单分类中的讨论
+    if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
     let _discussionId = ObjectID(req.params.id);
-    let query = {
-      _id: _discussionId,
-      category: { $in: config.discussion.category.whiteList }
-    };
+    let query = { _id: _discussionId };
+    // 鉴权 能否读取所有分类的讨论
+    if (!utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      query.category = { $in: config.discussion.category.whiteList };
+    }
     if (req.member.role === 'admin') delete query.category;
 
     let discussionDoc = await dbTool.discussion.aggregate([
@@ -146,14 +150,19 @@ let getDiscussionById = async (req, res) => {
  * @param {Response} res
  */
 let getDiscussionPostsById = async (req, res) => {
+  // 鉴权 能否读取白名单分类中的讨论
+  if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
   try {
     let _discussionId = ObjectID(req.params.id);
-    let query = {
-      _id: _discussionId,
-      category: { $in: config.discussion.category.whiteList }
-    };
+    let query = { _id: _discussionId };
+    // 鉴权 能否读取所有分类的讨论
+    if (!utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      query.category = { $in: config.discussion.category.whiteList };
+    }
     if (req.member.role === 'admin') delete query.category;
 
     let postsRes = await dbTool.discussion.aggregate([
@@ -183,9 +192,14 @@ let getDiscussionPostsById = async (req, res) => {
  * @returns
  */
 let createDiscussion = async (req, res, next) => {
+  // 鉴权 能否在白名单分类中发布讨论
+  if (!utils.permission.checkPermission('discussion-postToCategoryInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let now = Date.now();
   if (!config.discussion.category.whiteList.includes(req.body.category) &&
-    !req.member.permissions.includes('postToAllCategory')) {
+    // 鉴权 能否向所有的分类新增讨论
+    !utils.permission.checkPermission('discussion-postToAllCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
   let discussionInfo = {
@@ -223,11 +237,16 @@ let createDiscussion = async (req, res, next) => {
 };
 
 let createPost = async (req, res, next) => {
+  // 鉴权 能否在白名单分类中发布跟帖
+  if (!utils.permission.checkPermission('discussion-postToCategoryInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let _id = ObjectID(req.params.id);
 
   let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
   if (!config.discussion.category.whiteList.includes(discussionInfo.category) &&
-    !req.member.permissions.includes('postToAllCategory')) {
+    // 鉴权 能否向所有分类新建跟帖
+    !utils.permission.checkPermission('discussion-postToAllCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
@@ -306,8 +325,10 @@ let updatePost = async (req, res, next) => {
     let exactPost = exactPostRes[0].posts;
 
     /* istanbul ignore else */
-    // 只有本人才可以修改 post
-    if (exactPost.user.toString() !== req.member.id) {
+    // 只有本人或管理员才可以修改 post
+    if (exactPost.user.toString() !== req.member.id ||
+      // 鉴权 能否修改任何人的跟帖
+      !utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
 
@@ -334,6 +355,10 @@ let updatePost = async (req, res, next) => {
 
 let votePost = async (req, res, next) => {
   try {
+    // 鉴权 是否可以投票
+    if (!utils.permission.checkPermission('discussion-voteToAllPost', req.member.permissions)) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
     let _discussionId = ObjectID(req.params.id);
     // 检索 post 是否存在
     let postInfo = await dbTool.discussion.aggregate([
@@ -345,14 +370,16 @@ let votePost = async (req, res, next) => {
     if (postInfo.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
 
     // 移除所有之前的已提交
-    let removeVoteInfo = { $pull: {} };
-    removeVoteInfo.$pull[`posts.${req.params.postIndex - 1}.votes.${req.body.vote}`] = req.member._id;
-    let removeDoc = await dbTool.discussion.updateOne(
-      { _id: _discussionId },
-      removeVoteInfo
-    );
-    // 如果之前存在提交，已抹除成功。
-    if (removeDoc.modifiedCount === 1) return res.status(201).send({ status: 'ok' });
+    if (req.member._id) {
+      let removeVoteInfo = { $pull: {} };
+      removeVoteInfo.$pull[`posts.${req.params.postIndex - 1}.votes.${req.body.vote}`] = req.member._id;
+      let removeDoc = await dbTool.discussion.updateOne(
+        { _id: _discussionId },
+        removeVoteInfo
+      );
+      // 如果之前存在提交，已抹除成功。
+      if (removeDoc.modifiedCount === 1) return res.status(201).send({ status: 'ok' });
+    }
 
     // 新增 vote
     let addVoteInfo = { $push: {} };
@@ -375,12 +402,20 @@ let votePost = async (req, res, next) => {
  * @param {Response} res
  */
 let getDiscussionUnderMember = async (req, res) => {
+  // 鉴权 能否读取白名单分类中的讨论
+  if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let memberId = ObjectID(req.params.id);
   let { pagesize, page: offset } = req.query;
-
+  let query = { creater: memberId };
+  // 鉴权 能否读取所有分类的讨论
+  if (!utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+    query.category = { $in: config.discussion.category.whiteList };
+  }
   try {
     let cursor = dbTool.discussion.find(
-      { creater: memberId },
+      query,
       {
         creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
         tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
@@ -402,6 +437,10 @@ let getDiscussionUnderMember = async (req, res) => {
  * @param {Response} res
  */
 let getDiscussionsByCategory = async (req, res, next) => {
+  // 鉴权 能否读取白名单分类中的讨论
+  if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
   let pagesize = req.query.pagesize;
   let offset = req.query.page - 1;
 
@@ -410,6 +449,12 @@ let getDiscussionsByCategory = async (req, res, next) => {
     /* istanbul ignore if */
     if (typeof category === 'undefined') {
       return res.status(200).send({ status: 'ok' });
+    }
+
+    if (!config.discussion.category.whiteList.includes(category) &&
+      // 鉴权 能否读取所有分类的讨论
+      !utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
 
     let discussions = await dbTool.discussion.find(
@@ -429,14 +474,6 @@ let getDiscussionsByCategory = async (req, res, next) => {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 };
-
-// router.get('/latest', validation(dataInterface.discussion.getLatestList), getLatestDiscussionList);
-// router.get('/:id/posts', validation(dataInterface.discussion.getPostsById), getDiscussionPostsById);
-// router.get('/:id', validation(dataInterface.discussion.getDiscussion), getDiscussionById);
-// router.post('/:id/post/:postIndex/vote', verifyMember, validation(dataInterface.discussion.votePost), votePost);
-// router.post('/:id/post', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createPost), createPost);
-// router.post('/', verifyMember, verifyCommitFreq, validation(dataInterface.discussion.createDiscussion), createDiscussion);
-// router.put('/:id/post/:postIndex', verifyMember, validation(dataInterface.discussion.updatePost), updatePost);
 
 module.exports = {
   createDiscussion,

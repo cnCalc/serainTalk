@@ -97,7 +97,7 @@ async function performMigration (req, res) {
       credentials: {
         type: 'seraintalk',
         salt,
-        password: MD5(salt + req.body.password),
+        password: MD5(salt + password),
       }
     };
 

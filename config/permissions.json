@@ -4,38 +4,81 @@
       "description": "可以获取所有分类的 Discussion 和 Post。",
       "allow": [
         "admin"
-      ]
+      ],
+      "enable": true
     },
     "readCategoriesInWhiteList": {
       "description": "可以获取白名单分类中的 Discussion 和 Post。",
       "allow": [
+        "admin",
         "member",
         "anonymous"
-      ]
+      ],
+      "enable": true
     },
     "postToAllCategory": {
       "description": "可以在所有分类中发布 Discussion 和 Post。",
       "allow": [
         "admin"
-      ]
+      ],
+      "enable": true
     },
     "postToCategoryInWhiteList": {
       "description": "可以在白名单分类中发布 Discussion 和 Post。",
       "allow": [
+        "admin",
         "member"
-      ]
+      ],
+      "enable": true
     },
     "postWithFreqLimit": {
-      "description": "指定时间内不能发布过多的 Discussion 和 Post。",
+      "description": "可以低于一定频率的发布 Discussion 和 Post。",
       "allow": [
+        "admin",
         "member"
-      ]
+      ],
+      "enable": true
     },
     "postWithoutFreqLimit": {
       "description": "可以无间隔的连续发布 Discussion 和 Post。",
       "allow": [
         "admin"
-      ]
+      ],
+      "enable": false
+    },
+    "updateAnyPost": {
+      "description": "可以修改任何人发布的 Discussion 和 Post。",
+      "allow": [
+        "admin"
+      ],
+      "enable": false
+    },
+    "voteToAllPost": {
+      "description": "可以无间隔的连续发布 Discussion 和 Post。",
+      "allow": [
+        "admin",
+        "member",
+        "anonymous"
+      ],
+      "enable": false
+    }
+  },
+  "category": {
+    "readAllCategoriesName": {
+      "description": "可以获取所有分类的名称。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
+    },
+    "readCategoriesNameInWhiteList": {
+      "description": "可以获取白名单分类中的 Discussion 和 Post。",
+      "allow": [
+        "admin",
+        "member",
+        "anonymous"
+      ],
+      "enable": true
     }
   }
 }
