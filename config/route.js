@@ -92,7 +92,6 @@ let route = {
       method: 'post',
       schema: dataInterface.discussion.createPost,
       handler: [
-        verifyMember,
         verifyCommitFreq,
         handlers.v1.discussion.createPost
       ]
@@ -106,8 +105,19 @@ let route = {
       method: 'put',
       schema: dataInterface.discussion.updatePost,
       handler: [
-        verifyMember,
         handlers.v1.discussion.updatePost
+      ]
+    },
+    ban: {
+      description: '封禁/解封 指定的 Post。',
+      path: [
+        '/v1/discussions/:id/post/:postIndex',
+        '/v1/discussion/:id/post/:postIndex'
+      ],
+      method: 'delete',
+      schema: dataInterface.discussion.banPost,
+      handler: [
+        handlers.v1.discussion.banPost
       ]
     }
   },

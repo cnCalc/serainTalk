@@ -34,7 +34,7 @@ let getMemberInfoById = async (req, res, next) => {
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent === 'on') {
       // 鉴权 能否读取白名单分类中的讨论
-      if (!utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+      if (!await utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
         return res.status(200).send({ status: 'ok', member: memberInfo });
       }
       let beforeDate = req.query.before ? Number(req.query.before) : new Date().getTime();
@@ -44,7 +44,7 @@ let getMemberInfoById = async (req, res, next) => {
         }
       };
       // 鉴权 能否读取所有分类中的讨论
-      if (!utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
         query.$match.category = { $in: config.discussion.category.whiteList };
       }
       let recentPosts = await dbTool.db.collection('discussion').aggregate([

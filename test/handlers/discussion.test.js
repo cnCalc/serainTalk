@@ -16,8 +16,8 @@ describe('discussion part', async () => {
 
   it('add a discussion.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
-        expect(newDisscussionInfo.posts[0].index).to.be.equal(1);
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        expect(newDiscussionInfo.posts[0].index).to.be.equal(1);
       });
     });
   });
@@ -25,8 +25,8 @@ describe('discussion part', async () => {
   it('add a html discussion by admin.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
-        await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDisscussionInfo) => {
-          expect(newDisscussionInfo.posts[0].encoding).to.be.equal('html');
+        await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDiscussionInfo) => {
+          expect(newDiscussionInfo.posts[0].encoding).to.be.equal('html');
         });
       });
     });
@@ -34,8 +34,8 @@ describe('discussion part', async () => {
 
   it('add a html discussion by member.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDisscussionInfo) => {
-        expect(newDisscussionInfo.posts[0].encoding).to.be.equal('markdown');
+      await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDiscussionInfo) => {
+        expect(newDiscussionInfo.posts[0].encoding).to.be.equal('markdown');
       });
     });
   });
@@ -236,13 +236,13 @@ describe('discussion part', async () => {
 
   it('add a post.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -259,13 +259,13 @@ describe('discussion part', async () => {
 
   it('update a post.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -273,12 +273,12 @@ describe('discussion part', async () => {
           let updatePayload = {
             content: 'changed content.'
           };
-          let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
-          await agent.put(updateUrl)
+          let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
+          let tempres = await agent.put(updateUrl)
             .send(updatePayload)
             .expect(201);
 
-          let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+          let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
           let postsRes = await agent.get(getUrl).expect(200);
           postsRes = postsRes.body;
 
@@ -292,13 +292,13 @@ describe('discussion part', async () => {
 
   it('update a post by otherone.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -307,13 +307,13 @@ describe('discussion part', async () => {
             let updatePayload = {
               content: 'changed content.'
             };
-            let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+            let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
             let updateRes = await agent.put(updateUrl)
               .send(updatePayload)
               .expect(401);
             expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
 
-            let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+            let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
             let postsRes = await agent.get(getUrl).expect(200);
             postsRes = postsRes.body;
 
@@ -328,13 +328,13 @@ describe('discussion part', async () => {
 
   it('update a post by admin(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -344,13 +344,13 @@ describe('discussion part', async () => {
               let updatePayload = {
                 content: 'changed content.'
               };
-              let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+              let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
               let updateRes = await agent.put(updateUrl)
                 .send(updatePayload)
                 .expect(401);
               expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
 
-              let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+              let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
               let postsRes = await agent.get(getUrl).expect(200);
               postsRes = postsRes.body;
 
@@ -366,13 +366,13 @@ describe('discussion part', async () => {
 
   it('update encoding by common.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -381,12 +381,12 @@ describe('discussion part', async () => {
             encoding: 'html',
             content: 'changed content.'
           };
-          let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+          let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
           await agent.put(updateUrl)
             .send(updatePayload)
             .expect(201);
 
-          let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+          let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
           let postsRes = await agent.get(getUrl).expect(200);
           postsRes = postsRes.body;
 
@@ -402,13 +402,13 @@ describe('discussion part', async () => {
   it('update encoding by common.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.member.setAdmin(agent, newMemberInfoA._id, async () => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
           await testTools.discussion.closeFreqLimit(async () => {
             let postPayload = {
               encoding: 'markdown',
               content: 'hello test'
             };
-            let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url)
               .send(postPayload)
               .expect(201);
@@ -417,12 +417,12 @@ describe('discussion part', async () => {
               encoding: 'html',
               content: 'changed content.'
             };
-            let updateUrl = `/api/v1/discussion/${newDisscussionInfo.id}/post/2`;
+            let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
             await agent.put(updateUrl)
               .send(updatePayload)
               .expect(201);
 
-            let getUrl = `/api/v1/discussion/${newDisscussionInfo.id}/posts`;
+            let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
             let postsRes = await agent.get(getUrl).expect(200);
             postsRes = postsRes.body;
 
@@ -439,13 +439,13 @@ describe('discussion part', async () => {
   it('add a html post by admin.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
           await testTools.discussion.closeFreqLimit(async () => {
             let postPayload = {
               encoding: 'html',
               content: 'hello test'
             };
-            let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             let postRes = await agent.post(url)
               .send(postPayload)
               .expect(201);
@@ -460,13 +460,13 @@ describe('discussion part', async () => {
 
   it('add a html post by member.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'html',
             content: 'hello test'
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -481,10 +481,10 @@ describe('discussion part', async () => {
 
   it('add posts frequent.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         try {
-          await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
-            let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url);
             return;
           });
@@ -497,7 +497,7 @@ describe('discussion part', async () => {
 
   it('reply post by index.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'html',
@@ -508,7 +508,7 @@ describe('discussion part', async () => {
               memberId: newMemberInfo.id
             }
           };
-          let url = `/api/v1/discussion/${newDisscussionInfo.id}/post`;
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
             .send(postPayload)
             .expect(201);
@@ -660,6 +660,28 @@ describe('discussion part', async () => {
             expect(votes[vote]).include(newMemberInfoA.id);
             expect(votes[vote]).include(newMemberInfoB.id);
           }
+        });
+      });
+    });
+  });
+
+  it('ban a post by admin.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+          await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test'
+            };
+            let addPostUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(addPostUrl)
+              .send(postPayload)
+              .expect(201);
+
+            let banUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+            await agent.delete(banUrl).expect(204);
+          });
         });
       });
     });

@@ -31,20 +31,12 @@
       ],
       "enable": true
     },
-    "postWithFreqLimit": {
-      "description": "可以低于一定频率的发布 Discussion 和 Post。",
-      "allow": [
-        "admin",
-        "member"
-      ],
-      "enable": true
-    },
     "postWithoutFreqLimit": {
       "description": "可以无间隔的连续发布 Discussion 和 Post。",
       "allow": [
         "admin"
       ],
-      "enable": false
+      "enable": true
     },
     "updateAnyPost": {
       "description": "可以修改任何人发布的 Discussion 和 Post。",
@@ -54,13 +46,27 @@
       "enable": false
     },
     "voteToAllPost": {
-      "description": "可以无间隔的连续发布 Discussion 和 Post。",
+      "description": "可以给任何一个 Post 投票。",
       "allow": [
         "admin",
         "member",
         "anonymous"
       ],
-      "enable": false
+      "enable": true
+    },
+    "ban": {
+      "description": "封禁/解封 任何一个 Discussion 或 Post。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
+    },
+    "readBanedPost": {
+      "description": "读取已被封禁的 Discussion 和 Post。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
     }
   },
   "category": {

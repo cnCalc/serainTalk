@@ -12,14 +12,16 @@ let getLatestList = {
     category: joi.array().items(joi.string()),
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    page: interfaceUtils.page,
+    force: interfaceUtils.flag.default('off')
   }
 };
 exports.getLatestList = getLatestList;
 
 let getDiscussionById = {
   params: {
-    id: interfaceUtils.mongoId.required()
+    id: interfaceUtils.mongoId.required(),
+    force: interfaceUtils.flag.default('off')
   }
 };
 exports.getDiscussionById = getDiscussionById;
@@ -30,7 +32,8 @@ let getDiscussionByMember = {
   },
   query: {
     pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    page: interfaceUtils.page,
+    force: interfaceUtils.flag.default('off')
   }
 };
 exports.getDiscussionByMember = getDiscussionByMember;
@@ -38,7 +41,8 @@ exports.getDiscussionByMember = getDiscussionByMember;
 let getDiscussionsByCategory = {
   query: {
     pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    page: interfaceUtils.page,
+    force: interfaceUtils.flag.default('off')
   },
   params: {
     slug: joi.string().required()
@@ -49,7 +53,8 @@ exports.getDiscussionsByCategory = getDiscussionsByCategory;
 let getPostsById = {
   query: {
     pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
+    page: interfaceUtils.page,
+    force: interfaceUtils.flag.default('off')
   },
   params: {
     id: interfaceUtils.mongoId.required()
@@ -108,3 +113,11 @@ let updatePost = {
   }
 };
 exports.updatePost = updatePost;
+
+let banPost = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+    postIndex: joi.number().min(1)
+  }
+};
+exports.banPost = banPost;
