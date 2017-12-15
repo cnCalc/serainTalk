@@ -1,11 +1,7 @@
 'use strict';
 
-const express = require('express');
-const validation = require('express-validation');
-
-const dbTool = require('../../../database');
-const dataInterface = require('../../dataInterface');
 const config = require('../../../config');
+const dbTool = require('../../../database');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 
@@ -25,10 +21,18 @@ const { errorHandler, errorMessages } = utils;
  */
 let getCategories = async (req, res, next) => {
   try {
+    // 鉴权 能否读取白名单中的分类名称
+    if (!await utils.permission.checkPermission('category-readCategoriesNameInWhiteList', req.member.permissions)) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
+
     let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
     let categoryGroup = categoryDoc.groups;
-    for (let group of categoryGroup) {
-      group.items = group.items.filter(category => config.discussion.category.whiteList.includes(category.name));
+    // 鉴权 能否读取所有分类名称
+    if (!await utils.permission.checkPermission('category-readAllCategoriesName', req.member.permissions)) {
+      for (let group of categoryGroup) {
+        group.items = group.items.filter(category => config.discussion.category.whiteList.includes(category.name));
+      }
     }
     return res.status(200).send({ status: 'ok', groups: categoryGroup });
   } catch (err) {

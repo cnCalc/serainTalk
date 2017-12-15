@@ -42,8 +42,10 @@ exports.verifyMember = verifyMember;
  * @returns
  */
 let verifyDiscussionFreq = async (req, res, next) => {
-  // 管理员无限制
-  if (req.member.role === 'admin') return next();
+  // 鉴权 是否可以超频发帖
+  if (await utils.permission.checkPermission('discussion-postWithoutFreqLimit', req.member.permissions)) {
+    return next();
+  }
 
   // 没登录没法查频率
   if (!req.member._id) {
@@ -72,8 +74,10 @@ exports.verifyDiscussionFreq = verifyDiscussionFreq;
  * @returns
  */
 let verifyPostFreq = async (req, res, next) => {
-  // 管理员无限制
-  if (req.member.role === 'admin') return next();
+  // 鉴权 是否可以超频发帖
+  if (await utils.permission.checkPermission('discussion-postWithoutFreqLimit', req.member.permissions)) {
+    return next();
+  }
 
   // 没登录没法查频率
   if (!req.member._id) {
@@ -123,8 +127,10 @@ exports.verifyPostFreq = verifyPostFreq;
  * @returns
  */
 let verifyCommitFreq = async (req, res, next) => {
-  // 管理员无限制
-  if (req.member.role === 'admin') return next();
+  // 鉴权 是否可以超频发帖
+  if (await utils.permission.checkPermission('discussion-postWithoutFreqLimit', req.member.permissions)) {
+    return next();
+  }
 
   // 没登录没法查频率
   if (!req.member._id) {

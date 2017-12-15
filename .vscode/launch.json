@@ -20,7 +20,7 @@
         "${workspaceRoot}/test"
       ],
       "env": {
-        "NODE_ENV": "MOCHA"
+        "NODE_ENV": "mocha"
       },
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": [
@@ -31,19 +31,19 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "启动程序 - DEV",
+      "name": "启动程序 - dev",
       "program": "${workspaceFolder}/index",
       "env": {
-        "NODE_ENV": "DEV"
+        "NODE_ENV": "dev"
       }
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "启动程序 - PRODUCT",
+      "name": "启动程序 - product",
       "program": "${workspaceFolder}/index",
       "env": {
-        "NODE_ENV": "PRODUCT"
+        "NODE_ENV": "product"
       }
     }
   ]

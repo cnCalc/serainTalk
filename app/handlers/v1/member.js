@@ -10,7 +10,7 @@ const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const MD5 = utils.md5;
 const { errorHandler, errorMessages } = utils;
-const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
+const { resolveMembersInDiscussion } = utils.resolveMembers;
 
 /**
  * 根据用户 ID 获得用户信息以及最近活动
@@ -28,18 +28,28 @@ let getMemberInfoById = async (req, res, next) => {
       return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
     }
 
-    // 删除用户的登陆凭据部分
+    // 删除用户的敏感信息部分
     utils.member.removePrivateField(memberInfo);
 
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent === 'on') {
+      // 鉴权 能否读取白名单分类中的讨论
+      if (!await utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+        return res.status(200).send({ status: 'ok', member: memberInfo });
+      }
       let beforeDate = req.query.before ? Number(req.query.before) : new Date().getTime();
+      let query = {
+        $match: {
+          'posts.user': memberId
+        }
+      };
+      // 鉴权 能否读取所有分类中的讨论
+      if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+        query.$match.category = { $in: config.discussion.category.whiteList };
+      }
       let recentPosts = await dbTool.db.collection('discussion').aggregate([
+        query,
         {
-          $match: {
-            'posts.user': memberId
-          }
-        }, {
           $project: {
             title: 1,
             posts: {
@@ -391,16 +401,6 @@ let passwordModify = async (req, res) => {
   return res.status(201).send({ status: 'ok' });
 };
 // #endregion
-
-// router.post('/password/reset/application', validation(dataInterface.member.password.resetApplication), resetPasswordApplication);
-// router.post('/password/reset', resetPassword);
-// router.put('/password', verifyMember, validation(dataInterface.member.password.modify), passwordModify);
-// router.get('/me', verifyMember, getSelf);
-// router.post('/login', login);
-// router.delete('/login', logout);
-// router.post('/signup', validation(dataInterface.member.signup), signup);
-// router.get('/:id', getMemberInfoById);
-// router.get('/', getMemberInfoGeneric);
 
 module.exports = {
   getMemberInfoById,

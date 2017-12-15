@@ -41,6 +41,7 @@ app.get('/favicon.ico', (req, res) => {
 // 默认发送首页
 app.use((req, res) => {
   /* istanbul ignore next */
+  if (utils.env.isMocha) { return next(); }
   res.sendFile('./app/public/index.html', { root: __dirname });
 });
 

@@ -68,6 +68,7 @@ let mutations = {
     posts.forEach(post => {
       state.discussionPosts[post.index] = post;
     });
+    state.discussionPosts = state.discussionPosts.map(el => el);
   },
 
   /** 清空帖子内容 */

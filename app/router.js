@@ -3,10 +3,11 @@
 let express = require('express');
 const validation = require('express-validation');
 
-const middleware = require('./middleware');
 const routeConfig = require('../config/route');
+const middleware = require('./middleware');
 const { log, cache, pretreatment } = middleware;
-const { errorHandler, errorMessages } = require('../utils');
+const utils = require('../utils');
+const { errorHandler, errorMessages } = utils;
 
 let router = express.Router();
 
@@ -31,7 +32,7 @@ router.use((err, req, res, next) => {
   /* istanbul ignore else */
   if (err.message === 'validation error') {
     /* istanbul ignore if */
-    if (process.env.NODE_ENV === 'DEV') console.error(JSON.stringify(err, null, '  '));
+    if (utils.env.isDev) console.error(JSON.stringify(err, null, '  '));
     return errorHandler(null, errorMessages.VALIDATION_ERROR, 400, res);
   } else {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);

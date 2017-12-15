@@ -19,7 +19,7 @@ describe('categroy part.', async () => {
 
   it('get discussions under specified category.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, { category: '德州仪器（TI）图形计算器' }, async (newDisscussionInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, { category: '德州仪器（TI）图形计算器' }, async (newDiscussionInfo) => {
         let getUrl = '/api/v1/categories/ticalc/discussions';
         let discussionRes = await agent.get(getUrl)
           .expect(200);

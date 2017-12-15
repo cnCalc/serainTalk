@@ -1,4 +1,4 @@
-function scrollToTop (duration, fps = 60) {
+function scrollToTop (duration, fps = 50) {
   let currentTop = window.scrollY;
   let frames = Math.floor(fps / 1000 * duration);
   let step = currentTop / frames;

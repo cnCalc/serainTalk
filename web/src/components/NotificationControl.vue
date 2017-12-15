@@ -160,9 +160,9 @@ div.notification-container {
     div.empty {
       text-align: center;
       padding: 80px 0;
-      font-weight: 100;
+      font-weight: 400;
       font-size: 1.2em;
-      color: mix($theme_color, white, 60%);
+      color: mix($theme_color, white, 40%);
       user-select: none;
     }
 
