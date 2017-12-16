@@ -32,6 +32,10 @@ module.exports = {
         'emmmm'
       ]
     },
+    status: {
+      ok: 'ok',
+      deleted: 'deleted',
+    },
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
     reset: 'loading'
   },

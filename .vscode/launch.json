@@ -18,6 +18,8 @@
         "999999",
         "--colors",
         "${workspaceRoot}/test"
+        // "--grep",
+        // "ban a post by admin."
       ],
       "env": {
         "NODE_ENV": "mocha"

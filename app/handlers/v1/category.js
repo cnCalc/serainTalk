@@ -29,7 +29,7 @@ let getCategories = async (req, res, next) => {
     let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
     let categoryGroup = categoryDoc.groups;
     // 鉴权 能否读取所有分类名称
-    if (!await utils.permission.checkPermission('category-readAllCategoriesName', req.member.permissions)) {
+    if (!await utils.permission.checkPermission('category-readExtraCategoriesName', req.member.permissions)) {
       for (let group of categoryGroup) {
         group.items = group.items.filter(category => config.discussion.category.whiteList.includes(category.name));
       }

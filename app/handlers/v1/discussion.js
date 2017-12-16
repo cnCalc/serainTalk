@@ -66,15 +66,20 @@ let getLatestDiscussionList = async (req, res) => {
   let offset = req.query.page - 1;
 
   try {
-    let query = {};
+    let query = {
+      category: { $in: config.discussion.category.whiteList },
+      $or: [
+        { status: { $exists: false } },
+        { 'status.type': { $in: [config.discussion.status.ok] } },
+      ]
+    };
     // 无权限只显示白名单中的分类
-    if (req.query.category) {
+    if (req.query.category &&
       // 鉴权 能否读取所有分类的讨论
-      if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
-        req.query.category = req.query.category.filter(
-          item => config.discussion.category.whiteList.includes(item)
-        );
-      }
+      await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+      req.query.category = req.query.category.filter(
+        item => config.discussion.category.whiteList.includes(item)
+      );
       query.category = { $in: req.query.category };
     }
     // 检索其发出的 discussion
@@ -84,10 +89,11 @@ let getLatestDiscussionList = async (req, res) => {
     }
     // 检索指定的 tag
     if (req.query.tag) query.tags = { $in: req.query.tag };
-    // 鉴权 是否检索包括被封禁的 discussion
-    if (req.query.force === 'off' ||
-      !await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      query.baned = { $in: [null, false] };
+
+    // 鉴权 能否读取被封禁的 discussion
+    if (req.query.force === 'on' &&
+      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+      delete query.baned;
     }
 
     let results = await dbTool.discussion.aggregate([
@@ -123,15 +129,23 @@ let getDiscussionById = async (req, res) => {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     let _discussionId = ObjectID(req.params.id);
-    let query = { _id: _discussionId };
+    let query = {
+      _id: _discussionId,
+      category: { $in: config.discussion.category.whiteList },
+      $or: [
+        { status: { $exists: false } },
+        { 'status.type': { $in: [config.discussion.status.ok] } }
+      ]
+    };
     // 鉴权 能否读取所有分类的讨论
-    if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
-      query.category = { $in: config.discussion.category.whiteList };
+    if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+      delete query.category;
     }
+
     // 鉴权 能否读取被封禁的 discussion
-    if (req.query.force === 'off' ||
-      !await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      query.baned = { $in: [null, false] };
+    if (req.query.force === 'on' &&
+      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+      delete query.$or;
     }
 
     let discussionDoc = await dbTool.discussion.aggregate([
@@ -146,9 +160,9 @@ let getDiscussionById = async (req, res) => {
       }
     ]).toArray();
     if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
-
-    let result = Object.assign({ status: 'ok' }, discussionDoc[0]);
-    return res.status(200).send(result);
+    let count = discussionDoc[0].postsCount;
+    delete discussionDoc[0].postsCount;
+    return res.status(200).send({ status: 'ok', discussionInfo: discussionDoc[0], count: count });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -170,53 +184,56 @@ let getDiscussionPostsById = async (req, res) => {
   let offset = req.query.page - 1;
   try {
     let _discussionId = ObjectID(req.params.id);
-    let query = { _id: _discussionId };
+    let query = {
+      _id: _discussionId,
+      category: { $in: config.discussion.category.whiteList },
+      $or: [
+        { status: { $exists: false } },
+        { 'status.type': { $in: [config.discussion.status.ok] } }
+      ]
+    };
 
     // 鉴权 能否读取所有分类的讨论
-    if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
-      query.category = { $in: config.discussion.category.whiteList };
-    }
-    // 鉴权 能否读取被封禁的 discussion 和 post
-    let postQuery = 1;
-    if (req.query.force === 'off' ||
-      !await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      query.baned = { $in: [null, false] };
-      postQuery = {
-        $filter: {
-          input: '$posts',
-          as: 'post',
-          cond: {
-            $or: [
-              { $ifNull: ['$$post.baned', true] },
-              { $eq: ['$$post.baned', false] }
-            ]
-          }
-        }
-      };
+    if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+      delete query.category;
     }
 
-    let postsRes = await dbTool.discussion.aggregate([
+    let postQuery = {
+      $or: [
+        { 'posts.status': { $exists: false } },
+        { 'posts.status.type': { $in: [config.discussion.status.ok] } }
+      ]
+    };
+    // 鉴权 能否读取被封禁的 discussion 和 post
+    if (req.query.force === 'on' &&
+      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+      delete query.status;
+      postQuery = {};
+    }
+
+    let discussionDoc = await dbTool.discussion.aggregate([
       { $match: query },
       {
         $project: {
-          title: 1,
-          posts: postQuery
-        }
-      },
-      {
-        $project: {
-          title: 1,
-          posts: { $slice: ['$posts', offset * pagesize, pagesize] }
+          title: 1
         }
       }
     ]).toArray();
-    if (postsRes.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
 
-    let members = await resolveMembersInDiscussion(postsRes[0]);
+    let postsDoc = await dbTool.discussion.aggregate([
+      { $match: query },
+      { $project: { _id: 0, posts: 1 } },
+      { $unwind: '$posts' },
+      { $match: postQuery },
+      { $limit: pagesize },
+      { $skip: offset * pagesize }
+    ]).toArray();
+    let posts = postsDoc.map(item => item.posts);
     return res.status(200).send({
       status: 'ok',
-      posts: utils.renderer.renderPosts(postsRes[0].posts),
-      members
+      posts: utils.renderer.renderPosts(posts),
+      members: await resolveMembersInDiscussion({ posts })
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -240,34 +257,40 @@ let createDiscussion = async (req, res, next) => {
   let now = Date.now();
   if (!config.discussion.category.whiteList.includes(req.body.category) &&
     // 鉴权 能否向所有的分类新增讨论
-    !await utils.permission.checkPermission('discussion-postToAllCategory', req.member.permissions)) {
+    !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
   let discussionInfo = {
-    creater: req.member._id,
-    title: req.body.title,
+    category: req.body.category,
     createDate: now,
+    creater: req.member._id,
     lastDate: now,
     lastMember: req.member._id,
-    views: 0,
-    replies: 1,
-    tags: req.body.tags,
-    category: req.body.category,
     participants: [
       req.member._id
     ],
     posts: [
       {
-        user: req.member._id,
+        allowScript: req.member.role === 'admin',
+        content: req.body.content.content,
         createDate: now,
         encoding: req.member.role === 'admin' ? req.body.content.encoding : 'markdown',
-        content: req.body.content.content,
-        allowScript: req.member.role === 'admin',
         index: 1,
-        votes: {}
+        status: {
+          type: config.discussion.status.ok
+        },
+        user: req.member._id,
+        votes: {},
       },
-    ]
+    ],
+    replies: 1,
+    status: {
+      type: config.discussion.status.ok
+    },
+    tags: req.body.tags,
+    title: req.body.title,
+    views: 0,
   };
   try {
     await dbTool.discussion.insertOne(discussionInfo);
@@ -287,25 +310,27 @@ let createPost = async (req, res, next) => {
 
   let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
   // 检查discussion 是否已被封禁
-  if (discussionInfo.baned) {
+  if (discussionInfo.status.type === config.discussion.status.deleted) {
     return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
   }
 
   if (!config.discussion.category.whiteList.includes(discussionInfo.category) &&
     // 鉴权 能否向所有分类新建跟帖
-    !await utils.permission.checkPermission('discussion-postToAllCategory', req.member.permissions)) {
+    !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
   let now = Date.now();
   let postInfo = {
-    user: req.member._id,
-    createDate: now,
-    content: req.body.content,
-    encoding: req.member.role === 'admin' ? req.body.encoding : 'markdown',
     allowScript: req.member.role === 'admin',
+    content: req.body.content,
+    createDate: now,
+    encoding: req.member.role === 'admin' ? req.body.encoding : 'markdown',
+    status: {
+      type: config.discussion.status.ok
+    },
+    user: req.member._id,
     votes: {},
-    status: null,
   };
   if (req.body.replyTo) {
     postInfo.replyTo = req.body.replyTo;
@@ -376,6 +401,11 @@ let updatePost = async (req, res, next) => {
       // 鉴权 能否修改任何人的跟帖
       !await utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
+
+    // 被封禁的 post 禁止修改，存留证据
+    if (exactPost.status && exactPost.status.type === config.discussion.status.deleted) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     }
 
     let $set = {};
@@ -456,17 +486,27 @@ let getDiscussionUnderMember = async (req, res) => {
   if (!await utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
+
   let memberId = ObjectID(req.params.id);
   let { pagesize, page: offset } = req.query;
   offset -= 1;
-  let query = { creater: memberId };
+  let query = {
+    creater: memberId,
+    category: { $in: config.discussion.category.whiteList },
+    $or: [
+      { status: { $exists: false } },
+      { 'status.type': { $in: [config.discussion.status.ok] } },
+    ]
+  };
   // 鉴权 能否读取所有分类的讨论
-  if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
-    query.category = { $in: config.discussion.category.whiteList };
+  if (req.query.force === 'on' &&
+    await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
+    delete query.category;
   }
   // 鉴权 能否获取被封禁的讨论
-  if (!await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-    query.baned = { $in: [null, false] };
+  if (req.query.force === 'on' &&
+    await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    delete query.$or;
   }
   try {
     let cursor = dbTool.discussion.aggregate([
@@ -511,15 +551,22 @@ let getDiscussionsByCategory = async (req, res, next) => {
       return res.status(200).send({ status: 'ok' });
     }
 
-    let query = { category: category };
+    let query = {
+      category: category,
+      $or: [
+        { status: { $exists: false } },
+        { 'status.type': { $in: [config.discussion.status.ok] } },
+      ]
+    };
     if (!config.discussion.category.whiteList.includes(category) &&
       // 鉴权 能否读取所有分类的讨论
-      !await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      !await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     // 鉴权 能否获取被封禁的讨论
-    if (!await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      query.baned = { $in: [null, false] };
+    if (req.query.force === 'on' &&
+      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+      delete query.$or;
     }
 
     let discussions = await dbTool.discussion.aggregate(
@@ -551,7 +598,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
  * @param {any} next
  * @returns
  */
-let banPost = async (req, res, next) => {
+let deletePost = async (req, res, next) => {
   // 鉴权 是否可以 封禁/解封 Post
   if (!await utils.permission.checkPermission('discussion-ban', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
@@ -560,23 +607,34 @@ let banPost = async (req, res, next) => {
     let _id = ObjectID(req.params.id);
 
     // 查询封禁状态
-    let discussionDoc = await dbTool.discussion.aggregate([
+    let postsDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
       { $unwind: '$posts' },
       { $match: { 'posts.index': req.params.postIndex } },
       {
         $project: {
           _id: 0,
-          baned: '$posts.baned'
+          status: 1
         }
       }
     ]).toArray();
-    // 如果封禁则记录管理员信息和封禁时间
-    let baned = discussionDoc[0].baned ? false : { _adminId: req.member._id, time: Date.now() };
 
-    // 置反
+    let status = {
+      type: config.discussion.status.deleted,
+      operator: req.member._id,
+      time: Date.now()
+    };
+    // 如果已封禁则解除封禁
+    if (postsDoc[0].status && postsDoc[0].status.type === config.discussion.status.deleted) {
+      status = {
+        type: config.discussion.status.ok,
+        operator: req.member._id,
+        time: Date.now()
+      };
+    }
     let updateDate = { $set: {} };
-    updateDate.$set[`posts.${req.params.postIndex}.baned`] = baned;
+    updateDate.$set[`posts.${req.params.postIndex}.status`] = status;
+
     await dbTool.discussion.update(
       { _id: _id },
       updateDate
@@ -587,8 +645,58 @@ let banPost = async (req, res, next) => {
   }
 };
 
+/**
+ * [处理函数] 封禁/解封 一个 Discussion
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ * @returns
+ */
+let deleteDiscussion = async (req, res, next) => {
+  // 鉴权 是否可以 封禁/解封 Discussion
+  if (!await utils.permission.checkPermission('discussion-ban', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+  try {
+    let _id = ObjectID(req.params.id);
+
+    // 查询封禁状态
+    let discussionDoc = await dbTool.discussion.aggregate([
+      { $match: { _id: _id } },
+      { $project: { baned: 1 } }
+    ]).toArray();
+    // 如果封禁则记录管理员信息和封禁时间
+
+    let status = {
+      type: config.discussion.status.deleted,
+      operator: req.member._id,
+      time: Date.now()
+    };
+    // 如果已封禁则解除封禁
+    if (discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.deleted) {
+      status = {
+        type: config.discussion.status.ok,
+        operator: req.member._id,
+        time: Date.now()
+      };
+    }
+    let updateDate = { $set: {} };
+    updateDate.$set.status = status;
+
+    await dbTool.discussion.updateOne(
+      { _id: _id },
+      updateDate
+    );
+    return res.status(204).send({ status: 'ok' });
+  } catch (err) {
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
 module.exports = {
-  banPost,
+  deleteDiscussion,
+  deletePost,
   createDiscussion,
   createPost,
   getDiscussionById,

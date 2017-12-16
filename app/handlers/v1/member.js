@@ -44,7 +44,7 @@ let getMemberInfoById = async (req, res, next) => {
         }
       };
       // 鉴权 能否读取所有分类中的讨论
-      if (!await utils.permission.checkPermission('discussion-readAllCategories', req.member.permissions)) {
+      if (!await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
         query.$match.category = { $in: config.discussion.category.whiteList };
       }
       let recentPosts = await dbTool.db.collection('discussion').aggregate([

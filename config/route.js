@@ -68,6 +68,18 @@ let route = {
         verifyCommitFreq,
         handlers.v1.discussion.createDiscussion
       ]
+    },
+    delete: {
+      description: '封禁/解封 指定的 Discussion。',
+      path: [
+        '/v1/discussions/:id',
+        '/v1/discussion/:id'
+      ],
+      method: 'delete',
+      schema: dataInterface.discussion.deleteDiscussion,
+      handler: [
+        handlers.v1.discussion.deleteDiscussion
+      ]
     }
   },
   posts: {
@@ -108,16 +120,16 @@ let route = {
         handlers.v1.discussion.updatePost
       ]
     },
-    ban: {
+    delete: {
       description: '封禁/解封 指定的 Post。',
       path: [
         '/v1/discussions/:id/post/:postIndex',
         '/v1/discussion/:id/post/:postIndex'
       ],
       method: 'delete',
-      schema: dataInterface.discussion.banPost,
+      schema: dataInterface.discussion.deletePost,
       handler: [
-        handlers.v1.discussion.banPost
+        handlers.v1.discussion.deletePost
       ]
     }
   },

@@ -137,10 +137,10 @@ describe('discussion part', async () => {
           .get(url)
           .expect(200);
         expect(discussionRes.body.status).to.be.equal('ok');
-        delete discussionRes.body.status;
+        let discussionInfo = discussionRes.body.discussionInfo;
         let tempDiscussion = JSON.parse(JSON.stringify(testTools.testObject.discussionInfo));
         delete tempDiscussion.content;
-        expect(testTools.discussion.isSameDiscussion(discussionRes.body, tempDiscussion)).to.be.ok;
+        expect(testTools.discussion.isSameDiscussion(discussionInfo, tempDiscussion)).to.be.ok;
       });
     });
   });
@@ -290,7 +290,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('update a post by otherone.', async () => {
+  it('update a post by otherone(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
@@ -364,7 +364,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('update encoding by common.', async () => {
+  it('update encoding by common(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
@@ -399,7 +399,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('update encoding by common.', async () => {
+  it('update encoding by admin.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.member.setAdmin(agent, newMemberInfoA._id, async () => {
         await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
@@ -458,7 +458,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('add a html post by member.', async () => {
+  it('add a html post by member(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
@@ -479,7 +479,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('add posts frequent.', async () => {
+  it('add posts frequent by common(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         try {
@@ -548,7 +548,7 @@ describe('discussion part', async () => {
     });
   });
 
-  it('vote for wrong discussion.', async () => {
+  it('vote for wrong discussion(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         let voteUrl = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/post/1/vote`;
@@ -681,6 +681,92 @@ describe('discussion part', async () => {
 
             let banUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
             await agent.delete(banUrl).expect(204);
+
+            let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+            let discussionRes = await agent
+              .get(url)
+              .expect(200);
+            expect(discussionRes.body.status).to.be.equal('ok');
+            let postsInfo = discussionRes.body.posts;
+            expect(postsInfo.length).to.be.equal(1);
+            expect(postsInfo[0].status.type).to.not.be.equal(config.discussion.status.deleted);
+
+            url = `/api/v1/discussions/${newDiscussionInfo.id}/posts?force=on`;
+            discussionRes = await agent
+              .get(url)
+              .expect(200);
+            expect(discussionRes.body.status).to.be.equal('ok');
+            postsInfo = discussionRes.body.posts;
+            expect(postsInfo.length).to.be.equal(2);
+            expect(postsInfo[1].status.type).to.be.equal(config.discussion.status.deleted);
+          });
+        });
+      });
+    });
+  });
+
+  it('ban a post by commonMember(should be wrong).', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let addPostUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(addPostUrl)
+            .send(postPayload)
+            .expect(201);
+
+          let banUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+          await agent.delete(banUrl).expect(401);
+
+          let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+          let discussionRes = await agent
+            .get(url)
+            .expect(200);
+          expect(discussionRes.body.status).to.be.equal('ok');
+          let postsInfo = discussionRes.body.posts;
+          expect(postsInfo.length).to.be.equal(2);
+          expect(postsInfo[1].baned).to.not.be.ok;
+        });
+      });
+    });
+  });
+
+  it('ban a discussion by admin.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+              let postPayload = {
+                encoding: 'markdown',
+                content: 'hello test'
+              };
+              let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
+              await agent.post(addPostUrl)
+                .send(postPayload)
+                .expect(201);
+
+              let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}`;
+              await agent.delete(banUrl).expect(204);
+
+              // 不强制获取则取不到制定的 Discussion
+              let url = `/api/v1/discussions/${newDiscussionInfoA.id}`;
+              let discussionRes = await agent
+                .get(url)
+                .expect(404);
+
+              let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
+              discussionRes = await agent
+                .get(getUrl)
+                .expect(200);
+
+              expect(discussionRes.body.status).to.be.equal('ok');
+              let discussionInfo = discussionRes.body.discussionInfo;
+              expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
+            });
           });
         });
       });

@@ -1,7 +1,7 @@
 {
   "discussion": {
-    "readAllCategories": {
-      "description": "可以获取所有分类的 Discussion 和 Post。",
+    "readExtraCategories": {
+      "description": "可以获取隐藏分类中的 Discussion 和 Post。",
       "allow": [
         "admin"
       ],
@@ -16,8 +16,8 @@
       ],
       "enable": true
     },
-    "postToAllCategory": {
-      "description": "可以在所有分类中发布 Discussion 和 Post。",
+    "postToExtraCategory": {
+      "description": "可以在隐藏分类中发布 Discussion 和 Post。",
       "allow": [
         "admin"
       ],
@@ -70,8 +70,8 @@
     }
   },
   "category": {
-    "readAllCategoriesName": {
-      "description": "可以获取所有分类的名称。",
+    "readExtraCategoriesName": {
+      "description": "可以获取隐藏分类的名称。",
       "allow": [
         "admin"
       ],

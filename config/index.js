@@ -35,7 +35,7 @@ let initConfig = async () => {
   // 生成讨论分类白名单
   let categoryConfig = await dbTool.generic.findOne({ key: 'pinned-categories' });
   if (!categoryConfig) await resetCategoryConfig();
-  createDiscussionCategoryWhiteList();
+  await createDiscussionCategoryWhiteList();
 
   // 生成用户权限表
   let permissionsDoc = await dbTool.generic.findOne({ key: 'permissions' }, { _id: 0, key: 0 });

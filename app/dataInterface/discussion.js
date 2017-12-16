@@ -114,10 +114,17 @@ let updatePost = {
 };
 exports.updatePost = updatePost;
 
-let banPost = {
+let deletePost = {
   params: {
     id: interfaceUtils.mongoId.required(),
     postIndex: joi.number().min(1)
   }
 };
-exports.banPost = banPost;
+exports.deletePost = deletePost;
+
+let banDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.deleteDiscussion = banDiscussion;
