@@ -51,7 +51,8 @@ let info = {
       id: interfaceUtils.mongoId.required()
     },
     query: {
-      recent: interfaceUtils.flag
+      recent: interfaceUtils.flag,
+      before: joi.number(),
     }
   },
   me: {},

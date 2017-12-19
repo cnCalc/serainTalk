@@ -255,6 +255,10 @@ div.discussion-view {
   text-align: left;
   display: flex;
 
+  .hide {
+    transition: all ease 0s;
+  }
+
   div.discussion-view-left {
     flex-grow: 1;
     flex-shrink: 1;

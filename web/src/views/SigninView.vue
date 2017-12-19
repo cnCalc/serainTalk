@@ -3,13 +3,13 @@
     div.signin-box: form(v-on:submit.prevent="doSignin")
       h2 登录 
       label.block(for="name") 用户名或电子邮件地址
-      input(id="name", placeholder="", type="text", v-model="credentials.name")
+      input(id="name", placeholder="", type="text", v-model="credentials.name", :readonly="busy")
       label.block(for="passwd") 密码
-      input(id="passwd", placeholder="", type="password", v-model="credentials.password")
+      input(id="passwd", placeholder="", type="password", v-model="credentials.password", :readonly="busy")
       div.remember-wrapper
-        input(type="checkbox", id="remember", v-model="rememberMe")
+        input(type="checkbox", id="remember", v-model="rememberMe", :readonly="busy")
         label(for="remember") 记住登录
-      button.button(@click="doSignin") 登录
+      button.button(@click="doSignin", type="button", :disabled="busy") 登录
       div.quick-action-wrapper
         router-link(to="/signup") 前往注册
         router-link(to="/migration") 账户迁移
@@ -30,16 +30,27 @@ export default {
       rememberMe: false,
     };
   },
+  computed: {
+    busy () {
+      return this.$store.state.busy;
+    }
+  },
   beforeMount () {
     this.$store.commit('setGlobalTitles', []);
   },
   methods: {
-    async doSignin () {
+    doSignin () {
+      if (this.busy) {
+        return;
+      }
+      this.$store.commit('setBusy', true);
       api.v1.member.signin(this.credentials).then(response => {
+        this.$store.commit('setBusy', false);
         this.$store.dispatch('fetchNotifications');
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
       }).catch(e => {
+        this.$store.commit('setBusy', false);
         window.alert('密码错误');
       });
     }
@@ -113,6 +124,10 @@ div.signin-view {
   button.button {
     background-color: $theme_color;
     color: white;
+
+    &:disabled {
+      background-color: mix(white, $theme_color, 50%);
+    }
   }
 
   a {
@@ -125,6 +140,8 @@ div.signin-view {
 }
 
 .dark-theme div.signin-view {
+  color: white;
+
   input[type="text"], input[type="password"] {
     border: 1px solid #444;
     background-color: #444;
@@ -134,6 +151,11 @@ div.signin-view {
   button.button {
     background-color: #444;
     color: white;
+
+    &:disabled {
+      background-color: mix(black, #444, 25%);
+      color: grey;
+    }
   }
 
   a {

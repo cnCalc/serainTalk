@@ -69,7 +69,7 @@ let getLatestDiscussionList = async (req, res) => {
     let query = {
       category: { $in: config.discussion.category.whiteList },
       $or: [
-        { status: { $exists: false } },
+        { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } },
       ]
     };
@@ -133,7 +133,7 @@ let getDiscussionById = async (req, res) => {
       _id: _discussionId,
       category: { $in: config.discussion.category.whiteList },
       $or: [
-        { status: { $exists: false } },
+        { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } }
       ]
     };
@@ -188,7 +188,7 @@ let getDiscussionPostsById = async (req, res) => {
       _id: _discussionId,
       category: { $in: config.discussion.category.whiteList },
       $or: [
-        { status: { $exists: false } },
+        { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } }
       ]
     };
@@ -200,7 +200,7 @@ let getDiscussionPostsById = async (req, res) => {
 
     let postQuery = {
       $or: [
-        { 'posts.status': { $exists: false } },
+        { 'posts.status': null },
         { 'posts.status.type': { $in: [config.discussion.status.ok] } }
       ]
     };
@@ -494,7 +494,7 @@ let getDiscussionUnderMember = async (req, res) => {
     creater: memberId,
     category: { $in: config.discussion.category.whiteList },
     $or: [
-      { status: { $exists: false } },
+      { status: null },
       { 'status.type': { $in: [config.discussion.status.ok] } },
     ]
   };
@@ -509,24 +509,31 @@ let getDiscussionUnderMember = async (req, res) => {
     delete query.$or;
   }
   try {
-    let cursor = dbTool.discussion.aggregate([
-      { $match: query },
+    // let cursor = dbTool.discussion.aggregate([
+    //   { $match: query },
+    //   {
+    //     $project: {
+    //       creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+    //       tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+    //     }
+    //   },
+    //   { $sort: { createDate: -1 } },
+    //   { $skip: offset * pagesize },
+    //   { $limit: pagesize }
+    // ]);
+    let cursor = dbTool.discussion.find(
+      query,
       {
-        $project: {
-          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
-          tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-        }
-      },
-      { $sort: { createDate: -1 } },
-      { $skip: offset * pagesize },
-      { $limit: pagesize }
-    ]);
+        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+        tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+      }
+    ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
     let discussions = await cursor.toArray();
     let count = await cursor.count();
     let members = await resolveMembersInDiscussionArray(discussions);
     return res.send({ status: 'ok', discussions, members, count });
   } catch (err) {
-    return errorHandler(null, errorMessages.DB_ERROR, 500, res);
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
 };
 
@@ -554,7 +561,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
     let query = {
       category: category,
       $or: [
-        { status: { $exists: false } },
+        { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } },
       ]
     };
@@ -569,7 +576,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
       delete query.$or;
     }
 
-    let discussions = await dbTool.discussion.aggregate(
+    let discussions = await dbTool.discussion.aggregate([
       { $match: query },
       {
         $project: {
@@ -580,7 +587,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
       { $sort: { lastDate: -1 } },
       { $skip: offset * pagesize },
       { $limit: pagesize }
-    ).toArray();
+    ]).toArray();
 
     let members = await resolveMembersInDiscussionArray(discussions);
     return res.send({ status: 'ok', discussions: discussions, members: members });

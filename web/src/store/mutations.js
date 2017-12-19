@@ -52,7 +52,8 @@ let mutations = {
 
   /** 设置帖子元数据 */
   setDiscussionMeta: (state, meta) => {
-    state.discussionMeta = meta;
+    state.discussionMeta = meta.discussionInfo;
+    state.discussionMeta.postsCount = meta.count;
   },
 
   /** 设置帖子内容 */
