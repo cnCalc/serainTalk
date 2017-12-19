@@ -190,49 +190,46 @@ describe('discussion part', async () => {
     });
   });
 
-  // TODO: fix the test.
-  // it('whitelist test.', async () => {
-  //   await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-  //     let tempWhiteList = config.discussion.category.whiteList;
-  //     config.discussion.category.whiteList = ['notest'];
-  //     let testDiscussion = {
-  //       title: 'test title',
-  //       tags: ['temp tag'],
-  //       category: 'test',
-  //       content: {
-  //         encoding: 'markdown',
-  //         content: 'test text',
-  //       }
-  //     };
-  //     await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
-  //       let payload = {
-  //         category: ['test'],
-  //         memberId: newMemberInfo.id
-  //       };
-  //       let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
-  //       let discussionRes = await agent
-  //         .get(url)
-  //         .expect(200);
-  //       expect(discussionRes.body.status).to.be.equal('ok');
-  //       expect(discussionRes.body.discussions.length).to.be.equal(0);
-  //     });
-  //     await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
-  //       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
-  //         let payload = {
-  //           category: ['test'],
-  //           memberId: newMemberInfo.id
-  //         };
-  //         let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
-  //         let discussionRes = await agent
-  //           .get(url)
-  //           .expect(200);
-  //         expect(discussionRes.body.status).to.be.equal('ok');
-  //         expect(discussionRes.body.discussions.length).to.be.equal(1);
-  //       });
-  //     });
-  //     config.discussion.category.whiteList = tempWhiteList;
-  //   });
-  // });
+  it('whitelist test.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.setWhiteList(['test'], async () => {
+        let testDiscussionInfo = {
+          title: 'test title',
+          tags: ['temp tag'],
+          category: 'test',
+          content: {
+            encoding: 'markdown',
+            content: 'test text',
+          }
+        };
+        await testTools.discussion.createOneDiscussion(agent, testDiscussionInfo, async (newDiscussionInfo) => {
+          await testTools.discussion.setWhiteList(['noTest'], async () => {
+            let payload = {
+              category: ['test'],
+              memberId: newMemberInfo.id
+            };
+            let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
+            let discussionRes = await agent
+              .get(url)
+              .expect(200);
+            expect(discussionRes.body.status).to.be.equal('ok');
+            expect(discussionRes.body.discussions.length).to.be.equal(0);
+          });
+
+          let payload = {
+            category: ['test'],
+            memberId: newMemberInfo.id
+          };
+          let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
+          let discussionRes = await agent
+            .get(url)
+            .expect(200);
+          expect(discussionRes.body.status).to.be.equal('ok');
+          expect(discussionRes.body.discussions.length).to.be.equal(1);
+        });
+      });
+    });
+  });
 
   it('add a post.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
@@ -735,37 +732,39 @@ describe('discussion part', async () => {
   });
 
   it('ban a discussion by admin.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
-          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
-            await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
-              let postPayload = {
-                encoding: 'markdown',
-                content: 'hello test'
-              };
-              let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
-              await agent.post(addPostUrl)
-                .send(postPayload)
-                .expect(201);
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
+            await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+              await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+                let postPayload = {
+                  encoding: 'markdown',
+                  content: 'hello test'
+                };
+                let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
+                await agent.post(addPostUrl)
+                  .send(postPayload)
+                  .expect(201);
 
-              let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}`;
-              await agent.delete(banUrl).expect(204);
+                let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}`;
+                await agent.delete(banUrl).expect(204);
 
-              // 不强制获取则取不到制定的 Discussion
-              let url = `/api/v1/discussions/${newDiscussionInfoA.id}`;
-              let discussionRes = await agent
-                .get(url)
-                .expect(404);
+                // 不强制获取则取不到制定的 Discussion
+                let url = `/api/v1/discussions/${newDiscussionInfoA.id}`;
+                let discussionRes = await agent
+                  .get(url)
+                  .expect(404);
 
-              let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
-              discussionRes = await agent
-                .get(getUrl)
-                .expect(200);
+                let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
+                discussionRes = await agent
+                  .get(getUrl)
+                  .expect(200);
 
-              expect(discussionRes.body.status).to.be.equal('ok');
-              let discussionInfo = discussionRes.body.discussionInfo;
-              expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
+                expect(discussionRes.body.status).to.be.equal('ok');
+                let discussionInfo = discussionRes.body.discussionInfo;
+                expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
+              });
             });
           });
         });

@@ -9,11 +9,12 @@ const env = require('../utils/env');
 const dev = require('../config/dev');
 const product = require('../config/product');
 const mocha = require('../config/mocha');
+const { isMocha } = require('../utils/env');
 
 if (env.isProd) {
   _.merge(config, product);
-} else if (env.isProd) {
-  _.merge(config, product);
+} else if (env.isMocha) {
+  _.merge(config, mocha);
 } else {
   _.merge(config, dev);
 }
@@ -27,6 +28,7 @@ let _db = null;
 let mongoConnect = async () => {
   try {
     _db = await MongoClient.connect(config.database);
+    if (isMocha) await _db.dropDatabase();
 
     exports.generic = _db.collection('generic');
     exports.discussion = _db.collection('discussion');

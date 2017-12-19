@@ -139,9 +139,10 @@ let setAdmin = async (agent, _id, next) => {
 
   await next();
 
-  await dbTool.commonMember.updateOne(
+  let tc = await dbTool.commonMember.updateOne(
     { _id: _id },
-    { role: 'member' }
+    { $set: { role: 'member' } }
   );
+  await login(agent, memberInfo);
 };
 exports.setAdmin = setAdmin;

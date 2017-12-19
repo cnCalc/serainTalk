@@ -7,6 +7,10 @@ const dbTool = require('../../database');
 let agent = supertest.agent(require('../../index'));
 
 describe('attachment part.', async () => {
+  before('prepare database.', async () => {
+    await dbTool.prepare();
+  });
+
   it('get attachment by id.', async () => {
     let randomAid;
     let attachmentInfo = 1;

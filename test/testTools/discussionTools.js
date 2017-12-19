@@ -93,3 +93,14 @@ let closeFreqLimit = async (next) => {
   config.discussion.freqLimit = tempLimit;
 };
 exports.closeFreqLimit = closeFreqLimit;
+
+let setWhiteList = async (whiteList, next) => {
+  let tempList = config.discussion.category.whiteList;
+  if (Array.isArray(whiteList)) config.discussion.category.whiteList = whiteList;
+  else config.discussion.category.whiteList = [];
+
+  await next();
+
+  config.discussion.category.whiteList = tempList;
+};
+exports.setWhiteList = setWhiteList;
