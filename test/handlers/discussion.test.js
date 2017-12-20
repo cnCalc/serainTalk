@@ -160,18 +160,39 @@ describe('discussion part', async () => {
   });
 
   it('get discussion posts by id.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
-        let discussionRes = await agent
-          .get(url)
-          .expect(200);
-        discussionRes = discussionRes.body;
-        let members = discussionRes.members;
-        let posts = discussionRes.posts;
-        expect(discussionRes.status).to.be.equal('ok');
-        expect(Object.keys(members)).include(newMemberInfo.id);
-        expect(posts.length).to.be.equal(1);
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          let getUrl = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+          let postsRes = await agent
+            .get(getUrl)
+            .expect(200);
+          postsRes = postsRes.body;
+          let members = postsRes.members;
+          let posts = postsRes.posts;
+          expect(postsRes.status).to.be.equal('ok');
+          expect(Object.keys(members)).include(newMemberInfo.id);
+          expect(posts.length).to.be.equal(1);
+
+          // 分页测试
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let postUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          for (let i = 0; i < 15; i++) {
+            await agent.post(postUrl)
+              .send(postPayload)
+              .expect(201);
+          }
+          let getUrl2 = `/api/v1/discussions/${newDiscussionInfo.id}/posts?page=2`;
+          postsRes = await agent
+            .get(getUrl2)
+            .expect(200);
+          let postsBody = postsRes.body;
+          expect(postsBody.status).to.be.equal('ok');
+          expect(postsBody.length).to.be.equal(6);
+        });
       });
     });
   });

@@ -71,8 +71,8 @@ let getNotification = async (req, res, next) => {
       { $unwind: '$notifications' },
       { $match: { 'notifications.date': { $gt: req.query.after } } },
       { $sort: { 'notifications.date': -1 } },
-      { $limit: pagesize },
-      { $skip: offset }
+      { $skip: offset },
+      { $limit: pagesize }
     ]).toArray();
     let count = await dbTool.commonMember.aggregate([
       { $match: { _id: req.member._id } },

@@ -97,8 +97,8 @@ let getMessagesInfo = async (req, res, next) => {
     },
     { $sort: { 'timeline.0.date': -1 } },
     { $project: { members: 1 } },
-    { $limit: pagesize },
-    { $skip: offset }
+    { $skip: offset },
+    { $limit: pagesize }
   ]).toArray();
   let count = await dbTool.message.count({
     $or: [

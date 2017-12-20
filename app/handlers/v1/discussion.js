@@ -226,8 +226,8 @@ let getDiscussionPostsById = async (req, res) => {
       { $project: { _id: 0, posts: 1 } },
       { $unwind: '$posts' },
       { $match: postQuery },
-      { $limit: pagesize },
-      { $skip: offset * pagesize }
+      { $skip: offset * pagesize },
+      { $limit: pagesize }
     ]).toArray();
     let posts = postsDoc.map(item => item.posts);
     return res.status(200).send({
