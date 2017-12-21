@@ -191,7 +191,7 @@ describe('discussion part', async () => {
             .expect(200);
           let postsBody = postsRes.body;
           expect(postsBody.status).to.be.equal('ok');
-          expect(postsBody.length).to.be.equal(6);
+          expect(postsBody.posts.length).to.be.equal(6);
         });
       });
     });
@@ -207,6 +207,28 @@ describe('discussion part', async () => {
         discussionRes = discussionRes.body;
         expect(discussionRes.status).to.be.equal('error');
         expect(discussionRes.message).to.be.equal(errorMessages.NOT_FOUND);
+      });
+    });
+  });
+
+  it('get post by index.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      await testTools.discussion.createOneDiscussion(agent, { content: { content: 'a' } }, async (newDiscussionInfo) => {
+        let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+        let postRes = await agent.get(getUrl);
+        let post = postRes.body.post;
+        expect(post.content).to.be.equal('<p>a</p>\n');
+      });
+    });
+  });
+
+  it('get raw post by index.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      await testTools.discussion.createOneDiscussion(agent, { content: { content: 'a' } }, async (newDiscussionInfo) => {
+        let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1?raw=on`;
+        let postRes = await agent.get(getUrl);
+        let post = postRes.body.post;
+        expect(post.content).to.be.equal('a');
       });
     });
   });
