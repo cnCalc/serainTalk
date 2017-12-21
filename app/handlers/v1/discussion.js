@@ -310,7 +310,7 @@ let createPost = async (req, res, next) => {
 
   let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
   // 检查discussion 是否已被封禁
-  if (discussionInfo.status.type === config.discussion.status.deleted) {
+  if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.deleted) {
     return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
   }
 
