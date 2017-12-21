@@ -5,7 +5,7 @@
     div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()" v-bind:class="{ 'activated': activated }")
       header
         h3 消息通知
-        button.mark-all-read
+        button.mark-all-read(@click="readAll")
       ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.count !== 0")
         li(v-for="item in notifications.list"
           v-bind:class="{ new: !item.hasRead }"
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import api from '../api';
+
 export default {
   name: 'notification-control',
   data () {
@@ -67,6 +69,14 @@ export default {
         this.$router.push(notification.href);
       }
     },
+    readAll () {
+      if (!this.notifications.new) {
+        return;
+      }
+      api.v1.notification.readAllNotifications().then(() => {
+        this.$store.dispatch('fetchNotifications');
+      }).catch(err => console.error(err));
+    }
   }
 };
 </script>
@@ -94,6 +104,7 @@ div.notification-container {
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+    cursor: pointer;
   }
 
   button.notification {

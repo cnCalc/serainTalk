@@ -26,7 +26,7 @@
               //- div.button-right-container
               button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
               button.button(@click="copyLink(post.index)") 复制链接
-              button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')") 编辑
+              button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
               button.button(v-if="$store.state.me && $store.state.me.role === 'admin'") 删除
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
         center 没有可展示的帖子
@@ -36,7 +36,7 @@
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
-        button.button.quick-funcs(@click="createrOnly = !createrOnly") {{ createrOnly ? '查看全部' : '只看楼主' }} 
+        //- button.button.quick-funcs(@click="createrOnly = !createrOnly") {{ createrOnly ? '查看全部' : '只看楼主' }} 
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs 前往后台
@@ -193,9 +193,9 @@ export default {
         this.pageLoaded = [];
         this.pageLoaded[this.currentPage] = true;
 
-        this.scrollWatcher();
         return this.$options.asyncData({ store: this.$store, route: this.$route }).then(() => {
           this.$forceUpdate();
+          this.scrollWatcher();
           if (this.$store.state.autoLoadOnScroll && page !== 1) {
             this.minPage = page - 1;
             this.pageLoaded[this.currentPage - 1] = true;
@@ -203,6 +203,7 @@ export default {
         });
       }
 
+      this.scrollWatcher();
       this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
 
       if (this.pageLoaded[Number(route.params.page) || 1]) {

@@ -35,6 +35,35 @@ function fetchDiscussionPostsById (param) {
   });
 }
 
+function fetchDiscussionPostByIdAndIndex (param) {
+  if (!param.id) return Promise.reject('require id for discussion.');
+  else if (!param.index) return Promise.reject('require index for post.');
+
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}/post/${param.index}${param.raw && '?raw=on'}`)
+    .then(response => resolve(response.data))
+    .catch(error => reject(error));
+  });
+}
+
+function updateDiscussionPostByIdAndIndex (param) {
+  if (!param.id) return Promise.reject('require id for discussion.');
+  else if (!param.index) return Promise.reject('require index for post.');
+
+  return new Promise((resolve, reject) => {
+    const payload = {
+      content: param.content,
+      encoding: param.encoding,
+    };
+    if (param.replyTo) {
+      payload.replyTo = param.replyTo;
+    }
+    axios.put(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}`, payload)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 function createDiscussion (param) {
   if (!param.discussion) return Promise.reject('require discussion');
   return new Promise((resolve, reject) => {
@@ -64,6 +93,8 @@ export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
   fetchDiscussionPostsById,
+  fetchDiscussionPostByIdAndIndex,
+  updateDiscussionPostByIdAndIndex,
   createDiscussion,
   replyToDiscussion,
 };
