@@ -460,9 +460,17 @@ let updatePost = async (req, res, next) => {
     let $set = {};
     $set[`posts.${postIndex - 1}.content`] = req.body.content;
     $set[`posts.${postIndex - 1}.updateDate`] = now;
+    $set[`posts.${postIndex - 1}.encoding`] = 'markdown';
     /* istanbul ignore else */
-    if (req.body.encoding && req.member.role === 'admin') {
+    if (req.body.encoding === 'html' &&
+      await utils.permission.checkPermission('discussion-postHTML', req.member.permissions)) {
       $set[`posts.${postIndex - 1}.encoding`] = req.body.encoding;
+    }
+
+    // 修改replyTo
+    if (req.body.replyTo) {
+      req.body.replyTo.memberId = ObjectID(req.body.replyTo.memberId);
+      $set[`posts.${postIndex - 1}.replyTo`] = req.body.replyTo;
     }
 
     await dbTool.discussion.updateOne(
