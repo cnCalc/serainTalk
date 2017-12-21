@@ -8,7 +8,7 @@ function fetchNotification (param = {}) {
         delete response.data.status;
         resolve(response.data);
       })
-      .catch(error => reject(error))
+      .catch(error => reject(error));
   });
 }
 
@@ -18,11 +18,20 @@ function readNotification (param = {}) {
   return new Promise((resolve, reject) => {
     axios.post(`${config.api.url}/${config.api.version}/notification/${param.index}/read`)
       .then(response => resolve(response.data))
-      .catch(error => reject(error))
+      .catch(error => reject(error));
+  });
+}
+
+function readAllNotifications (param = {}) {
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}/${config.api.version}/notification/all/read`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 
 export default {
   fetchNotification,
   readNotification,
+  readAllNotifications,
 };

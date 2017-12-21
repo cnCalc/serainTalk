@@ -27,14 +27,19 @@
               button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
               button.button(@click="copyLink(post.index)") 复制链接
               button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')") 编辑
+              button.button(v-if="$store.state.me && $store.state.me.role === 'admin'") 删除
+      div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
+        center 没有可展示的帖子
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
-        button.button.quick-funcs 只看楼主
+        button.button.quick-funcs(@click="createrOnly = !createrOnly") {{ createrOnly ? '查看全部' : '只看楼主' }} 
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
+        template(v-if="$store.state.me && $store.state.me.role === 'admin'")
+          button.button.quick-funcs 前往后台
 </template>
 
 <script>
@@ -82,6 +87,7 @@ export default {
       pagesCount: 0,  // 总页数
       pageLoaded: {}, // 已经加载了的页面
       currentDiscussion: null,
+      createrOnly: false,
     };
   },
   methods: {
@@ -152,7 +158,11 @@ export default {
       }
     },
     showingPosts () {
-      return this.discussionPosts;
+      if (this.createrOnly) {
+        return this.discussionPosts.filter(item => item.user === this.discussionMeta.creater);
+      } else {
+        return this.discussionPosts;
+      }
     },
     members () {
       return this.$store.state.members;
@@ -179,6 +189,7 @@ export default {
         this.maxPage = page;
         this.minPage = page;
         this.currentPage = page;
+        this.createrOnly = false;
         this.pageLoaded = [];
         this.pageLoaded[this.currentPage] = true;
 
@@ -220,6 +231,7 @@ export default {
     this.maxPage = page;
     this.minPage = page;
     this.currentPage = page;
+    this.createrOnly = false;
     this.pageLoaded[this.currentPage] = true;
 
     if (this.$store.state.autoLoadOnScroll && page !== 1) {
