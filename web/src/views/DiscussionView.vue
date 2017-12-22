@@ -9,7 +9,7 @@
               router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
                 div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
                 div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
-              span.discussion-post-member {{ members[post.user].username }}
+              span.discussion-post-member {{ members[post.user].username }} 
               span.discussion-post-index {{ `#${post.index}` }}
             post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
             footer.discussion-post-info
@@ -17,17 +17,18 @@
                 span 创建于 {{ new Date(post.createDate).toLocaleDateString() }}
                 span(v-if="post.updateDate") ，编辑于 {{ new Date(post.updateDate).toLocaleDateString() }}
               div.button-left-container
-              //-   button.button.vote-up 0
-              //-   button.button.vote-down 0
-              //-   button.button.laugh 0
-              //-   button.button.doubt 0
-              //-   button.button.cheer 0
-              //-   button.button.emmmm 0
+                button.button.vote-up {{ post.votes.up.length }}
+                button.button.vote-down {{ post.votes.down.length }}
+                div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse")
+                  button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
+                  button.button(@click="copyLink(post.index)") 复制链接
+                  button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
+                  button.button(v-if="$store.state.me && $store.state.me.role === 'admin'") 删除
+                //- button.button.laugh(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
+                //- button.button.doubt(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
+                //- button.button.cheer(v-if="post.votes.up.length > 0") {{ post.votes.up.length }} 
+                //- button.button.emmmm(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
               //- div.button-right-container
-              button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
-              button.button(@click="copyLink(post.index)") 复制链接
-              button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
-              button.button(v-if="$store.state.me && $store.state.me.role === 'admin'") 删除
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
         center 没有可展示的帖子
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
@@ -373,6 +374,15 @@ div.discussion-view {
         @include set-avatar-outside(60px);
       }
 
+      div.show-only-when-hover {
+        transition: all ease 0.2s;
+        opacity: 0;
+      }
+
+      &:hover div.show-only-when-hover {
+        opacity: 1;
+      }
+
       header.discussion-post-info {
         display: flex;
         align-items: center;
@@ -437,9 +447,9 @@ div.discussion-view {
             line-height: 3em;
           }
 
-          div.button-left-container {
-            display: inline-block;
-          }
+          // div.button-left-container {
+          //   display: inline-block;
+          // }
 
           div.button-right-container {
             display: inline-block;
@@ -455,6 +465,9 @@ div.discussion-view {
     padding: 0.5em 0.8em 0.5em 0.8em;
     line-height: 1.2em;
     border: none;
+    &:first-child {
+      margin-left: 0;
+    }
   }
 
   button.right {
