@@ -17,8 +17,8 @@
                 span 创建于 {{ new Date(post.createDate).toLocaleDateString() }}
                 span(v-if="post.updateDate") ，编辑于 {{ new Date(post.updateDate).toLocaleDateString() }}
               div.button-left-container
-                button.button.vote-up {{ post.votes.up.length }}
-                button.button.vote-down {{ post.votes.down.length }}
+                button.button.vote-up {{ post.votes.up ? post.votes.up.length : 'E' }}
+                button.button.vote-down {{ post.votes.down ? post.votes.down.length : 'E' }}
                 div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse")
                   button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
                   button.button(@click="copyLink(post.index)") 复制链接
@@ -227,7 +227,7 @@ export default {
     this.currentDiscussion = this.$route.params.discussionId;
   },
   mounted () {
-    window.addEventListener('scroll', this.scrollWatcher);
+    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
 
     const page = Number(this.$route.params.page) || 1;
     this.maxPage = page;
@@ -245,7 +245,7 @@ export default {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
   activated () {
-    window.addEventListener('scroll', this.scrollWatcher);
+    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
   },
   deactivated () {
     window.removeEventListener('scroll', this.scrollWatcher);

@@ -6,7 +6,7 @@
       header
         h3 消息通知
         button.mark-all-read(@click="readAll")
-      ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.count !== 0")
+      ul.scrollable(v-on:&mousewheel="scrollHelper" v-if="notifications.count !== 0")
         li(v-for="item in notifications.list"
           v-bind:class="{ new: !item.hasRead }"
           v-on:click="readNotification(item)"
@@ -26,8 +26,8 @@ export default {
   },
   computed: {
     notifications () {
-      // return { count: 0, list: [], new: false }; // this.$store.state.notifications;
-      return this.$store.state.notifications;
+      return { count: 0, list: [], new: false }; // this.$store.state.notifications;
+      // return this.$store.state.notifications;
     }
   },
   methods: {

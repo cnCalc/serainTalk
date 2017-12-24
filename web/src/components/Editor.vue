@@ -103,7 +103,7 @@ export default {
     }
   },
   watch: {
-    display (val) {
+    display (val, oldVal) {
       const editor = document.querySelector('div.editor');
       const app = document.querySelector('#app');
 
@@ -128,23 +128,36 @@ export default {
       } else {
         app.style.marginBottom = editor.style.top = '50vh';
 
-        const editorState = this.state = Object.assign({}, this.$store.state.editor);
+        const editorState = Object.assign({}, this.$store.state.editor);
+        let flush = false;
 
-        if (editorState.index) {
-          // 回复，加入默认@
-          this.content = `@${editorState.memberId}#${editorState.discussionId}#${editorState.index}\n`;
-          this.updatePreview();
+        for (let key of Object.keys(this.$store.state.editor)) {
+          if (this.state[key] !== editorState[key]) {
+            flush = true;
+            break;
+          }
         }
-      }
 
-      if (this.state.mode === 'EDIT_POST') {
-        this.editable = false;
-        this.preview = this.content = '正在获取内容，请稍等……';
-        api.v1.discussion.fetchDiscussionPostByIdAndIndex({ raw: true, index: this.state.index, id: this.state.discussionId }).then(response => {
-          this.editable = true;
-          this.content = response.post.content;
-          this.updatePreview();
-        });
+        console.log({ flush });
+
+        if (flush) {
+          this.state = editorState;
+          if (this.state.mode === 'EDIT_POST') {
+            this.editable = false;
+            this.preview = this.content = '正在获取内容，请稍等……';
+            api.v1.discussion.fetchDiscussionPostByIdAndIndex({ raw: true, index: this.state.index, id: this.state.discussionId }).then(response => {
+              this.editable = true;
+              this.content = response.post.content;
+              this.updatePreview();
+            });
+            return;
+          }
+          if (editorState.index) {
+            // 回复，加入默认@
+            this.content = `@${editorState.memberId}#${editorState.discussionId}#${editorState.index}\n`;
+            this.updatePreview();
+          }
+        }
       }
     }
   },
