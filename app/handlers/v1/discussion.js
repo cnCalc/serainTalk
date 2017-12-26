@@ -432,7 +432,7 @@ let createPost = async (req, res, next) => {
 
 let updatePost = async (req, res, next) => {
   let _id = ObjectID(req.params.id);
-  let postIndex = req.params.postIndex - 1;
+  let postIndex = req.params.postIndex;
   let now = Date.now();
 
   // 追加一个 Post，同时更新一些元数据
@@ -458,11 +458,19 @@ let updatePost = async (req, res, next) => {
     }
 
     let $set = {};
-    $set[`posts.${postIndex}.content`] = req.body.content;
-    $set[`posts.${postIndex}.updateDate`] = now;
+    $set[`posts.${postIndex - 1}.content`] = req.body.content;
+    $set[`posts.${postIndex - 1}.updateDate`] = now;
+    $set[`posts.${postIndex - 1}.encoding`] = 'markdown';
     /* istanbul ignore else */
-    if (req.body.encoding && req.member.role === 'admin') {
-      $set[`posts.${postIndex}.encoding`] = req.body.encoding;
+    if (req.body.encoding === 'html' &&
+      await utils.permission.checkPermission('discussion-postHTML', req.member.permissions)) {
+      $set[`posts.${postIndex - 1}.encoding`] = req.body.encoding;
+    }
+
+    // 修改replyTo
+    if (req.body.replyTo) {
+      req.body.replyTo.memberId = ObjectID(req.body.replyTo.memberId);
+      $set[`posts.${postIndex - 1}.replyTo`] = req.body.replyTo;
     }
 
     await dbTool.discussion.updateOne(

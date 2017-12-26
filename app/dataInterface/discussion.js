@@ -122,6 +122,11 @@ let updatePost = {
   body: {
     encoding: joi.string(),
     content: joi.string().required(),
+    replyTo: {
+      type: joi.string().allow(['index']).required(),
+      value: joi.number().required(),
+      memberId: interfaceUtils.mongoId.required()
+    }
   }
 };
 exports.updatePost = updatePost;

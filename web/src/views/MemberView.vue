@@ -40,12 +40,43 @@ div
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
       div.member-settings(v-if="$route.meta.mode === 'settings' && $route.params.memberId === $store.state.me._id")
-        input#auto-scroll(type="checkbox" v-on:change="switchScrollBehavior" :checked="$store.state.autoLoadOnScroll")
-        label(for='auto-scroll') 在讨论页面中使用实验性的滚动自动加载
+        h3 账户设置
+        div.row
+          button.button 修改密码
+          button.button 变更邮箱
+          button.button 更换头像
+        h3 邮件通知
+        div.row
+          check-box(:checked="false")
+          span 当我的话题被回复时
+        div.row
+          check-box(:checked="false")
+          span 当我被人提及时
+        div.row
+          check-box(:checked="false")
+          span 当我订阅的话题有更新时
+        div.row
+          check-box(:checked="true")
+          span DEEP DARK FANTASY
+        h3 浏览选项
+        div.row
+          check-box(:checked="$store.state.autoLoadOnScroll" v-on:click.native="switchScrollBehavior")
+          span 在讨论页面中使用实验性的滚动自动加载
+        div.row
+          check-box(:checked="false")
+          span 启用夜间模式（黑色主题）
+        h3 隐私设置
+        div.row
+          check-box(:checked="false")
+          span 允许站内用户查看我的电子邮件地址
+        div.row
+          check-box(:checked="false")
+          span 
 </template>
 
 <script>
 import LoadingIcon from '../components/LoadingIcon.vue';
+import CheckBox from '../components/form/CheckBox.vue';
 import PostContent from '../components/PostContent.vue';
 import DiscussionList from '../components/DiscussionList.vue';
 import api from '../api';
@@ -55,7 +86,7 @@ import { timeAgo, indexToPage } from '../utils/filters';
 export default {
   name: 'member-view',
   components: {
-    LoadingIcon, PostContent, DiscussionList
+    LoadingIcon, PostContent, DiscussionList, CheckBox
   },
   data () {
     return {
@@ -319,6 +350,42 @@ div.member-activity {
       font-weight: 400;
       font-size: 18px;
       margin: 5px 0;
+    }
+
+    div.member-settings {
+      padding: 10px 20px;
+      box-sizing: border-box;
+      .row {
+        display: flex;
+        width: 100%;
+        overflow: hidden;
+        align-items: center;
+        &:not(:first-child) {
+          margin-bottom: 8px;
+        }
+        span {
+          font-size: 15px;
+          vertical-align: middle;
+          margin-left: .8em;
+        }
+        button.button {
+          font-size: 14px;
+          border: none;
+          padding: 6px 14px;
+          color: mix($theme_color, black, 90%);
+          background: mix($theme_color, white, 15%);
+          margin-right: 5px;
+          &:hover {
+            color: mix($theme_color, black, 60%);
+            background: mix($theme_color, white, 20%);
+          }
+        }
+      }
+      h3 {
+        margin: 1.5em 0 0.9em 0;
+        padding: 0;
+        font-size: 14px
+      }
     }
 
     div.member-recent-activity, div.member-recent-posts, div.member-settings {
