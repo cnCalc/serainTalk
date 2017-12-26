@@ -67,8 +67,14 @@ let info = {
     }).or('name', 'device')
   }
 };
-
 exports.info = info;
+
+let setting = {
+  body: {
+    nightMode: interfaceUtils.flag
+  }
+};
+exports.setting = setting;
 
 // endregion
 

@@ -345,4 +345,20 @@ describe('member part', () => {
       .get(url)
       .expect(400);
   });
+
+  it('update member setting.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      let updateUrl = '/api/v1/member/settings';
+      let updatePayload = {
+        nightMode: 'on'
+      };
+      let updateRes = await agent.put(updateUrl)
+        .send(updatePayload)
+        .expect(201);
+      let settings = updateRes.body.settings;
+      for (let key of Object.keys(updatePayload)) {
+        expect(settings[key]).to.be.equal(updatePayload[key]);
+      }
+    });
+  });
 });

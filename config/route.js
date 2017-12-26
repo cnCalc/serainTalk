@@ -222,6 +222,19 @@ let route = {
         handlers.v1.member.login
       ]
     },
+    setting: {
+      description: '修改用户设置。',
+      path: [
+        '/v1/members/settings',
+        '/v1/member/settings'
+      ],
+      method: 'put',
+      schema: dataInterface.member.setting,
+      handler: [
+        verifyMember,
+        handlers.v1.member.updateSettings
+      ]
+    },
     logout: {
       description: '注销。',
       path: [
@@ -234,7 +247,7 @@ let route = {
         verifyMember,
         handlers.v1.member.logout
       ]
-    }
+    },
   },
   password: {
     applicationReset: {

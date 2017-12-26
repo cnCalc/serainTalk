@@ -156,6 +156,33 @@ let getSelf = async (req, res) => {
   return res.status(200).send({ status: 'ok', memberInfo: req.member });
 };
 
+/**
+ * 用户修改设置
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ */
+let updateSettings = async (req, res, next) => {
+  try {
+    let settings = req.body;
+    let updateInfo = {};
+    for (let key of Object.keys(settings)) {
+      updateInfo[`settings.${key}`] = settings[key];
+    }
+    let updateDoc = await dbTool.commonMember.findOneAndUpdate(
+      { _id: req.member._id },
+      {
+        $set: updateInfo
+      },
+      { returnOriginal: false }
+    );
+    return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
+  } catch (err) {
+    errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+};
+
 // #region 成员登录登出部分
 /**
  * [处理函数] 登录
@@ -408,8 +435,9 @@ module.exports = {
   getSelf,
   login,
   logout,
-  signup,
+  passwordModify,
   resetPassword,
   resetPasswordApplication,
-  passwordModify
+  signup,
+  updateSettings,
 };
