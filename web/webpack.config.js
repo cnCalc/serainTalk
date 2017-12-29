@@ -52,7 +52,7 @@ module.exports = {
         target: 'http://localhost:8000/',
       }
     },
-    setup (app) {
+    before (app) {
       app.use('/uploads', express.static('../uploads'));
     }
   },

@@ -93,7 +93,7 @@ let getLatestDiscussionList = async (req, res) => {
     // 鉴权 能否读取被封禁的 discussion
     if (req.query.force === 'on' &&
       await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      delete query.baned;
+      delete query.$or;
     }
 
     let results = await dbTool.discussion.aggregate([
@@ -207,8 +207,8 @@ let getDiscussionPostsById = async (req, res) => {
     // 鉴权 能否读取被封禁的 discussion 和 post
     if (req.query.force === 'on' &&
       await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      delete query.status;
-      postQuery = {};
+      delete query.$or;
+      delete postQuery.$or;
     }
 
     let discussionDoc = await dbTool.discussion.aggregate([
@@ -234,6 +234,55 @@ let getDiscussionPostsById = async (req, res) => {
       status: 'ok',
       posts: utils.renderer.renderPosts(posts),
       members: await resolveMembersInDiscussion({ posts })
+    });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+let getPostByIndex = async (req, res, next) => {
+  // 鉴权 能否读取白名单分类中的讨论
+  if (!await utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
+  let _discussionId = ObjectID(req.params.id);
+  let query = {
+    _id: _discussionId,
+    category: { $in: config.discussion.category.whiteList },
+    $or: [
+      { status: null },
+      { 'status.type': { $in: [config.discussion.status.ok] } }
+    ]
+  };
+  let postQuery = {
+    'posts.index': req.params.postIndex,
+    $or: [
+      { 'posts.status': null },
+      { 'posts.status.type': { $in: [config.discussion.status.ok] } }
+    ]
+  };
+  // 鉴权 能否读取被封禁的 discussion 和 post
+  if (req.query.force === 'on' &&
+    await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    delete query.$or;
+    delete postQuery.$or;
+  }
+  try {
+    // 获取
+    let postsDoc = await dbTool.discussion.aggregate([
+      { $match: query },
+      { $project: { _id: 0, posts: 1 } },
+      { $unwind: '$posts' },
+      { $match: postQuery }
+    ]).toArray();
+    if (postsDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    let post = postsDoc[0].posts;
+    return res.status(200).send({
+      status: 'ok',
+      post: req.query.raw === 'on' ? post : (utils.renderer.renderPosts([post]))[0],
+      members: await resolveMembersInDiscussion({ posts: [post] })
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -382,7 +431,7 @@ let createPost = async (req, res, next) => {
 
 let updatePost = async (req, res, next) => {
   let _id = ObjectID(req.params.id);
-  let postIndex = req.params.postIndex - 1;
+  let postIndex = req.params.postIndex;
   let now = Date.now();
 
   // 追加一个 Post，同时更新一些元数据
@@ -408,11 +457,19 @@ let updatePost = async (req, res, next) => {
     }
 
     let $set = {};
-    $set[`posts.${postIndex}.content`] = req.body.content;
-    $set[`posts.${postIndex}.updateDate`] = now;
+    $set[`posts.${postIndex - 1}.content`] = req.body.content;
+    $set[`posts.${postIndex - 1}.updateDate`] = now;
+    $set[`posts.${postIndex - 1}.encoding`] = 'markdown';
     /* istanbul ignore else */
-    if (req.body.encoding && req.member.role === 'admin') {
-      $set[`posts.${postIndex}.encoding`] = req.body.encoding;
+    if (req.body.encoding === 'html' &&
+      await utils.permission.checkPermission('discussion-postHTML', req.member.permissions)) {
+      $set[`posts.${postIndex - 1}.encoding`] = req.body.encoding;
+    }
+
+    // 修改replyTo
+    if (req.body.replyTo) {
+      req.body.replyTo.memberId = ObjectID(req.body.replyTo.memberId);
+      $set[`posts.${postIndex - 1}.replyTo`] = req.body.replyTo;
     }
 
     await dbTool.discussion.updateOne(
@@ -718,6 +775,7 @@ module.exports = {
   getDiscussionUnderMember,
   getDiscussionsByCategory,
   getLatestDiscussionList,
+  getPostByIndex,
   updatePost,
   votePost,
 };

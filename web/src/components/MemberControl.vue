@@ -5,9 +5,9 @@
       div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
       router-link(:to="`/m/${me._id}`"): li.member 我的主页
-      a: li 站内消息
+      a: li.message 站内消息
       router-link(:to="`/m/${me._id}/settings`"): li.settings 个人设置
-      a(@click="switchTheme"): li 切换主题
+      a(@click="switchTheme"): li(:class="theme === 'light' ? 'night-mode' : 'day-mode'") 切换主题
       a(@click="signout"): li.signout 退出登录
 </template>
 
@@ -25,6 +25,9 @@ export default {
     me () {
       return this.$store.state.me;
     },
+    theme () {
+      return this.$store.state.theme;
+    }
   },
   methods: {
     switchTheme () {
@@ -97,8 +100,6 @@ div.avatar-container {
     top: 8px;
     right: -$avatar_width;
     width: $width;
-    background: white;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
     font-size: initial;
     transition: all ease 0.2s;
@@ -123,11 +124,6 @@ div.avatar-container {
       font-size: 0.9em;
       height: 2.2em;
       line-height: 2.2em;
-      color: mix($theme_color, black, 80%);
-    }
-
-    li:hover {
-      background-color: mix($theme_color, white, 10%);
     }
 
     li::before {
@@ -156,8 +152,19 @@ div.avatar-container {
 
     li.signout::before {
       background-image: url(../assets/signout.svg);
-      // Fix to baseline
-      margin-bottom: -2px;
+      margin-bottom: -2px; // Fix to baseline
+    }
+
+    li.night-mode::before {
+      background-image: url(../assets/night-mode.svg); 
+    }
+
+    li.day-mode::before {
+      background-image: url(../assets/day-mode.svg); 
+    }
+
+    li.message::before {
+      background-image: url(../assets/message.svg); 
     }
   }
 
@@ -167,4 +174,31 @@ div.avatar-container {
     margin: 10px 0;
   }
 }
+
+.light-theme div.avatar-container {
+  div.menu {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    li:hover {
+      background-color: mix($theme_color, white, 10%);
+    }
+    li {
+      color: mix($theme_color, black, 80%);
+    }
+  }
+}
+
+.dark-theme div.avatar-container {
+  div.menu {
+    background: #181818;
+    box-shadow: 0 1px 4px black;
+    li:hover {
+      background-color: mix($theme_color, black, 10%);
+    }
+    li::before {
+      filter: grayscale(100%);
+    }
+  }
+}
+
 </style>

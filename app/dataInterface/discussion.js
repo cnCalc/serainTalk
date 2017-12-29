@@ -62,6 +62,18 @@ let getPostsById = {
 };
 exports.getPostsById = getPostsById;
 
+let getPostByIndex = {
+  query: {
+    force: interfaceUtils.flag.default('off'),
+    raw: interfaceUtils.flag.default('off')
+  },
+  params: {
+    id: interfaceUtils.mongoId.required(),
+    postIndex: joi.number().required()
+  }
+};
+exports.getPostByIndex = getPostByIndex;
+
 let createDiscussion = {
   body: {
     title: joi.string().required(),
@@ -110,6 +122,11 @@ let updatePost = {
   body: {
     encoding: joi.string(),
     content: joi.string().required(),
+    replyTo: {
+      type: joi.string().allow(['index']).required(),
+      value: joi.number().required(),
+      memberId: interfaceUtils.mongoId.required()
+    }
   }
 };
 exports.updatePost = updatePost;

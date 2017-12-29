@@ -211,6 +211,28 @@ describe('discussion part', async () => {
     });
   });
 
+  it('get post by index.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      await testTools.discussion.createOneDiscussion(agent, { content: { content: 'a' } }, async (newDiscussionInfo) => {
+        let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+        let postRes = await agent.get(getUrl);
+        let post = postRes.body.post;
+        expect(post.content).to.be.equal('<p>a</p>\n');
+      });
+    });
+  });
+
+  it('get raw post by index.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      await testTools.discussion.createOneDiscussion(agent, { content: { content: 'a' } }, async (newDiscussionInfo) => {
+        let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1?raw=on`;
+        let postRes = await agent.get(getUrl);
+        let post = postRes.body.post;
+        expect(post.content).to.be.equal('a');
+      });
+    });
+  });
+
   it('whitelist test.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.setWhiteList(['test'], async () => {
@@ -276,33 +298,37 @@ describe('discussion part', async () => {
   });
 
   it('update a post.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, { content: { content: 'hello test' } }, async (newDiscussionInfo) => {
         await testTools.discussion.closeFreqLimit(async () => {
-          let postPayload = {
-            encoding: 'markdown',
-            content: 'hello test'
-          };
-          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-          await agent.post(url)
-            .send(postPayload)
-            .expect(201);
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test'
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
 
-          let updatePayload = {
-            content: 'changed content.'
-          };
-          let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
-          let tempres = await agent.put(updateUrl)
-            .send(updatePayload)
-            .expect(201);
+            let updatePayload = {
+              content: 'changed content.'
+            };
+            let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
+            let tempres = await agent.put(updateUrl)
+              .send(updatePayload)
+              .expect(201);
 
-          let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
-          let postsRes = await agent.get(getUrl).expect(200);
-          postsRes = postsRes.body;
+            let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
+            let postsRes = await agent.get(getUrl).expect(200);
+            postsRes = postsRes.body;
 
-          let exactPost = postsRes.posts[1];
-          expect(exactPost.updateDate).to.be.ok;
-          expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
+            let exactPost = postsRes.posts[1];
+            let otherPost = postsRes.posts[0];
+            expect(exactPost.updateDate).to.be.ok;
+            expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
+            expect(otherPost.content).to.be.equal('<p>hello test</p>\n');
+          });
         });
       });
     });

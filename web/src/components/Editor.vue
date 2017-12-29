@@ -7,7 +7,7 @@
       select(v-model="category")
         option(v-for="category in categories" :value="category.name") {{ category.name }}
     div.textarea
-      textarea(placeholder="说些什么吧", v-model="content")
+      textarea(placeholder="说些什么吧", v-model="content", :disabled="!editable")
       div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview" v-if="showPreview")
     div.footer
       button(@click="submit") 提交
@@ -37,6 +37,9 @@ function addSpanEachLine (html) {
   return html.split('\n').map(l => `<span class="__line">${l}</span>`).join('\n');
 }
 
+// @<Member ID>#<Discussion ID>#<Post Index>
+const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+
 export default {
   name: 'editor',
   data () {
@@ -47,6 +50,7 @@ export default {
       content: '',
       state: {},
       showPreview: true,
+      editable: true,
     };
   },
   mounted () {
@@ -93,11 +97,13 @@ export default {
         return `回复：${this.state.discussionTitle} # ${this.state.index}`;
       } else if (this.state.mode === 'REPLY') {
         return `回复：${this.state.discussionTitle}`;
+      } else if (this.state.mode === 'EDIT_POST') {
+        return '编辑内容';
       }
     }
   },
   watch: {
-    display (val) {
+    display (val, oldVal) {
       const editor = document.querySelector('div.editor');
       const app = document.querySelector('#app');
 
@@ -122,12 +128,35 @@ export default {
       } else {
         app.style.marginBottom = editor.style.top = '50vh';
 
-        const editorState = this.state = Object.assign({}, this.$store.state.editor);
+        const editorState = Object.assign({}, this.$store.state.editor);
+        let flush = false;
 
-        if (editorState.index) {
-          // 回复，加入默认@
-          this.content = `@${editorState.memberId}#${editorState.discussionId}#${editorState.index}\n`;
-          this.updatePreview();
+        for (let key of Object.keys(this.$store.state.editor)) {
+          if (this.state[key] !== editorState[key]) {
+            flush = true;
+            break;
+          }
+        }
+
+        console.log({ flush });
+
+        if (flush) {
+          this.state = editorState;
+          if (this.state.mode === 'EDIT_POST') {
+            this.editable = false;
+            this.preview = this.content = '正在获取内容，请稍等……';
+            api.v1.discussion.fetchDiscussionPostByIdAndIndex({ raw: true, index: this.state.index, id: this.state.discussionId }).then(response => {
+              this.editable = true;
+              this.content = response.post.content;
+              this.updatePreview();
+            });
+            return;
+          }
+          if (editorState.index) {
+            // 回复，加入默认@
+            this.content = `@${editorState.memberId}#${editorState.discussionId}#${editorState.index}\n`;
+            this.updatePreview();
+          }
         }
       }
     }
@@ -138,7 +167,6 @@ export default {
         return;
       }
       const members = this.$store.state.members;
-      const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       let preview = '';
 
       // 渲染 Markdown
@@ -155,7 +183,7 @@ export default {
       // 让 KaTeX 自动渲染 DOM 中的公式
       this.$nextTick(() => {
         try {
-          window.renderMathInElement(document.body);
+          window.renderMathInElement(this.$el);
         } catch (e) {
           // 渲染出错，大概率是用户打了一半没打完，直接忽略即可
         }
@@ -197,16 +225,22 @@ export default {
     },
     replyToIndex () {
       const editorState = this.$store.state.editor;
-      api.v1.discussion.replyToDiscussion({
+      const matched = this.content.match(replyReg);
+      const payload = {
         id: editorState.discussionId,
         encoding: 'markdown',
         content: this.content,
-        replyTo: {
+      };
+
+      if (matched) {
+        payload.replyTo = {
           type: 'index',
-          value: editorState.index,
-          memberId: this.$store.state.editor.memberId,
-        }
-      }).then(() => {
+          value: matched[3],
+          memberId: matched[1],
+        };
+      }
+
+      api.v1.discussion.replyToDiscussion(payload).then(() => {
         // 同上
         window.location.href = window.location.href;
       });
@@ -222,6 +256,29 @@ export default {
         window.location.href = window.location.href;
       });
     },
+    update () {
+      const editorState = this.$store.state.editor;
+      const matched = this.content.match(replyReg);
+      const payload = {
+        id: editorState.discussionId,
+        index: editorState.index,
+        encoding: 'markdown',
+        content: this.content,
+      };
+
+      if (matched) {
+        payload.replyTo = {
+          type: 'index',
+          value: matched[3],
+          memberId: matched[1],
+        };
+      }
+
+      api.v1.discussion.updateDiscussionPostByIdAndIndex(payload).then(() => {
+        // 同上
+        window.location.href = window.location.href;
+      });
+    },
     submit () {
       switch (this.mode) {
         case 'CREATE_DISCUSSION':
@@ -232,6 +289,9 @@ export default {
           break;
         case 'REPLY':
           this.reply();
+          break;
+        case 'EDIT_POST':
+          this.update();
           break;
       }
     }

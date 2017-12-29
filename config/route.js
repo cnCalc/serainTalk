@@ -95,6 +95,18 @@ let route = {
         handlers.v1.discussion.getDiscussionPostsById
       ]
     },
+    getByIndex: {
+      description: '获取指定 Discussion 下指定楼层的 Post。',
+      path: [
+        '/v1/discussions/:id/post/:postIndex',
+        '/v1/discussion/:id/post/:postIndex'
+      ],
+      method: 'get',
+      schema: dataInterface.discussion.getPostByIndex,
+      handler: [
+        handlers.v1.discussion.getPostByIndex
+      ]
+    },
     addOne: {
       description: '在指定 Discussion 下追加一个 Post。',
       path: [
@@ -210,6 +222,19 @@ let route = {
         handlers.v1.member.login
       ]
     },
+    setting: {
+      description: '修改用户设置。',
+      path: [
+        '/v1/members/settings',
+        '/v1/member/settings'
+      ],
+      method: 'put',
+      schema: dataInterface.member.setting,
+      handler: [
+        verifyMember,
+        handlers.v1.member.updateSettings
+      ]
+    },
     logout: {
       description: '注销。',
       path: [
@@ -222,7 +247,7 @@ let route = {
         verifyMember,
         handlers.v1.member.logout
       ]
-    }
+    },
   },
   password: {
     applicationReset: {

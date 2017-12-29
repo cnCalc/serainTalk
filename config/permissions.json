@@ -67,6 +67,13 @@
         "admin"
       ],
       "enable": true
+    },
+    "postHTML": {
+      "description": "新建或修改后的 post 可以维持 html 格式。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
     }
   },
   "category": {

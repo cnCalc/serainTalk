@@ -5,8 +5,8 @@
     div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()" v-bind:class="{ 'activated': activated }")
       header
         h3 消息通知
-        span(style="font-family: consolas") √
-      ul.scrollable(v-on:mousewheel="scrollHelper" v-if="notifications.count !== 0")
+        button.mark-all-read(@click="readAll")
+      ul.scrollable(v-on:&mousewheel="scrollHelper" v-if="notifications.count !== 0")
         li(v-for="item in notifications.list"
           v-bind:class="{ new: !item.hasRead }"
           v-on:click="readNotification(item)"
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import api from '../api';
+
 export default {
   name: 'notification-control',
   data () {
@@ -25,6 +27,7 @@ export default {
   computed: {
     notifications () {
       return { count: 0, list: [], new: false }; // this.$store.state.notifications;
+      // return this.$store.state.notifications;
     }
   },
   methods: {
@@ -66,6 +69,14 @@ export default {
         this.$router.push(notification.href);
       }
     },
+    readAll () {
+      if (!this.notifications.new) {
+        return;
+      }
+      api.v1.notification.readAllNotifications().then(() => {
+        this.$store.dispatch('fetchNotifications');
+      }).catch(err => console.error(err));
+    }
   }
 };
 </script>
@@ -81,6 +92,19 @@ div.notification-container {
     height: 0;
     position: relative;
     display: block;
+  }
+
+  button.mark-all-read {
+    border: none;
+    background: none;
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    background-image: url(../assets/check.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
   }
 
   button.notification {
@@ -118,8 +142,6 @@ div.notification-container {
     position: absolute;
     top: 8px;
     right: -15px;
-    background: white;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
     transition: all ease 0.2s;
     overflow: hidden;
@@ -137,8 +159,6 @@ div.notification-container {
     header {
       padding: .5em .7em 0.3em;
       display: flex;
-      border-bottom: 1px solid mix($theme_color, white, 30%);
-      color: $theme_color;
     }
 
     h3 {
@@ -162,7 +182,6 @@ div.notification-container {
       padding: 80px 0;
       font-weight: 400;
       font-size: 1.2em;
-      color: mix($theme_color, white, 40%);
       user-select: none;
     }
 
@@ -175,6 +194,22 @@ div.notification-container {
       cursor: pointer;
       transition: background-color ease 0.2s;
     }
+  }
+}
+
+.light-theme div.notification-container {
+  div.notification-list {
+    background: white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+
+    header {
+      border-bottom: 1px solid mix($theme_color, white, 30%);
+      color: $theme_color;
+    }
+
+    div.empty {
+      color: mix($theme_color, white, 40%);
+    }
 
     li {
       border-bottom: 1px solid #eee;
@@ -186,6 +221,39 @@ div.notification-container {
 
     li:hover {
       background-color: mix($theme_color, white, 15%);
+    }
+  }
+}
+
+.dark-theme div.notification-container {
+  button.mark-all-read {
+    filter: grayscale(100%);
+  }
+
+  div.notification-list {
+    background: #181818;
+    box-shadow: 0 1px 4px black;
+
+    header {
+      border-bottom: 1px solid #666;
+      color: #bbb;
+    }
+
+    div.empty {
+      color: #666;
+    }
+
+    li {
+      border-bottom: 1px solid #262626;
+      color: #bbb;
+    }
+
+    li.new {
+      background-color: #222;
+    }
+
+    li:hover {
+      background-color: #333;
     }
   }
 }
