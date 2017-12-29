@@ -191,7 +191,7 @@ describe('discussion part', async () => {
             .expect(200);
           let postsBody = postsRes.body;
           expect(postsBody.status).to.be.equal('ok');
-          expect(postsBody.length).to.be.equal(6);
+          expect(postsBody.posts.length).to.be.equal(6);
         });
       });
     });
@@ -717,6 +717,14 @@ describe('discussion part', async () => {
             postsInfo = discussionRes.body.posts;
             expect(postsInfo.length).to.be.equal(2);
             expect(postsInfo[1].status.type).to.be.equal(config.discussion.status.deleted);
+
+            await testTools.member.login(agent, newMemberInfoA);
+            let getNotificationUrl = '/api/v1/notification';
+            let nitificationRes = await agent.get(getNotificationUrl)
+              .expect(200);
+            nitificationRes = nitificationRes.body;
+            let notifications = nitificationRes.notifications;
+            expect(notifications.length).to.be.equal(1);
           });
         });
       });
@@ -785,6 +793,14 @@ describe('discussion part', async () => {
                 expect(discussionRes.body.status).to.be.equal('ok');
                 let discussionInfo = discussionRes.body.discussionInfo;
                 expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
+
+                await testTools.member.login(agent, newMemberInfoA);
+                let getNotificationUrl = '/api/v1/notification';
+                let nitificationRes = await agent.get(getNotificationUrl)
+                  .expect(200);
+                nitificationRes = nitificationRes.body;
+                let notifications = nitificationRes.notifications;
+                expect(notifications.length).to.be.equal(1);
               });
             });
           });

@@ -131,11 +131,6 @@ let readAllNotification = async (req, res, next) => {
   }
 };
 
-// router.post('/:id', middleware.verifyAdmin, validation(dataInterface.notification.sendNotification), sendNotification);
-// router.get('/', verifyMember, validation(dataInterface.notification.getNotification), getNotification);
-// router.post('/all/read', verifyMember, validation(dataInterface.notification.readAllNotification), readAllNotification);
-// router.post('/:index/read', verifyMember, validation(dataInterface.notification.readNotification), readNotification);// validation(),
-
 module.exports = {
   getNotification,
   readNotification,

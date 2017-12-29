@@ -319,7 +319,6 @@ let createPost = async (req, res, next) => {
     !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
-
   let now = Date.now();
   let postInfo = {
     allowScript: req.member.role === 'admin',
@@ -617,13 +616,7 @@ let deletePost = async (req, res, next) => {
     let postsDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
       { $unwind: '$posts' },
-      { $match: { 'posts.index': req.params.postIndex } },
-      {
-        $project: {
-          _id: 0,
-          status: 1
-        }
-      }
+      { $match: { 'posts.index': req.params.postIndex } }
     ]).toArray();
 
     let status = {
@@ -632,7 +625,8 @@ let deletePost = async (req, res, next) => {
       time: Date.now()
     };
     // 如果已封禁则解除封禁
-    if (postsDoc[0].status && postsDoc[0].status.type === config.discussion.status.deleted) {
+    let isDeleted = postsDoc[0].status && postsDoc[0].status.type === config.discussion.status.deleted;
+    if (isDeleted) {
       status = {
         type: config.discussion.status.ok,
         operator: req.member._id,
@@ -642,10 +636,16 @@ let deletePost = async (req, res, next) => {
     let updateDate = { $set: {} };
     updateDate.$set[`posts.${req.params.postIndex}.status`] = status;
 
-    await dbTool.discussion.update(
+    await dbTool.discussion.findOneAndUpdate(
       { _id: _id },
-      updateDate
+      updateDate,
+      { returnOriginal: false }
     );
+    // TODO: 为通知添加跳转链接（被封禁的 post 要不要对发布者开放？）
+    let notification = {
+      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete
+    };
+    utils.notification.sendNotification(postsDoc[0].posts.user, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -681,7 +681,8 @@ let deleteDiscussion = async (req, res, next) => {
       time: Date.now()
     };
     // 如果已封禁则解除封禁
-    if (discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.deleted) {
+    let isDeleted = discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.deleted;
+    if (isDeleted) {
       status = {
         type: config.discussion.status.ok,
         operator: req.member._id,
@@ -691,10 +692,16 @@ let deleteDiscussion = async (req, res, next) => {
     let updateDate = { $set: {} };
     updateDate.$set.status = status;
 
-    await dbTool.discussion.updateOne(
+    let updateDoc = await dbTool.discussion.findOneAndUpdate(
       { _id: _id },
-      updateDate
+      updateDate,
+      { returnOriginal: false }
     );
+    // TODO: 为通知添加跳转链接（被封禁的 discussion 要不要对发布者开放？）
+    let notification = {
+      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete
+    };
+    utils.notification.sendNotification(updateDoc.value.creater, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

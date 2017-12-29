@@ -37,7 +37,11 @@ module.exports = {
       deleted: 'deleted',
     },
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
-    reset: 'loading'
+    reset: 'loading',
+    text: {
+      delete: '您发布的内容已被封禁。',
+      recover: '您被封禁的内容已恢复。',
+    }
   },
   permissions: 'loading'
 };
