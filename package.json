@@ -13,7 +13,7 @@
     "test": "cross-env NODE_ENV=mocha nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web && npm i",
-    "build": "cd web && npm run build && cp -r {dist,index.html} ../app/public",
+    "build": "cd web && npm run build && cp -r dist ../app/public && cp index.html ../app/public",
     "dev": "node ./index.js",
     "production": "cross-env NODE_ENV=production node ./index.js"
   },

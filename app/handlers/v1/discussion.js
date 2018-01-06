@@ -422,6 +422,23 @@ let createPost = async (req, res, next) => {
       } else break;
     }
 
+    // 向讨论创建者发送一条通知
+    // TODO: 如果该讨论在该用户的忽略列表中，则不发送通知
+    // TODO: production 模式下自己回复自己的帖子时不发送通知
+    // FIXME: 这里需不需要 await？似乎异步让他放飞自我没什么问题
+    await utils.notification.sendNotification(discussionInfo.creater, {
+      content: `${req.member.username} 回复了您创建的讨论：${discussionInfo.title}`,
+      href: `/d/${discussionInfo._id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`
+    });
+
+    // 向被回复的成员发送一条通知
+    if (postInfo.replyTo) {
+      await utils.notification.sendNotification(postInfo.replyTo.memberId, {
+        content: `${req.member.username} 回复了您：${discussionInfo.title}`,
+        href: `/d/${discussionInfo._id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`
+      });
+    }
+
     return res.status(201).send({ status: 'ok', newPost: postInfo });
   } catch (err) {
     /* istanbul ignore next */

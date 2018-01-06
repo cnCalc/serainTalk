@@ -26,8 +26,8 @@ export default {
   },
   computed: {
     notifications () {
-      return { count: 0, list: [], new: false }; // this.$store.state.notifications;
-      // return this.$store.state.notifications;
+      // return { count: 0, list: [], new: false }; // this.$store.state.notifications;
+      return this.$store.state.notifications;
     }
   },
   methods: {
@@ -213,6 +213,9 @@ div.notification-container {
 
     li {
       border-bottom: 1px solid #eee;
+      &:not(.new) {
+        color: grey;
+      }
     }
 
     li.new {
