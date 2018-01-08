@@ -349,11 +349,11 @@ div.discussion-view {
           overflow: show;
         }
         div.discussion-post-avater {
-          margin-left: -$avatar-size - 12px;
+          margin-left: -$avatar-size - 12px - 4px;
           margin-top: -10px;
         }
         .discussion-post-body > * {
-          padding-left: $avatar-size + 12px;
+          padding-left: $avatar-size + 12px + 8px;
         }
       }
 

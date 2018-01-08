@@ -34,7 +34,7 @@ div
           button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
       div.member-recent-posts(v-if="$route.meta.mode === 'discussions'")
-        discussion-list(:hideavatar="true" :list="$store.state.member.discussions")
+        discussion-list(:hideavatar="false" :list="$store.state.member.discussions")
         loading-icon(v-if="busy")
         div.list-nav(v-if="canLoadMorePosts")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
@@ -63,7 +63,7 @@ div
           check-box(:checked="$store.state.autoLoadOnScroll" v-on:click.native="switchScrollBehavior")
           span 在讨论页面中使用实验性的滚动自动加载
         div.row
-          check-box(:checked="false")
+          check-box(:checked="$store.state.theme === 'dark'" v-on:click.native="switchTheme")
           span 启用夜间模式（黑色主题）
         h3 隐私设置
         div.row
@@ -110,6 +110,9 @@ export default {
   },
   methods: {
     timeAgo, indexToPage,
+    switchTheme () {
+      this.$store.commit('switchTheme');
+    },
     loadMore () {
       this.currentPage++;
       this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId, page: this.currentPage, append: true }).then(count => {

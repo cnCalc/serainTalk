@@ -80,6 +80,7 @@ div.st-header {
   left: 0;
   right: 0;
   height: 50px;
+  width: 100vw;
   text-align: center;
   z-index: 10;
 

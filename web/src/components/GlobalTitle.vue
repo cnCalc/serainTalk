@@ -33,7 +33,7 @@ export default {
 div.jumbotron {
   min-height: 120px;
   width: 100vw;
-  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   overflow: hidden;
   transition: background linear 0.2s;
   text-shadow: 0 0 5px black;
