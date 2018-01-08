@@ -104,6 +104,17 @@ interface Member {
     members: Array<ObjectID>,             // 忽略的用户列表（被这些用户回复时不产生通知）
     discussions: Array<ObjectID>,         // 忽略的讨论列表（该讨论内自己被回复和被提及不会产生通知）
   },
+  settings: {
+    nightmode: bool,
+    mail: {
+      onReply: bool,
+      onMention: bool,
+      onSubscribtionUpdate: bool,
+    },
+    privacy: {
+      showEmailToMembers: bool,
+    }
+  },
   uid?: number,                           // Discuz 的用户 ID
   gender?: number,                        // 性别，可能不会保留
   birthday?: number,                      // 生日三连，可能不会保留
