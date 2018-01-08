@@ -750,7 +750,7 @@ describe('discussion part', async () => {
               .expect(200);
             nitificationRes = nitificationRes.body;
             let notifications = nitificationRes.notifications;
-            expect(notifications.length).to.be.equal(1);
+            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
           });
         });
       });
@@ -826,7 +826,7 @@ describe('discussion part', async () => {
                   .expect(200);
                 nitificationRes = nitificationRes.body;
                 let notifications = nitificationRes.notifications;
-                expect(notifications.length).to.be.equal(1);
+                expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
               });
             });
           });
