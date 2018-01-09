@@ -70,9 +70,6 @@ let info = {
 exports.info = info;
 
 let setting = {
-  body: {
-    nightMode: interfaceUtils.flag
-  }
 };
 exports.setting = setting;
 

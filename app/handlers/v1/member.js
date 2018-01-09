@@ -167,8 +167,17 @@ let updateSettings = async (req, res, next) => {
   try {
     let settings = req.body;
     let updateInfo = {};
-    for (let key of Object.keys(settings)) {
-      updateInfo[`settings.${key}`] = settings[key];
+    let settingPath = req.params[0];
+
+    if (req.params[0]) {
+      // 如果细分请求则读取 value
+      let settingParams = settingPath.replace(/\//g, '.');
+      updateInfo[`settings.${settingParams}`] = settings.value;
+    } else {
+      // 否则直接覆盖对应字段
+      for (let key of Object.keys(settings)) {
+        updateInfo[`settings.${key}`] = settings[key];
+      }
     }
     let updateDoc = await dbTool.commonMember.findOneAndUpdate(
       { _id: req.member._id },

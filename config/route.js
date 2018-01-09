@@ -225,8 +225,8 @@ let route = {
     setting: {
       description: '修改用户设置。',
       path: [
-        '/v1/members/settings',
-        '/v1/member/settings'
+        /\/v1\/members{0,1}\/settings{0,1}\/(.*)/,
+        /\/v1\/members{0,1}\/settings{0,1}/,
       ],
       method: 'put',
       schema: dataInterface.member.setting,

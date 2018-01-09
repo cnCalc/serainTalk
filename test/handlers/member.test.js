@@ -350,7 +350,7 @@ describe('member part', () => {
     await testTools.member.createOneMember(agent, null, async () => {
       let updateUrl = '/api/v1/member/settings';
       let updatePayload = {
-        nightMode: 'on'
+        nightMode: true
       };
       let updateRes = await agent.put(updateUrl)
         .send(updatePayload)
@@ -359,6 +359,20 @@ describe('member part', () => {
       for (let key of Object.keys(updatePayload)) {
         expect(settings[key]).to.be.equal(updatePayload[key]);
       }
+    });
+  });
+
+  it('update member setting more details.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      let updateUrl = '/api/v1/member/settings/mail/onReply';
+      let updatePayload = {
+        value: true
+      };
+      let updateRes = await agent.put(updateUrl)
+        .send(updatePayload)
+        .expect(201);
+      let settings = updateRes.body.settings;
+      expect(settings.mail.onReply).to.be.equal(updatePayload.value);
     });
   });
 });
