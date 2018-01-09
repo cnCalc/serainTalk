@@ -17,6 +17,7 @@ module.exports = {
   renderer: require('./renderer'),
   resolveMembers: require('./resolve-members'),
   router: require('./router'),
+  string: require('./string'),
   time: require('./time'),
   url: require('./url'),
 };

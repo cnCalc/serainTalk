@@ -43,5 +43,15 @@ module.exports = {
       recover: '您被封禁的内容已恢复。',
     }
   },
-  permissions: 'loading'
+  permissions: 'loading',
+  notification: {
+    discussionReplied: {
+      content: '${var1} 回复了您创建的讨论：${var2}',
+      href: '/d/${var1}/${var2}#index-${var3}'
+    },
+    postReplied: {
+      content: '${var1} 回复了您：${var2}',
+      href: '/d/${var1}/${var2}#index-${var3}'
+    },
+  },
 };
