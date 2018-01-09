@@ -40,7 +40,7 @@ function fetchDiscussionPostByIdAndIndex (param) {
   else if (!param.index) return Promise.reject('require index for post.');
 
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}/post/${param.index}${param.raw && '?raw=on'}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}/post/${param.index}${param.raw ? '?raw=on' : ''}`)
     .then(response => resolve(response.data))
     .catch(error => reject(error));
   });

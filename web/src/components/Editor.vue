@@ -311,7 +311,6 @@ div.editor {
   left: 0;
   right: 0;
   background: #eee;
-  z-index: 100;
   pointer-events: all;
   padding-right: 30px;
   text-align: left;

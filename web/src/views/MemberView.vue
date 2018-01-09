@@ -34,7 +34,7 @@ div
           button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
       div.member-recent-posts(v-if="$route.meta.mode === 'discussions'")
-        discussion-list(:hideavatar="false" :list="$store.state.member.discussions")
+        discussion-list(:hideavatar="true" :list="$store.state.member.discussions") 
         loading-icon(v-if="busy")
         div.list-nav(v-if="canLoadMorePosts")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
@@ -324,17 +324,10 @@ div.member-activity {
         color: white;
       }
 
-      button.button.active {
-        background: $theme_color;
-        color: white;
-      }
-
       button.button {
-        background: rgba(0, 0, 0, 0);
         margin: 0.3rem;
         padding: 0.3em 0.5em;
         width: 100px;
-        color: $theme_color;
         border: none;
 
         &:focus {
@@ -375,13 +368,7 @@ div.member-activity {
           font-size: 14px;
           border: none;
           padding: 6px 14px;
-          color: mix($theme_color, black, 90%);
-          background: mix($theme_color, white, 15%);
           margin-right: 5px;
-          &:hover {
-            color: mix($theme_color, black, 60%);
-            background: mix($theme_color, white, 20%);
-          }
         }
       }
       h3 {
@@ -520,6 +507,27 @@ div.member-activity {
   li.activity-item:not(:last-child) {
     border-bottom: 1px solid #555;
   }
+  .member-settings {
+    button {
+      color: white;
+      background: #444;
+      &:hover {
+        color: white;
+        background: #555;
+      }
+    }
+  }
+  div.member-side-nav {
+    button.button.active {
+      background: #444;
+      color: white;
+    }
+
+    button.button {
+      background: rgba(0, 0, 0, 0);
+      color: lightgrey;
+    }
+  }
 }
 
 .light-theme div.member-info, .light-theme div.member-activity {
@@ -528,6 +536,27 @@ div.member-activity {
   }
   li.activity-item:not(:last-child) {
     border-bottom: 1px solid rgba($theme_color, 0.3);
+  }
+  .member-settings {
+    button {
+      color: mix($theme_color, black, 90%);
+      background: mix($theme_color, white, 15%);
+      &:hover {
+        color: mix($theme_color, black, 60%);
+        background: mix($theme_color, white, 20%);
+      }
+    }
+  }
+  div.member-side-nav {
+    button.button.active {
+      background: $theme_color;
+      color: white;
+    }
+
+    button.button {
+      background: rgba(0, 0, 0, 0);
+      color: $theme_color;
+    }
   }
 }
 </style>

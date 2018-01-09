@@ -77,6 +77,7 @@ div.editor-wrapper {
   left: 0;
   width: 100vw;
   height: 100vh;
+  z-index: 10;
   pointer-events: none;
 }
 

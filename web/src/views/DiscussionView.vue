@@ -351,6 +351,7 @@ div.discussion-view {
         div.discussion-post-avater {
           margin-left: -$avatar-size - 12px - 4px;
           margin-top: -10px;
+          z-index: 1;
         }
         .discussion-post-body > * {
           padding-left: $avatar-size + 12px + 8px;
@@ -374,14 +375,14 @@ div.discussion-view {
         @include set-avatar-outside(60px);
       }
 
-      div.show-only-when-hover {
-        transition: all ease 0.2s;
-        opacity: 0;
-      }
+      // div.show-only-when-hover {
+      //   transition: all ease 0.2s;
+      //   opacity: 0;
+      // }
 
-      &:hover div.show-only-when-hover {
-        opacity: 1;
-      }
+      // &:hover div.show-only-when-hover {
+      //   opacity: 1;
+      // }
 
       header.discussion-post-info {
         display: flex;
