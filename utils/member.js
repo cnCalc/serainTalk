@@ -18,3 +18,17 @@ let removePrivateField = (memberInfo) => {
   return memberInfo;
 };
 exports.removePrivateField = removePrivateField;
+
+let removeProtectedField = (memberInfo) => {
+  for (let field of config.member.protectedField) {
+    delete memberInfo[field];
+  }
+  return memberInfo;
+};
+
+let removeSensitiveField = (memberInfo) => {
+  removePrivateField(memberInfo);
+  removeProtectedField(memberInfo);
+  return memberInfo;
+};
+exports.removeSensitiveField = removeSensitiveField;

@@ -29,7 +29,7 @@ let getMemberInfoById = async (req, res, next) => {
     }
 
     // 删除用户的敏感信息部分
-    utils.member.removePrivateField(memberInfo);
+    utils.member.removeSensitiveField(memberInfo);
 
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent === 'on') {
@@ -135,7 +135,7 @@ let getMemberInfoGeneric = (req, res) => {
       errorHandler(null, errorMessages.DB_ERROR, 500, res);
     } else {
       // 删除所有用户的凭据部分
-      results.forEach(result => utils.member.removePrivateField(result));
+      results.forEach(result => utils.member.removeSensitiveField(result));
       res.send({
         status: 'ok',
         list: results
@@ -152,7 +152,12 @@ let getMemberInfoGeneric = (req, res) => {
  */
 let getSelf = async (req, res) => {
   req.member._id = req.member.id;
+  let ignores = await dbTool.commonMember.aggregate([
+    { $match: { _id: req.member._id } },
+    { $project: { ignores: 1 } }
+  ]);
   delete req.member.id;
+  req.member.ignores = ignores;
   return res.status(200).send({ status: 'ok', memberInfo: req.member });
 };
 

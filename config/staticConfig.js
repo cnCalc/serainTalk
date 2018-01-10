@@ -13,7 +13,10 @@ module.exports = {
   member: {
     privateField: [
       'credentials',
-      'notifications'
+      'notifications',
+    ],
+    protectedField: [
+      'ignores',
     ],
     permissions: 'loading',
     types: 'loading'
