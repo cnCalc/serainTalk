@@ -12,11 +12,11 @@ module.exports = {
   },
   member: {
     privateField: [
-      'credentials',
-      'notifications',
+      'credentials', // 身份信息，只有服务器端留存，不可获取
+      'notifications', // 有专用接口，不直接获取
+      'ignores', // 服务器端留存即可，无需发送
     ],
     protectedField: [
-      'ignores',
     ],
     permissions: 'loading',
     types: 'loading'

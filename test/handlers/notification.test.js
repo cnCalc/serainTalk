@@ -73,11 +73,11 @@ describe('notification part', async () => {
         await utils.notification.sendNotification(newMemberInfo._id, notification);
       }
       let getUrl = '/api/v1/notification';
-      let nitificationRes = await agent.get(getUrl)
+      let notificationRes = await agent.get(getUrl)
         .expect(200);
-      nitificationRes = nitificationRes.body;
-      let notifications = nitificationRes.notifications;
-      let count = nitificationRes.count;
+      notificationRes = notificationRes.body;
+      let notifications = notificationRes.notifications;
+      let count = notificationRes.count;
       expect(notifications.length).to.be.equal(config.pagesize);
       expect(count).to.be.equal(config.pagesize + 1);
     });

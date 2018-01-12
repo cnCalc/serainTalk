@@ -76,11 +76,35 @@ let route = {
         '/v1/discussion/:id'
       ],
       method: 'delete',
-      schema: dataInterface.discussion.deleteDiscussion,
+      schema: dataInterface.discussion.banDiscussion,
       handler: [
         handlers.v1.discussion.deleteDiscussion
       ]
-    }
+    },
+    ignoreDiscussion: {
+      description: '拒收指定 Discussion 的被回复通知。',
+      path: [
+        '/v1/discussions/:id/ignore',
+        '/v1/discussion/:id/ignore'
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.banDiscussion,
+      handler: [
+        handlers.v1.discussion.ignoreDiscussion
+      ]
+    },
+    ignoreMember: {
+      description: '拒收指定 member 的回复通知。',
+      path: [
+        '/v1/member/:id/ignore',
+        '/v1/member/:id/ignore'
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.ignoreMember,
+      handler: [
+        handlers.v1.discussion.ignoreMember,
+      ]
+    },
   },
   posts: {
     getByDiscussionId: {

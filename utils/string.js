@@ -19,7 +19,7 @@ const fillTemplate = (template, params) => {
   if (!template) throw new Error('template can\'t be empty.');
   let tempStr = template;
   for (let key of Object.keys(params)) {
-    tempStr = template.replace(`$\{${key}\}`, params[key]);
+    tempStr = tempStr.replace(`$\{${key}\}`, params[key]);
   }
   return tempStr;
 };

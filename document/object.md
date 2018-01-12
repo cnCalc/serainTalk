@@ -101,8 +101,10 @@ interface Member {
   },
   notifications: Array<Notification>      // 通知队列
   ignores: {
-    members: Array<ObjectID>,             // 忽略的用户列表（被这些用户回复时不产生通知）
-    discussions: Array<ObjectID>,         // 忽略的讨论列表（该讨论内自己被回复和被提及不会产生通知）
+    notification:{
+      members: Array<ObjectID>,             // 忽略的用户列表（被这些用户回复时不产生通知）
+      discussions: Array<ObjectID>,         // 忽略的讨论列表（该讨论内自己被回复和被提及不会产生通知）
+    }
   },
   settings: {
     nightmode: bool,

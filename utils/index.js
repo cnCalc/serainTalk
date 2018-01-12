@@ -20,4 +20,5 @@ module.exports = {
   string: require('./string'),
   time: require('./time'),
   url: require('./url'),
+  discussion: require('./discussion'),
 };

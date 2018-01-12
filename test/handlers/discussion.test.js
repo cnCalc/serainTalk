@@ -297,6 +297,32 @@ describe('discussion part', async () => {
     });
   });
 
+  it('post notification.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.createOneMember(agent, null, async () => {
+          // 发送一条回复
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+        });
+
+        await testTools.member.login(agent, newMemberInfoA);
+        // A 查看消息队列
+        let notificationUrl = '/api/v1/notification';
+        let notificationRes = await agent.get(notificationUrl)
+          .expect(200);
+        let notificationBody = notificationRes.body;
+        expect(notificationBody.notifications.length).to.be.equal(1);
+      });
+    });
+  });
+
   it('update a post.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, { content: { content: 'hello test' } }, async (newDiscussionInfo) => {
@@ -830,6 +856,236 @@ describe('discussion part', async () => {
               });
             });
           });
+        });
+      });
+    });
+  });
+
+  it('ignore discussion.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          // 忽略这个讨论
+          let ignoreUrl = `/api/v1/discussions/${newDiscussionInfo.id}/ignore`;
+          await agent.post(ignoreUrl);
+
+          // B 回复这个讨论
+          await testTools.member.login(agent, newMemberInfoB);
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // A 查看消息队列
+          await testTools.member.login(agent, newMemberInfoA);
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(0);
+        });
+      });
+    });
+  });
+
+  it('ignore member.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          // 忽略 B
+          let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
+          await agent.post(ignoreUrl);
+
+          // B 回复这个讨论
+          await testTools.member.login(agent, newMemberInfoB);
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // A 查看消息队列
+          await testTools.member.login(agent, newMemberInfoA);
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(0);
+        });
+      });
+    });
+  });
+
+  it('add a post in my discussion.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          // 为讨论添加帖子
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // A 查看消息队列
+          await testTools.member.login(agent, newMemberInfoA);
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(0);
+        });
+      });
+    });
+  });
+
+  it('other one reply my post in my discussion.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          // 为讨论添加帖子
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            // B 回复 A 的帖子
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+              replyTo: {
+                type: 'index',
+                value: 2,
+                memberId: newMemberInfoA.id
+              }
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
+          });
+
+          // A 查看消息队列
+          await testTools.member.login(agent, newMemberInfoA);
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(1);
+        });
+      });
+    });
+  });
+
+  it('other one reply other one post in my discussion.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            // B 为讨论添加帖子
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test'
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
+
+            await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+              // C 回复 B 的帖子
+              let postPayload = {
+                encoding: 'markdown',
+                content: 'hello test',
+                replyTo: {
+                  type: 'index',
+                  value: 1,
+                  memberId: newMemberInfoB.id
+                }
+              };
+              let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+              await agent.post(url)
+                .send(postPayload)
+                .expect(201);
+
+              // A 查看消息队列
+              await testTools.member.login(agent, newMemberInfoA);
+              let notificationUrl = '/api/v1/notification';
+              let notificationRes = await agent.get(notificationUrl)
+                .expect(200);
+              let notificationBody = notificationRes.body;
+              expect(notificationBody.notifications.length).to.be.equal(2);
+
+              // B 查看消息队列
+              await testTools.member.login(agent, newMemberInfoB);
+              notificationUrl = '/api/v1/notification';
+              notificationRes = await agent.get(notificationUrl)
+                .expect(200);
+              notificationBody = notificationRes.body;
+              expect(notificationBody.notifications.length).to.be.equal(1);
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('ignore member.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          // 忽略 B
+          let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
+          await agent.post(ignoreUrl);
+
+          // B 回复这个讨论
+          await testTools.member.login(agent, newMemberInfoB);
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test'
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // B 回复 A 的帖子
+          postPayload = {
+            encoding: 'markdown',
+            content: 'hello test',
+            replyTo: {
+              type: 'index',
+              value: 1,
+              memberId: newMemberInfoA.id
+            }
+          };
+          url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url)
+            .send(postPayload)
+            .expect(201);
+
+          // A 查看消息队列
+          await testTools.member.login(agent, newMemberInfoA);
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(0);
         });
       });
     });

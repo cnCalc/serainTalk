@@ -144,4 +144,18 @@ let banDiscussion = {
     id: interfaceUtils.mongoId.required()
   }
 };
-exports.deleteDiscussion = banDiscussion;
+exports.banDiscussion = banDiscussion;
+
+let ignoreDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.ignoreDiscussion = ignoreDiscussion;
+
+let ignoreMember = {
+  params: {
+    id: interfaceUtils.mongoId.required()
+  }
+};
+exports.ignoreMember = ignoreMember;

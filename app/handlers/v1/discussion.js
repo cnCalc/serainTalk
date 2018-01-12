@@ -422,36 +422,44 @@ let createPost = async (req, res, next) => {
       } else break;
     }
 
-    // 向被回复的成员发送一条通知
+    // 如果回复了某人
     if (postInfo.replyTo) {
-      await utils.notification.sendNotification(postInfo.replyTo.memberId, {
-        content: utils.string.fillTemplate(config.notification.postReplied.content, {
-          var1: req.member.username,
-          var2: discussionInfo.title
-        }),
-        href: utils.string.fillTemplate(config.notification.postReplied.href, {
-          var1: discussionInfo._id,
-          var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-          var3: postInfo.index
-        })
-      });
+      // 若 不是回复自己 并且 自身没被被回复人屏蔽 并且 被回复人没有屏蔽该讨论 则向被回复人发送一条通知
+      if (!postInfo.replyTo.memberId.equals(req.member._id) &&
+        !await utils.member.isIgnored(postInfo.replyTo.memberId, req.member._id) &&
+        !await utils.discussion.isIgnored(postInfo.replyTo.memberId, discussionInfo._id)) {
+        await utils.notification.sendNotification(postInfo.replyTo.memberId, {
+          content: utils.string.fillTemplate(config.notification.postReplied.content, {
+            var1: req.member.username,
+            var2: discussionInfo.title
+          }),
+          href: utils.string.fillTemplate(config.notification.postReplied.href, {
+            var1: discussionInfo._id,
+            var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+            var3: postInfo.index
+          })
+        });
+      }
     }
 
-    // TODO: 如果该讨论在该用户的忽略列表中，则不发送通知
-    // TODO: production 模式下自己回复自己的帖子时不发送通
-    // 向讨论创建者发送一条通知
-    if (!postInfo.replyTo || postInfo.replyTo.memberId !== discussionInfo.creater) {
-      await utils.notification.sendNotification(discussionInfo.creater, {
-        content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
-          var1: req.member.username,
-          var2: discussionInfo.title
-        }),
-        href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
-          var1: discussionInfo._id,
-          var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-          var3: postInfo.index
-        })
-      });
+    // 没有回复 或者 回复的不是讨论的创建者时 额外向讨论的创建者发送一次通知
+    if (!postInfo.replyTo || !postInfo.replyTo.memberId.equals(discussionInfo.creater)) {
+      // 若 跟帖的不是自己创建的讨论 并且 创建者没有屏蔽该讨论 并且 自身没有被讨论创建者屏蔽 则向讨论创建者发送一条通知
+      if (!discussionInfo.creater.equals(req.member._id) &&
+        !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id) &&
+        !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
+        await utils.notification.sendNotification(discussionInfo.creater, {
+          content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
+            var1: req.member.username,
+            var2: discussionInfo.title
+          }),
+          href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
+            var1: discussionInfo._id,
+            var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+            var3: postInfo.index
+          })
+        });
+      }
     }
 
     return res.status(201).send({ status: 'ok', newPost: postInfo });
@@ -797,17 +805,37 @@ let deleteDiscussion = async (req, res, next) => {
   }
 };
 
+let ignoreDiscussion = async (req, res, next) => {
+  await dbTool.commonMember.updateOne(
+    { _id: req.member._id },
+    { $push: { 'ignores.notification.discussions': ObjectID(req.params.id) } }
+  );
+
+  return res.status(201).send({ status: 'ok' });
+};
+
+let ignoreMember = async (req, res, next) => {
+  await dbTool.commonMember.updateOne(
+    { _id: req.member._id },
+    { $push: { 'ignores.notification.members': ObjectID(req.params.id) } }
+  );
+
+  return res.status(201).send({ status: 'ok' });
+};
+
 module.exports = {
-  deleteDiscussion,
-  deletePost,
   createDiscussion,
   createPost,
+  deleteDiscussion,
+  deletePost,
   getDiscussionById,
   getDiscussionPostsById,
   getDiscussionUnderMember,
   getDiscussionsByCategory,
   getLatestDiscussionList,
   getPostByIndex,
+  ignoreDiscussion,
+  ignoreMember,
   updatePost,
   votePost,
 };
