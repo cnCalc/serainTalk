@@ -83,11 +83,17 @@ div.post-content {
   pre.code {
     // Codes from Discuz
     padding: 1rem 20px 0.3rem 20px;
+    br {
+      display: none;
+    }
   }
   pre > code {
     display: block;
     margin-left: 20px;
     width: fit-content;
+  }
+  pre, code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
   }
   /** line numbers **/
   pre span.__line:before {

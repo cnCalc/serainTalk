@@ -155,7 +155,7 @@ let getSelf = async (req, res) => {
   let ignores = await dbTool.commonMember.aggregate([
     { $match: { _id: req.member._id } },
     { $project: { ignores: 1 } },
-  ]);
+  ]).toArray();
   delete req.member.id;
   req.member.ignores = ignores;
   return res.status(200).send({ status: 'ok', memberInfo: req.member });

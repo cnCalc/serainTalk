@@ -92,9 +92,11 @@ export default {
         this.$store.commit('setBusy', false);
         if (response.status === 'ok') {
           window.alert('迁移成功');
+          this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
         }
       }).catch(e => {
         this.$store.commit('setBusy', false);
+        console.error(e);
         window.alert('出现问题，请联系管理员');
       });
     },

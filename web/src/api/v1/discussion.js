@@ -89,6 +89,16 @@ function replyToDiscussion (param) {
   });
 }
 
+function banPostByDiscussionIdAndIndex (param) {
+  if (!param.id) return Promise.reject('discussion id is required');
+  if (!param.index) return Promise.reject('post index is required');
+  return new Promise((resolve, reject) => {
+    axios.delete(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -97,4 +107,5 @@ export default {
   updateDiscussionPostByIdAndIndex,
   createDiscussion,
   replyToDiscussion,
+  banPostByDiscussionIdAndIndex,
 };

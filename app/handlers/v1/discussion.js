@@ -731,7 +731,7 @@ let deletePost = async (req, res, next) => {
       };
     }
     let updateDate = { $set: {} };
-    updateDate.$set[`posts.${req.params.postIndex}.status`] = status;
+    updateDate.$set[`posts.${req.params.postIndex - 1}.status`] = status;
 
     await dbTool.discussion.findOneAndUpdate(
       { _id: _id },

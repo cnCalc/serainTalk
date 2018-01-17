@@ -57,7 +57,7 @@ export default {
     }).then(data => {
       state.commit('mergeMembers', data.members);
       state.commit('updateDiscussionPosts', data.posts);
-      if (param.preloadPrevPage) {
+      if (param.preloadPrevPage && param.page !== 1) {
         param.page--;
         return api.v1.discussion.fetchDiscussionPostsById(param);
       }

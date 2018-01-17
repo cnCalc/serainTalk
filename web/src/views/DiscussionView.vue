@@ -23,7 +23,7 @@
                   button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
                   button.button(@click="copyLink(post.index)") 复制链接
                   button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
-                  button.button(v-if="$store.state.me && $store.state.me.role === 'admin'") 删除
+                  button.button(v-if="$store.state.me && $store.state.me.role === 'admin'" @click="banPost(post.index)") 删除
                 //- button.button.laugh(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
                 //- button.button.doubt(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
                 //- button.button.cheer(v-if="post.votes.up.length > 0") {{ post.votes.up.length }} 
@@ -101,6 +101,17 @@ export default {
         this.maxPage++;
         this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.maxPage });
       }
+    },
+    banPost (index) {
+      api.v1.discussion.banPostByDiscussionIdAndIndex({ id: this.$route.params.discussionId, index })
+        .then(() => {
+          window.alert('OK');
+          // window.location.reload();
+        })
+        .catch(err => {
+          window.alert('Error, see console for more detail.');
+          console.error(err);
+        });
     },
     loadPrevPage () {
       const state = this.$store;

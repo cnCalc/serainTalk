@@ -6,6 +6,11 @@
       input(placeholder="输入标题", v-model="title")
       select(v-model="category")
         option(v-for="category in categories" :value="category.name") {{ category.name }}
+    div.row(v-if="isAdmin")
+      span 排版语言：
+      select(v-model="lang")
+        option(value="html") HTML
+        option(value="markdown") Markdown
     div.textarea
       textarea(placeholder="说些什么吧", v-model="content", :disabled="!editable")
       div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview" v-if="showPreview")
@@ -51,6 +56,7 @@ export default {
       state: {},
       showPreview: true,
       editable: true,
+      lang: 'markdown',
     };
   },
   mounted () {
@@ -101,6 +107,9 @@ export default {
         return '编辑内容';
       }
     },
+    isAdmin () {
+      return !!(this.$store.state.me && this.$store.state.me.role === 'admin');
+    },
   },
   watch: {
     display (val, oldVal) {
@@ -138,8 +147,6 @@ export default {
           }
         }
 
-        console.log({ flush });
-
         if (flush) {
           this.state = editorState;
           if (this.state.mode === 'EDIT_POST') {
@@ -169,8 +176,12 @@ export default {
       const members = this.$store.state.members;
       let preview = '';
 
-      // 渲染 Markdown
-      preview = md.render(this.content);
+      if (this.isAdmin && this.lang === 'html') {
+        preview = this.content;
+      } else {
+        // 渲染 Markdown
+        preview = md.render(this.content);
+      }
 
       // 将开头的回复代码渲染成一个 span
       if (this.content.match(replyReg)) {

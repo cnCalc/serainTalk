@@ -104,10 +104,10 @@ div.post-content {
   $preview-height: 160px;
   div.reply-preview-container {
     width: 80%;
-    height: $preview-height;
-    margin-top: 4px - $preview-height;
+    height: fit-content;
+    transform: translateY(calc(2px - 100%));
     background: white;
-    box-shadow: 1px 1px 5px black;
+    box-shadow: 1px 1px 5px rgba(black, 0.5);
     padding: .8em 1em;
     box-sizing: border-box;
     border-radius: 2px;

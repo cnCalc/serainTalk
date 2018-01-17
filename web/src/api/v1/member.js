@@ -59,5 +59,5 @@ export default {
   fetchMoreMemberRecentActivityById,
   fetchDiscussionsCreatedByMember,
   signin, signout,
-  fetchMe
+  fetchMe,
 };

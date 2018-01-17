@@ -55,9 +55,6 @@ div
         div.row
           check-box(:checked="false")
           span 当我订阅的话题有更新时
-        div.row
-          check-box(:checked="true")
-          span DEEP DARK FANTASY
         h3 浏览选项
         div.row
           check-box(:checked="$store.state.autoLoadOnScroll" v-on:click.native="switchScrollBehavior")
@@ -69,9 +66,9 @@ div
         div.row
           check-box(:checked="false")
           span 允许站内用户查看我的电子邮件地址
-        div.row
-          check-box(:checked="false")
-          span 
+        //- div.row
+        //-   check-box(:checked="false")
+        //-   span 
 </template>
 
 <script>
@@ -80,6 +77,7 @@ import CheckBox from '../components/form/CheckBox.vue';
 import PostContent from '../components/PostContent.vue';
 import DiscussionList from '../components/DiscussionList.vue';
 import api from '../api';
+import axios from 'axios';
 
 import { timeAgo, indexToPage } from '../utils/filters';
 
@@ -111,7 +109,9 @@ export default {
   methods: {
     timeAgo, indexToPage,
     switchTheme () {
-      this.$store.commit('switchTheme');
+      this.updateSetting('nightmode', this.$store.theme === 'light').then(() => {
+        this.$store.commit('switchTheme');
+      });
     },
     loadMore () {
       this.currentPage++;
@@ -119,6 +119,11 @@ export default {
         if (indexToPage(count) <= this.currentPage) {
           this.canLoadMorePosts = false;
         }
+      });
+    },
+    updateSetting (key, value) {
+      return axios.put(`/api/v1/member/settings/${key.replace('.', '/')}`, { value }).then(() => {
+        this.$store.commit('fetchCurrentSigninedMemberInfo');
       });
     },
     loadMoreRecentActivity () {

@@ -12,7 +12,7 @@
       button.button(@click="doSignin", type="button", :disabled="busy") 登录
       div.quick-action-wrapper
         router-link(to="/signup") 前往注册
-        router-link(to="/migration") 账户迁移
+        router-link(:to="`/migration?next=${encodeURIComponent($route.query.next || path)}`") 账户迁移
         router-link(to="/reset-password") 忘记密码
 </template>
 
@@ -33,6 +33,9 @@ export default {
   computed: {
     busy () {
       return this.$store.state.busy;
+    },
+    path () {
+      return this.$route.fullPath;
     },
   },
   beforeMount () {
