@@ -6,7 +6,7 @@ exports = module.exports = {};
 
 let getAttachment = {
   query: {
-    aid: joi.number().required()
-  }
+    aid: joi.number().required(),
+  },
 };
 exports.getAttachment = getAttachment;

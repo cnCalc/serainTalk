@@ -17,7 +17,7 @@ function getAllTags (req, res) {
     } else {
       res.send({
         status: 'ok',
-        tags: docs
+        tags: docs,
       });
     }
   });
@@ -30,7 +30,7 @@ function getPinnedTags (req, res) {
     } else {
       res.send({
         status: 'ok',
-        tags: docs[0].tags
+        tags: docs[0].tags,
       });
     }
   });
@@ -41,5 +41,5 @@ function getPinnedTags (req, res) {
 
 module.exports = {
   getAllTags,
-  getPinnedTags
+  getPinnedTags,
 };

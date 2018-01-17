@@ -51,12 +51,12 @@ describe('discussion part', async () => {
         content: {
           encoding: 'markdown',
           content: 'test text',
-        }
+        },
       };
       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
         let payload = {
           category: ['test'],
-          memberId: newMemberInfo.id
+          memberId: newMemberInfo.id,
         };
         let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent
@@ -82,12 +82,12 @@ describe('discussion part', async () => {
         content: {
           encoding: 'markdown',
           content: 'test text',
-        }
+        },
       };
       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
         let payload = {
           category: ['test'],
-          tag: ['temp tag']
+          tag: ['temp tag'],
         };
         let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent
@@ -113,7 +113,7 @@ describe('discussion part', async () => {
         content: {
           encoding: 'markdown',
           content: 'test text',
-        }
+        },
       };
       await testTools.discussion.createOneDiscussion(agent, testDiscussion, async (newDiscussionInfo) => {
         let url = '/api/v1/discussions/latest';
@@ -177,7 +177,7 @@ describe('discussion part', async () => {
           // 分页测试
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let postUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           for (let i = 0; i < 15; i++) {
@@ -243,13 +243,13 @@ describe('discussion part', async () => {
           content: {
             encoding: 'markdown',
             content: 'test text',
-          }
+          },
         };
         await testTools.discussion.createOneDiscussion(agent, testDiscussionInfo, async (newDiscussionInfo) => {
           await testTools.discussion.setWhiteList(['noTest'], async () => {
             let payload = {
               category: ['test'],
-              memberId: newMemberInfo.id
+              memberId: newMemberInfo.id,
             };
             let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
             let discussionRes = await agent
@@ -261,7 +261,7 @@ describe('discussion part', async () => {
 
           let payload = {
             category: ['test'],
-            memberId: newMemberInfo.id
+            memberId: newMemberInfo.id,
           };
           let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
           let discussionRes = await agent
@@ -280,7 +280,7 @@ describe('discussion part', async () => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
@@ -304,7 +304,7 @@ describe('discussion part', async () => {
           // 发送一条回复
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -330,7 +330,7 @@ describe('discussion part', async () => {
           await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
             let postPayload = {
               encoding: 'markdown',
-              content: 'hello test'
+              content: 'hello test',
             };
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url)
@@ -338,10 +338,10 @@ describe('discussion part', async () => {
               .expect(201);
 
             let updatePayload = {
-              content: 'changed content.'
+              content: 'changed content.',
             };
             let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
-            let tempres = await agent.put(updateUrl)
+            await agent.put(updateUrl)
               .send(updatePayload)
               .expect(201);
 
@@ -366,7 +366,7 @@ describe('discussion part', async () => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -375,7 +375,7 @@ describe('discussion part', async () => {
 
           await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
             let updatePayload = {
-              content: 'changed content.'
+              content: 'changed content.',
             };
             let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
             let updateRes = await agent.put(updateUrl)
@@ -402,7 +402,7 @@ describe('discussion part', async () => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -412,7 +412,7 @@ describe('discussion part', async () => {
           await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
             await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
               let updatePayload = {
-                content: 'changed content.'
+                content: 'changed content.',
               };
               let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
               let updateRes = await agent.put(updateUrl)
@@ -440,7 +440,7 @@ describe('discussion part', async () => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -449,7 +449,7 @@ describe('discussion part', async () => {
 
           let updatePayload = {
             encoding: 'html',
-            content: 'changed content.'
+            content: 'changed content.',
           };
           let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
           await agent.put(updateUrl)
@@ -476,7 +476,7 @@ describe('discussion part', async () => {
           await testTools.discussion.closeFreqLimit(async () => {
             let postPayload = {
               encoding: 'markdown',
-              content: 'hello test'
+              content: 'hello test',
             };
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url)
@@ -485,7 +485,7 @@ describe('discussion part', async () => {
 
             let updatePayload = {
               encoding: 'html',
-              content: 'changed content.'
+              content: 'changed content.',
             };
             let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
             await agent.put(updateUrl)
@@ -513,7 +513,7 @@ describe('discussion part', async () => {
           await testTools.discussion.closeFreqLimit(async () => {
             let postPayload = {
               encoding: 'html',
-              content: 'hello test'
+              content: 'hello test',
             };
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             let postRes = await agent.post(url)
@@ -534,7 +534,7 @@ describe('discussion part', async () => {
         await testTools.discussion.closeFreqLimit(async () => {
           let postPayload = {
             encoding: 'html',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
@@ -575,8 +575,8 @@ describe('discussion part', async () => {
             replyTo: {
               type: 'index',
               value: 1,
-              memberId: newMemberInfo.id
-            }
+              memberId: newMemberInfo.id,
+            },
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           let postRes = await agent.post(url)
@@ -599,7 +599,7 @@ describe('discussion part', async () => {
         let voteType = config.discussion.post.vote.slice();
         for (let vote of voteType) {
           let voteInfo = {
-            vote: vote
+            vote: vote,
           };
           await agent
             .post(voteUrl)
@@ -624,7 +624,7 @@ describe('discussion part', async () => {
         let voteUrl = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/post/1/vote`;
         let voteType = config.discussion.post.vote.slice();
         let voteInfo = {
-          vote: voteType[0]
+          vote: voteType[0],
         };
         let voteRes = await agent
           .post(voteUrl)
@@ -644,7 +644,7 @@ describe('discussion part', async () => {
         let voteType = config.discussion.post.vote.slice();
         for (let vote of voteType) {
           let voteInfo = {
-            vote: vote
+            vote: vote,
           };
           await agent
             .post(voteUrl)
@@ -673,7 +673,7 @@ describe('discussion part', async () => {
         let voteType = config.discussion.post.vote.slice();
         for (let vote of voteType) {
           let voteInfo = {
-            vote: vote
+            vote: vote,
           };
           await agent
             .post(voteUrl)
@@ -705,7 +705,7 @@ describe('discussion part', async () => {
         let voteType = config.discussion.post.vote.slice();
         for (let vote of voteType) {
           let voteInfo = {
-            vote: vote
+            vote: vote,
           };
           await agent
             .post(voteUrl)
@@ -714,7 +714,7 @@ describe('discussion part', async () => {
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
           for (let vote of voteType) {
             let voteInfo = {
-              vote: vote
+              vote: vote,
             };
             await agent
               .post(voteUrl)
@@ -742,7 +742,7 @@ describe('discussion part', async () => {
           await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
             let postPayload = {
               encoding: 'markdown',
-              content: 'hello test'
+              content: 'hello test',
             };
             let addPostUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(addPostUrl)
@@ -789,7 +789,7 @@ describe('discussion part', async () => {
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let addPostUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(addPostUrl)
@@ -821,7 +821,7 @@ describe('discussion part', async () => {
               await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
                 let postPayload = {
                   encoding: 'markdown',
-                  content: 'hello test'
+                  content: 'hello test',
                 };
                 let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
                 await agent.post(addPostUrl)
@@ -873,7 +873,7 @@ describe('discussion part', async () => {
           await testTools.member.login(agent, newMemberInfoB);
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -904,7 +904,7 @@ describe('discussion part', async () => {
           await testTools.member.login(agent, newMemberInfoB);
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -930,7 +930,7 @@ describe('discussion part', async () => {
           // 为讨论添加帖子
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -956,7 +956,7 @@ describe('discussion part', async () => {
           // 为讨论添加帖子
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -971,8 +971,8 @@ describe('discussion part', async () => {
               replyTo: {
                 type: 'index',
                 value: 2,
-                memberId: newMemberInfoA.id
-              }
+                memberId: newMemberInfoA.id,
+              },
             };
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url)
@@ -1000,7 +1000,7 @@ describe('discussion part', async () => {
             // B 为讨论添加帖子
             let postPayload = {
               encoding: 'markdown',
-              content: 'hello test'
+              content: 'hello test',
             };
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url)
@@ -1015,8 +1015,8 @@ describe('discussion part', async () => {
                 replyTo: {
                   type: 'index',
                   value: 1,
-                  memberId: newMemberInfoB.id
-                }
+                  memberId: newMemberInfoB.id,
+                },
               };
               let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
               await agent.post(url)
@@ -1057,7 +1057,7 @@ describe('discussion part', async () => {
           await testTools.member.login(agent, newMemberInfoB);
           let postPayload = {
             encoding: 'markdown',
-            content: 'hello test'
+            content: 'hello test',
           };
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)
@@ -1071,8 +1071,8 @@ describe('discussion part', async () => {
             replyTo: {
               type: 'index',
               value: 1,
-              memberId: newMemberInfoA.id
-            }
+              memberId: newMemberInfoA.id,
+            },
           };
           url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url)

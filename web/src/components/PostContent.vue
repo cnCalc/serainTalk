@@ -33,7 +33,7 @@ export default {
   computed: {
     pattern () {
       return `@${this.replyTo.memberId}#${this.discussionId || this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
-    }
+    },
   },
   methods: {
     replaceReplyTag (html) {
@@ -58,7 +58,7 @@ export default {
       }
 
       return html;
-    }
+    },
   },
   watch: {
     content () {
@@ -82,8 +82,8 @@ export default {
           console.log(e);
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -4,11 +4,11 @@ module.exports = {
   jwtSecret: 'exampleSecret',
   siteAddress: 'https://www.cncalc.org', // 末尾不要加'/'
   cookie: {
-    renewTime: 86400000
+    renewTime: 86400000,
   },
   password: {
     resetPasswordPage: 'https://www.cncalc.org/resetpassword.html',
-    tokenValidTime: 1000 * 60 // 迁移或重置密码的 Token 有效期（1分钟）
+    tokenValidTime: 1000 * 60, // 迁移或重置密码的 Token 有效期（1分钟）
   },
   member: {
     privateField: [
@@ -19,11 +19,11 @@ module.exports = {
     protectedField: [
     ],
     permissions: 'loading',
-    types: 'loading'
+    types: 'loading',
   },
   discussion: {
     category: {
-      whiteList: 'loading'
+      whiteList: 'loading',
     },
     post: {
       vote: [
@@ -32,8 +32,8 @@ module.exports = {
         'laugh',
         'doubt',
         'cheer',
-        'emmmm'
-      ]
+        'emmmm',
+      ],
     },
     status: {
       ok: 'ok',
@@ -44,17 +44,17 @@ module.exports = {
     text: {
       delete: '您发布的内容已被封禁。',
       recover: '您被封禁的内容已恢复。',
-    }
+    },
   },
   permissions: 'loading',
   notification: {
     discussionReplied: {
       content: '${var1} 回复了您创建的讨论：${var2}',
-      href: '/d/${var1}/${var2}#index-${var3}'
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
     postReplied: {
       content: '${var1} 回复了您：${var2}',
-      href: '/d/${var1}/${var2}#index-${var3}'
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
   },
 };

@@ -30,7 +30,7 @@ import MemberControl from './MemberControl.vue';
 export default {
   name: 'nav-bar',
   components: {
-    CategoryList, NotificationControl, MemberControl
+    CategoryList, NotificationControl, MemberControl,
   },
   data () {
     return {
@@ -65,8 +65,8 @@ export default {
     categoryDrawerDeactivate () {
       this.isCategoryDrawerActivated = false;
       document.removeEventListener('click', this.categoryDrawerDeactivate);
-    }
-  }
+    },
+  },
 };
 </script>
 

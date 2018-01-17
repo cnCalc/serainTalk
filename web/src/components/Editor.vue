@@ -30,7 +30,7 @@ const md = window.markdownit({
     }
 
     return addSpanEachLine(str.trim());
-  }
+  },
 });
 
 function addSpanEachLine (html) {
@@ -100,7 +100,7 @@ export default {
       } else if (this.state.mode === 'EDIT_POST') {
         return '编辑内容';
       }
-    }
+    },
   },
   watch: {
     display (val, oldVal) {
@@ -159,7 +159,7 @@ export default {
           }
         }
       }
-    }
+    },
   },
   methods: {
     updatePreview () {
@@ -294,8 +294,8 @@ export default {
           this.update();
           break;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

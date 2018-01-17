@@ -23,11 +23,11 @@ export default {
   computed: {
     categoriesGroup () {
       return this.$store.state.categoriesGroup;
-    }
+    },
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchCategory');
-  }
+  },
 };
 </script>
 

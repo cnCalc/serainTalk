@@ -16,7 +16,7 @@ let discussionFakeInfo = {
   content: {
     encoding: 'html',
     content: 'test text',
-  }
+  },
 };
 exports.discussionFakeInfo = discussionFakeInfo;
 /**

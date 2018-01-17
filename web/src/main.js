@@ -20,11 +20,11 @@ const router = new VueRouter({
     {
       path: '/',
       component: ListView,
-      meta: { keepAlive: true }
+      meta: { keepAlive: true },
     }, {
       path: '/c/:categorySlug',
       component: ListView,
-      meta: { keepAlive: true }
+      meta: { keepAlive: true },
     }, {
       path: '/d/:discussionId',
       component: DiscussionView,
@@ -36,15 +36,15 @@ const router = new VueRouter({
     }, {
       path: '/m/:memberId',
       component: MemberView,
-      meta: { keepAlive: true, mode: 'posts' }
+      meta: { keepAlive: true, mode: 'posts' },
     }, {
       path: '/m/:memberId/discussions',
       component: MemberView,
-      meta: { keepAlive: true, mode: 'discussions' }
+      meta: { keepAlive: true, mode: 'discussions' },
     }, {
       path: '/m/:memberId/settings',
       component: MemberView,
-      meta: { keepAlive: true, mode: 'settings' }
+      meta: { keepAlive: true, mode: 'settings' },
     }, {
       path: '/signin',
       component: SigninView,
@@ -59,7 +59,7 @@ const router = new VueRouter({
       path: '*',
       component: ErrorView,
       meta: { code: 404 },
-    }
+    },
   ],
   scrollBehavior (to, from, savedPosition) {
     if (savedPosition) {
@@ -78,10 +78,10 @@ Vue.mixin({
     if (asyncData) {
       this.dataPromise = asyncData({
         store: this.$store,
-        route: this.$route
+        route: this.$route,
       });
     }
-  }
+  },
 });
 
 sync(store, router);
@@ -90,5 +90,5 @@ new Vue({
   el: '#app',
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
 });

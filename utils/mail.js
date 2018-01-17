@@ -16,5 +16,5 @@ let sendMessage = async (address, message) => {
 
 module.exports = {
   sendVerificationCode,
-  sendMessage
+  sendMessage,
 };

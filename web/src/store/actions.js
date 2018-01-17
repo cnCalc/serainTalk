@@ -157,5 +157,5 @@ export default {
     return api.v1.notification.readNotification(param).then(data => {
       state.commit('updateNofitication', param);
     });
-  }
+  },
 };

@@ -8,11 +8,11 @@ exports = module.exports = {};
 // 发送一条私信
 let sendMessage = {
   params: {
-    memberId: interfaceUtils.mongoId
+    memberId: interfaceUtils.mongoId,
   },
   body: {
-    content: joi.string().required()
-  }
+    content: joi.string().required(),
+  },
 };
 exports.sendMessage = sendMessage;
 
@@ -20,31 +20,31 @@ exports.sendMessage = sendMessage;
 let getMessagesInfo = {
   query: {
     pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page
-  }
+    page: interfaceUtils.page,
+  },
 };
 exports.getMessagesInfo = getMessagesInfo;
 
 // 获取与指定的人的私信记录
 let getMessageByMemberId = {
   params: {
-    memberId: interfaceUtils.mongoId.required()
+    memberId: interfaceUtils.mongoId.required(),
   },
   query: {
     beforeDate: joi.number(),
-    pagesize: interfaceUtils.pagesize
-  }
+    pagesize: interfaceUtils.pagesize,
+  },
 };
 exports.getMessageByMemberId = getMessageByMemberId;
 
 // 获取指定 ID 的私信
 let getMessageById = {
   params: {
-    id: interfaceUtils.mongoId.required()
+    id: interfaceUtils.mongoId.required(),
   },
   query: {
     beforeDate: joi.number(),
-    pagesize: interfaceUtils.pagesize
-  }
+    pagesize: interfaceUtils.pagesize,
+  },
 };
 exports.getMessageById = getMessageById;

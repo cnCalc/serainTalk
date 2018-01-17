@@ -55,7 +55,7 @@ let verifyDiscussionFreq = async (req, res, next) => {
   let latestDiscussion = await dbTool.discussion.aggregate([
     { $match: { 'creater': req.member._id } },
     { $sort: { 'createDate': -1 } },
-    { $limit: 1 }
+    { $limit: 1 },
   ]).toArray();
   if (latestDiscussion.length === 0) return next();
   if (Date.now() - latestDiscussion[0].createDate <= config.discussion.freqLimit) {
@@ -98,16 +98,16 @@ let verifyPostFreq = async (req, res, next) => {
                 // 因为发布 Discussion 的同时会发布一份 Post
                 // 所以只要 post 的创建时间与 Discussion 相同则是一楼
                 // 即可剔除发布 Discussion 的干扰
-                { $ne: ['$$post.createDate', '$createDate'] }
-              ]
-            }
-          }
-        }
-      }
+                { $ne: ['$$post.createDate', '$createDate'] },
+              ],
+            },
+          },
+        },
+      },
     },
     { $unwind: '$posts' },
     { $sort: { 'posts.createDate': -1 } },
-    { $limit: 1 }
+    { $limit: 1 },
   ]).toArray();
   if (latestPost.length === 0) return next();
   if (Date.now() - latestPost[0].posts.createDate <= config.discussion.freqLimit) {
@@ -147,14 +147,14 @@ let verifyCommitFreq = async (req, res, next) => {
             as: 'post',
             // 因为发布 Discussion 的同时会发布一份 Post
             // 所以只需要统计 post 的频率
-            cond: { $eq: ['$$post.user', req.member._id] }
-          }
-        }
-      }
+            cond: { $eq: ['$$post.user', req.member._id] },
+          },
+        },
+      },
     },
     { $unwind: '$posts' },
     { $sort: { 'posts.createDate': -1 } },
-    { $limit: 1 }
+    { $limit: 1 },
   ]).toArray();
   if (latestPost.length === 0) return next();
   if (Date.now() - latestPost[0].posts.createDate <= config.discussion.freqLimit) {

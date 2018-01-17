@@ -44,5 +44,5 @@ let isAdmin = async (req, res, next) => {
 module.exports = {
   sudo,
   sendNotification,
-  isAdmin
+  isAdmin,
 };

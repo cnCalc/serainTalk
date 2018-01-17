@@ -40,8 +40,8 @@ let getMemberInfoById = async (req, res, next) => {
       let beforeDate = req.query.before ? Number(req.query.before) : new Date().getTime();
       let query = {
         $match: {
-          'posts.user': memberId
-        }
+          'posts.user': memberId,
+        },
       };
       // 鉴权 能否读取所有分类中的讨论
       if (!await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
@@ -56,23 +56,23 @@ let getMemberInfoById = async (req, res, next) => {
               $filter: {
                 input: '$posts',
                 as: 'post',
-                cond: { $eq: ['$$post.user', memberId] }
-              }
-            }
-          }
+                cond: { $eq: ['$$post.user', memberId] },
+              },
+            },
+          },
         }, {
-          $unwind: '$posts'
+          $unwind: '$posts',
         }, {
           $sort: {
-            'posts.createDate': -1
-          }
+            'posts.createDate': -1,
+          },
         }, {
           $match: {
-            'posts.createDate': { $lt: beforeDate }
-          }
+            'posts.createDate': { $lt: beforeDate },
+          },
         }, {
-          $limit: config.pagesize
-        }
+          $limit: config.pagesize,
+        },
       ]).toArray();
       memberInfo.recentActivities = recentPosts;
       memberInfo.recentActivities.forEach(discussion => {
@@ -127,7 +127,7 @@ let getMemberInfoGeneric = (req, res) => {
     {
       limit: pagesize,
       skip: offset * pagesize,
-      sort: [['date', 'desc']]
+      sort: [['date', 'desc']],
     }
   ).toArray((err, results) => {
     /* istanbul ignore if */
@@ -138,7 +138,7 @@ let getMemberInfoGeneric = (req, res) => {
       results.forEach(result => utils.member.removeSensitiveField(result));
       res.send({
         status: 'ok',
-        list: results
+        list: results,
       });
     }
   });
@@ -154,7 +154,7 @@ let getSelf = async (req, res) => {
   req.member._id = req.member.id;
   let ignores = await dbTool.commonMember.aggregate([
     { $match: { _id: req.member._id } },
-    { $project: { ignores: 1 } }
+    { $project: { ignores: 1 } },
   ]);
   delete req.member.id;
   req.member.ignores = ignores;
@@ -187,7 +187,7 @@ let updateSettings = async (req, res, next) => {
     let updateDoc = await dbTool.commonMember.findOneAndUpdate(
       { _id: req.member._id },
       {
-        $set: updateInfo
+        $set: updateInfo,
       },
       { returnOriginal: false }
     );
@@ -327,7 +327,7 @@ let resetPassword = async (req, res) => {
     joi.validate(tokenInfo, {
       memberId: dataInterface.object.mongoId.required(),
       password: joi.string().required(),
-      time: joi.number().required()
+      time: joi.number().required(),
     }, (err) => {
       if (err) throw err;
     });
@@ -367,8 +367,8 @@ let resetPassword = async (req, res) => {
       {
         $set: {
           credentials: credentials,
-          lastlogintime: now
-        }
+          lastlogintime: now,
+        },
       }
     );
   } catch (err) {
@@ -393,13 +393,13 @@ let resetPassword = async (req, res) => {
 let resetPasswordApplication = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne({
-      username: req.body.memberName
+      username: req.body.memberName,
     });
     if (memberInfo) {
       let emailPayload = {
         memberId: memberInfo._id,
         password: memberInfo.credentials.password,
-        time: Date.now()
+        time: Date.now(),
       };
 
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
@@ -431,9 +431,9 @@ let passwordModify = async (req, res) => {
   try {
     await dbTool.commonMember.updateOne(
       {
-        _id: req.member._id
+        _id: req.member._id,
       }, {
-        $set: { credentials: credentials }
+        $set: { credentials: credentials },
       }
     );
   } catch (err) {

@@ -13,8 +13,8 @@ let checkPermission = async (permissionName, memberPermissionList) => {
     memberPermissionList = [];
   }
 
-  const r = config.permissions[permission[0]][permission[1]].enable &&
-    memberPermissionList.includes(permissionName);
+  const r = config.permissions[permission[0]][permission[1]].enable
+    && memberPermissionList.includes(permissionName);
   if (env.isDev && !r) {
     console.warn(`${permissionName} is not permitted to the member of this request.`);
   }

@@ -129,7 +129,7 @@ let mutations = {
     state.notifications = {
       list: notifications,
       count,
-      new: !notifications.reduce((a, b) => a && b.hasRead, true)
+      new: !notifications.reduce((a, b) => a && b.hasRead, true),
     };
   },
 
@@ -147,7 +147,7 @@ let mutations = {
   switchScrollBehavior: state => {
     state.autoLoadOnScroll = !state.autoLoadOnScroll;
     window.localStorage['experimental-auto-load-on-scroll'] = state.autoLoadOnScroll ? 'on' : 'off';
-  }
+  },
 };
 
 export default mutations;

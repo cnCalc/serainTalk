@@ -1,11 +1,9 @@
 'use strict';
 
 const supertest = require('supertest');
-const { ObjectID } = require('mongodb');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
 const config = require('../../config');
-const dbTool = require('../../database');
 
 let agent = supertest.agent(require('../../index'));
 
@@ -19,7 +17,7 @@ describe('message part', async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let postUrl = `/api/v1/message/${newMemberInfoA.id}`;
         let payload = {
-          content: 'hello, here is test message.'
+          content: 'hello, here is test message.',
         };
         let sendMessageRes = await agent.post(postUrl)
           .send(payload)
@@ -53,7 +51,7 @@ describe('message part', async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let postUrl = `/api/v1/message/${newMemberInfoA.id}`;
         let payload = {
-          content: 'hello, here is test message.'
+          content: 'hello, here is test message.',
         };
         await agent.post(postUrl)
           .send(payload)
@@ -81,7 +79,7 @@ describe('message part', async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let postUrl = `/api/v1/message/${newMemberInfoA.id}`;
         let payload = {
-          content: 'hello, here is test message.'
+          content: 'hello, here is test message.',
         };
         for (let i = 0; i < config.pagesize + 1; i++) {
           await agent.post(postUrl)
@@ -104,7 +102,7 @@ describe('message part', async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let postUrl = `/api/v1/message/${newMemberInfoA.id}`;
         let payload = {
-          content: 'hello, here is test message.'
+          content: 'hello, here is test message.',
         };
         for (let i = 0; i < config.pagesize + 1; i++) {
           await agent.post(postUrl)

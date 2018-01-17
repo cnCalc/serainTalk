@@ -26,7 +26,7 @@ export default {
       let currentPage = Number(this.active);
       let left = Math.max(1, currentPage - Math.floor(Number(this.length) / 2));
       this.pages = new Array(this.length).fill(0).map((dummy, index) => index + left).filter(i => i <= Number(this.max));
-    }
+    },
   },
   watch: {
     max () {
@@ -34,8 +34,8 @@ export default {
     },
     active () {
       this.reload();
-    }
-  }
+    },
+  },
 };
 
 </script>

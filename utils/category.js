@@ -18,7 +18,7 @@ let createDiscussionCategoryWhiteList = async () => {
     { $unwind: '$groups' },
     { $unwind: '$groups.items' },
     { $match: { 'groups.items.type': 'category' } },
-    { $project: { name: '$groups.items.name', _id: 0 } }
+    { $project: { name: '$groups.items.name', _id: 0 } },
   ]).toArray();
   whiteList = whiteList.map(item => item.name);
   config.discussion.category.whiteList = whiteList;
@@ -37,10 +37,10 @@ let resetCategoryConfig = async () => {
   let originSetting = require('./category.json');
   let genericDoc = await dbTool.generic.updateMany(
     {
-      key: 'pinned-categories'
+      key: 'pinned-categories',
     },
     {
-      $set: originSetting
+      $set: originSetting,
     }
   );
   /* istanbul ignore next */

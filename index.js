@@ -51,7 +51,7 @@ validation.options({
   allowUnknownBody: false,
   allowUnknownQuery: false,
   allowUnknownParams: false,
-  allowUnknownCookies: false
+  allowUnknownCookies: false,
 });
 
 app.listen(process.env.PORT || 8000);

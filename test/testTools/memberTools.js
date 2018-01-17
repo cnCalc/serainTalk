@@ -58,7 +58,7 @@ let login = async (agent, memberInfo) => {
     .post(loginUrl)
     .send({
       name: memberInfo.username,
-      password: memberInfo.password
+      password: memberInfo.password,
     })
     .expect(201);
   expect(loginRes.body.status).to.equal('ok');
@@ -139,7 +139,7 @@ let setAdmin = async (agent, _id, next) => {
 
   await next();
 
-  let tc = await dbTool.commonMember.updateOne(
+  await dbTool.commonMember.updateOne(
     { _id: _id },
     { $set: { role: 'member' } }
   );

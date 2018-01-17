@@ -33,7 +33,7 @@ export default {
   computed: {
     busy () {
       return this.$store.state.busy;
-    }
+    },
   },
   beforeMount () {
     this.$store.commit('setGlobalTitles', []);
@@ -53,8 +53,8 @@ export default {
         this.$store.commit('setBusy', false);
         window.alert('密码错误');
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

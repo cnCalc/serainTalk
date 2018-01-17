@@ -8,6 +8,6 @@ export default {
     boundingThreshold: {
       top: 500,
       bottom: 200,
-    }
+    },
   },
 };

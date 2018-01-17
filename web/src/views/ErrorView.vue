@@ -10,7 +10,7 @@ export default {
   name: 'error-view',
   created () {
     this.$store.commit('setGlobalTitles', []);
-  }
+  },
 };
 </script>
 

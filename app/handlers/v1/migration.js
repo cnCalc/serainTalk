@@ -52,7 +52,7 @@ async function verifyDiscuzMemberInfo (req, res) {
     migrateTokens[token] = {
       name: name,
       timestamp: new Date().getTime(),
-      email: email
+      email: email,
     };
 
     // 将 token 发送至新的邮箱地址
@@ -100,7 +100,7 @@ async function performMigration (req, res) {
         type: 'seraintalk',
         salt,
         password: MD5(salt + password),
-      }
+      },
     };
 
     await dbTool.commonMember.findAndModify(
@@ -122,5 +122,5 @@ async function performMigration (req, res) {
 
 module.exports = {
   verifyDiscuzMemberInfo,
-  performMigration
+  performMigration,
 };

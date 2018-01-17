@@ -18,5 +18,5 @@ let createRESTfulUrl = (url, params) => {
 };
 
 module.exports = {
-  createRESTfulUrl
+  createRESTfulUrl,
 };

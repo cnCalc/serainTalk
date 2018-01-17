@@ -24,8 +24,8 @@ let signup = {
     regip: joi.string(),
     regdate: joi.number(),
     secques: joi.string(),
-    device: joi.string()
-  }
+    device: joi.string(),
+  },
 };
 exports.signup = signup;
 
@@ -33,8 +33,8 @@ exports.signup = signup;
 let login = {
   body: {
     name: joi.string().required(),
-    password: joi.string().required()
-  }
+    password: joi.string().required(),
+  },
 };
 exports.login = login;
 
@@ -48,24 +48,24 @@ exports.logout = logout;
 let info = {
   getById: {
     params: {
-      id: interfaceUtils.mongoId.required()
+      id: interfaceUtils.mongoId.required(),
     },
     query: {
       recent: interfaceUtils.flag,
       before: joi.number(),
-    }
+    },
   },
   me: {},
   get: {
     params: {
       pagesize: interfaceUtils.pagesize,
-      page: interfaceUtils.page
+      page: interfaceUtils.page,
     },
     query: joi.object({
       name: joi.string(),
-      device: joi.string()
-    }).or('name', 'device')
-  }
+      device: joi.string(),
+    }).or('name', 'device'),
+  },
 };
 exports.info = info;
 
@@ -80,22 +80,22 @@ let password = {
   // 修改密码
   modify: {
     body: {
-      password: joi.string().required()
-    }
+      password: joi.string().required(),
+    },
   },
   // 申请重置密码
   resetApplication: {
     body: {
-      memberName: joi.string().required()
-    }
+      memberName: joi.string().required(),
+    },
   },
   // 重置密码
   reset: {
     body: {
       token: joi.string().required(),
-      password: joi.string().required()
-    }
-  }
+      password: joi.string().required(),
+    },
+  },
 };
 exports.password = password;
 // #endregion

@@ -86,7 +86,7 @@ import { timeAgo, indexToPage } from '../utils/filters';
 export default {
   name: 'member-view',
   components: {
-    LoadingIcon, PostContent, DiscussionList, CheckBox
+    LoadingIcon, PostContent, DiscussionList, CheckBox,
   },
   data () {
     return {
@@ -106,7 +106,7 @@ export default {
     },
     discussions () {
       return this.$store.state.member.discussions;
-    }
+    },
   },
   methods: {
     timeAgo, indexToPage,
@@ -140,7 +140,7 @@ export default {
     },
     switchScrollBehavior () {
       this.$store.commit('switchScrollBehavior');
-    }
+    },
   },
   created () {
     this.currentPage = 1;
@@ -162,7 +162,7 @@ export default {
           this.currentPage = 1;
         }
       }
-    }
+    },
   },
   activated () {
     if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
@@ -178,7 +178,7 @@ export default {
         store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
     });
-  }
+  },
 };
 </script>
 

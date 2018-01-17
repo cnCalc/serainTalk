@@ -27,7 +27,7 @@ export default {
     },
     theme () {
       return this.$store.state.theme;
-    }
+    },
   },
   methods: {
     switchTheme () {

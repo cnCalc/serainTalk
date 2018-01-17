@@ -18,7 +18,7 @@ describe('notification part', async () => {
   it('send notification.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
-        content: 'hello world'
+        content: 'hello world',
       };
       await utils.notification.sendNotification(newMemberInfo._id, notification);
       let getUrl = '/api/v1/notification';
@@ -36,7 +36,7 @@ describe('notification part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
         content: 'hello world',
-        href: 'cncalc.org'
+        href: 'cncalc.org',
       };
       await utils.notification.sendNotification(newMemberInfo._id, notification);
       let getUrl = '/api/v1/notification';
@@ -52,7 +52,7 @@ describe('notification part', async () => {
   it('send wrong notification.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
-        content: 'hello world'
+        content: 'hello world',
       };
       try {
         await utils.notification.sendNotification(utils.createRandomString(24, { hax: true }), notification);
@@ -67,7 +67,7 @@ describe('notification part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
         content: 'hello world',
-        href: 'cncalc.org'
+        href: 'cncalc.org',
       };
       for (let i = 0; i < config.pagesize + 1; i++) {
         await utils.notification.sendNotification(newMemberInfo._id, notification);
@@ -100,7 +100,7 @@ describe('notification part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
         content: 'hello world',
-        href: 'cncalc.org'
+        href: 'cncalc.org',
       };
       for (let i = 0; i < 2; i++) {
         await utils.notification.sendNotification(newMemberInfo._id, notification);
@@ -124,7 +124,7 @@ describe('notification part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let notification = {
         content: 'hello world',
-        href: 'cncalc.org'
+        href: 'cncalc.org',
       };
       for (let i = 0; i < 5; i++) {
         await utils.notification.sendNotification(newMemberInfo._id, notification);
@@ -149,7 +149,7 @@ describe('notification part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       let notification = {
         content: 'hello world',
-        href: 'cncalc.org'
+        href: 'cncalc.org',
       };
       let getUrl = '/api/v1/notification?pagesize=10';
       for (let i = 0; i < 5; i++) {

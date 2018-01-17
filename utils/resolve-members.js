@@ -53,5 +53,5 @@ async function resolveMembersInDiscussion (discussion) {
 
 module.exports = {
   resolveMembersInDiscussionArray,
-  resolveMembersInDiscussion
+  resolveMembersInDiscussion,
 };

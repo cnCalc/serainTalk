@@ -28,7 +28,7 @@ export default {
     notifications () {
       // return { count: 0, list: [], new: false }; // this.$store.state.notifications;
       return this.$store.state.notifications;
-    }
+    },
   },
   methods: {
     trigger (e) {
@@ -76,8 +76,8 @@ export default {
       api.v1.notification.readAllNotifications().then(() => {
         this.$store.dispatch('fetchNotifications');
       }).catch(err => console.error(err));
-    }
-  }
+    },
+  },
 };
 </script>
 

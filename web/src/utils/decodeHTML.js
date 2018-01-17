@@ -9,7 +9,7 @@ function decodeHTML (str) {
     '&gt;': '>',
     '&quot;': '"',
     '&apos;': '\'',
-    '&amp;': '&'
+    '&amp;': '&',
   };
   if (str.length === 0) {
     return '';

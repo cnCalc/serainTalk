@@ -76,7 +76,7 @@ function scrollToHash (hash) {
 export default {
   name: 'discussion-view',
   components: {
-    LoadingIcon, PostContent, Pagination
+    LoadingIcon, PostContent, Pagination,
   },
   data () {
     return {
@@ -111,7 +111,7 @@ export default {
 
         api.v1.discussion.fetchDiscussionPostsById({
           id: this.$route.params.discussionId,
-          page: this.minPage
+          page: this.minPage,
         }).then(data => {
           state.commit('mergeMembers', data.members);
           state.commit('updateDiscussionPosts', data.posts);
@@ -145,7 +145,7 @@ export default {
     },
     copyLink (idx) {
       copyToClipboard(`${window.location.origin}/d/${this.discussionMeta._id}#index-${idx}`);
-    }
+    },
   },
   computed: {
     discussionMeta () {
@@ -170,7 +170,7 @@ export default {
     },
     busy () {
       return this.$store.state.busy;
-    }
+    },
   },
   watch: {
     discussionMeta (val) {
@@ -221,7 +221,7 @@ export default {
     },
     '$route.hash': function (hash) {
       hash && scrollToHash(hash);
-    }
+    },
   },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
@@ -257,7 +257,7 @@ export default {
         scrollToHash(window.location.hash);
       }
     });
-  }
+  },
 };
 </script>
 

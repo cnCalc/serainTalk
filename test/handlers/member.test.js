@@ -67,7 +67,7 @@ describe('member part', () => {
         .post(url)
         .send({
           name: newMemberInfo.username,
-          password: newMemberInfo.password
+          password: newMemberInfo.password,
         })
         .expect(201);
       expect(loginBody.body.status).to.equal('ok');
@@ -84,7 +84,7 @@ describe('member part', () => {
         .post(url)
         .send({
           name: newMemberInfo.username,
-          password: 'fakepassword'
+          password: 'fakepassword',
         })
         .expect(401);
       expect(loginBody.body.status).to.equal('error');
@@ -99,7 +99,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(url)
         .send({
-          memberName: utils.createRandomString(70)
+          memberName: utils.createRandomString(70),
         })
         .expect(400);
       expect(applicationRes.body.status).to.be.equal('error');
@@ -113,7 +113,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(applicationUrl)
         .send({
-          memberName: newMemberInfo.username
+          memberName: newMemberInfo.username,
         })
         .expect(201);
       expect(applicationRes.body.status).to.be.equal('ok');
@@ -122,14 +122,14 @@ describe('member part', () => {
       let emailPayload = {
         memberId: newMemberInfo._id,
         password: newMemberInfo.credentials.password,
-        time: Date.now()
+        time: Date.now(),
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
       let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
-        password: newPassword
+        password: newPassword,
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
@@ -141,7 +141,7 @@ describe('member part', () => {
         .post(loginUrl)
         .send({
           name: newMemberInfo.username,
-          password: newPassword
+          password: newPassword,
         })
         .expect(201);
       expect(loginBody.body.status).to.equal('ok');
@@ -157,7 +157,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(applicationUrl)
         .send({
-          memberName: newMemberInfo.username
+          memberName: newMemberInfo.username,
         })
         .expect(201);
       expect(applicationRes.body.status).to.be.equal('ok');
@@ -169,7 +169,7 @@ describe('member part', () => {
       let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
-        password: newPassword
+        password: newPassword,
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
@@ -185,7 +185,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(applicationUrl)
         .send({
-          memberName: newMemberInfo.username
+          memberName: newMemberInfo.username,
         })
         .expect(201);
       expect(applicationRes.body.status).to.be.equal('ok');
@@ -197,7 +197,7 @@ describe('member part', () => {
       let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
-        password: newPassword
+        password: newPassword,
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
@@ -213,7 +213,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(applicationUrl)
         .send({
-          memberName: newMemberInfo.username
+          memberName: newMemberInfo.username,
         })
         .expect(201);
       expect(applicationRes.body.status).to.be.equal('ok');
@@ -222,14 +222,14 @@ describe('member part', () => {
       let emailPayload = {
         memberId: '5a1d7e01975cb8140be61322',
         password: newMemberInfo.credentials.password,
-        time: Date.now()
+        time: Date.now(),
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
       let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
-        password: newPassword
+        password: newPassword,
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
@@ -245,7 +245,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(applicationUrl)
         .send({
-          memberName: newMemberInfo.username
+          memberName: newMemberInfo.username,
         })
         .expect(201);
       expect(applicationRes.body.status).to.be.equal('ok');
@@ -254,14 +254,14 @@ describe('member part', () => {
       let emailPayload = {
         memberId: newMemberInfo._id,
         password: newMemberInfo.credentials.password,
-        time: -10000
+        time: -10000,
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
       let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
-        password: newPassword
+        password: newPassword,
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
@@ -278,7 +278,7 @@ describe('member part', () => {
         .post(loginUrl)
         .send({
           name: newMemberInfo.username,
-          password: newMemberInfo.password
+          password: newMemberInfo.password,
         });
       // .expect(201);
       expect(loginBody.body.status).to.equal('ok');
@@ -350,7 +350,7 @@ describe('member part', () => {
     await testTools.member.createOneMember(agent, null, async () => {
       let updateUrl = '/api/v1/member/settings';
       let updatePayload = {
-        nightMode: true
+        nightMode: true,
       };
       let updateRes = await agent.put(updateUrl)
         .send(updatePayload)
@@ -366,7 +366,7 @@ describe('member part', () => {
     await testTools.member.createOneMember(agent, null, async () => {
       let updateUrl = '/api/v1/member/settings/mail/onReply';
       let updatePayload = {
-        value: true
+        value: true,
       };
       let updateRes = await agent.put(updateUrl)
         .send(updatePayload)

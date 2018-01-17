@@ -23,7 +23,7 @@ let getTimeLine = async (_messageId, beforeDate, pagesize) => {
     { $unwind: '$timeline' },
     { $match: { 'timeline.date': { $lt: beforeDate } } },
     { $sort: { 'timeline.date': -1 } },
-    { $limit: pagesize }
+    { $limit: pagesize },
   ]).toArray();
   timeline = timeline.map(message => message.timeline);
   return timeline;
@@ -49,22 +49,22 @@ let sendMessage = async (req, res, next) => {
     {
       $and: [
         { 'members.0': { $in: members } },
-        { 'members.1': { $in: members } }
-      ]
+        { 'members.1': { $in: members } },
+      ],
     }, {
       $setOnInsert: {
-        members: [req.member._id, _recipientId]
+        members: [req.member._id, _recipientId],
       },
       $push: {
         timeline: utils.object.removeUndefined({
           content: req.body.content,
           from: req.member._id,
-          date: Date.now()
-        })
-      }
+          date: Date.now(),
+        }),
+      },
     }, {
       returnOriginal: false,
-      upsert: true // insert the document if it does not exist
+      upsert: true, // insert the document if it does not exist
     }
   );
 
@@ -91,20 +91,20 @@ let getMessagesInfo = async (req, res, next) => {
       $match: {
         $or: [
           { 'members.0': req.member._id },
-          { 'members.1': req.member._id }
-        ]
-      }
+          { 'members.1': req.member._id },
+        ],
+      },
     },
     { $sort: { 'timeline.0.date': -1 } },
     { $project: { members: 1 } },
     { $skip: offset },
-    { $limit: pagesize }
+    { $limit: pagesize },
   ]).toArray();
   let count = await dbTool.message.count({
     $or: [
       { 'members.0': req.member._id },
-      { 'members.1': req.member._id }
-    ]
+      { 'members.1': req.member._id },
+    ],
   });
   return res.status(200).send({ status: 'ok', messagesInfo: messagesInfo, count: count });
 };
@@ -128,11 +128,11 @@ let getMessageByMemberId = async (req, res, next) => {
       $match: {
         $and: [
           { 'members.0': { $in: members } },
-          { 'members.1': { $in: members } }
-        ]
-      }
+          { 'members.1': { $in: members } },
+        ],
+      },
     },
-    { $project: { timeline: 0 } }
+    { $project: { timeline: 0 } },
   ]).toArray();
   /* istanbul ignore if */
   if (messageInfo.length !== 1) {
@@ -161,7 +161,7 @@ let getMessageById = async (req, res, next) => {
   // 获取 message 摘要
   let messageInfo = await dbTool.message.aggregate([
     { $match: { _id: _messageId } },
-    { $project: { timeline: 0 } }
+    { $project: { timeline: 0 } },
   ]).toArray();
   if (messageInfo.length !== 1) {
     return errorHandler(new Error(`there is ${messageInfo.length} messages belongs to the same couple.`), errorMessages.SERVER_ERROR, 500, res);
@@ -183,5 +183,5 @@ module.exports = {
   getMessageById,
   getMessageByMemberId,
   getMessagesInfo,
-  sendMessage
+  sendMessage,
 };

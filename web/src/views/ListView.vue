@@ -19,7 +19,7 @@ import LoadingIcon from '../components/LoadingIcon.vue';
 export default {
   name: 'list-view',
   components: {
-    DiscussionList, CategoryList, LoadingIcon
+    DiscussionList, CategoryList, LoadingIcon,
   },
   data () {
     return {
@@ -42,7 +42,7 @@ export default {
     },
     slug () {
       return this.$route.path === '/' ? '' : this.$route.params.categorySlug;
-    }
+    },
   },
   methods: {
     loadMore () {
@@ -50,7 +50,7 @@ export default {
       if (this.$route.fullPath === '/') {
         return this.$store.dispatch('fetchLatestDiscussions', {
           page: this.currentPage,
-          append: true
+          append: true,
         });
       } else {
         return this.$store.dispatch('fetchDiscussionsUnderCategory', {
@@ -76,7 +76,7 @@ export default {
           }
         }
       }
-    }
+    },
   },
   watch: {
     '$route': function (route) {
@@ -109,7 +109,7 @@ export default {
     },
     categoriesGroup () {
       this.flushGlobalTitles();
-    }
+    },
   },
   activated () {
     // this.flushGlobalTitles();
@@ -123,7 +123,7 @@ export default {
     } else {
       return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
     }
-  }
+  },
 };
 </script>
 

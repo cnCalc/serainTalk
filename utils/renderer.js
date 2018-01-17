@@ -10,7 +10,7 @@ const md = mdit({
       } catch (__) {}
     }
     return addSpanEachLine(str.trim());
-  }
+  },
 });
 
 function addSpanEachLine (html) {
@@ -37,5 +37,5 @@ function renderPost (post) {
 
 module.exports = {
   renderPosts,
-  renderPost
+  renderPost,
 };

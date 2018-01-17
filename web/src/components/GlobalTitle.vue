@@ -19,11 +19,11 @@ export default {
     },
     isMobileMemberView () {
       return this.$store.state.globalTitle.isMobileMemberView;
-    }
+    },
   },
   methods: {
-    decodeHTML
-  }
+    decodeHTML,
+  },
 };
 </script>
 

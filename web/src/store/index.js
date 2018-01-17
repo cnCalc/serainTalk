@@ -20,7 +20,7 @@ const store = new Vuex.Store({
     globalTitle: {
       title: '',
       subtitle: '',
-      isMobileMemberView: false
+      isMobileMemberView: false,
     },
     theme: window.localStorage['theme'] || 'light',
     busy: false,

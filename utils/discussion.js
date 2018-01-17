@@ -10,7 +10,7 @@ let isIgnored = async (_accepterId, _discussionId) => {
         $project: {
           exists: { $in: [_discussionId, '$ignores.notification.discussions'] },
         },
-      }
+      },
     ]).toArray();
     return discussionInfo[0].exists;
   } catch (err) {

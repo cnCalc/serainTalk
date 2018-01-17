@@ -37,7 +37,7 @@ exports.removeSensitiveField = removeSensitiveField;
 let getIgnore = async (_memberId) => {
   let memberInfo = await dbTool.commonMember.aggregate([
     { $match: { _id: _memberId } },
-    { $project: { ignores: 1 } }
+    { $project: { ignores: 1 } },
   ]).toArray();
 
   return memberInfo.ignores;
@@ -50,9 +50,9 @@ let isIgnored = async (_accepterId, _senderId) => {
       { $match: { _id: _accepterId } },
       {
         $project: {
-          exists: { $in: [_senderId, '$ignores.notification.members'] }
-        }
-      }
+          exists: { $in: [_senderId, '$ignores.notification.members'] },
+        },
+      },
     ]).toArray();
     return memberInfo[0].exists;
   } catch (err) {

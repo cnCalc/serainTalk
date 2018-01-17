@@ -13,7 +13,7 @@ describe('validation part.', async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let postUrl = `/api/v1/message/${newMemberInfoA.id}`;
         let payload = {
-          fakeInfo: 'washing powder'
+          fakeInfo: 'washing powder',
         };
         let sendRes = await agent.post(postUrl)
           .send(payload)

@@ -13,28 +13,28 @@ let getLatestList = {
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off')
-  }
+    force: interfaceUtils.flag.default('off'),
+  },
 };
 exports.getLatestList = getLatestList;
 
 let getDiscussionById = {
   params: {
     id: interfaceUtils.mongoId.required(),
-    force: interfaceUtils.flag.default('off')
-  }
+    force: interfaceUtils.flag.default('off'),
+  },
 };
 exports.getDiscussionById = getDiscussionById;
 
 let getDiscussionByMember = {
   params: {
-    id: interfaceUtils.mongoId.required()
+    id: interfaceUtils.mongoId.required(),
   },
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off')
-  }
+    force: interfaceUtils.flag.default('off'),
+  },
 };
 exports.getDiscussionByMember = getDiscussionByMember;
 
@@ -42,11 +42,11 @@ let getDiscussionsByCategory = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off')
+    force: interfaceUtils.flag.default('off'),
   },
   params: {
-    slug: joi.string().required()
-  }
+    slug: joi.string().required(),
+  },
 };
 exports.getDiscussionsByCategory = getDiscussionsByCategory;
 
@@ -54,23 +54,23 @@ let getPostsById = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off')
+    force: interfaceUtils.flag.default('off'),
   },
   params: {
-    id: interfaceUtils.mongoId.required()
-  }
+    id: interfaceUtils.mongoId.required(),
+  },
 };
 exports.getPostsById = getPostsById;
 
 let getPostByIndex = {
   query: {
     force: interfaceUtils.flag.default('off'),
-    raw: interfaceUtils.flag.default('off')
+    raw: interfaceUtils.flag.default('off'),
   },
   params: {
     id: interfaceUtils.mongoId.required(),
-    postIndex: joi.number().required()
-  }
+    postIndex: joi.number().required(),
+  },
 };
 exports.getPostByIndex = getPostByIndex;
 
@@ -81,9 +81,9 @@ let createDiscussion = {
     category: joi.string().required(),
     content: {
       encoding: joi.string().required(),
-      content: joi.string().required()
-    }
-  }
+      content: joi.string().required(),
+    },
+  },
 };
 exports.createDiscussion = createDiscussion;
 
@@ -94,30 +94,30 @@ let createPost = {
     replyTo: {
       type: joi.string().allow(['index']).required(),
       value: joi.number().required(),
-      memberId: interfaceUtils.mongoId.required()
-    }
+      memberId: interfaceUtils.mongoId.required(),
+    },
   },
   params: {
-    id: interfaceUtils.mongoId.required()
-  }
+    id: interfaceUtils.mongoId.required(),
+  },
 };
 exports.createPost = createPost;
 
 let votePost = {
   params: {
     id: interfaceUtils.mongoId.required(),
-    postIndex: joi.number().min(1).required()
+    postIndex: joi.number().min(1).required(),
   },
   body: {
-    vote: joi.string().allow([config.discussion.post.vote]).required()
-  }
+    vote: joi.string().allow([config.discussion.post.vote]).required(),
+  },
 };
 exports.votePost = votePost;
 
 let updatePost = {
   params: {
     id: interfaceUtils.mongoId.required(),
-    postIndex: joi.number().min(1).required()
+    postIndex: joi.number().min(1).required(),
   },
   body: {
     encoding: joi.string(),
@@ -125,37 +125,37 @@ let updatePost = {
     replyTo: {
       type: joi.string().allow(['index']).required(),
       value: joi.number().required(),
-      memberId: interfaceUtils.mongoId.required()
-    }
-  }
+      memberId: interfaceUtils.mongoId.required(),
+    },
+  },
 };
 exports.updatePost = updatePost;
 
 let deletePost = {
   params: {
     id: interfaceUtils.mongoId.required(),
-    postIndex: joi.number().min(1)
-  }
+    postIndex: joi.number().min(1),
+  },
 };
 exports.deletePost = deletePost;
 
 let banDiscussion = {
   params: {
-    id: interfaceUtils.mongoId.required()
-  }
+    id: interfaceUtils.mongoId.required(),
+  },
 };
 exports.banDiscussion = banDiscussion;
 
 let ignoreDiscussion = {
   params: {
-    id: interfaceUtils.mongoId.required()
-  }
+    id: interfaceUtils.mongoId.required(),
+  },
 };
 exports.ignoreDiscussion = ignoreDiscussion;
 
 let ignoreMember = {
   params: {
-    id: interfaceUtils.mongoId.required()
-  }
+    id: interfaceUtils.mongoId.required(),
+  },
 };
 exports.ignoreMember = ignoreMember;

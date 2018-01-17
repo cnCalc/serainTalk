@@ -24,7 +24,7 @@ import Editor from './Editor.vue';
 export default {
   name: 'app',
   components: {
-    NavBar, GlobalTitle, Editor
+    NavBar, GlobalTitle, Editor,
   },
   beforeMount () {
     // reload session info.
@@ -44,7 +44,7 @@ export default {
         this.$router.push(url.href.replace(url.origin, ''));
       }
     });
-  }
+  },
 };
 </script>
 

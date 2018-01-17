@@ -45,7 +45,7 @@ export default {
   computed: {
     busy () {
       return this.$store.state.busy;
-    }
+    },
   },
   methods: {
     doVerifyRequest () {
@@ -97,8 +97,8 @@ export default {
         this.$store.commit('setBusy', false);
         window.alert('出现问题，请联系管理员');
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

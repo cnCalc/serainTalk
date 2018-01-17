@@ -9,7 +9,7 @@ let discussionInfo = {
   content: {
     encoding: 'markdown',
     content: 'test text',
-  }
+  },
 };
 exports.discussionInfo = discussionInfo;
 
@@ -26,6 +26,6 @@ let memberInfo = {
   regip: '114.232.38.5',
   regdate: 1335761157,
   device: 'R20',
-  password: 'fork you.'
+  password: 'fork you.',
 };
 exports.memberInfo = memberInfo;

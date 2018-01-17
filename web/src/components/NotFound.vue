@@ -9,7 +9,7 @@ export default {
   name: 'not-found',
   created () {
     this.$store.commit('setGlobalTitles', []);
-  }
+  },
 };
 </script>
 

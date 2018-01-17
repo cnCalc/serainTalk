@@ -72,14 +72,14 @@ let getNotification = async (req, res, next) => {
       { $match: { 'notifications.date': { $gt: req.query.after } } },
       { $sort: { 'notifications.date': -1 } },
       { $skip: offset },
-      { $limit: pagesize }
+      { $limit: pagesize },
     ]).toArray();
     let count = await dbTool.commonMember.aggregate([
       { $match: { _id: req.member._id } },
       { $project: { notifications: 1, _id: 0 } },
       { $unwind: '$notifications' },
       { $match: { 'notifications.date': { $gt: req.query.after } } },
-      { $count: 'count' }
+      { $count: 'count' },
     ]).toArray();
     notifications = notifications.map(notificationItem => notificationItem.notifications);
     count = count[0] ? count[0].count : 0;
@@ -112,7 +112,7 @@ let readAllNotification = async (req, res, next) => {
     let unReadList = await dbTool.commonMember.aggregate([
       { $match: { _id: req.member._id } },
       { $project: { notification: '$notifications' } },
-      { $unwind: '$notification' }
+      { $unwind: '$notification' },
     ]).toArray();
     unReadList = unReadList.map(doc => doc.notification);
     let updateInfo = {};
@@ -134,5 +134,5 @@ let readAllNotification = async (req, res, next) => {
 module.exports = {
   getNotification,
   readNotification,
-  readAllNotification
+  readAllNotification,
 };

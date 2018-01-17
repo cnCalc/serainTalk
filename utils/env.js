@@ -5,5 +5,5 @@ const isMocha = process.env.NODE_ENV === 'mocha';
 const isDev = !(isProd || isMocha);
 
 module.exports = {
-  isProd, isMocha, isDev
+  isProd, isMocha, isDev,
 };

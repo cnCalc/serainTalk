@@ -71,12 +71,12 @@ let getLatestDiscussionList = async (req, res) => {
       $or: [
         { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } },
-      ]
+      ],
     };
     // 无权限只显示白名单中的分类
-    if (req.query.category &&
+    if (req.query.category
       // 鉴权 能否读取所有分类的讨论
-      await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+      && await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
       req.query.category = req.query.category.filter(
         item => config.discussion.category.whiteList.includes(item)
       );
@@ -91,8 +91,8 @@ let getLatestDiscussionList = async (req, res) => {
     if (req.query.tag) query.tags = { $in: req.query.tag };
 
     // 鉴权 能否读取被封禁的 discussion
-    if (req.query.force === 'on' &&
-      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (req.query.force === 'on'
+      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
@@ -101,12 +101,12 @@ let getLatestDiscussionList = async (req, res) => {
       {
         $project: {
           creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
-          tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
-        }
+          tags: 1, status: 1, lastMember: 1, replies: 1, category: 1,
+        },
       },
       { $sort: { lastDate: -1 } },
       { $skip: offset * pagesize },
-      { $limit: pagesize }
+      { $limit: pagesize },
     ]).toArray();
     let members = await resolveMembersInDiscussionArray(results);
     return res.send({ status: 'ok', discussions: results, members });
@@ -134,8 +134,8 @@ let getDiscussionById = async (req, res) => {
       category: { $in: config.discussion.category.whiteList },
       $or: [
         { status: null },
-        { 'status.type': { $in: [config.discussion.status.ok] } }
-      ]
+        { 'status.type': { $in: [config.discussion.status.ok] } },
+      ],
     };
     // 鉴权 能否读取所有分类的讨论
     if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
@@ -143,8 +143,8 @@ let getDiscussionById = async (req, res) => {
     }
 
     // 鉴权 能否读取被封禁的 discussion
-    if (req.query.force === 'on' &&
-      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (req.query.force === 'on'
+      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
@@ -156,8 +156,8 @@ let getDiscussionById = async (req, res) => {
           lastDate: 1, views: 1, tags: 1,
           status: 1, lastMember: 1, category: 1,
           postsCount: { $size: '$posts' },
-        }
-      }
+        },
+      },
     ]).toArray();
     if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     let count = discussionDoc[0].postsCount;
@@ -189,8 +189,8 @@ let getDiscussionPostsById = async (req, res) => {
       category: { $in: config.discussion.category.whiteList },
       $or: [
         { status: null },
-        { 'status.type': { $in: [config.discussion.status.ok] } }
-      ]
+        { 'status.type': { $in: [config.discussion.status.ok] } },
+      ],
     };
 
     // 鉴权 能否读取所有分类的讨论
@@ -201,12 +201,12 @@ let getDiscussionPostsById = async (req, res) => {
     let postQuery = {
       $or: [
         { 'posts.status': null },
-        { 'posts.status.type': { $in: [config.discussion.status.ok] } }
-      ]
+        { 'posts.status.type': { $in: [config.discussion.status.ok] } },
+      ],
     };
     // 鉴权 能否读取被封禁的 discussion 和 post
-    if (req.query.force === 'on' &&
-      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (req.query.force === 'on'
+      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
       delete postQuery.$or;
     }
@@ -215,9 +215,9 @@ let getDiscussionPostsById = async (req, res) => {
       { $match: query },
       {
         $project: {
-          title: 1
-        }
-      }
+          title: 1,
+        },
+      },
     ]).toArray();
     if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
 
@@ -227,13 +227,13 @@ let getDiscussionPostsById = async (req, res) => {
       { $unwind: '$posts' },
       { $match: postQuery },
       { $skip: offset * pagesize },
-      { $limit: pagesize }
+      { $limit: pagesize },
     ]).toArray();
     let posts = postsDoc.map(item => item.posts);
     return res.status(200).send({
       status: 'ok',
       posts: utils.renderer.renderPosts(posts),
-      members: await resolveMembersInDiscussion({ posts })
+      members: await resolveMembersInDiscussion({ posts }),
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -253,19 +253,19 @@ let getPostByIndex = async (req, res, next) => {
     category: { $in: config.discussion.category.whiteList },
     $or: [
       { status: null },
-      { 'status.type': { $in: [config.discussion.status.ok] } }
-    ]
+      { 'status.type': { $in: [config.discussion.status.ok] } },
+    ],
   };
   let postQuery = {
     'posts.index': req.params.postIndex,
     $or: [
       { 'posts.status': null },
-      { 'posts.status.type': { $in: [config.discussion.status.ok] } }
-    ]
+      { 'posts.status.type': { $in: [config.discussion.status.ok] } },
+    ],
   };
   // 鉴权 能否读取被封禁的 discussion 和 post
-  if (req.query.force === 'on' &&
-    await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+  if (req.query.force === 'on'
+    && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
     delete query.$or;
     delete postQuery.$or;
   }
@@ -275,14 +275,14 @@ let getPostByIndex = async (req, res, next) => {
       { $match: query },
       { $project: { _id: 0, posts: 1 } },
       { $unwind: '$posts' },
-      { $match: postQuery }
+      { $match: postQuery },
     ]).toArray();
     if (postsDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     let post = postsDoc[0].posts;
     return res.status(200).send({
       status: 'ok',
       post: req.query.raw === 'on' ? post : (utils.renderer.renderPosts([post]))[0],
-      members: await resolveMembersInDiscussion({ posts: [post] })
+      members: await resolveMembersInDiscussion({ posts: [post] }),
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -304,9 +304,9 @@ let createDiscussion = async (req, res, next) => {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
   let now = Date.now();
-  if (!config.discussion.category.whiteList.includes(req.body.category) &&
+  if (!config.discussion.category.whiteList.includes(req.body.category)
     // 鉴权 能否向所有的分类新增讨论
-    !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
+    && !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
@@ -317,7 +317,7 @@ let createDiscussion = async (req, res, next) => {
     lastDate: now,
     lastMember: req.member._id,
     participants: [
-      req.member._id
+      req.member._id,
     ],
     posts: [
       {
@@ -327,7 +327,7 @@ let createDiscussion = async (req, res, next) => {
         encoding: req.member.role === 'admin' ? req.body.content.encoding : 'markdown',
         index: 1,
         status: {
-          type: config.discussion.status.ok
+          type: config.discussion.status.ok,
         },
         user: req.member._id,
         votes: {},
@@ -335,7 +335,7 @@ let createDiscussion = async (req, res, next) => {
     ],
     replies: 1,
     status: {
-      type: config.discussion.status.ok
+      type: config.discussion.status.ok,
     },
     tags: req.body.tags,
     title: req.body.title,
@@ -363,9 +363,9 @@ let createPost = async (req, res, next) => {
     return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
   }
 
-  if (!config.discussion.category.whiteList.includes(discussionInfo.category) &&
+  if (!config.discussion.category.whiteList.includes(discussionInfo.category)
     // 鉴权 能否向所有分类新建跟帖
-    !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
+    && !await utils.permission.checkPermission('discussion-postToExtraCategory', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
   let now = Date.now();
@@ -375,7 +375,7 @@ let createPost = async (req, res, next) => {
     createDate: now,
     encoding: req.member.role === 'admin' ? req.body.encoding : 'markdown',
     status: {
-      type: config.discussion.status.ok
+      type: config.discussion.status.ok,
     },
     user: req.member._id,
     votes: {},
@@ -394,14 +394,14 @@ let createPost = async (req, res, next) => {
         $inc: { replies: 1 },
         $set: {
           lastMember: req.member._id,
-          lastDate: new Date().getTime()
-        }
+          lastDate: new Date().getTime(),
+        },
       }
     );
 
     // 动态生成楼层号
     let discussionInfo = await dbTool.discussion.findOne({
-      _id: _id
+      _id: _id,
     });
     let postList = discussionInfo.posts;
     for (let i = postList.length - 1; i >= 0; i--) {
@@ -425,19 +425,19 @@ let createPost = async (req, res, next) => {
     // 如果回复了某人
     if (postInfo.replyTo) {
       // 若 不是回复自己 并且 自身没被被回复人屏蔽 并且 被回复人没有屏蔽该讨论 则向被回复人发送一条通知
-      if (!postInfo.replyTo.memberId.equals(req.member._id) &&
-        !await utils.member.isIgnored(postInfo.replyTo.memberId, req.member._id) &&
-        !await utils.discussion.isIgnored(postInfo.replyTo.memberId, discussionInfo._id)) {
+      if (!postInfo.replyTo.memberId.equals(req.member._id)
+        && !await utils.member.isIgnored(postInfo.replyTo.memberId, req.member._id)
+        && !await utils.discussion.isIgnored(postInfo.replyTo.memberId, discussionInfo._id)) {
         await utils.notification.sendNotification(postInfo.replyTo.memberId, {
           content: utils.string.fillTemplate(config.notification.postReplied.content, {
             var1: req.member.username,
-            var2: discussionInfo.title
+            var2: discussionInfo.title,
           }),
           href: utils.string.fillTemplate(config.notification.postReplied.href, {
             var1: discussionInfo._id,
             var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-            var3: postInfo.index
-          })
+            var3: postInfo.index,
+          }),
         });
       }
     }
@@ -445,19 +445,19 @@ let createPost = async (req, res, next) => {
     // 没有回复 或者 回复的不是讨论的创建者时 额外向讨论的创建者发送一次通知
     if (!postInfo.replyTo || !postInfo.replyTo.memberId.equals(discussionInfo.creater)) {
       // 若 跟帖的不是自己创建的讨论 并且 创建者没有屏蔽该讨论 并且 自身没有被讨论创建者屏蔽 则向讨论创建者发送一条通知
-      if (!discussionInfo.creater.equals(req.member._id) &&
-        !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id) &&
-        !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
+      if (!discussionInfo.creater.equals(req.member._id)
+        && !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id)
+        && !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
         await utils.notification.sendNotification(discussionInfo.creater, {
           content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
             var1: req.member.username,
-            var2: discussionInfo.title
+            var2: discussionInfo.title,
           }),
           href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
             var1: discussionInfo._id,
             var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-            var3: postInfo.index
-          })
+            var3: postInfo.index,
+          }),
         });
       }
     }
@@ -479,15 +479,15 @@ let updatePost = async (req, res, next) => {
     let exactPostRes = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
       { $unwind: '$posts' },
-      { $match: { 'posts.index': postIndex } }
+      { $match: { 'posts.index': postIndex } },
     ]).toArray();
     let exactPost = exactPostRes[0].posts;
 
     /* istanbul ignore else */
     // 只有本人或管理员才可以修改 post
-    if (exactPost.user.toString() !== req.member.id &&
+    if (exactPost.user.toString() !== req.member.id
       // 鉴权 能否修改任何人的跟帖
-      !await utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions)) {
+      && !await utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
 
@@ -501,8 +501,8 @@ let updatePost = async (req, res, next) => {
     $set[`posts.${postIndex - 1}.updateDate`] = now;
     $set[`posts.${postIndex - 1}.encoding`] = 'markdown';
     /* istanbul ignore else */
-    if (req.body.encoding === 'html' &&
-      await utils.permission.checkPermission('discussion-postHTML', req.member.permissions)) {
+    if (req.body.encoding === 'html'
+      && await utils.permission.checkPermission('discussion-postHTML', req.member.permissions)) {
       $set[`posts.${postIndex - 1}.encoding`] = req.body.encoding;
     }
 
@@ -537,7 +537,7 @@ let votePost = async (req, res, next) => {
       { $match: { _id: _discussionId } },
       { $unwind: '$posts' },
       { $match: { 'posts.index': req.params.postIndex } },
-      { $project: { posts: 1 } }
+      { $project: { posts: 1 } },
     ]).toArray();
     // 检索 post 是否存在
     if (postInfo.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
@@ -592,16 +592,16 @@ let getDiscussionUnderMember = async (req, res) => {
     $or: [
       { status: null },
       { 'status.type': { $in: [config.discussion.status.ok] } },
-    ]
+    ],
   };
   // 鉴权 能否读取所有分类的讨论
-  if (req.query.force === 'on' &&
-    await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
+  if (req.query.force === 'on'
+    && await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
     delete query.category;
   }
   // 鉴权 能否获取被封禁的讨论
-  if (req.query.force === 'on' &&
-    await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+  if (req.query.force === 'on'
+    && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
     delete query.$or;
   }
   try {
@@ -621,7 +621,7 @@ let getDiscussionUnderMember = async (req, res) => {
       query,
       {
         creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
-        tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
+        tags: 1, status: 1, lastMember: 1, replies: 1, category: 1,
       }
     ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
     let discussions = await cursor.toArray();
@@ -659,16 +659,16 @@ let getDiscussionsByCategory = async (req, res, next) => {
       $or: [
         { status: null },
         { 'status.type': { $in: [config.discussion.status.ok] } },
-      ]
+      ],
     };
-    if (!config.discussion.category.whiteList.includes(category) &&
+    if (!config.discussion.category.whiteList.includes(category)
       // 鉴权 能否读取所有分类的讨论
-      !await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+      && !await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     // 鉴权 能否获取被封禁的讨论
-    if (req.query.force === 'on' &&
-      await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (req.query.force === 'on'
+      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
@@ -678,11 +678,11 @@ let getDiscussionsByCategory = async (req, res, next) => {
         $project: {
           creater: 1, title: 1, createDate: 1, lastDate: 1,
           views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
-        }
+        },
       },
       { $sort: { lastDate: -1 } },
       { $skip: offset * pagesize },
-      { $limit: pagesize }
+      { $limit: pagesize },
     ]).toArray();
 
     let members = await resolveMembersInDiscussionArray(discussions);
@@ -713,13 +713,13 @@ let deletePost = async (req, res, next) => {
     let postsDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
       { $unwind: '$posts' },
-      { $match: { 'posts.index': req.params.postIndex } }
+      { $match: { 'posts.index': req.params.postIndex } },
     ]).toArray();
 
     let status = {
       type: config.discussion.status.deleted,
       operator: req.member._id,
-      time: Date.now()
+      time: Date.now(),
     };
     // 如果已封禁则解除封禁
     let isDeleted = postsDoc[0].status && postsDoc[0].status.type === config.discussion.status.deleted;
@@ -727,7 +727,7 @@ let deletePost = async (req, res, next) => {
       status = {
         type: config.discussion.status.ok,
         operator: req.member._id,
-        time: Date.now()
+        time: Date.now(),
       };
     }
     let updateDate = { $set: {} };
@@ -740,7 +740,7 @@ let deletePost = async (req, res, next) => {
     );
     // TODO: 为通知添加跳转链接（被封禁的 post 要不要对发布者开放？）
     let notification = {
-      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete
+      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete,
     };
     utils.notification.sendNotification(postsDoc[0].posts.user, notification);
     return res.status(204).send({ status: 'ok' });
@@ -768,14 +768,14 @@ let deleteDiscussion = async (req, res, next) => {
     // 查询封禁状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { baned: 1 } }
+      { $project: { baned: 1 } },
     ]).toArray();
     // 如果封禁则记录管理员信息和封禁时间
 
     let status = {
       type: config.discussion.status.deleted,
       operator: req.member._id,
-      time: Date.now()
+      time: Date.now(),
     };
     // 如果已封禁则解除封禁
     let isDeleted = discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.deleted;
@@ -783,7 +783,7 @@ let deleteDiscussion = async (req, res, next) => {
       status = {
         type: config.discussion.status.ok,
         operator: req.member._id,
-        time: Date.now()
+        time: Date.now(),
       };
     }
     let updateDate = { $set: {} };
@@ -796,7 +796,7 @@ let deleteDiscussion = async (req, res, next) => {
     );
     // TODO: 为通知添加跳转链接（被封禁的 discussion 要不要对发布者开放？）
     let notification = {
-      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete
+      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete,
     };
     utils.notification.sendNotification(updateDoc.value.creater, notification);
     return res.status(204).send({ status: 'ok' });

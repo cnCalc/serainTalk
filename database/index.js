@@ -72,5 +72,5 @@ exports = module.exports = {
   config: 'loading',
   message: 'loading',
 
-  prepare
+  prepare,
 };
