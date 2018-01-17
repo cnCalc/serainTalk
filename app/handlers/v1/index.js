@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+  api: require('./api'),
   attachment: require('./attachment'),
   category: require('./category'),
   debug: require('./debug'),

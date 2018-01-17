@@ -485,6 +485,20 @@ let route = {
       ],
     },
   },
+  api: {
+    list: {
+      description: '获取接口列表。',
+      path: [
+        '/v1/api/ls',
+        '/v1/api/list',
+      ],
+      method: 'get',
+      schema: dataInterface.api.getAttachment,
+      handler: [
+        handlers.v1.api.listApi,
+      ],
+    },
+  },
 };
 
 let devRoute = {

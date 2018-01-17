@@ -1,14 +1,15 @@
 'use strict';
 
 module.exports = {
+  api: require('./api'),
+  attachment: require('./attachment'),
+  category: require('./category'),
+  debug: require('./debug'),
   discussion: require('./discussion'),
   member: require('./member'),
-  object: require('./interfaceUtils'),
   message: require('./message'),
-  notification: require('./notification'),
-  category: require('./category'),
-  attachment: require('./attachment'),
-  debug: require('./debug'),
-  tags: require('./tags'),
   migration: require('./migration'),
+  notification: require('./notification'),
+  object: require('./interfaceUtils'),
+  tags: require('./tags'),
 };
