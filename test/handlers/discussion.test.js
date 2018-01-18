@@ -768,7 +768,7 @@ describe('discussion part', async () => {
             expect(discussionRes.body.status).to.be.equal('ok');
             postsInfo = discussionRes.body.posts;
             expect(postsInfo.length).to.be.equal(2);
-            expect(postsInfo[1].status.type).to.be.equal(config.discussion.status.deleted);
+            expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.deleted);
 
             await testTools.member.login(agent, newMemberInfoA);
             let getNotificationUrl = '/api/v1/notification';
@@ -806,7 +806,7 @@ describe('discussion part', async () => {
           expect(discussionRes.body.status).to.be.equal('ok');
           let postsInfo = discussionRes.body.posts;
           expect(postsInfo.length).to.be.equal(2);
-          expect(postsInfo[1].baned).to.not.be.ok;
+          expect(postsInfo[0].baned).to.not.be.ok;
         });
       });
     });
