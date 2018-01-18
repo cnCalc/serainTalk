@@ -1,9 +1,14 @@
 'use strict';
 
-let express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const express = require('express');
 const validation = require('express-validation');
 
+const config = require('../config');
+const dbTool = require('../database');
 const routeConfig = require('../config/route');
+
 const middleware = require('./middleware');
 const { log, cache, pretreatment } = middleware;
 const utils = require('../utils');
@@ -11,11 +16,20 @@ const { errorHandler, errorMessages } = utils;
 
 let router = express.Router();
 
+// 数据预处理
+router.use(bodyParser.json());
+router.use(cookieParser());
+router.use(async (req, res, next) => {
+  await dbTool.prepare();
+  await config.prepare();
+  return next();
+});
+router.use(pretreatment.getMemberInfo);
+router.use(pretreatment.getPermissions);
+
 // 日志-输出到控制台
 router.use(log.consoleMiddleware);
 router.use(cache.disableCache);
-router.use(pretreatment.getMemberInfo);
-router.use(pretreatment.getPermissions);
 
 // 根据路由表批量添加路由
 for (let routeType of Object.keys(routeConfig)) {

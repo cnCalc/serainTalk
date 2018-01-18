@@ -4,6 +4,7 @@ module.exports = {
   category: require('./category'),
   cookie: require('./cookie'),
   createRandomString: require('./random-string'),
+  discussion: require('./discussion'),
   env: require('./env'),
   errorHandler: require('./error-handler'),
   errorMessages: require('./error-messages'),
@@ -19,6 +20,6 @@ module.exports = {
   router: require('./router'),
   string: require('./string'),
   time: require('./time'),
+  upload: require('./upload'),
   url: require('./url'),
-  discussion: require('./discussion'),
 };

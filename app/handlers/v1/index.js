@@ -10,5 +10,6 @@ module.exports = {
   message: require('./message'),
   migration: require('./migration'),
   notification: require('./notification'),
+  picture: require('./picture'),
   tags: require('./tags'),
 };

@@ -474,7 +474,7 @@ let route = {
   },
   attachment: {
     getOne: {
-      description: '获取指定附件。',
+      description: '获取指定附件的信息。',
       path: [
         '/v1/attachment',
       ],
@@ -496,6 +496,20 @@ let route = {
       schema: dataInterface.api.getAttachment,
       handler: [
         handlers.v1.api.listApi,
+      ],
+    },
+  },
+  picture: {
+    getOne: {
+      description: '上传一张图片。',
+      path: [
+        '/v1/picture',
+      ],
+      method: 'post',
+      schema: dataInterface.picture.uploadPicture,
+      handler: [
+        utils.upload.pictureUpload.single('picture'),
+        handlers.v1.picture.uploadPicture,
       ],
     },
   },

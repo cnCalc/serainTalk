@@ -11,5 +11,6 @@ module.exports = {
   migration: require('./migration'),
   notification: require('./notification'),
   object: require('./interfaceUtils'),
+  picture: require('./picture'),
   tags: require('./tags'),
 };

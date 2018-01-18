@@ -1,3 +1,7 @@
+'use strict';
+
+const path = require('path');
+
 module.exports = {
   database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
   pagesize: 10,
@@ -56,5 +60,19 @@ module.exports = {
       content: '${var1} 回复了您：${var2}',
       href: '/d/${var1}/${var2}#index-${var3}',
     },
+  },
+  upload: {
+    file: {
+      path: path.join(__dirname, '..', 'uploads', 'files'),
+      maxAge: '7d',
+      maxSize: 1000 * 1000 * 100, // 100MB
+    },
+    picture: {
+      path: path.join(__dirname, '..', 'uploads', 'pictures'),
+      maxSize: 1000 * 1000 * 100, // 100MB
+    },
+  },
+  frontEnd: {
+    filePath: path.join(__dirname, 'app', 'public'),
   },
 };
