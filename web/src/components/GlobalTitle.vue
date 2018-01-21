@@ -36,7 +36,8 @@ div.jumbotron {
   margin-right: calc(50% - 50vw);
   overflow: hidden;
   transition: background linear 0.2s;
-  text-shadow: 0 0 5px black;
+  $shadow-color: #444;
+  text-shadow: $shadow-color 1px 0 1px, $shadow-color 0 1px 1px, $shadow-color 0 -1px 1px, $shadow-color -1px 0 1px;
 
   h1, h2 {
     padding: 0 1em;

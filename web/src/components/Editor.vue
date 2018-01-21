@@ -23,6 +23,7 @@
 
 <script>
 import api from '../api';
+import getCaretCoordinates from '../utils/textarea-caret-coordinates';
 
 const hljs = window.hljs;
 const md = window.markdownit({
