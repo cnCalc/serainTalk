@@ -134,7 +134,6 @@ div.mingration-view {
     border-radius: 2px;
     font-size: 1em;
     padding: 6px 8px;
-    border: 1px solid #ccc;
   }
 
   input:focus {
@@ -155,6 +154,29 @@ div.mingration-view {
     border: none;
     display: block;
     background-color: $theme-color;
+    color: white;
+  }
+}
+
+.light-theme div.mingration-view {
+  input[type="text"], input[type="password"] {
+    border: 1px solid #ccc;
+  }
+  button.button {
+    background-color: $theme-color;
+    color: white;
+  }
+}
+
+.dark-theme div.mingration-view {
+  color: white;
+  input[type="text"], input[type="password"] {
+    border: 1px solid #444;
+    background-color: #444;
+    color: white;
+  }
+  button.button {
+    background-color: #444;
     color: white;
   }
 }

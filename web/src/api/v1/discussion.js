@@ -99,6 +99,17 @@ function banPostByDiscussionIdAndIndex (param) {
   });
 }
 
+function votePostByDiscussionIdAndIndex (param) {
+  if (!param.id) return Promise.reject('discussion id is required');
+  if (!param.index) return Promise.reject('post index is required');
+  if (!param.vote) return Promise.reject('vote type is required');
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}/vote`, { vote: param.vote })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -108,4 +119,5 @@ export default {
   createDiscussion,
   replyToDiscussion,
   banPostByDiscussionIdAndIndex,
+  votePostByDiscussionIdAndIndex,
 };

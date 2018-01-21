@@ -5,7 +5,7 @@
         div.reply-preview-member-meta
           div.avatar
             div.avatar-image(v-if="this.$store.state.members[this.replyTo.memberId].avatar" v-bind:style="{ backgroundImage: `url(${this.$store.state.members[this.replyTo.memberId].avatar})` }")
-          div {{ this.$store.state.members[this.replyTo.memberId].username }}
+          div: router-link(:to="`/m/${this.replyTo.memberId}`") {{ this.$store.state.members[this.replyTo.memberId].username }}
         div.reply-preview-content(v-html="previewReplyHtml")
     div(v-html="html")
 </template>
@@ -107,11 +107,11 @@ div.post-content {
     height: fit-content;
     transform: translateY(calc(2px - 100%));
     background: white;
-    box-shadow: 1px 1px 5px rgba(black, 0.5);
+    box-shadow: 1px 1px 10px rgba(black, 0.5);
     padding: .8em 1em;
     box-sizing: border-box;
-    border-radius: 2px;
-    overflow: scroll;
+    border-radius: 5px;
+    overflow-y: scroll;
   }
 
   div.reply-preview-member-meta {
@@ -124,6 +124,10 @@ div.post-content {
     &::after {
       content: '：'
     }
+  }
+
+  div.reply-preview-content {
+    padding: 0.5em 0;
   }
 
   $avatar-size: 20px;
