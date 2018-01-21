@@ -204,6 +204,10 @@ let updateSettings = async (req, res, next) => {
       },
       { returnOriginal: false }
     );
+    let memberInfo = updateDoc.value;
+    utils.member.removeSensitiveField(memberInfo);
+    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
   } catch (err) {
     errorHandler(err, errorMessages.SERVER_ERROR, 500, res);

@@ -359,6 +359,10 @@ describe('member part', () => {
       for (let key of Object.keys(updatePayload)) {
         expect(settings[key]).to.be.equal(updatePayload[key]);
       }
+
+      let selfUrl = '/api/v1/members/me';
+      let res = await agent.get(selfUrl).expect(200);
+      expect(res.body.memberInfo.settings.nightMode).to.be.equal(true);
     });
   });
 
