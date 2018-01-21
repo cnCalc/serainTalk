@@ -222,6 +222,17 @@ let route = {
         handlers.v1.member.getMemberInfoGeneric,
       ],
     },
+    startWith: {
+      description: '通用获取成员的信息接口，目前支持 设备/姓名。',
+      path: [
+        '/v1/members/startwith/:subName',
+      ],
+      method: 'get',
+      schema: dataInterface.member.info.startWith,
+      handler: [
+        handlers.v1.member.memberStartWith,
+      ],
+    },
     addOne: {
       description: '新成员注册。',
       path: [

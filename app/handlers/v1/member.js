@@ -12,6 +12,8 @@ const MD5 = utils.md5;
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussion } = utils.resolveMembers;
 
+// #region 成员信息部分
+
 /**
  * 根据用户 ID 获得用户信息以及最近活动
  * /api/v1/member/:id[?recent=(on|off)]
@@ -144,6 +146,17 @@ let getMemberInfoGeneric = (req, res) => {
   });
 };
 
+let memberStartWith = async (req, res, next) => {
+  let subName = req.query.subName || req.params.subName;
+  let pagesize = req.query.pagesize;
+  let page = req.query.page - 1;
+
+  let memberDoc = await dbTool.commonMember.find({
+    username: RegExp('^' + subName),
+  }).skip(page * pagesize).limit(pagesize).project({ username: 1 }).toArray();
+  return res.status(200).send({ status: 'ok', members: memberDoc });
+};
+
 /**
  * [处理函数] 获取自身信息
  *
@@ -196,6 +209,8 @@ let updateSettings = async (req, res, next) => {
     errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
 };
+
+// #endregion
 
 // #region 成员登录登出部分
 /**
@@ -449,6 +464,7 @@ module.exports = {
   getSelf,
   login,
   logout,
+  memberStartWith,
   passwordModify,
   resetPassword,
   resetPasswordApplication,

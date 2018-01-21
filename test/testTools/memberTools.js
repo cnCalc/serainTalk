@@ -2,6 +2,7 @@
 
 const expect = require('chai').expect;
 const { ObjectID } = require('mongodb');
+const _ = require('lodash');
 const dbTool = require('../../database');
 const randomString = require('../../utils/random-string');
 const testTools = require('./');
@@ -77,18 +78,17 @@ exports.login = login;
 let createOneMember = async (agent, memberInfo, next) => {
   // 初始化数据库
   await dbTool.prepare();
-
-  memberInfo = memberInfo || testTools.testObject.memberInfo;
+  let tempMemberInfo = JSON.parse(JSON.stringify(testTools.testObject.memberInfo));
+  if (memberInfo) _.merge(tempMemberInfo, memberInfo);
 
   // name 已存在则随机生成一个新的 name
   let newMemberBody;
   try {
     newMemberBody = await agent
       .post(signUpUrl)
-      .send(info2signUp(memberInfo))
+      .send(info2signUp(tempMemberInfo))
       .expect(201);
   } catch (err) {
-    let tempMemberInfo = Object.assign({}, memberInfo);
     tempMemberInfo.username = randomString();
     newMemberBody = await agent
       .post(signUpUrl)
@@ -105,7 +105,7 @@ let createOneMember = async (agent, memberInfo, next) => {
   newMemberInfo.id = newMemberInfo._id;
   newMemberInfo._id = ObjectID(newMemberInfo.id);
   // 补全必要信息
-  newMemberInfo.password = memberInfo.password;
+  newMemberInfo.password = tempMemberInfo.password;
 
   try {
     // 执行后续操作

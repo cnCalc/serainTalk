@@ -57,14 +57,22 @@ let info = {
   },
   me: {},
   get: {
-    params: {
-      pagesize: interfaceUtils.pagesize,
-      page: interfaceUtils.page,
-    },
     query: joi.object({
       name: joi.string(),
       device: joi.string(),
+      pagesize: interfaceUtils.pagesize,
+      page: interfaceUtils.page,
     }).or('name', 'device'),
+  },
+  startWith: {
+    params: {
+      subName: joi.string(),
+    },
+    query: {
+      subName: joi.string(),
+      pagesize: interfaceUtils.pagesize,
+      page: interfaceUtils.page,
+    },
   },
 };
 exports.info = info;
