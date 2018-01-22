@@ -54,10 +54,19 @@ function fetchMe (param) {
   });
 }
 
+function fetchMemberWithLeadingString (param) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/members/startwith/${param.leadingString}`)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMoreMemberRecentActivityById,
   fetchDiscussionsCreatedByMember,
   signin, signout,
   fetchMe,
+  fetchMemberWithLeadingString,
 };

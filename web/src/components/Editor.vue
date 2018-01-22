@@ -12,7 +12,15 @@
         option(value="html") HTML
         option(value="markdown") Markdown
     div.textarea
-      textarea(placeholder="说些什么吧", v-model="content", :disabled="!editable")
+      div.mention-wrapper
+        div.mention-dropdown(v-bind:style="dropdownStyle")
+          input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)")
+          div.mention-list
+            div.option-list-item(v-for="(option, index) in options" 
+                                v-bind:class="{ 'highlight': index === dropdownFocus }"
+                                @click="filterInsert(index)"
+                                :key="option") {{ option }}
+        textarea(placeholder="说些什么吧", v-model="content", :disabled="!editable" @input="handleInput")
       div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview" v-if="showPreview")
     div.footer
       button(@click="submit") 提交
@@ -58,6 +66,15 @@ export default {
       showPreview: true,
       editable: true,
       lang: 'markdown',
+      dropdownStyle: {
+        top: 0,
+        left: 0,
+        opacity: 0,
+        pointerEvents: 'none'
+      },
+      mentionFilter: '',
+      options: [],
+      dropdownFocus: 0,
     };
   },
   mounted () {
@@ -168,8 +185,113 @@ export default {
         }
       }
     },
+    mentionFilter (filter, oldFilter) {
+      this.updateOptions(filter, oldFilter);
+    }
   },
   methods: {
+    filterKeyDown (event) {
+      const textarea = this.$el.querySelector('textarea');
+      if (event.keyCode === 27) { // ESC key
+        this.filterCleanUp();
+        textarea.focus();
+      } else if (event.keyCode === 40) { // DOWN key
+        if (this.dropdownFocus === undefined) {
+          this.dropdownFocus = 0;
+        } else {
+          this.dropdownFocus++;
+        }
+        if (this.dropdownFocus >= this.options.length) {
+          this.dropdownFocus = 0;
+        }
+      } else if (event.keyCode === 38) { // UP key
+        if (this.dropdownFocus === undefined) {
+          this.dropdownFocus = this.options.length - 1;
+        } else {
+          this.dropdownFocus--;
+        }
+        if (this.dropdownFocus < 0) {
+          this.dropdownFocus = this.options.length - 1;
+        }
+      } else if (event.keyCode === 13 || event.keyCode === 9) { // ENTER key or TAB key
+        event.preventDefault();
+        this.filterInsert(this.dropdownFocus)
+      } else {
+        if (this.options.length >= 1) {
+          this.dropdownFocus = 0;
+        } else {
+          this.dropdownFocus = undefined;
+        }
+      }
+    },
+    filterInsert (index) {
+      const textarea = this.$el.querySelector('textarea');
+      let selected;
+      if (index === undefined) {
+        selected = mentionFilter;
+      } else {
+        selected = this.options[index];
+      }
+      const begin = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      this.content = this.content.substring(0, begin) + selected + ' ' + this.content.substring(end);
+      this.filterCleanUp();
+      textarea.focus();
+      this.$nextTick(() => {
+        textarea.setSelectionRange(begin + selected.length + 1, begin + selected.length + 1);
+      })
+      this.dropdownFocus = undefined;
+    },
+    handleInput (event) {
+      if (event.data === '@') {
+        const textarea = this.$el.querySelector('textarea');
+        const position = getCaretCoordinates(textarea, textarea.selectionEnd);
+        this.dropdownStyle.top = position.top + 'px';
+        this.dropdownStyle.left = position.left + 'px';
+        this.dropdownStyle.opacity = 1;
+        this.dropdownStyle.pointerEvents = '';
+        this.$el.querySelector('input.mention-filter').focus();
+        this.dropdownFocus = 0;
+        this.updateOptions();
+      }
+    },
+    updateOptions (filter, oldFilter) {
+      if (!filter || filter.length === 0) {
+        const { members } = this.$store.state;
+        this.options = Object.keys(members).map(id => members[id].username);
+        this.options.sort();
+        this.options = this.options.slice(0, 10);
+      } else if (oldFilter && oldFilter.indexOf(filter) === 0) {
+        const { members } = this.$store.state;
+        this.options = Object.keys(members).map(id => members[id].username).filter(name => name.toLowerCase().indexOf(filter) === 0);
+        this.options.sort();
+        this.options = this.options.slice(0, 10);
+      } else {
+        api.v1.member.fetchMemberWithLeadingString({ leadingString: filter })
+          .then(res => {
+            const { members } = res;
+            let memberMap = {};
+            members.forEach(member => {
+              memberMap[member._id] = member;
+              delete member._id;
+            });
+            this.$store.commit('mergeMembers', memberMap);
+            this.options = Object.keys(memberMap).map(id => memberMap[id].username);
+            this.options.sort();
+            this.options = this.options.slice(0, 10);
+          })
+      }
+    },
+    filterCleanUp () {
+      this.dropdownStyle =  {
+        top: 0,
+        left: 0,
+        opacity: 0,
+        pointerEvents: 'none'
+      };
+      this.dropdownFocus = undefined;
+      this.mentionFilter = '';
+    },
     updatePreview () {
       if (!this.showPreview) {
         return;
@@ -377,7 +499,7 @@ div.editor {
     font-family: monospace;
   }
 
-  textarea, div.preview {
+  div.mention-wrapper, div.preview {
     flex-grow: 1;
     width: 100%;
     resize: none;
@@ -409,6 +531,41 @@ div.editor {
     flex-grow: 1;
     flex-shrink: 1;
     display: flex;
+  }
+
+  div.mention-wrapper {
+    position: relative;
+    padding-right: 10px;
+
+    textarea {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: calc(100% - 10px);
+      box-sizing: border-box;
+      resize: none;
+    }
+
+    div.mention-dropdown {
+      position: absolute;
+      z-index: 2;
+      border: 1px solid mix($theme_color, white, 50%);
+      box-shadow: 0 0 3px mix($theme_color, rgba(0, 0, 0, 0), 70%);
+
+      input {
+        border: none;
+        box-shadow: none;
+        font-size: 12px;
+        height: 14px;
+        line-height: 14px;
+      }
+    }
+
+    .highlight {
+      background-color: mix($theme_color, white, 20%);
+    }
   }
 
   div.footer {
