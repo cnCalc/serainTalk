@@ -382,7 +382,7 @@ describe('member part', () => {
 
   it('get member name start with special string.', async () => {
     await testTools.member.createOneMember(agent, { username: 'memberkasora' }, async () => {
-      await testTools.member.createOneMember(agent, { username: 'memberntzyz' }, async () => {
+      await testTools.member.createOneMember(agent, { username: 'MEMberntzyz' }, async () => {
         await testTools.member.createOneMember(agent, { username: 'kasorakira' }, async () => {
           await testTools.member.createOneMember(agent, { username: 'kasoramember' }, async () => {
             let startWithUrl = '/api/v1/members/startwith/member';

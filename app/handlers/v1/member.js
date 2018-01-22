@@ -152,7 +152,7 @@ let memberStartWith = async (req, res, next) => {
   let page = req.query.page - 1;
 
   let memberDoc = await dbTool.commonMember.find({
-    username: RegExp('^' + subName),
+    username: RegExp('^' + subName, 'i'),
   }).skip(page * pagesize).limit(pagesize).project({ username: 1 }).toArray();
   return res.status(200).send({ status: 'ok', members: memberDoc });
 };
