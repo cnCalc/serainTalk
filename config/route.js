@@ -511,7 +511,7 @@ let route = {
     },
   },
   picture: {
-    getOne: {
+    uploadOne: {
       description: '上传一张图片。',
       path: [
         '/v1/picture',
