@@ -77,6 +77,6 @@ module.exports = {
     },
   },
   frontEnd: {
-    filePath: path.join(__dirname, 'app', 'public'),
+    filePath: path.join(__dirname, '..', 'app', 'public'),
   },
 };
