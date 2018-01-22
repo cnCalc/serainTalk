@@ -14,7 +14,7 @@
     div.textarea
       div.mention-wrapper
         div.mention-dropdown(v-bind:style="dropdownStyle")
-          input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)")
+          input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)", placeholder="用户名")
           div.mention-list
             div.option-list-item(v-for="(option, index) in options" 
                                 v-bind:class="{ 'highlight': index === dropdownFocus }"
@@ -75,6 +75,7 @@ export default {
       mentionFilter: '',
       options: [],
       dropdownFocus: 0,
+      apiTimeoutId: null,
     };
   },
   mounted () {
@@ -165,6 +166,8 @@ export default {
           }
         }
 
+        this.content = '123 @5a643791c7640c057db373cc 123'
+
         if (flush) {
           this.state = editorState;
           if (this.state.mode === 'EDIT_POST') {
@@ -193,9 +196,11 @@ export default {
     filterKeyDown (event) {
       const textarea = this.$el.querySelector('textarea');
       if (event.keyCode === 27) { // ESC key
+        event.preventDefault();
         this.filterCleanUp();
         textarea.focus();
       } else if (event.keyCode === 40) { // DOWN key
+        event.preventDefault();
         if (this.dropdownFocus === undefined) {
           this.dropdownFocus = 0;
         } else {
@@ -205,6 +210,7 @@ export default {
           this.dropdownFocus = 0;
         }
       } else if (event.keyCode === 38) { // UP key
+        event.preventDefault();
         if (this.dropdownFocus === undefined) {
           this.dropdownFocus = this.options.length - 1;
         } else {
@@ -214,6 +220,7 @@ export default {
           this.dropdownFocus = this.options.length - 1;
         }
       } else if (event.keyCode === 13 || event.keyCode === 9) { // ENTER key or TAB key
+        event.preventDefault();
         event.preventDefault();
         this.filterInsert(this.dropdownFocus)
       } else {
@@ -230,7 +237,12 @@ export default {
       if (index === undefined) {
         selected = mentionFilter;
       } else {
-        selected = this.options[index];
+        let matchedUser = Object.keys(this.$store.state.members).filter(id => this.$store.state.members[id].username === this.options[index]);
+        if (matchedUser.length === 1) {
+          selected = matchedUser[0];
+        } else {
+          selected = mentionFilter;
+        }
       }
       const begin = textarea.selectionStart;
       const end = textarea.selectionEnd;
@@ -239,6 +251,7 @@ export default {
       textarea.focus();
       this.$nextTick(() => {
         textarea.setSelectionRange(begin + selected.length + 1, begin + selected.length + 1);
+        this.updatePreview();
       })
       this.dropdownFocus = undefined;
     },
@@ -246,7 +259,7 @@ export default {
       if (event.data === '@') {
         const textarea = this.$el.querySelector('textarea');
         const position = getCaretCoordinates(textarea, textarea.selectionEnd);
-        this.dropdownStyle.top = position.top + 'px';
+        this.dropdownStyle.top = `${position.top}px`;
         this.dropdownStyle.left = position.left + 'px';
         this.dropdownStyle.opacity = 1;
         this.dropdownStyle.pointerEvents = '';
@@ -261,25 +274,25 @@ export default {
         this.options = Object.keys(members).map(id => members[id].username);
         this.options.sort();
         this.options = this.options.slice(0, 10);
-      } else if (oldFilter && oldFilter.indexOf(filter) === 0) {
-        const { members } = this.$store.state;
-        this.options = Object.keys(members).map(id => members[id].username).filter(name => name.toLowerCase().indexOf(filter) === 0);
-        this.options.sort();
-        this.options = this.options.slice(0, 10);
       } else {
-        api.v1.member.fetchMemberWithLeadingString({ leadingString: filter })
-          .then(res => {
-            const { members } = res;
-            let memberMap = {};
-            members.forEach(member => {
-              memberMap[member._id] = member;
-              delete member._id;
+        if (this.apiTimeoutId) {
+          window.clearTimeout(this.apiTimeoutId);
+        }
+        this.apiTimeoutId = window.setTimeout(() => {
+          api.v1.member.fetchMemberWithLeadingString({ leadingString: filter })
+            .then(res => {
+              const { members } = res;
+              let memberMap = {};
+              members.forEach(member => {
+                memberMap[member._id] = member;
+                delete member._id;
+              });
+              this.$store.commit('mergeMembers', memberMap);
+              this.options = Object.keys(memberMap).map(id => memberMap[id].username);
+              this.options.sort();
+              this.options = this.options.slice(0, 10);
             });
-            this.$store.commit('mergeMembers', memberMap);
-            this.options = Object.keys(memberMap).map(id => memberMap[id].username);
-            this.options.sort();
-            this.options = this.options.slice(0, 10);
-          })
+        }, 500);
       }
     },
     filterCleanUp () {
@@ -311,6 +324,9 @@ export default {
         const match = this.content.match(replyReg);
         preview = preview.replace(`@${match[1]}#${match[2]}#${match[3]}`, `<span class="reply-to">${members[match[1]].username}</span>`);
       }
+
+      // 替换全文中出现的 mention
+      preview = preview.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<span class="mention"> @${members[id].username} </span>`)
 
       this.preview = preview;
 
@@ -506,6 +522,7 @@ div.editor {
     padding: 5px;
     overflow-y: auto;
     font-size: 14px;
+    overflow: inherit;
   }
 
   div.preview {
@@ -552,6 +569,7 @@ div.editor {
       position: absolute;
       z-index: 2;
       border: 1px solid mix($theme_color, white, 50%);
+      background: white;
       box-shadow: 0 0 3px mix($theme_color, rgba(0, 0, 0, 0), 70%);
 
       input {
@@ -563,8 +581,17 @@ div.editor {
       }
     }
 
+    div.option-list-item {
+      padding: 0 0.2em;
+      cursor: pointer;
+    }
+
     .highlight {
       background-color: mix($theme_color, white, 20%);
+    }
+
+    div.option-list-item:not(.highlight):hover {
+      background-color: mix($theme_color, white, 8%);
     }
   }
 

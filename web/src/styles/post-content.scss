@@ -166,7 +166,7 @@ div.post-content {
     color: inherit;
     background-color: initial;
   }
-  span.reply-to {
+  span.reply-to, span.mention {
     display: inline-block;
     background-color: mix($theme_color, white, 12%);
     border-radius: 4px;
@@ -176,6 +176,9 @@ div.post-content {
     color: $theme_color;
     font-weight: 700;
     margin-right: 0.2em;
+  }
+  span.mention {
+    margin-left: 0.2em;
   }
   span.reply-to::before {
     width: 1em;
