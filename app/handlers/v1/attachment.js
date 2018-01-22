@@ -26,8 +26,13 @@ let getAttachmentByAid = async (req, res) => {
   };
 };
 
+let uploadAttachment = async (req, res, next) => {
+  return res.status(201).send({ status: 'ok', attachmentName: req.file.filename });
+};
+
 router.get('/', validation(dataInterface.attachment.getAttachment), getAttachmentByAid);
 
 module.exports = {
   getAttachmentByAid,
+  uploadAttachment,
 };

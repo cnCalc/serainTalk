@@ -283,6 +283,19 @@ let route = {
         handlers.v1.member.logout,
       ],
     },
+    uploadAvatar: {
+      description: '上传头像。',
+      path: [
+        '/v1/member/avatar',
+      ],
+      method: 'post',
+      schema: dataInterface.member.info.uploadAvatar,
+      handler: [
+        verifyMember,
+        utils.upload.avatarUpload.single('avatar'),
+        handlers.v1.member.uploadAvatar,
+      ],
+    },
   },
   password: {
     applicationReset: {
@@ -493,6 +506,18 @@ let route = {
       schema: dataInterface.attachment.getAttachment,
       handler: [
         handlers.v1.attachment.getAttachmentByAid,
+      ],
+    },
+    uploadOne: {
+      description: '上传一个文件。',
+      path: [
+        '/v1/attachment',
+      ],
+      method: 'post',
+      schema: dataInterface.attachment.uploadFile,
+      handler: [
+        utils.upload.fileUpload.single('file'),
+        handlers.v1.attachment.uploadAttachment,
       ],
     },
   },

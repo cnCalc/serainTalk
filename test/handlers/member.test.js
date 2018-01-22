@@ -1,7 +1,9 @@
 'use strict';
 
-const supertest = require('supertest');
 const expect = require('chai').expect;
+const fs = require('fs');
+const path = require('path');
+const supertest = require('supertest');
 const { ObjectID } = require('mongodb');
 
 const dbTool = require('../../database');
@@ -393,5 +395,17 @@ describe('member part', () => {
         });
       });
     });
+  });
+
+  it('upload a avatar.', async () => {
+    let getUrl = '/api/v1/member/avatar';
+    let avatarRes = await agent.post(getUrl)
+      .attach('avatar', 'test/testfile/testpng.png');
+
+    expect(avatarRes.body.status).to.be.equal('ok');
+    let picturePath = path.join(config.upload.avatar.path, avatarRes.body.avatarName);
+    expect(fs.existsSync(picturePath)).to.be.true;
+
+    fs.unlinkSync(picturePath);
   });
 });

@@ -157,6 +157,10 @@ let memberStartWith = async (req, res, next) => {
   return res.status(200).send({ status: 'ok', members: memberDoc });
 };
 
+let uploadAvatar = async (req, res, next) => {
+  return res.status(201).send({ status: 'ok', avatarName: req.file.filename });
+};
+
 /**
  * [处理函数] 获取自身信息
  *
@@ -473,5 +477,6 @@ module.exports = {
   resetPassword,
   resetPasswordApplication,
   signup,
+  uploadAvatar,
   updateSettings,
 };

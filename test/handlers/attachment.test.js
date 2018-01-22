@@ -1,9 +1,12 @@
 'use strict';
 
-const supertest = require('supertest');
 const expect = require('chai').expect;
-const dbTool = require('../../database');
+const fs = require('fs');
+const path = require('path');
+const supertest = require('supertest');
 
+const dbTool = require('../../database');
+const staticConfig = require('../../config/staticConfig');
 let agent = supertest.agent(require('../../index'));
 
 describe('attachment part.', async () => {
@@ -26,5 +29,17 @@ describe('attachment part.', async () => {
     let attachment = attachmentRes.attachment;
     expect(attachmentRes.status).to.be.equal('ok');
     expect(attachment.aid).to.be.equal(randomAid);
+  });
+
+  it('upload a file.', async () => {
+    let getUrl = '/api/v1/attachment';
+    let fileRes = await agent.post(getUrl)
+      .attach('file', 'test/testfile/attachment.txt');
+
+    expect(fileRes.body.status).to.be.equal('ok');
+    let filePath = path.join(staticConfig.upload.file.path, fileRes.body.attachmentName);
+    expect(fs.existsSync(filePath)).to.be.true;
+
+    fs.unlinkSync(filePath);
   });
 });

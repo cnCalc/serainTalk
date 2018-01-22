@@ -9,4 +9,10 @@ let getAttachment = {
     aid: joi.number().required(),
   },
 };
+
+let uploadFile = {
+
+};
+
 exports.getAttachment = getAttachment;
+exports.uploadFile = uploadFile;

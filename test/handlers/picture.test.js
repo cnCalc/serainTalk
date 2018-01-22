@@ -1,10 +1,11 @@
 'use strict';
 
-const supertest = require('supertest');
 const expect = require('chai').expect;
-const dbTool = require('../../database');
 const fs = require('fs');
 const path = require('path');
+const supertest = require('supertest');
+
+const dbTool = require('../../database');
 const staticConfig = require('../../config/staticConfig');
 
 let agent = supertest.agent(require('../../index'));
@@ -19,6 +20,7 @@ describe('picture part.', async () => {
     let pictureRes = await agent.post(getUrl)
       .attach('picture', 'test/testfile/testpng.png');
 
+    expect(pictureRes.body.status).to.be.equal('ok');
     let picturePath = path.join(staticConfig.upload.picture.path, pictureRes.body.pictureName);
     expect(fs.existsSync(picturePath)).to.be.true;
 

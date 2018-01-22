@@ -74,6 +74,7 @@ let info = {
       page: interfaceUtils.page,
     },
   },
+  uploadAvatar: {},
 };
 exports.info = info;
 
