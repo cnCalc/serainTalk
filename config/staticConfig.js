@@ -60,6 +60,10 @@ module.exports = {
       content: '${var1} 回复了您：${var2}',
       href: '/d/${var1}/${var2}#index-${var3}',
     },
+    postMentioned: {
+      content: '${var1} 在讨论 ${var2} 中提及了你',
+      href: '/d/${var1}/${var2}#index-${var3}',
+    },
   },
   upload: {
     file: {
