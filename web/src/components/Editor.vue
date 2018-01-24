@@ -165,9 +165,7 @@ export default {
             break;
           }
         }
-
-        this.content = '123 @5a643791c7640c057db373cc 123'
-
+        
         if (flush) {
           this.state = editorState;
           if (this.state.mode === 'EDIT_POST') {
@@ -326,7 +324,7 @@ export default {
       }
 
       // 替换全文中出现的 mention
-      preview = preview.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<span class="mention"> @${members[id].username} </span>`)
+      preview = preview.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span>`)
 
       this.preview = preview;
 

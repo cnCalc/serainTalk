@@ -462,6 +462,28 @@ let createPost = async (req, res, next) => {
       }
     }
 
+    // 在帖子内查找所有的提及（@）并向他们发送通知
+    // 提及的格式为出现在任意位置的 @ 并且后面紧接 24 个 HEX 字符
+    const mentionPattern = /\@([0-9a-fA-F]{24})/g;
+    postInfo.content.match(mentionPattern).forEach(mention => {
+      // 去掉刚开始那个 @
+      mention = mention.substr(1);
+
+      // 发送咯
+      // FIXME: 其他 sendNotification 都加了 await，但是我觉得没有这个必要？
+      utils.notification.sendNotification(ObjectID(mention), {
+        content: utils.string.fillTemplate(config.notification.postMentioned.content, {
+          var1: req.member.username,
+          var2: discussionInfo.title,
+        }),
+        href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
+          var1: discussionInfo._id,
+          var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+          var3: postInfo.index,
+        }),
+      });
+    });
+
     return res.status(201).send({ status: 'ok', newPost: postInfo });
   } catch (err) {
     /* istanbul ignore next */
