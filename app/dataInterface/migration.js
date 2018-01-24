@@ -5,17 +5,20 @@ const joi = require('joi');
 exports = module.exports = {};
 
 let verify = {
-  body: {
+  body: joi.object({
     name: joi.string().required(),
-    password: joi.string().required(),
-    email: joi.string().email().required(),
-  },
+    password: joi.string(),
+    email: joi.string().email(),
+  }).and('password', 'email'),
 };
 exports.verify = verify;
 
 let perform = {
-  name: joi.string().required(),
-  password: joi.string().required(),
-  token: joi.string().required(),
+  body: {
+    name: joi.string().required(),
+    newname: joi.string().required(),
+    newpassword: joi.string().required().required(),
+    token: joi.string().required(),
+  },
 };
 exports.perform = perform;

@@ -38,6 +38,7 @@ let mongoConnect = async () => {
     exports.temppost = _db.collection('temppost');
     exports.config = _db.collection('config');
     exports.message = _db.collection('message');
+    exports.token = _db.collection('token');
 
     console.log('database connected.');
   } catch (err) {
@@ -71,6 +72,7 @@ exports = module.exports = {
   temppost: 'loading',
   config: 'loading',
   message: 'loading',
+  token: 'loading',
 
   prepare,
 };
