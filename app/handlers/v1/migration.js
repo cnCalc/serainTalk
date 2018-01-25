@@ -73,7 +73,7 @@ async function verifyDiscuzMemberInfo (req, res) {
       // 绑定新邮箱
       await dbTool.commonMember.updateOne(
         { _id: memberInfo._id },
-        { email: email }
+        { $set: { email: email } }
       );
       memberInfo.email = email;
     }
