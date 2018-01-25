@@ -139,10 +139,15 @@ async function performMigration (req, res) {
   }
 
   try {
+    if (newname) {
+      // 如果用户改名，则验证是否名称已被占用
     let existInfo = await dbTool.commonMember.findOne({ username: newname });
 
     if (existInfo) {
       return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
+    }
+    } else {
+      newname = name;
     }
 
     // 加密密码，采用和新的密码杂凑方式
