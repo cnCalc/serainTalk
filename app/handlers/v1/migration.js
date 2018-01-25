@@ -52,7 +52,7 @@ async function verifyDiscuzMemberInfo (req, res) {
     // 如果需要修改邮箱
     if (email) {
       // 核对密码。
-      if (memberInfo.credentials.salt === null) {
+      if (!memberInfo.credentials.salt) {
         password = MD5(MD5(password).toLowerCase());
         if (password !== memberInfo.credentials.password) {
           return utils.errorHandler(null, errorMessages.BAD_PASSWORD, 400, res);
