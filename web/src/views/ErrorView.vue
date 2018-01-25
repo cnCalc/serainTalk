@@ -6,11 +6,18 @@
 </template>
 
 <script>
+import titleMixin from '../mixins/title.js';
+
 export default {
   name: 'error-view',
+  mixins: [titleMixin],
   created () {
     this.$store.commit('setGlobalTitles', []);
   },
+  title: 'Error',
+  mounted () {
+    this.updateTitle();
+  }
 };
 </script>
 

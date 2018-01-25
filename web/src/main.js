@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { sync } from 'vuex-router-sync';
 
-import App from './components/App.vue';
+import App from './App.vue';
 import store from './store';
 
 import ErrorView from './views/ErrorView.vue';
@@ -76,7 +76,7 @@ Vue.mixin({
   beforeMount () {
     const { asyncData } = this.$options;
     if (asyncData) {
-      this.dataPromise = asyncData({
+      this.dataPromise = asyncData.call(this, {
         store: this.$store,
         route: this.$route,
       });

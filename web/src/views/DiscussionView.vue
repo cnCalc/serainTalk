@@ -49,6 +49,7 @@ import PostContent from '../components/PostContent.vue';
 import Pagination from '../components/Pagination.vue';
 import copyToClipboard from '../utils/clipboard';
 import api from '../api';
+import titleMixin from '../mixins/title';
 
 import config from '../config';
 import { indexToPage } from '../utils/filters';
@@ -78,6 +79,7 @@ export default {
   components: {
     LoadingIcon, PostContent, Pagination,
   },
+  mixins: [titleMixin],
   data () {
     return {
       pagesize: config.api.pagesize,
@@ -90,6 +92,9 @@ export default {
       currentDiscussion: null,
       createrOnly: false,
     };
+  },
+  title () {
+    return `${this.discussionMeta.title}`;
   },
   methods: {
     indexToPage, scrollToTop, copyToClipboard,
@@ -214,7 +219,7 @@ export default {
         this.pageLoaded = [];
         this.pageLoaded[this.currentPage] = true;
 
-        return this.$options.asyncData({ store: this.$store, route: this.$route }).then(() => {
+        return this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
           this.$forceUpdate();
           this.scrollWatcher();
           if (this.$store.state.autoLoadOnScroll && page !== 1) {
@@ -265,6 +270,7 @@ export default {
     window.removeEventListener('scroll', this.scrollWatcher);
   },
   activated () {
+    this.updateTitle();
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
   },
   deactivated () {
@@ -276,6 +282,7 @@ export default {
       if (window.location.hash) {
         scrollToHash(window.location.hash);
       }
+      this.updateTitle();
     });
   },
 };
