@@ -77,12 +77,14 @@ import CheckBox from '../components/form/CheckBox.vue';
 import PostContent from '../components/PostContent.vue';
 import DiscussionList from '../components/DiscussionList.vue';
 import api from '../api';
+import titleMixin from '../mixins/title.js';
 import axios from 'axios';
 
 import { timeAgo, indexToPage } from '../utils/filters';
 
 export default {
   name: 'member-view',
+  mixins: [titleMixin],
   components: {
     LoadingIcon, PostContent, DiscussionList, CheckBox,
   },
@@ -94,6 +96,16 @@ export default {
       currentMember: null,
       firstIn: true,
     };
+  },
+  title () {
+    switch (this.$route.meta.mode) {
+      case 'posts':
+        return `${this.member.username} 的最近活动`;
+      case 'discussions':
+        return `${this.member.username} 创建的讨论`;
+      case 'settings':
+        return `个人设置`;
+    }
   },
   computed: {
     member () {
@@ -160,13 +172,16 @@ export default {
         if (route.params.memberId) {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
-            this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId });
+            this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+              this.updateTitle();
+            });
             this.canLoadMorePosts = true;
           }
           this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           this.currentPage = 1;
         }
       }
+      this.updateTitle();
     },
   },
   activated () {
@@ -176,12 +191,15 @@ export default {
       this.canLoadMorePosts = true;
     }
     this.$store.commit('setGlobalTitles', [' ', ' ', true]);
+    this.updateTitle();
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
       if (route.meta.mode === 'discussions') {
         store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
+    }).then(() => {
+      this.updateTitle();
     });
   },
 };

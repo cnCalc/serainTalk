@@ -17,9 +17,9 @@
 </template>
 
 <script>
-import NavBar from './NavBar.vue';
-import GlobalTitle from './GlobalTitle.vue';
-import Editor from './Editor.vue';
+import NavBar from './components/NavBar.vue';
+import GlobalTitle from './components/GlobalTitle.vue';
+import Editor from './components/Editor.vue';
 
 export default {
   name: 'app',
@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../styles/global.scss';
+@import './styles/global.scss';
 
 body {
   margin: 0;

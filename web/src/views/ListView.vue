@@ -15,9 +15,11 @@
 import DiscussionList from '../components/DiscussionList.vue';
 import CategoryList from '../components/CategoryList.vue';
 import LoadingIcon from '../components/LoadingIcon.vue';
+import titleMixin from '../mixins/title.js';
 
 export default {
   name: 'list-view',
+  mixins: [titleMixin],
   components: {
     DiscussionList, CategoryList, LoadingIcon,
   },
@@ -43,6 +45,19 @@ export default {
     slug () {
       return this.$route.path === '/' ? '' : this.$route.params.categorySlug;
     },
+  },
+  title () {
+    if (!this.slug && this.$route.path === '/') {
+      return '首页';
+    }
+    let categoriesGroup = this.$store.state.categoriesGroup;
+    for (let group of categoriesGroup) {
+      for (let item of group.items) {
+        if (item.type === 'category' && item.slug === this.slug) {
+          return item.name;
+        }
+      }
+    }
   },
   methods: {
     loadMore () {
@@ -98,11 +113,7 @@ export default {
       }
 
       this.flushGlobalTitles();
-      if (route.path === '/') {
-        return this.$store.dispatch('fetchLatestDiscussions');
-      } else if (route.params.categorySlug) {
-        return this.$store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
-      }
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route })
     },
     slug: function (slug) {
       this.flushGlobalTitles();
@@ -113,16 +124,21 @@ export default {
   },
   activated () {
     // this.flushGlobalTitles();
+    this.updateTitle();
   },
   created () {
     this.currentSlug = this.slug || '';
   },
   asyncData ({ store, route }) {
+    let p;
     if (route.path === '/') {
-      return store.dispatch('fetchLatestDiscussions');
+      p = store.dispatch('fetchLatestDiscussions');
     } else {
-      return store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
     }
+    return p.then(() => {
+      this.updateTitle();
+    });
   },
 };
 </script>
