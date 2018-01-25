@@ -81,7 +81,7 @@ async function verifyDiscuzMemberInfo (req, res) {
     // 保存迁移 token，留着下一步使用
     let token = utils.createRandomString(6);
     if (utils.env.isMocha) token = 'kasora';
-    let tokenRes = await dbTool.token.findOneAndUpdate(
+    await dbTool.token.findOneAndUpdate(
       {
         name: name,
         type: 'migration',
@@ -141,11 +141,10 @@ async function performMigration (req, res) {
   try {
     if (newname) {
       // 如果用户改名，则验证是否名称已被占用
-    let existInfo = await dbTool.commonMember.findOne({ username: newname });
-
-    if (existInfo) {
-      return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
-    }
+      let existInfo = await dbTool.commonMember.findOne({ username: newname });
+      if (existInfo) {
+        return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
+      }
     } else {
       newname = name;
     }

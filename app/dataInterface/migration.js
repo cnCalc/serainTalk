@@ -16,7 +16,7 @@ exports.verify = verify;
 let perform = {
   body: {
     name: joi.string().required(),
-    newname: joi.string().required(),
+    newname: joi.string(),
     newpassword: joi.string().required().required(),
     token: joi.string().required(),
   },
