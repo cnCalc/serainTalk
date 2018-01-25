@@ -55,12 +55,12 @@ async function verifyDiscuzMemberInfo (req, res) {
       if (!memberInfo.credentials.salt) {
         password = MD5(MD5(password).toLowerCase());
         if (password !== memberInfo.credentials.password) {
-          return utils.errorHandler(null, errorMessages.BAD_PASSWORD, 400, res);
+          return utils.errorHandler(null, errorMessages.BAD_PASSWORD, 401, res);
         }
       } else {
         password = MD5(memberInfo.credentials.salt + password);
         if (password !== memberInfo.credentials.password) {
-          return utils.errorHandler(null, errorMessages.BAD_PASSWORD, 400, res);
+          return utils.errorHandler(null, errorMessages.BAD_PASSWORD, 401, res);
         }
       }
 
@@ -127,7 +127,7 @@ async function performMigration (req, res) {
     type: 'migration',
   });
 
-  if (token !== tokenDoc.token) {
+  if (!tokenDoc || token !== tokenDoc.token) {
     // TODO: 添加失败计数。超过一定次数则暂时阻止该用户迁移。
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
@@ -165,7 +165,7 @@ async function performMigration (req, res) {
       { $set: newMemberInfo }
     );
 
-    await dbTool.token.deleteOne({ username: name });
+    await dbTool.token.deleteOne({ name: name });
     return res.status(201).send({ status: 'ok' });
   } catch (err) {
     /* istanbul ignore next */

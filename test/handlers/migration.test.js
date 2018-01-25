@@ -98,6 +98,54 @@ describe('migration part.', async () => {
     });
   });
 
+  it('reset email in migration with wrong password.(should be wrong)', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      // 生成一个迁移前的成员
+      await dbTool.commonMember.updateOne(
+        { _id: newMemberInfo._id },
+        {
+          $set: {
+            credentials: {
+              type: 'discuz',
+              password: utils.md5(utils.md5(newMemberInfo.password).toLowerCase()),
+            },
+          },
+        }
+      );
+
+      let tokenDoc = await dbTool.token.findOne({
+        name: newMemberInfo.username,
+        type: 'migration',
+      });
+      expect(tokenDoc).to.not.be.ok;
+      // 提交新邮箱
+      let verifyUrl = '/api/v1/migration/verify';
+      let newEmail = `${utils.createRandomString(10)}@cncalc.org`;
+      let a = await agent.post(verifyUrl)
+        .send({
+          name: newMemberInfo.username,
+          password: utils.createRandomString(20),
+          email: newEmail,
+        })
+        .expect(401);
+      // 执行迁移
+      let performUrl = '/api/v1/migration/perform';
+      await agent.post(performUrl)
+        .send({
+          name: newMemberInfo.username,
+          newpassword: newMemberInfo.password,
+          token: 'kasora',
+        })
+        .expect(401);
+
+      let memberDoc = await dbTool.commonMember.findOne({ _id: newMemberInfo._id });
+      expect(memberDoc.credentials.type).to.be.equal('discuz');
+      expect(memberDoc.email).to.be.equal(newMemberInfo.email);
+      let password = utils.md5(utils.md5(newMemberInfo.password).toLowerCase());
+      expect(password).to.be.equal(memberDoc.credentials.password);
+    });
+  });
+
   it('reset username and password.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       // 生成一个迁移前的成员
