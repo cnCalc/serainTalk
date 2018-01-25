@@ -465,7 +465,7 @@ let createPost = async (req, res, next) => {
     // 在帖子内查找所有的提及（@）并向他们发送通知
     // 提及的格式为出现在任意位置的 @ 并且后面紧接 24 个 HEX 字符
     const mentionPattern = /\@([0-9a-fA-F]{24})/g;
-    postInfo.content.match(mentionPattern).forEach(mention => {
+    (postInfo.content.match(mentionPattern) || []).forEach(mention => {
       // 去掉刚开始那个 @
       mention = mention.substr(1);
 
