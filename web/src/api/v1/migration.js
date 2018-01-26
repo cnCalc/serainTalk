@@ -19,7 +19,8 @@ function performMigration (param) {
   const requestPayload = {
     token: param.token,
     name: param.name,
-    password: param.password,
+    newname: param.newname,
+    newpassword: param.password,
   };
 
   return new Promise((resolve, reject) => {
@@ -31,5 +32,5 @@ function performMigration (param) {
 
 export default {
   requestMigration,
-  performMigration
+  performMigration,
 };

@@ -1,6 +1,8 @@
 'use strict';
 
 const staticConfig = require('../config/staticConfig');
+const utils = require('../utils');
+
 const mail = require('nodemailer').createTransport({
   port: staticConfig.mail.port,
   host: staticConfig.mail.host,
@@ -18,11 +20,12 @@ const mail = require('nodemailer').createTransport({
  * @param {string} code 验证码
  */
 let sendVerificationCode = async (address, code) => {
-  mail.sendMail({
+  utils.env.isProd && mail.sendMail({
     from: staticConfig.mail.data.from,
     to: address,
-    subject: message.subject,
-    text: message.text,
+    subject: '您的 cnCalc 验证码',
+    html: `亲爱的用户：<br>您正在进行邮箱验证，本次请求的验证码为 <code>${code}</code>，十五分钟内有效。<br><br>cnCalc Team`,
+    text: `亲爱的用户：\n您正在进行邮箱验证，本次请求的验证码为 ${code}，十五分钟内有效。\n\ncnCalc Team`,
   });
   console.log(`Sending ${code} to ${address}`);
 };
