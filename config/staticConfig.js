@@ -83,4 +83,19 @@ module.exports = {
   frontEnd: {
     filePath: path.join(__dirname, '..', 'app', 'public'),
   },
+  mail: {
+    code: {
+
+    },
+    data: {
+      from: 'admin@cncalc.org',
+    },
+    port: 587,
+    host: 'localhost',
+    auth: {
+      type: 'login',
+      user: 'waiting',
+      password: 'waiting',
+    },
+  },
 };
