@@ -45,6 +45,7 @@ div
           button.button 修改密码
           button.button 变更邮箱
           button.button 更换头像
+          button.button(@click="sudo") 提权至管理员
         h3 邮件通知
         div.row
           check-box(:checked="false")
@@ -157,6 +158,12 @@ export default {
     },
     switchScrollBehavior () {
       this.$store.commit('switchScrollBehavior');
+    },
+    sudo () {
+      axios.get('/api/v1/debug/sudo').then(() => {
+        window.alert('提权成功');
+        window.location.reload();
+      });
     },
   },
   created () {
