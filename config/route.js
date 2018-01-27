@@ -589,7 +589,7 @@ let devRoute = {
   },
 };
 
-if (utils.env.isDev) {
+if (utils.env.isDev || !utils.env.isRelease) {
   Object.assign(route, devRoute);
 }
 
