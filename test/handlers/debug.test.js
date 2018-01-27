@@ -56,7 +56,7 @@
 //         .post(loginUrl)
 //         .send({
 //           name: newMemberInfo.username,
-//           password: newMemberInfo.password
+//           password: newMemberInfo.password,
 //         })
 //         .expect(201);
 //       adminUrl = '/api/v1/debug/isadmin';
@@ -85,7 +85,7 @@
 //       let notificationUrl = `/api/v1/debug/notification/${newMemberInfo.id}`;
 //       let payload = {
 //         content: 'just test',
-//         href: 'cncalc.org'
+//         href: 'cncalc.org',
 //       };
 //       notificationUrl = utils.url.createRESTfulUrl(notificationUrl, payload);
 //       let sudoRes = await agent.get(notificationUrl).send(payload).expect(201);

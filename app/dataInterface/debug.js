@@ -23,5 +23,8 @@ let sendNotification = {
 };
 exports.sendNotification = sendNotification;
 
+let inviteCode = {};
+exports.inviteCode = inviteCode;
+
 let isAdmin = {};
 exports.isAdmin = isAdmin;

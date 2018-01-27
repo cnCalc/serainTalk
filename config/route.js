@@ -586,6 +586,17 @@ let devRoute = {
         handlers.v1.debug.isAdmin,
       ],
     },
+    invite: {
+      description: '邀请其他用户迁移。',
+      path: [
+        '/v1/debug/invite',
+      ],
+      method: 'get',
+      schema: dataInterface.debug.inviteCode,
+      handler: [
+        handlers.v1.debug.createInviteCode,
+      ],
+    },
   },
 };
 

@@ -550,9 +550,10 @@ describe('discussion part', async () => {
   });
 
   it('add posts frequent by common(should be wrong).', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         try {
+          // 测试多个讨论的限制
           await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
             let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
             await agent.post(url);
@@ -561,6 +562,10 @@ describe('discussion part', async () => {
         } catch (err) {
           expect(err.message).to.be.equal(errorMessages.TOO_FREQUENT);
         }
+
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+
+        });
       });
     });
   });

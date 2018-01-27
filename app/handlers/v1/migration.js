@@ -49,6 +49,27 @@ async function verifyDiscuzMemberInfo (req, res) {
       return utils.errorHandler(null, errorMessages.ALREADY_MIGRATED, 400, res);
     }
 
+    if (!utils.env.isRelease) {
+      if (!req.body.code) {
+        return utils.errorHandler(null, utils.errorMessages.PERMISSION_DENIED, 400, res);
+      }
+      let useCode = await dbTool.token.findOneAndUpdate(
+        {
+          type: 'closedBetaCode',
+          code: req.body.code,
+          used: false,
+        },
+        {
+          $set: {
+            used: req.member._id,
+          },
+        }
+      );
+      if (useCode.lastErrorObject.n === 0) {
+        return utils.errorHandler(null, utils.errorMessages.PERMISSION_DENIED, 400, res);
+      };
+    }
+
     // 如果需要修改邮箱
     if (email) {
       // 核对密码。
