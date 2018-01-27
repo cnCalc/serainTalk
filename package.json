@@ -15,7 +15,8 @@
     "postinstall": "cd web && npm i",
     "build": "cd web && npm run build && cp -r dist ../app/public && cp index.html ../app/public",
     "dev": "node ./index.js",
-    "production": "cross-env NODE_ENV=production node ./index.js"
+    "production:stable": "cross-env NODE_ENV=production RELEASE=stable node ./index.js",
+    "production:beta": "cross-env NODE_ENV=production RELEASE=beta node ./index.js"
   },
   "nyc": {
     "require": [
