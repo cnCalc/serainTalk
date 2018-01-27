@@ -20,7 +20,7 @@
                                 v-bind:class="{ 'highlight': index === dropdownFocus }"
                                 @click="filterInsert(index)"
                                 :key="option") {{ option }}
-        textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @input="handleInput" v-on:mousewheel="scrollHelper")
+        textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @keydown="handleInput" v-on:mousewheel="scrollHelper")
       div.preview.post-content.scrollable(v-else v-html="preview === '' ? '说些什么吧' : preview" v-on:mousewheel="scrollHelper")
     div.footer
       button(@click="submit") 提交
@@ -254,16 +254,18 @@ export default {
       this.dropdownFocus = undefined;
     },
     handleInput (event) {
-      if (event.data === '@') {
+      if (event.key === '@') {
         const textarea = this.$el.querySelector('textarea');
         const position = getCaretCoordinates(textarea, textarea.selectionEnd);
-        this.dropdownStyle.top = `${position.top}px`;
-        this.dropdownStyle.left = position.left + 'px';
-        this.dropdownStyle.opacity = 1;
-        this.dropdownStyle.pointerEvents = '';
-        this.$el.querySelector('input.mention-filter').focus();
-        this.dropdownFocus = 0;
-        this.updateOptions();
+        this.$nextTick(() => {
+          this.dropdownStyle.top = `${position.top}px`;
+          this.dropdownStyle.left = position.left + 'px';
+          this.dropdownStyle.opacity = 1;
+          this.dropdownStyle.pointerEvents = '';
+          this.$el.querySelector('input.mention-filter').focus();
+          this.dropdownFocus = 0;
+          this.updateOptions();
+        });
       }
     },
     updateOptions (filter, oldFilter) {
