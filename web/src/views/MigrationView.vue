@@ -7,7 +7,7 @@
         div 迁移的过程中请不要关闭浏览器。
       form(v-on:submit.prevent="doCheckName")
         label.block(for="origUserName") 原 cnCalc 用户名：
-        input(type="text" id="origUserName" v-model="origUserName")
+        input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
         button.button(:disabled="busy") 下一步
     div(v-if="step === 'checkOrigEmail'")
       .explain 
@@ -22,7 +22,7 @@
         div 我们需要验证你的密码以确保万无一失
       form(v-on:submit.prevent="doSendCode")
         label.block(for="oldPassword") 旧密码：
-        input(type="text" id="oldPassword" v-model="oldPassword")
+        input(type="password" id="oldPassword" v-model="oldPassword")
         label.block(for="newEmail") 新的邮件地址：
         input(type="text" id="newEmail" v-model="newEmail")
         button.button(:disabled="busy") 下一步
@@ -30,7 +30,7 @@
       .explain 
         div 验证码已发送到您的邮箱，请注意查收。
       form(v-on:submit.prevent="doMingration")
-        label.block(for="verificationCode") 验证码：
+        label.block(for="verificationCode") 验证码（区分大小写）：
         input(type="text" id="verificationCode" v-model="verificationCode")
         label.block(for="newUserName") 新用户名（不可再变更）：
         input(type="text" id="newUserName" v-model="newUserName")

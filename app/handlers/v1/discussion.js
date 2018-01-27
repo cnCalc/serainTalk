@@ -385,6 +385,11 @@ let createPost = async (req, res, next) => {
     postInfo.replyTo.memberId = ObjectID(postInfo.replyTo.memberId);
   }
 
+  // 检索所有出现的 @
+  // 提及的格式为出现在任意位置的 @ 并且后面紧接 24 个 HEX 字符
+  const mentionPattern = /\@([0-9a-fA-F]{24})/g;
+  postInfo.mentions = (postInfo.content.match(mentionPattern) || []).map(mention => mention.substr(1));
+
   // 追加一个 Post，同时更新一些元数据
   try {
     await dbTool.discussion.updateOne(
@@ -462,15 +467,9 @@ let createPost = async (req, res, next) => {
       }
     }
 
-    // 在帖子内查找所有的提及（@）并向他们发送通知
-    // 提及的格式为出现在任意位置的 @ 并且后面紧接 24 个 HEX 字符
-    const mentionPattern = /\@([0-9a-fA-F]{24})/g;
-    (postInfo.content.match(mentionPattern) || []).forEach(mention => {
-      // 去掉刚开始那个 @
-      mention = mention.substr(1);
-
-      // 发送咯
-      // FIXME: 其他 sendNotification 都加了 await，但是我觉得没有这个必要？
+    // 给所有 @ 的人发通知
+    postInfo.mentions.forEach(mention => {
+      // FIXME: 需要 await？
       utils.notification.sendNotification(ObjectID(mention), {
         content: utils.string.fillTemplate(config.notification.postMentioned.content, {
           var1: req.member.username,

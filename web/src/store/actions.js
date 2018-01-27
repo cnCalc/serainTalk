@@ -13,12 +13,12 @@ export default {
   /**
    * 获取全站最近的讨论（首页）
    */
-  fetchLatestDiscussions: (state, param = {}) => {
+  fetchLatestDiscussions: (state, params = {}) => {
     state.commit('setBusy', true);
-    param.append || state.commit('setDiscussions', []);
-    return api.v1.discussion.fetchLatestDiscussions(param).then(data => {
+    params.append || state.commit('setDiscussions', []);
+    return api.v1.discussion.fetchLatestDiscussions(params).then(data => {
       state.commit('mergeMembers', data.members);
-      if (param.append) {
+      if (params.append) {
         state.commit('appendDiscussions', data.discussions);
       } else {
         state.commit('setDiscussions', data.discussions);
@@ -30,12 +30,12 @@ export default {
   /**
    * 获取某个分区下最近的讨论（分区首页）
    */
-  fetchDiscussionsUnderCategory: (state, param = {}) => {
+  fetchDiscussionsUnderCategory: (state, params = {}) => {
     state.commit('setBusy', true);
-    param.append || state.commit('setDiscussions', []);
-    return api.v1.category.fetchDiscussionsUnderCategory(param).then(data => {
+    params.append || state.commit('setDiscussions', []);
+    return api.v1.category.fetchDiscussionsUnderCategory(params).then(data => {
       state.commit('mergeMembers', data.members);
-      if (param.append) {
+      if (params.append) {
         state.commit('appendDiscussions', data.discussions);
       } else {
         state.commit('setDiscussions', data.discussions);
@@ -48,18 +48,18 @@ export default {
    * FIXME: change function name.
    * 获取某个讨论的元数据以及指定页的内容，用于首屏渲染
    */
-  fetchDiscussion: (state, param = {}) => {
+  fetchDiscussion: (state, params = {}) => {
     state.commit('setBusy', true);
     state.commit('clearDiscussionPosts');
-    return api.v1.discussion.fetchDiscussionMetaById(param).then(data => {
+    return api.v1.discussion.fetchDiscussionMetaById(params).then(data => {
       state.commit('setDiscussionMeta', data);
-      return api.v1.discussion.fetchDiscussionPostsById(param);
+      return api.v1.discussion.fetchDiscussionPostsById(params);
     }).then(data => {
       state.commit('mergeMembers', data.members);
       state.commit('updateDiscussionPosts', data.posts);
-      if (param.preloadPrevPage && param.page !== 1) {
-        param.page--;
-        return api.v1.discussion.fetchDiscussionPostsById(param);
+      if (params.preloadPrevPage && params.page !== 1) {
+        params.page--;
+        return api.v1.discussion.fetchDiscussionPostsById(params);
       }
       return Promise.resolve();
     }).then(data => {
@@ -74,9 +74,9 @@ export default {
   /**
    * 获得指定讨论的元数据
    */
-  fetchDiscussionsMeta: (state, param = {}) => {
+  fetchDiscussionsMeta: (state, params = {}) => {
     state.commit('setBusy', true);
-    return api.v1.discussion.fetchDiscussionMetaById(param).then(data => {
+    return api.v1.discussion.fetchDiscussionMetaById(params).then(data => {
       state.commit('setDiscussionMeta', data);
     });
   },
@@ -84,14 +84,14 @@ export default {
   /**
    * 获取某个讨论的指定页内容
    */
-  fetchDiscussionPosts: (state, param = {}) => {
+  fetchDiscussionPosts: (state, params = {}) => {
     state.commit('setBusy', true);
-    return api.v1.discussion.fetchDiscussionMetaById(param).then(data => {
+    return api.v1.discussion.fetchDiscussionMetaById(params).then(data => {
       state.commit('setDiscussionMeta', data);
-      return api.v1.discussion.fetchDiscussionPostsById(param);
+      return api.v1.discussion.fetchDiscussionPostsById(params);
     }).then(data => {
       state.commit('mergeMembers', data.members);
-      if (param.overwrite) {
+      if (params.overwrite) {
         state.commit('setDiscussionPosts', data.posts);
       } else {
         state.commit('updateDiscussionPosts', data.posts);
@@ -101,12 +101,21 @@ export default {
   },
 
   /**
+   * 更新单个楼层的信息，在点赞、编辑等之后使用
+   */
+  updateSingleDiscussionPost: (state, params = {}) => {
+    return api.v1.discussion.fetchDiscussionPostByIdAndIndex(params).then(data => {
+      state.commit('updateDiscussionPosts', [data.post]);
+    });
+  },
+
+  /**
    * 获取成员用户的信息
    */
-  fetchMemberInfo: (state, param = {}) => {
+  fetchMemberInfo: (state, params = {}) => {
     state.commit('setBusy', true);
     state.commit('setMember', {});
-    return api.v1.member.fetchMemberInfoById(param).then(data => {
+    return api.v1.member.fetchMemberInfoById(params).then(data => {
       state.commit('setMember', data.member);
       state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);
@@ -116,11 +125,11 @@ export default {
   /**
    * 获取用户创建的讨论列表
    */
-  fetchDiscussionsCreatedByMember: (state, param = {}) => {
+  fetchDiscussionsCreatedByMember: (state, params = {}) => {
     state.commit('setBusy', true);
-    param.append || state.commit('setMemberDiscussions', []);
-    return api.v1.member.fetchDiscussionsCreatedByMember(param).then(data => {
-      if (param.append) {
+    params.append || state.commit('setMemberDiscussions', []);
+    return api.v1.member.fetchDiscussionsCreatedByMember(params).then(data => {
+      if (params.append) {
         state.commit('appendMemberDiscussions', data.discussions);
       } else {
         state.commit('setMemberDiscussions', data.discussions);
@@ -143,8 +152,8 @@ export default {
   /**
    * 获取当前用户通知
    */
-  fetchNotifications: (state, param = {}) => {
-    return api.v1.notification.fetchNotification(param).then(data => {
+  fetchNotifications: (state, params = {}) => {
+    return api.v1.notification.fetchNotification(params).then(data => {
       const { notifications, count } = data;
       state.commit('setNotifications', { notifications, count });
     });
@@ -153,9 +162,9 @@ export default {
   /**
    * 将某个通知标记为已读
    */
-  readNotification: (state, param = {}) => {
-    return api.v1.notification.readNotification(param).then(data => {
-      state.commit('updateNofitication', param);
+  readNotification: (state, params = {}) => {
+    return api.v1.notification.readNotification(params).then(data => {
+      state.commit('updateNofitication', params);
     });
   },
 };
