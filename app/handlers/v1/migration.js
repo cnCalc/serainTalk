@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const config = require('../../../config');
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
@@ -50,24 +51,12 @@ async function verifyDiscuzMemberInfo (req, res) {
     }
 
     if (!utils.env.isRelease) {
-      if (!req.body.code) {
-        return utils.errorHandler(null, utils.errorMessages.PERMISSION_DENIED, 400, res);
+      // 没有激活码 || 不正确的激活码 || 激活码已被激活
+      if (!req.body.code
+        || !_.includes(await utils.member.getInviteCodes(), req.body.code)
+        || await dbTool.commonMember.findOne({ inviteCode: req.body.code })) {
+        return utils.errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
       }
-      let useCode = await dbTool.token.findOneAndUpdate(
-        {
-          type: 'closedBetaCode',
-          code: req.body.code,
-          used: false,
-        },
-        {
-          $set: {
-            used: req.member._id,
-          },
-        }
-      );
-      if (useCode.lastErrorObject.n === 0) {
-        return utils.errorHandler(null, utils.errorMessages.PERMISSION_DENIED, 400, res);
-      };
     }
 
     // 如果需要修改邮箱
@@ -124,6 +113,11 @@ async function verifyDiscuzMemberInfo (req, res) {
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }
+
+    await dbTool.commonMember.updateOne(
+      { _id: req.member._id },
+      { $set: { inviteCode: req.body.code } }
+    );
 
     return res.status(201).send({ status: 'ok' });
   } catch (err) {

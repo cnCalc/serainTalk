@@ -9,7 +9,7 @@ let verify = {
     name: joi.string().required(),
     password: joi.string(),
     email: joi.string().email(),
-    code: joi.string().length(6),
+    code: joi.string(),
   }).and('password', 'email'),
 };
 exports.verify = verify;

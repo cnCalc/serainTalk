@@ -38,35 +38,7 @@ let isAdmin = async (req, res, next) => {
   return res.status(200).send({ status: 'ok', isAdmin: req.member.role === 'admin' });
 };
 
-let createInviteCode = async (req, res, next) => {
-  if (req.member.role !== 'admin') {
-    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
-  }
-  let codes = await dbTool.token.find({
-    type: 'closedBetaCode',
-    from: req.member._id,
-  }).toArray();
-  if (codes.length > 2) {
-    codes = codes.map(code => { delete code.type; delete code.from; });
-    return res.status(400).send({ status: 'error', codes: codes });
-  }
-
-  let code = utils.createRandomString(6).toUpperCase();
-  await dbTool.token.insertOne({
-    type: 'closedBetaCode',
-    from: req.member._id,
-    code: code,
-    used: false,
-  });
-  return res.status(200).send({ status: 'ok', code: code });
-};
-
-// router.get('/sudo', validation(dataInterface.debug.sudo), sudo);
-// router.get('/notification/:id', validation(dataInterface.debug.sendNotification), sendNotification);
-// router.get('/isadmin', isAdmin);
-
 module.exports = {
-  createInviteCode,
   isAdmin,
   sendNotification,
   sudo,

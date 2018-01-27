@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
 const config = require('../config');
 const dbTool = require('../database');
 
@@ -60,3 +63,18 @@ let isIgnored = async (_accepterId, _senderId) => {
   }
 };
 exports.isIgnored = isIgnored;
+
+let getInviteCodes = () => {
+  return new Promise((resolve, reject) => {
+    let codePath = path.join(__dirname, '..', 'config', 'invite-code.json');
+    fs.readFile(codePath, { encoding: 'utf8' }, (err, data) => {
+      if (err) {
+        fs.writeFileSync(codePath, '[]', { encoding: 'utf8' });
+        resolve([]);
+      } else {
+        resolve(JSON.parse(data));
+      }
+    });
+  });
+};
+exports.getInviteCodes = getInviteCodes;
