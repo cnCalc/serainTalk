@@ -3,6 +3,7 @@
 const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
+const utils = require('../../utils');
 
 exports = module.exports = {};
 
@@ -37,6 +38,7 @@ exports.getMemberInfo = getMemberInfo;
 let getPermissions = async (req, res, next) => {
   if (!req.member._id) req.member.role = 'anonymous';
   else if (!req.member.role) req.member.role = 'member';
+  if (!utils.env.isRelease)req.member.role = 'admin';
   req.member.permissions = config.member.permissions[req.member.role];
   return next();
 };
