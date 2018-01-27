@@ -12,7 +12,7 @@
         option(value="html") HTML
         option(value="markdown") Markdown
     div.textarea
-      div.mention-wrapper
+      div.mention-wrapper(v-if="!showPreview")
         div.mention-dropdown(v-bind:style="dropdownStyle")
           input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)", placeholder="用户名")
           div.mention-list
@@ -20,8 +20,8 @@
                                 v-bind:class="{ 'highlight': index === dropdownFocus }"
                                 @click="filterInsert(index)"
                                 :key="option") {{ option }}
-        textarea(placeholder="说些什么吧", v-model="content", :disabled="!editable" @input="handleInput")
-      div.preview.post-content(v-html="preview === '' ? '说些什么吧' : preview" v-if="showPreview")
+        textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @keydown="handleInput" v-on:mousewheel="scrollHelper")
+      div.preview.post-content.scrollable(v-else v-html="preview === '' ? '说些什么吧' : preview" v-on:mousewheel="scrollHelper")
     div.footer
       button(@click="submit") 提交
       button(@click="close") 关闭
@@ -63,14 +63,14 @@ export default {
       category: '',
       content: '',
       state: {},
-      showPreview: true,
+      showPreview: false,
       editable: true,
       lang: 'markdown',
       dropdownStyle: {
         top: 0,
         left: 0,
         opacity: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       },
       mentionFilter: '',
       options: [],
@@ -233,13 +233,13 @@ export default {
       const textarea = this.$el.querySelector('textarea');
       let selected;
       if (index === undefined) {
-        selected = mentionFilter;
+        selected = this.mentionFilter;
       } else {
         let matchedUser = Object.keys(this.$store.state.members).filter(id => this.$store.state.members[id].username === this.options[index]);
         if (matchedUser.length === 1) {
           selected = matchedUser[0];
         } else {
-          selected = mentionFilter;
+          selected = this.mentionFilter;
         }
       }
       const begin = textarea.selectionStart;
@@ -250,20 +250,22 @@ export default {
       this.$nextTick(() => {
         textarea.setSelectionRange(begin + selected.length + 1, begin + selected.length + 1);
         this.updatePreview();
-      })
+      });
       this.dropdownFocus = undefined;
     },
     handleInput (event) {
-      if (event.data === '@') {
+      if (event.key === '@') {
         const textarea = this.$el.querySelector('textarea');
         const position = getCaretCoordinates(textarea, textarea.selectionEnd);
-        this.dropdownStyle.top = `${position.top}px`;
-        this.dropdownStyle.left = position.left + 'px';
-        this.dropdownStyle.opacity = 1;
-        this.dropdownStyle.pointerEvents = '';
-        this.$el.querySelector('input.mention-filter').focus();
-        this.dropdownFocus = 0;
-        this.updateOptions();
+        this.$nextTick(() => {
+          this.dropdownStyle.top = `${position.top}px`;
+          this.dropdownStyle.left = position.left + 'px';
+          this.dropdownStyle.opacity = 1;
+          this.dropdownStyle.pointerEvents = '';
+          this.$el.querySelector('input.mention-filter').focus();
+          this.dropdownFocus = 0;
+          this.updateOptions();
+        });
       }
     },
     updateOptions (filter, oldFilter) {
@@ -294,11 +296,11 @@ export default {
       }
     },
     filterCleanUp () {
-      this.dropdownStyle =  {
+      this.dropdownStyle = {
         top: 0,
         left: 0,
         opacity: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       };
       this.dropdownFocus = undefined;
       this.mentionFilter = '';
@@ -324,7 +326,7 @@ export default {
       }
 
       // 替换全文中出现的 mention
-      preview = preview.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span>`)
+      preview = preview.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span>`);
 
       this.preview = preview;
 
@@ -443,6 +445,27 @@ export default {
           break;
       }
     },
+    scrollHelper (e) {
+      e.stopPropagation();
+
+      let node = e.target;
+      while (node && node.className.indexOf('scrollable') === -1) {
+        node = node.parentElement;
+      }
+      if (!node) {
+        return;
+      }
+      const delta = e.wheelDelta || e.detail || e.deltaY;
+
+      if (node.scrollTop === 0 && delta > 0) {
+        e.preventDefault();
+        return false;
+      } else if (node.clientHeight + node.scrollTop >= node.scrollHeight && delta < 0) {
+        e.preventDefault();
+        return false;
+      }
+    },
+
   },
 };
 </script>
@@ -526,6 +549,7 @@ div.editor {
   div.preview {
     background-color: white;
     border: 1px dashed grey;
+    overflow-y: scroll;
   }
 
   input:focus, select:focus, textarea:focus  {
@@ -559,6 +583,8 @@ div.editor {
       right: 0;
       bottom: 0;
       width: calc(100% - 10px);
+      height: 100%;
+      padding: 0.5em;
       box-sizing: border-box;
       resize: none;
     }

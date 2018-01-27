@@ -1,28 +1,44 @@
 <template lang="pug">
   .mingration-view: .mingration-box
     h2 账户迁移
-    .verify-step(v-if="step === 'verify'")
-      .explain 这里是一段解释说明文本
-      form.stage-1(v-on:submit.prevent="doVerifyRequest")
+    div(v-if="step === 'getMemberName'")
+      .explain 
+        div 这里是一段解释说明文本。
+        div 迁移的过程中请不要关闭浏览器。
+      form(v-on:submit.prevent="doCheckName")
         label.block(for="origUserName") 原 cnCalc 用户名：
-        input(type="text" id="origUserName" v-model="origUserName")
-        label.block(for="origPasswd") 原 cnCalc 密码：
-        input(type="password" id="origPasswd" v-model="origPasswd")
-        label.block(for="email") 新的邮箱地址：
-        input(type="text" id="email" v-model="email")
+        input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
         button.button(:disabled="busy") 下一步
-    .perform-step(v-else)
-      .explain 验证码已发送，请前往邮箱查看。
-      form.stage-2(v-on:submit.prevent="doPerformMigration")
-        label.block(for="token") 验证码：
-        input(type="text" id="token" v-model="token")
-        label.block(for="name") 新用户名（不可再修改）：
-        input(type="text" id="name" v-model="name")
-        label.block(for="passwd") 密码：
-        input(type="password" id="passwd" v-model="passwd")
-        label.block(for="repeatPasswd") 确认密码：
-        input(type="password" id="repeatPasswd" v-model="repeatPasswd")
-        button.button(:disabled="busy") 完成迁移
+    div(v-if="step === 'checkOrigEmail'")
+      .explain 
+        div 在我们的记录中，您的电子邮件地址是：
+        div {{ origEmail }}
+        div 请根据他是否仍然可以使用来选择下一步操作
+      form
+        button.button(type="button" :disabled="busy" @click="doSendCode") 是，它仍然是我的邮箱
+        button.button(type="button" :disabled="busy" @click="doUpdateEmail") 不，他已经遗失或无效
+    div(v-if="step === 'updateEmail'")
+      .explain 
+        div 我们需要验证你的密码以确保万无一失
+      form(v-on:submit.prevent="doSendCode")
+        label.block(for="oldPassword") 旧密码：
+        input(type="password" id="oldPassword" v-model="oldPassword")
+        label.block(for="newEmail") 新的邮件地址：
+        input(type="text" id="newEmail" v-model="newEmail")
+        button.button(:disabled="busy") 下一步
+    div(v-if="step === 'setUpNewInfo'")
+      .explain 
+        div 验证码已发送到您的邮箱，请注意查收。
+      form(v-on:submit.prevent="doMingration")
+        label.block(for="verificationCode") 验证码（区分大小写）：
+        input(type="text" id="verificationCode" v-model="verificationCode")
+        label.block(for="newUserName") 新用户名（不可再变更）：
+        input(type="text" id="newUserName" v-model="newUserName")
+        label.block(for="newPassword") 新密码：
+        input(type="password" id="newPassword" v-model="newPassword")
+        label.block(for="repeatNewPassword") 重复密码：
+        input(type="password" id="repeatNewPassword" v-model="repeatNewPassword")
+        button.button(:disabled="busy") 下一步
 </template>
 
 <script>
@@ -33,13 +49,14 @@ export default {
   data () {
     return {
       origUserName: '',
-      origPasswd: '',
-      email: '',
-      token: '',
-      name: '',
-      passwd: '',
-      repeatPasswd: '',
-      step: 'verify',
+      origEmail: '',
+      step: 'getMemberName',
+      verificationCode: '',
+      newUserName: '',
+      newPassword: '',
+      repeatNewPassword: '',
+      newEmail: '',
+      oldPassword: '',
     };
   },
   computed: {
@@ -48,57 +65,50 @@ export default {
     },
   },
   methods: {
-    doVerifyRequest () {
-      if (this.busy) {
-        return;
-      }
-      const payload = {
-        name: this.origUserName,
-        password: this.origPasswd,
-        email: this.email,
-      };
-      this.$store.commit('setBusy', true);
-      api.v1.migration.requestMigration(payload).then(response => {
-        this.$store.commit('setBusy', false);
-        this.step = 'perform';
-      }).catch(e => {
-        this.$store.commit('setBusy', false);
-        console.error(e);
-        switch (e.response.status) {
-          case 404:
-            window.alert('用户不存在的。');
-            break;
-          case 400:
-            window.alert('密码好像不对啊。');
-            break;
+    doCheckName () {
+      api.v1.member.fetchMemberInfoByName({ name: this.origUserName }).then(res => {
+        if (res.list.length !== 1) {
+          return window.alert('用户名不存在？');
+        } else {
+          this.origEmail = res.list[0].email;
+          this.step = 'checkOrigEmail';
         }
       });
     },
-    doPerformMigration () {
-      if (this.passwd !== this.repeatPasswd) {
-        window.alert('两次密码不一致！');
-        return;
-      }
-      if (this.busy) {
-        return;
-      }
-      const payload = {
-        token: this.token,
-        name: this.name,
-        password: this.passwd,
+    doSendCode () {
+      let payload = {
+        name: this.origUserName,
       };
-      this.$store.commit('setBusy', true);
-      api.v1.migration.performMigration(payload).then(response => {
-        this.$store.commit('setBusy', false);
-        if (response.status === 'ok') {
-          window.alert('迁移成功');
-          this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
-        }
-      }).catch(e => {
-        this.$store.commit('setBusy', false);
-        console.error(e);
-        window.alert('出现问题，请联系管理员');
+
+      if (this.newEmail) {
+        payload.email = this.newEmail;
+        payload.password = this.oldPassword;
+      }
+
+      api.v1.migration.requestMigration(payload).then(() => {
+        this.step = 'setUpNewInfo';
+        this.newUserName = this.origUserName;
       });
+    },
+    doMingration () {
+      if (this.newPassword !== this.repeatNewPassword) {
+        return window.alert('两次密码不一致！');
+      }
+      if (this.verificationCode === '') {
+        return window.alert('请输入验证码！');
+      }
+      api.v1.migration.performMigration({
+        token: this.verificationCode,
+        name: this.origUserName,
+        newname: this.newUserName !== this.origUserName ? this.newUserName : undefined,
+        password: this.newPassword,
+      }).then(() => {
+        window.alert('迁移成功！');
+        this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
+      });
+    },
+    doUpdateEmail () {
+      this.step = 'updateEmail';
     },
   },
 };
@@ -127,6 +137,10 @@ div.mingration-view {
   .explain {
     margin-top: 1em;
     margin-bottom: 1em;
+  }
+
+  .explain {
+    width: 300px;
   }
 
   input[type="text"], input[type="password"] {

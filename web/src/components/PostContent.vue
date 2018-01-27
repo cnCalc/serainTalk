@@ -28,7 +28,7 @@ export default {
     };
   },
   created () {
-    this.html = this.replaceReplyTag(this.content);
+      this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
   },
   computed: {
     pattern () {
@@ -40,6 +40,7 @@ export default {
       if (!this.replyTo) {
         return html;
       }
+
       const pattern = this.pattern;
       const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       if (html.match(replyReg)) {
@@ -59,10 +60,15 @@ export default {
 
       return html;
     },
+    replaceMentionTag (html) {
+      const members = this.$store.state.members;
+      // 替换全文中出现的 mention
+      return html.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<a href="/m/${id}"><span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span></a>`);
+    },
   },
   watch: {
     content () {
-      this.html = this.replaceReplyTag(this.content);
+      this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
     },
     preview () {
       if (!this.previewLoaded) {

@@ -9,6 +9,14 @@ function fetchMemberInfoById (param) {
   });
 }
 
+function fetchMemberInfoByName (param) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/members?name=${param.name}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 function fetchMoreMemberRecentActivityById (param) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/member/${param.id}?recent=on&before=${param.before}`)
@@ -64,6 +72,7 @@ function fetchMemberWithLeadingString (param) {
 
 export default {
   fetchMemberInfoById,
+  fetchMemberInfoByName,
   fetchMoreMemberRecentActivityById,
   fetchDiscussionsCreatedByMember,
   signin, signout,

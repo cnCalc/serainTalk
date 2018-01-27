@@ -1,32 +1,57 @@
 import axios from 'axios';
 import config from '../../config.js';
 
-function fetchLatestDiscussions (param) {
+/**
+ * Get latest discussions from server
+ *
+ * @param {object} params An object containing the parameters
+ * @param {number} params.page Page of the request.
+ *
+ * @returns {Promise} Promise of the request
+ */
+function fetchLatestDiscussions (params) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${param.page || 1}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}`)
     .then(response => resolve(response.data))
     .catch(error => reject(error));
   });
 }
 
-function fetchDiscussionMetaById (param) {
-  if (!param.id) return Promise.reject('require id for discussion.');
+/**
+ * Fetch the metadata of one discussion by it's id
+ *
+ * @param {object} params An object containing the parameters
+ * @param {string} params.id ID of the discussion
+ *
+ * @returns {Promise} Promise of the request
+ */
+function fetchDiscussionMetaById (params) {
+  if (!params.id) return Promise.reject('require id for discussion.');
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}`)
     .then(response => resolve(response.data))
     .catch(error => reject(error));
   });
 }
 
-function fetchDiscussionPostsById (param) {
-  if (!param.id) return Promise.reject('require id for discussion.');
+/**
+ * Get posts in the discussion by the discussion's id
+ *
+ * @param {object} params An object containing the parameters
+ * @param {string} params.id ID of the discussion
+ * @param {number} params.page Page of the request
+ *
+ * @returns {Promise} Promise of the request
+ */
+function fetchDiscussionPostsById (params) {
+  if (!params.id) return Promise.reject('require id for discussion.');
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}/posts?page=${param.page || 1}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}/posts?page=${params.page || 1}`)
     .then(response => {
       const data = response.data;
       if (data.posts.length >= 1 && typeof data.posts[0].index === 'undefined') {
         data.posts.forEach((post, idx) => {
-          post.index = ((param.page || 1) - 1) * config.api.pagesize + idx + 1;
+          post.index = ((params.page || 1) - 1) * config.api.pagesize + idx + 1;
         });
       }
       resolve(data);
@@ -35,76 +60,86 @@ function fetchDiscussionPostsById (param) {
   });
 }
 
-function fetchDiscussionPostByIdAndIndex (param) {
-  if (!param.id) return Promise.reject('require id for discussion.');
-  else if (!param.index) return Promise.reject('require index for post.');
+/**
+ * Get a single post in the discussion by the discussion's id
+ *
+ * @param {Object} params An object containing the parameters
+ * @param {string} params.id ID of the discussion
+ * @param {number} params.index Index of the post
+ * @param {bool} params.raw Render the post or not
+ *
+ * @returns {Promise} Promise of the request
+ */
+function fetchDiscussionPostByIdAndIndex (params) {
+  if (!params.id) return Promise.reject('require id for discussion.');
+  else if (!params.index) return Promise.reject('require index for post.');
 
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/${param.id}/post/${param.index}${param.raw ? '?raw=on' : ''}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}/post/${params.index}${params.raw ? '?raw=on' : ''}`)
     .then(response => resolve(response.data))
     .catch(error => reject(error));
   });
 }
 
-function updateDiscussionPostByIdAndIndex (param) {
-  if (!param.id) return Promise.reject('require id for discussion.');
-  else if (!param.index) return Promise.reject('require index for post.');
+function updateDiscussionPostByIdAndIndex (params) {
+  if (!params.id) return Promise.reject('require id for discussion.');
+  else if (!params.index) return Promise.reject('require index for post.');
 
   return new Promise((resolve, reject) => {
     const payload = {
-      content: param.content,
-      encoding: param.encoding,
+      content: params.content,
+      encoding: params.encoding,
     };
-    if (param.replyTo) {
-      payload.replyTo = param.replyTo;
+    if (params.replyTo) {
+      payload.replyTo = params.replyTo;
     }
-    axios.put(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}`, payload)
+    axios.put(`${config.api.url}/${config.api.version}/discussion/${params.id}/post/${params.index}`, payload)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
 }
 
-function createDiscussion (param) {
-  if (!param.discussion) return Promise.reject('require discussion');
+function createDiscussion (params) {
+  if (!params.discussion) return Promise.reject('require discussion');
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}/${config.api.version}/discussions`, param.discussion)
+    axios.post(`${config.api.url}/${config.api.version}/discussions`, params.discussion)
     .then(response => resolve(response.data))
     .catch(error => reject(error));
   });
 }
 
-function replyToDiscussion (param) {
-  if (!param.id) return Promise.reject('discussion id is required.');
+function replyToDiscussion (params) {
+  if (!params.id) return Promise.reject('discussion id is required.');
   return new Promise((resolve, reject) => {
     const payload = {
-      content: param.content,
-      encoding: param.encoding,
+      content: params.content,
+      encoding: params.encoding,
     };
-    if (param.replyTo) {
-      payload.replyTo = param.replyTo;
+    if (params.replyTo) {
+      payload.replyTo = params.replyTo;
     }
-    axios.post(`${config.api.url}/${config.api.version}/discussion/${param.id}/post`, payload)
+    axios.post(`${config.api.url}/${config.api.version}/discussion/${params.id}/post`, payload)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
 }
 
-function banPostByDiscussionIdAndIndex (param) {
-  if (!param.id) return Promise.reject('discussion id is required');
-  if (!param.index) return Promise.reject('post index is required');
+function banPostByDiscussionIdAndIndex (params) {
+  if (!params.id) return Promise.reject('discussion id is required');
+  if (!params.index) return Promise.reject('post index is required');
   return new Promise((resolve, reject) => {
-    axios.delete(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}`)
+    axios.delete(`${config.api.url}/${config.api.version}/discussion/${params.id}/post/${params.index}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
 }
 
-function votePostByDiscussionIdAndIndex (param) {
-  if (!param.id) return Promise.reject('discussion id is required');
-  if (!param.index) return Promise.reject('post index is required');
-  if (!param.vote) return Promise.reject('vote type is required');
+function votePostByDiscussionIdAndIndex (params) {
+  if (!params.id) return Promise.reject('discussion id is required');
+  if (!params.index) return Promise.reject('post index is required');
+  if (!params.vote) return Promise.reject('vote type is required');
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}/${config.api.version}/discussion/${param.id}/post/${param.index}/vote`, { vote: param.vote })
+    axios.post(`${config.api.url}/${config.api.version}/discussion/${params.id}/post/${params.index}/vote`, { vote: params.vote })
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

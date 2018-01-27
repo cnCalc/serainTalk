@@ -121,11 +121,11 @@ export default {
     votePost (index, type) {
       api.v1.discussion.votePostByDiscussionIdAndIndex({ id: this.currentDiscussion, index, vote: type })
         .then(res => {
-          console.log(res);
+          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index, raw: false });
         })
         .catch(err => {
           console.error(err);
-        })
+        });
     },
     loadPrevPage () {
       const state = this.$store;

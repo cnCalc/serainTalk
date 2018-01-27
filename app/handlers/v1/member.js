@@ -109,10 +109,10 @@ let getMemberInfoById = async (req, res, next) => {
  * @param {Request} req
  * @param {Response} res
  */
-let getMemberInfoGeneric = (req, res) => {
+let getMemberInfoGeneric = async (req, res) => {
   let query = {};
   let pagesize = Number(req.query.pagesize) || config.pagesize;
-  let offset = Number(req.query.page) || 0;
+  let offset = (Number(req.query.page) || 1) - 1;
 
   if (req.query.name) {
     query.username = req.query.name;
@@ -123,26 +123,22 @@ let getMemberInfoGeneric = (req, res) => {
     return;
   }
 
-  dbTool.db.collection('common_member').find(
-    query,
-    { messages: 0 },
-    {
-      limit: pagesize,
-      skip: offset * pagesize,
-      sort: [['date', 'desc']],
-    }
-  ).toArray((err, results) => {
-    /* istanbul ignore if */
-    if (err) {
-      errorHandler(null, errorMessages.DB_ERROR, 500, res);
-    } else {
-      // 删除所有用户的凭据部分
-      results.forEach(result => utils.member.removeSensitiveField(result));
-      res.send({
-        status: 'ok',
-        list: results,
-      });
-    }
+  let results;
+  try {
+    results = await dbTool.commonMember.find(
+      query,
+      { messages: 0 }
+    ).skip(offset * pagesize).limit(pagesize).toArray();
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+
+  // 删除所有用户的凭据部分
+  results.forEach(result => utils.member.removeSensitiveField(result));
+  return res.send({
+    status: 'ok',
+    list: results,
   });
 };
 

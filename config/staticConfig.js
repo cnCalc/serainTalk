@@ -12,7 +12,7 @@ module.exports = {
   },
   password: {
     resetPasswordPage: 'https://www.cncalc.org/resetpassword.html',
-    tokenValidTime: 1000 * 60, // 迁移或重置密码的 Token 有效期（1分钟）
+    tokenValidTime: 1000 * 60 * 15, // 迁移或重置密码的 Token 有效期（15 分钟）
   },
   member: {
     privateField: [
@@ -82,5 +82,21 @@ module.exports = {
   },
   frontEnd: {
     filePath: path.join(__dirname, '..', 'app', 'public'),
+  },
+  mail: {
+    code: {
+
+    },
+    data: {
+      from: 'zephray@cnvintage.org',
+    },
+    port: 465,
+    host: 'smtp.sendgrid.net',
+    secure: true,
+    auth: {
+      type: 'login',
+      user: 'apikey',
+      password: 'deleted',
+    },
   },
 };
