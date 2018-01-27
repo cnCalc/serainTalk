@@ -570,6 +570,7 @@ div.editor {
     flex-grow: 1;
     flex-shrink: 1;
     display: flex;
+    overflow: hidden;
   }
 
   div.mention-wrapper {
