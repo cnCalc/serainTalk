@@ -3,7 +3,7 @@
     "readExtraCategories": {
       "description": "可以获取隐藏分类中的 Discussion 和 Post。",
       "allow": [
-        "admin"
+        
       ],
       "enable": true
     },
@@ -19,7 +19,7 @@
     "postToExtraCategory": {
       "description": "可以在隐藏分类中发布 Discussion 和 Post。",
       "allow": [
-        "admin"
+        
       ],
       "enable": true
     },
@@ -57,14 +57,14 @@
     "ban": {
       "description": "封禁/解封 任何一个 Discussion 或 Post。",
       "allow": [
-        "admin"
+        
       ],
       "enable": true
     },
     "readBanedPost": {
       "description": "读取已被封禁的 Discussion 和 Post。",
       "allow": [
-        "admin"
+        
       ],
       "enable": true
     },
@@ -80,7 +80,7 @@
     "readExtraCategoriesName": {
       "description": "可以获取隐藏分类的名称。",
       "allow": [
-        "admin"
+        
       ],
       "enable": true
     },
