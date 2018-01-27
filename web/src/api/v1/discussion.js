@@ -61,7 +61,7 @@ function fetchDiscussionPostsById (params) {
 }
 
 /**
- * Get a single post in the discussion by the discussion's id
+ * Get a single post in the discussion by the discussion's id and the post's index
  *
  * @param {Object} params An object containing the parameters
  * @param {string} params.id ID of the discussion
@@ -81,6 +81,17 @@ function fetchDiscussionPostByIdAndIndex (params) {
   });
 }
 
+/**
+ * Update a single post in the discussion by the discussion's id and the post's index
+ *
+ * @param {Object} params An object containing the parameters
+ * @param {string} params.id ID of the discussion
+ * @param {number} params.index Index of the post
+ * @param {string} params.content Content of the new post
+ * @param {string} params.encoding Encoding of the new post
+ *
+ * @returns {Promise} Promise of the request
+ */
 function updateDiscussionPostByIdAndIndex (params) {
   if (!params.id) return Promise.reject('require id for discussion.');
   else if (!params.index) return Promise.reject('require index for post.');
@@ -99,6 +110,20 @@ function updateDiscussionPostByIdAndIndex (params) {
   });
 }
 
+/**
+ * Create an new discussion
+ *
+ * @param {Object} params An object containing the parameters
+ * @param {Object} params.discussion An object describing the new discussion.
+ * @param {string} params.discussion.title Title of the new discussion
+ * @param {string} params.discussion.category Category of the new discussion
+ * @param {Object} params.discussion.content An object describing the content.
+ * @param {string} params.discussion.content.content Content of the new discussion
+ * @param {string} params.discussion.content.encoding Encoding of the content
+ * @param {Array.<string>} params.discussion.tags Array of tags
+ *
+ * @returns {Promise} Promise of the request
+ */
 function createDiscussion (params) {
   if (!params.discussion) return Promise.reject('require discussion');
   return new Promise((resolve, reject) => {
@@ -108,6 +133,20 @@ function createDiscussion (params) {
   });
 }
 
+/**
+ * Create an new post as a reply to a discussion
+ *
+ * @param {Object} params An object containing the parameters
+ * @param {string} params.id ID of the discussion
+ * @param {string} params.conent Content of the new post
+ * @param {string} params.encode Encoding of the new post
+ * @param {Object} params.replyTo An object describing which post it is replying
+ * @param {string} params.replyTo.type Type of the value
+ * @param {string} params.replyTo.value Value of which post
+ * @param {string} params.replyTo.memberId
+ *
+ * @returns {Promise}
+ */
 function replyToDiscussion (params) {
   if (!params.id) return Promise.reject('discussion id is required.');
   return new Promise((resolve, reject) => {
@@ -124,6 +163,15 @@ function replyToDiscussion (params) {
   });
 }
 
+/**
+ * Mark one post as deleted
+ *
+ * @param {Object} params
+ * @param {string} params.id
+ * @param {number} param.index
+ *
+ * @returns {Promise}
+ */
 function banPostByDiscussionIdAndIndex (params) {
   if (!params.id) return Promise.reject('discussion id is required');
   if (!params.index) return Promise.reject('post index is required');
@@ -134,6 +182,16 @@ function banPostByDiscussionIdAndIndex (params) {
   });
 }
 
+/**
+ * Vote to one post
+ *
+ * @param {Object} params
+ * @param {string} params.id
+ * @param {number} params.index
+ * @param {string} params.vote
+ *
+ * @returns {Promise}
+ */
 function votePostByDiscussionIdAndIndex (params) {
   if (!params.id) return Promise.reject('discussion id is required');
   if (!params.index) return Promise.reject('post index is required');

@@ -8,6 +8,8 @@
       form(v-on:submit.prevent="doCheckName")
         label.block(for="origUserName") 原 cnCalc 用户名：
         input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
+        label.block(for="inviteCode") 内测邀请码：
+        input(type="text" id="inviteCode" v-model="inviteCode")
         button.button(:disabled="busy") 下一步
     div(v-if="step === 'checkOrigEmail'")
       .explain 
@@ -57,6 +59,7 @@ export default {
       repeatNewPassword: '',
       newEmail: '',
       oldPassword: '',
+      inviteCode: '',
     };
   },
   computed: {
@@ -78,6 +81,7 @@ export default {
     doSendCode () {
       let payload = {
         name: this.origUserName,
+        code: this.inviteCode,
       };
 
       if (this.newEmail) {
@@ -88,6 +92,11 @@ export default {
       api.v1.migration.requestMigration(payload).then(() => {
         this.step = 'setUpNewInfo';
         this.newUserName = this.origUserName;
+      }).catch(error => {
+        console.dir(error);
+        if (error.response.status === 401) {
+          window.alert('邀请码无效，或已经被使用');
+        }
       });
     },
     doMingration () {
