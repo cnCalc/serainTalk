@@ -38,7 +38,6 @@ exports.getMemberInfo = getMemberInfo;
 let getPermissions = async (req, res, next) => {
   if (!req.member._id) req.member.role = 'anonymous';
   else if (!req.member.role) req.member.role = 'member';
-  if (!utils.env.isRelease)req.member.role = 'admin';
   req.member.permissions = config.member.permissions[req.member.role];
   return next();
 };
