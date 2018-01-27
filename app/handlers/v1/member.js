@@ -414,6 +414,12 @@ let resetPasswordApplication = async (req, res) => {
     let memberInfo = await dbTool.commonMember.findOne({
       username: req.body.memberName,
     });
+
+    // 迁移后才可修改密码
+    if (memberInfo.credentials.type === 'discuz') {
+      return utils.errorHandler(null, utils.errorMessages.RESET_PASSWORD, 400, res);
+    }
+
     if (memberInfo) {
       let emailPayload = {
         memberId: memberInfo._id,
