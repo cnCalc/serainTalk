@@ -563,8 +563,15 @@ describe('discussion part', async () => {
           expect(err.message).to.be.equal(errorMessages.TOO_FREQUENT);
         }
 
-        await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+          let postPayload = {
+            encoding: 'markdown',
+            content: 'hello test',
+          };
+          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+          await agent.post(url).send(postPayload).expect(201);
+          let Res = await agent.post(url).send(postPayload).expect(403);
+          expect(Res.body.message).to.be.equal(errorMessages.TOO_FREQUENT);
         });
       });
     });
@@ -898,31 +905,33 @@ describe('discussion part', async () => {
   });
 
   it('ignore member.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
-      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-          // 忽略 B
-          let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
-          await agent.post(ignoreUrl);
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+            // 忽略 B
+            let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
+            await agent.post(ignoreUrl);
 
-          // B 回复这个讨论
-          await testTools.member.login(agent, newMemberInfoB);
-          let postPayload = {
-            encoding: 'markdown',
-            content: 'hello test',
-          };
-          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-          await agent.post(url)
-            .send(postPayload)
-            .expect(201);
+            // B 回复这个讨论
+            await testTools.member.login(agent, newMemberInfoB);
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
 
-          // A 查看消息队列
-          await testTools.member.login(agent, newMemberInfoA);
-          let notificationUrl = '/api/v1/notification';
-          let notificationRes = await agent.get(notificationUrl)
-            .expect(200);
-          let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(0);
+            // A 查看消息队列
+            await testTools.member.login(agent, newMemberInfoA);
+            let notificationUrl = '/api/v1/notification';
+            let notificationRes = await agent.get(notificationUrl)
+              .expect(200);
+            let notificationBody = notificationRes.body;
+            expect(notificationBody.notifications.length).to.be.equal(0);
+          });
         });
       });
     });
@@ -1051,46 +1060,48 @@ describe('discussion part', async () => {
   });
 
   it('ignore member.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
-      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-          // 忽略 B
-          let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
-          await agent.post(ignoreUrl);
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+            // 忽略 B
+            let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
+            await agent.post(ignoreUrl);
 
-          // B 回复这个讨论
-          await testTools.member.login(agent, newMemberInfoB);
-          let postPayload = {
-            encoding: 'markdown',
-            content: 'hello test',
-          };
-          let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-          await agent.post(url)
-            .send(postPayload)
-            .expect(201);
+            // B 回复这个讨论
+            await testTools.member.login(agent, newMemberInfoB);
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
 
-          // B 回复 A 的帖子
-          postPayload = {
-            encoding: 'markdown',
-            content: 'hello test',
-            replyTo: {
-              type: 'index',
-              value: 1,
-              memberId: newMemberInfoA.id,
-            },
-          };
-          url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-          await agent.post(url)
-            .send(postPayload)
-            .expect(201);
+            // B 回复 A 的帖子
+            postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+              replyTo: {
+                type: 'index',
+                value: 1,
+                memberId: newMemberInfoA.id,
+              },
+            };
+            url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
 
-          // A 查看消息队列
-          await testTools.member.login(agent, newMemberInfoA);
-          let notificationUrl = '/api/v1/notification';
-          let notificationRes = await agent.get(notificationUrl)
-            .expect(200);
-          let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(0);
+            // A 查看消息队列
+            await testTools.member.login(agent, newMemberInfoA);
+            let notificationUrl = '/api/v1/notification';
+            let notificationRes = await agent.get(notificationUrl)
+              .expect(200);
+            let notificationBody = notificationRes.body;
+            expect(notificationBody.notifications.length).to.be.equal(0);
+          });
         });
       });
     });

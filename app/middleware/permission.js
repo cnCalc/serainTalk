@@ -138,27 +138,28 @@ let verifyCommitFreq = async (req, res, next) => {
   }
 
   let latestPost = await dbTool.discussion.aggregate([
-    { $match: { 'participants': req.member._id } },
+    { $match: { lastDate: { $gte: Date.now() - config.discussion.freqLimit } } },
     {
       $project: {
         posts: {
           $filter: {
             input: '$posts',
             as: 'post',
-            // 因为发布 Discussion 的同时会发布一份 Post
-            // 所以只需要统计 post 的频率
-            cond: { $eq: ['$$post.user', req.member._id] },
+            cond: {
+              $and: [
+                { $eq: ['$$post.user', req.member._id] },
+                { $gt: ['$$post.createDate', Date.now() - config.discussion.freqLimit] },
+              ],
+            },
           },
         },
       },
     },
-    { $unwind: '$posts' },
-    { $sort: { 'posts.createDate': -1 } },
-    { $limit: 1 },
   ]).toArray();
-  if (latestPost.length === 0) return next();
-  if (Date.now() - latestPost[0].posts.createDate <= config.discussion.freqLimit) {
-    return errorHandler(null, errorMessages.TOO_FREQUENT, 403, res);
+  for (let discussion of latestPost) {
+    if (discussion.posts.length !== 0) {
+      return errorHandler(null, errorMessages.TOO_FREQUENT, 403, res);
+    }
   }
   return next();
 };
