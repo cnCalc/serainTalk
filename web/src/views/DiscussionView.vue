@@ -33,7 +33,7 @@
         center 没有可展示的帖子
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
     div.discussion-view-right
-      div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}")
+      div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy ? 0 : 1 }")
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
@@ -94,6 +94,9 @@ export default {
     };
   },
   title () {
+    if (this.busy) {
+      return 'Loading';
+    }
     return `${this.discussionMeta.title}`;
   },
   methods: {
@@ -301,19 +304,17 @@ div.discussion-view {
   }
 
   div.discussion-view-left {
-    flex-grow: 1;
-    flex-shrink: 1;
-    order: 1;
-    overflow: hidden;
+    // overflow: hidden;
+    flex: 1 1;
+    min-width: 0;
+    // width: 100%;
     padding-right: 5px;
   }
 
   $right_width: 100px;
   div.discussion-view-right {
-    flex-grow: 0;
-    flex-shrink: 0;
     order: 2;
-    width: $right_width;
+    flex: 0 0 $right_width;
     position: relative;
     @include respond-to(phone){
       display: none;

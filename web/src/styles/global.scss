@@ -110,3 +110,11 @@ select::-moz-focus-inner,
 input[type="file"] > input[type="button"]::-moz-focus-inner {
   border: none;
 }
+
+.dark-theme ::selection {
+  background: #aaa;
+}
+
+.light-theme ::selection {
+  background: mix($theme_color, white, 30%);
+}

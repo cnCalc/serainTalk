@@ -1,11 +1,11 @@
 <template lang="pug">
   div.post-content
-    div.reply-preview-wrapper(v-if="this.replyTo" :id="pattern" v-bind:style="{ opacity: preview ? 1 : 0, pointerEvents: preview ? '' : 'none' }" v-on:mouseover="preview = true" v-on:mouseout="preview = false")
-      div.reply-preview-container
+    div.reply-preview-wrapper(v-if="this.replyTo" :id="pattern" v-bind:style="{ opacity: preview ? 1 : 0, pointerEvents: preview ? '' : 'none' }")
+      div.reply-preview-container(v-on:mouseover="showReplyPreview" v-on:mouseout="hideReplyPreview")
         div.reply-preview-member-meta
           div.avatar
-            div.avatar-image(v-if="this.$store.state.members[this.replyTo.memberId].avatar" v-bind:style="{ backgroundImage: `url(${this.$store.state.members[this.replyTo.memberId].avatar})` }")
-          div: router-link(:to="`/m/${this.replyTo.memberId}`") {{ this.$store.state.members[this.replyTo.memberId].username }}
+            div.avatar-image(v-if="parentMemeber.avatar" v-bind:style="{ backgroundImage: `url(${parentMemeber.avatar})` }")
+          div: router-link(:to="`/m/${this.replyTo.memberId}`") {{ parentMemeber.username }}
         div.reply-preview-content(v-html="previewReplyHtml")
     div(v-html="html")
 </template>
@@ -25,17 +25,51 @@ export default {
       previewLoaded: false,
       attachmentMap: {},
       loaded: false,
+      timeoutId: null,
     };
   },
   created () {
-      this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
+    this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
   },
   computed: {
     pattern () {
       return `@${this.replyTo.memberId}#${this.discussionId || this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
     },
+    parentMemeber () {
+      if (this.$store.state.members[this.replyTo.memberId]) {
+        return this.$store.state.members[this.replyTo.memberId];
+      } else {
+        return { username: 'ERROR' };
+      }
+    },
   },
   methods: {
+    showReplyPreview () {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+      if (this.preview) {
+        return;
+      }
+      this.timeoutId = setTimeout(() => {
+        this.preview = true;
+        this.timeoutId = null;
+      }, 500);
+    },
+    hideReplyPreview () {
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+      if (!this.preview) {
+        return;
+      } else {
+        this.timeoutId = setTimeout(() => {
+          this.preview = false;
+        }, 500);
+      }
+    },
     replaceReplyTag (html) {
       if (!this.replyTo) {
         return html;
@@ -45,15 +79,15 @@ export default {
       const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
       if (html.match(replyReg)) {
         const match = html.match(replyReg);
-        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to">${this.$store.state.members[this.replyTo.memberId].username}</span></a>`);
+        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to">${this.parentMemeber.username}</span></a>`);
 
         this.$nextTick(() => {
           const replyTo = this.$el.querySelector('span.reply-to');
           replyTo.addEventListener('mouseover', () => {
-            this.preview = true;
+            this.showReplyPreview();
           });
           replyTo.addEventListener('mouseout', () => {
-            this.preview = false;
+            this.hideReplyPreview();
           });
         });
       }
@@ -99,9 +133,8 @@ div.post-content {
   position: relative;
 
   div.reply-preview-wrapper {
-    width: 100%;
     position: absolute;
-    z-index: 1;
+    z-index: 100;
     height: 0;
     overflow: show;
     transition: all ease 0.2s;
@@ -109,8 +142,10 @@ div.post-content {
 
   $preview-height: 160px;
   div.reply-preview-container {
-    width: 80%;
+    // width: 100%;
+    // display: inline-block;
     height: fit-content;
+    max-height: 30vh;
     transform: translateY(calc(2px - 100%));
     background: white;
     box-shadow: 1px 1px 10px rgba(black, 0.5);

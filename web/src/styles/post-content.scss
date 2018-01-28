@@ -69,20 +69,21 @@ div.post-content {
     text-decoration: underline;
   }
   pre {
+    max-width: 100%;
     font-family: Consolas, Courier New, Courier, monospace;
     font-size: 0.9em;
     line-height: 1.5em;
-    padding: 1rem 1rem 0.3rem 0rem;
+    padding: .7rem .7rem .7rem 0.3rem;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.03);
     position: relative;
-    overflow-x: scroll;
+    overflow-x: auto;
     counter-reset: line;
-    br { font-size: 0; }
+    br { display: none; }
   }
   pre.code {
     // Codes from Discuz
-    padding: 1rem 20px 0.3rem 20px;
+    padding: .7rem .7rem .7rem .7rem;
     br {
       font-size: 0;
     }
@@ -106,6 +107,27 @@ div.post-content {
     margin-right: 5px;
     margin-left: -15px;
     color: #888
+  }
+  span.reply-to, span.mention {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 0 0.4em;
+    line-height: 1.32rem;
+    font-size: 0.95em;
+    font-weight: 700;
+    margin-right: 0.2em;
+  }
+  span.mention {
+    margin-left: 0.2em;
+  }
+  span.reply-to::before {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.2em;
+    content: ' ';
+    display: inline-block;
+    background-image: url(../assets/reply.svg);
+    background-size: cover;
   }
 }
 
@@ -139,6 +161,13 @@ div.post-content {
   pre span.__line:before {
     border-right: 1px solid #555;
   }
+  span.reply-to, span.mention {
+    color: #ccc;
+    background-color: #444;
+  }
+  span.reply-to::before {
+    filter: grayscale(100%) brightness(2);
+  }
 }
 
 .light-theme div.post-content {
@@ -166,30 +195,11 @@ div.post-content {
     color: inherit;
     background-color: initial;
   }
-  span.reply-to, span.mention {
-    display: inline-block;
-    background-color: mix($theme_color, white, 12%);
-    border-radius: 4px;
-    padding: 0 0.4em;
-    line-height: 1.32rem;
-    font-size: 0.95em;
-    color: $theme_color;
-    font-weight: 700;
-    margin-right: 0.2em;
-  }
-  span.mention {
-    margin-left: 0.2em;
-  }
-  span.reply-to::before {
-    width: 1em;
-    height: 1em;
-    margin-right: 0.2em;
-    content: ' ';
-    display: inline-block;
-    background-image: url(../assets/reply.svg);
-    background-size: cover;
-  }
   pre span.__line:before {
     border-right: 1px solid #ddd;
+  }
+  span.reply-to, span.mention {
+    color: $theme_color;
+    background-color: mix($theme_color, white, 12%);
   }
 }

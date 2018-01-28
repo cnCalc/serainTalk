@@ -6,6 +6,7 @@ function requestMigration (param) {
     name: param.name,
     password: param.password,
     email: param.email,
+    code: param.code,
   };
 
   return new Promise((resolve, reject) => {
