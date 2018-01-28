@@ -33,10 +33,6 @@ module.exports = {
       vote: [
         'up',
         'down',
-        'laugh',
-        'doubt',
-        'cheer',
-        'emmmm',
       ],
     },
     status: {

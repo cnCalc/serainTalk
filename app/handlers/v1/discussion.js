@@ -581,8 +581,10 @@ let votePost = async (req, res, next) => {
     }
 
     // 新增 vote
-    let addVoteInfo = { $push: {} };
+    let addVoteInfo = { $push: {}, $pull: {} };
     addVoteInfo.$push[`posts.${req.params.postIndex - 1}.votes.${req.body.vote}`] = req.member._id;
+    // vote 的同时删除对立的选项
+    addVoteInfo.$pull[`posts.${req.params.postIndex - 1}.votes.${req.body.vote === 'up' ? 'down' : 'up'}`] = req.member._id;
     await dbTool.discussion.updateOne(
       { _id: _discussionId },
       addVoteInfo

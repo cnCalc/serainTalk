@@ -608,24 +608,19 @@ describe('discussion part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
-        let voteType = config.discussion.post.vote.slice();
-        for (let vote of voteType) {
-          let voteInfo = {
-            vote: vote,
-          };
-          await agent
-            .post(voteUrl)
-            .send(voteInfo);
-        }
+        let voteInfo = {
+          vote: 'up',
+        };
+        await agent
+          .post(voteUrl)
+          .send(voteInfo);
         let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
         let discussionRes = await agent
           .get(url)
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        for (let vote of voteType) {
-          expect(votes[vote][0]).to.be.equal(newMemberInfo.id);
-        }
+        expect(votes.up[0]).to.be.equal(newMemberInfo.id);
       });
     });
   });
@@ -682,17 +677,37 @@ describe('discussion part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
-        let voteType = config.discussion.post.vote.slice();
-        for (let vote of voteType) {
+        let voteInfo = {
+          vote: 'up',
+        };
+        await agent
+          .post(voteUrl)
+          .send(voteInfo);
+        await agent
+          .post(voteUrl)
+          .send(voteInfo);
+        await agent
+          .post(voteUrl)
+          .send(voteInfo);
+        let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+        let discussionRes = await agent
+          .get(url)
+          .expect(200);
+        discussionRes = discussionRes.body;
+        let votes = discussionRes.posts[0].votes;
+        expect(votes.up[0]).to.be.equal(newMemberInfo.id);
+      });
+    });
+  });
+
+  it('vote up and down.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
+        for (let vote of ['up', 'down']) {
           let voteInfo = {
             vote: vote,
           };
-          await agent
-            .post(voteUrl)
-            .send(voteInfo);
-          await agent
-            .post(voteUrl)
-            .send(voteInfo);
           await agent
             .post(voteUrl)
             .send(voteInfo);
@@ -703,9 +718,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        for (let vote of voteType) {
-          expect(votes[vote][0]).to.be.equal(newMemberInfo.id);
-        }
+        expect(votes.down[0]).to.be.equal(newMemberInfo.id);
       });
     });
   });
@@ -714,7 +727,7 @@ describe('discussion part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
         let voteUrl = `/api/v1/discussions/${newDiscussionInfo.id}/post/1/vote`;
-        let voteType = config.discussion.post.vote.slice();
+        let voteType = ['up'];
         for (let vote of voteType) {
           let voteInfo = {
             vote: vote,
