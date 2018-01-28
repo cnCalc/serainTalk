@@ -99,13 +99,16 @@ export default {
     };
   },
   title () {
+    if (this.busy) {
+      return 'Loading';
+    }
     switch (this.$route.meta.mode) {
       case 'posts':
         return `${this.member.username} 的最近活动`;
       case 'discussions':
         return `${this.member.username} 创建的讨论`;
       case 'settings':
-        return `个人设置`;
+        return '个人设置';
     }
   },
   computed: {
@@ -367,7 +370,7 @@ div.member-activity {
     }
 
     div.member-recent-activity {
-      overflow: hidden;
+      min-width: 0;
       padding: 0 20px;
       box-sizing: border-box;
     }

@@ -101,6 +101,10 @@ div.st-header {
     a.title {
     }
 
+    .right {
+      font-size: 14px;
+    }
+
     a.extra-link {
       font-size: 14px;
       @include respond-to(phone) {

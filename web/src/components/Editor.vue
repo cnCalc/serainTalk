@@ -256,9 +256,10 @@ export default {
     handleInput (event) {
       if (event.key === '@') {
         const textarea = this.$el.querySelector('textarea');
-        const position = getCaretCoordinates(textarea, textarea.selectionEnd);
         this.$nextTick(() => {
-          this.dropdownStyle.top = `${position.top}px`;
+          const position = getCaretCoordinates(textarea, textarea.selectionEnd);
+          console.log(textarea.scrollTop);
+          this.dropdownStyle.top = `${position.top - textarea.scrollTop}px`;
           this.dropdownStyle.left = position.left + 'px';
           this.dropdownStyle.opacity = 1;
           this.dropdownStyle.pointerEvents = '';
@@ -392,7 +393,7 @@ export default {
 
       api.v1.discussion.replyToDiscussion(payload).then(() => {
         // 同上
-        window.location.href = window.location.href;
+        window.location.reload();
       });
     },
     reply () {
@@ -403,7 +404,7 @@ export default {
         content: this.content,
       }).then(() => {
         // 同上
-        window.location.href = window.location.href;
+        window.location.reload();
       });
     },
     update () {
@@ -570,7 +571,8 @@ div.editor {
     flex-grow: 1;
     flex-shrink: 1;
     display: flex;
-    overflow: hidden;
+    // overflow: hidden;
+    min-height: 0;
   }
 
   div.mention-wrapper {
@@ -583,7 +585,7 @@ div.editor {
       left: 0;
       right: 0;
       bottom: 0;
-      width: calc(100% - 10px);
+      width: 100%;
       height: 100%;
       padding: 0.5em;
       box-sizing: border-box;
