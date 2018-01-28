@@ -389,6 +389,8 @@ let createPost = async (req, res, next) => {
   // 提及的格式为出现在任意位置的 @ 并且后面紧接 24 个 HEX 字符
   const mentionPattern = /\@([0-9a-fA-F]{24})/g;
   postInfo.mentions = (postInfo.content.match(mentionPattern) || []).map(mention => mention.substr(1));
+  let filterRepeat = new Set(postInfo.mentions);
+  postInfo.mentions = Array.from(filterRepeat);
 
   // 追加一个 Post，同时更新一些元数据
   try {
