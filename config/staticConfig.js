@@ -64,6 +64,18 @@ module.exports = {
       content: '${var1} 在讨论 ${var2} 中提及了你',
       href: '/d/${var1}/${var2}#index-${var3}',
     },
+    discussionDeleted: {
+      content: '您发布的讨论: ${title} 已被封禁。',
+    },
+    discussionRecover: {
+      content: '您被封禁的讨论: ${title} 已恢复。',
+    },
+    postDeleted: {
+      content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被封禁。',
+    },
+    postRecover: {
+      content: '您在讨论 ${title} 中被封禁的跟帖: ${content} 已恢复。',
+    },
   },
   upload: {
     file: {

@@ -761,7 +761,21 @@ let deletePost = async (req, res, next) => {
     );
     // TODO: 为通知添加跳转链接（被封禁的 post 要不要对发布者开放？）
     let notification = {
-      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete,
+      content: isDeleted
+        ? utils.string.fillTemplate(
+          config.notification.postRecover.content,
+          {
+            title: postsDoc[0].title,
+            content: postsDoc[0].posts.content,
+          }
+        )
+        : utils.string.fillTemplate(
+          config.notification.postDeleted.content,
+          {
+            title: postsDoc[0].title,
+            content: postsDoc[0].posts.content,
+          }
+        ),
     };
     utils.notification.sendNotification(postsDoc[0].posts.user, notification);
     return res.status(204).send({ status: 'ok' });
@@ -789,10 +803,28 @@ let deleteDiscussion = async (req, res, next) => {
     // 查询封禁状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { baned: 1 } },
+      { $project: { baned: 1, title: 1, creater: 1 } },
     ]).toArray();
-    // 如果封禁则记录管理员信息和封禁时间
 
+    if (req.query.force === 'on') {
+      if (discussionDoc) {
+        let notification = {
+          content: utils.string.fillTemplate(
+            config.notification.discussionDeleted.content,
+            { title: discussionDoc[0].title }
+          ),
+        };
+        await Promise.all([
+          utils.notification.sendNotification(discussionDoc[0].creater, notification),
+          dbTool.discussion.deleteOne({ _id: _id }),
+        ]);
+        return res.status(204).send({ status: 'ok' });
+      } else {
+        return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+      }
+    }
+
+    // 如果封禁则记录管理员信息和封禁时间
     let status = {
       type: config.discussion.status.deleted,
       operator: req.member._id,
@@ -817,7 +849,15 @@ let deleteDiscussion = async (req, res, next) => {
     );
     // TODO: 为通知添加跳转链接（被封禁的 discussion 要不要对发布者开放？）
     let notification = {
-      content: isDeleted ? config.discussion.text.recover : config.discussion.text.delete,
+      content: isDeleted
+        ? utils.string.fillTemplate(
+          config.notification.discussionRecover.content,
+          { title: updateDoc.value.title }
+        )
+        : utils.string.fillTemplate(
+          config.notification.discussionDeleted.content,
+          { title: updateDoc.value.title }
+        ),
     };
     utils.notification.sendNotification(updateDoc.value.creater, notification);
     return res.status(204).send({ status: 'ok' });

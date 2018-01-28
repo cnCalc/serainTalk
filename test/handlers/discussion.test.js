@@ -873,6 +873,44 @@ describe('discussion part', async () => {
     });
   });
 
+  it('delete a discussion by admin.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
+            await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+              await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+                let postPayload = {
+                  encoding: 'markdown',
+                  content: 'hello test',
+                };
+                let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
+                await agent.post(addPostUrl)
+                  .send(postPayload)
+                  .expect(201);
+
+                let deleteUrl = `/api/v1/discussion/${newDiscussionInfoA.id}?force=on`;
+                await agent.delete(deleteUrl).expect(204);
+
+                // 强制获取也获取不到的。
+                let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
+                await agent.get(getUrl).expect(404);
+
+                await testTools.member.login(agent, newMemberInfoA);
+                let getNotificationUrl = '/api/v1/notification';
+                let nitificationRes = await agent.get(getNotificationUrl)
+                  .expect(200);
+                nitificationRes = nitificationRes.body;
+                let notifications = nitificationRes.notifications;
+                expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
   it('ignore discussion.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {

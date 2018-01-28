@@ -136,6 +136,9 @@ let deletePost = {
     id: interfaceUtils.mongoId.required(),
     postIndex: joi.number().min(1),
   },
+  query: {
+    force: interfaceUtils.flag.default('off'),
+  },
 };
 exports.deletePost = deletePost;
 
