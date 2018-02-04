@@ -32,6 +32,8 @@
 <script>
 import api from '../api';
 import getCaretCoordinates from '../utils/textarea-caret-coordinates';
+import bus from '../utils/ws-eventbus';
+import { indexToPage } from '../utils/filters';
 
 const hljs = window.hljs;
 const md = window.markdownit({
@@ -52,7 +54,7 @@ function addSpanEachLine (html) {
 }
 
 // @<Member ID>#<Discussion ID>#<Post Index>
-const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
 
 export default {
   name: 'editor',
@@ -371,7 +373,7 @@ export default {
       api.v1.discussion.createDiscussion({ discussion: payload }).then(() => {
         // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
         // 此处先直接将浏览器刷新，不管后续了
-        window.location.href = window.location.href;
+        window.location.reload();
       });
     },
     replyToIndex () {
@@ -391,9 +393,10 @@ export default {
         };
       }
 
-      api.v1.discussion.replyToDiscussion(payload).then(() => {
-        // 同上
-        window.location.reload();
+      api.v1.discussion.replyToDiscussion(payload).then(res => {
+        bus.$emit('reloadDiscussionView');
+        this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
+        this.$store.commit('updateEditorDisplay', 'none');
       });
     },
     reply () {
@@ -402,9 +405,10 @@ export default {
         id: editorState.discussionId,
         encoding: 'markdown',
         content: this.content,
-      }).then(() => {
-        // 同上
-        window.location.reload();
+      }).then(res => {
+        bus.$emit('reloadDiscussionView');
+        this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
+        this.$store.commit('updateEditorDisplay', 'none');
       });
     },
     update () {
@@ -427,7 +431,8 @@ export default {
 
       api.v1.discussion.updateDiscussionPostByIdAndIndex(payload).then(() => {
         // 同上
-        window.location.href = window.location.href;
+        this.$store.dispatch('updateSingleDiscussionPost', { id: this.$store.state.discussionMeta._id, index: editorState.index, raw: false });
+        this.$store.commit('updateEditorDisplay', 'none');
       });
     },
     submit () {

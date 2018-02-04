@@ -53,6 +53,7 @@ import Pagination from '../components/Pagination.vue';
 import copyToClipboard from '../utils/clipboard';
 import api from '../api';
 import titleMixin from '../mixins/title';
+import bus from '../utils/ws-eventbus';
 
 import config from '../config';
 import { indexToPage } from '../utils/filters';
@@ -255,6 +256,18 @@ export default {
   },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
+    bus.$on('reloadDiscussionView', () => {
+      const page = Number(this.$route.params.page) || 1;
+
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
+        this.$forceUpdate();
+        this.scrollWatcher();
+        if (this.$store.state.autoLoadOnScroll && page !== 1) {
+          this.minPage = page - 1;
+          this.pageLoaded[this.currentPage - 1] = true;
+        }
+      });
+    });
   },
   mounted () {
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });

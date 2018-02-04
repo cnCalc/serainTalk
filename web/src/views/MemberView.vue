@@ -167,8 +167,11 @@ export default {
     },
     sudo () {
       axios.get('/api/v1/debug/sudo').then(() => {
-        window.alert('提权成功');
-        window.location.reload();
+        bus.$emit('notification', {
+          type: 'message',
+          body: '提权成功，即将刷新页面以激活变更…',
+        });
+        setTimeout(() => window.location.reload(), 3000);
       });
     },
     emitNotification (type) {
