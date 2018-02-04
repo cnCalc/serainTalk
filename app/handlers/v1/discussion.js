@@ -616,7 +616,7 @@ let getDiscussionUnderMember = async (req, res) => {
     ],
   };
   // 鉴权 能否读取所有分类的讨论
-  if (await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
+  if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
     delete query.category;
   }
   // 鉴权 能否获取被封禁的讨论
