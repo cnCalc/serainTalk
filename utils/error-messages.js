@@ -8,6 +8,7 @@ module.exports = {
   LACK_INFO: 'need more information',
   MEMBER_EXIST: 'member is exist',
   MEMBER_NOT_EXIST: 'member not exist',
+  NEED_LOGIN: 'login first please.',
   NOT_FOUND: 'unable to find the specified resources',
   PERMISSION_DENIED: 'permission denied',
   RESET_PASSWORD: 'need to reset password',

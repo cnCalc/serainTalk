@@ -57,3 +57,6 @@ app.listen(process.env.PORT || 8000);
 console.log('API Service started on port %d', process.env.PORT || 8000);
 
 module.exports = app;
+
+// 初始化 websocket
+require('./socket');

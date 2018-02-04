@@ -3,6 +3,7 @@
 const dbTool = require('../database');
 const object = require('./object');
 const errorMessages = require('./error-messages');
+const connections = require('../socket/v1/member').connections;
 
 exports = module.exports = {};
 
@@ -40,5 +41,7 @@ let sendNotification = async (_memberId, notification) => {
       );
     } else break;
   }
+
+  connections[_memberId.toString()].emit('notification', { status: 'ok', message: 'new notification.' });
 };
 exports.sendNotification = sendNotification;
