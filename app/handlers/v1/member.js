@@ -199,9 +199,31 @@ let updateSettings = async (req, res, next) => {
     }
     let updateDoc = await dbTool.commonMember.findOneAndUpdate(
       { _id: req.member._id },
-      {
-        $set: updateInfo,
-      },
+      { $set: updateInfo },
+      { returnOriginal: false }
+    );
+    let memberInfo = updateDoc.value;
+    utils.member.removeSensitiveField(memberInfo);
+    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+    return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
+  } catch (err) {
+    errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+};
+
+let updateMemberInfo = async (req, res, next) => {
+  if (req.member._id) return errorHandler(null, errorMessages.NEED_LOGIN, 401, res);
+
+  let { avatar, bio } = req.body;
+  let info = {};
+  if (avatar) info.avatar = avatar;
+  if (bio) info.bio = bio;
+
+  try {
+    let updateDoc = await dbTool.commonMember.findOneAndUpdate(
+      { _id: req.member._id },
+      { $set: info },
       { returnOriginal: false }
     );
     let memberInfo = updateDoc.value;
@@ -479,6 +501,7 @@ module.exports = {
   resetPassword,
   resetPasswordApplication,
   signup,
-  uploadAvatar,
+  updateMemberInfo,
   updateSettings,
+  uploadAvatar,
 };

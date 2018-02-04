@@ -75,6 +75,12 @@ let info = {
     },
   },
   uploadAvatar: {},
+  update: {
+    body: {
+      avatar: joi.string(),
+      bio: joi.string(),
+    },
+  },
 };
 exports.info = info;
 

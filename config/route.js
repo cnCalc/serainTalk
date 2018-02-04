@@ -296,6 +296,18 @@ let route = {
         handlers.v1.member.uploadAvatar,
       ],
     },
+    updateSelf: {
+      description: '修改用户信息。',
+      path: [
+        '/v1/member',
+      ],
+      method: 'put',
+      schema: dataInterface.member.info.update,
+      handler: [
+        verifyMember,
+        handlers.v1.member.updateMemberInfo,
+      ],
+    },
   },
   password: {
     applicationReset: {
