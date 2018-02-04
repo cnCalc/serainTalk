@@ -3,6 +3,7 @@
 const dbTool = require('../database');
 const object = require('./object');
 const errorMessages = require('./error-messages');
+const ws = require('./websocket');
 
 exports = module.exports = {};
 
@@ -41,7 +42,12 @@ let sendNotification = async (_memberId, notification) => {
     } else break;
   }
 
-  const connections = require('../socket/v1/member').connections;
-  connections[_memberId.toString()].emit('notification', { status: 'ok', message: 'new notification.' });
+  const connections = ws.connections[_memberId.toString()];
+  if (connections && connections.length > 0) {
+    connections.forEach(conn => {
+      conn.emit('notification', notification.content);
+    });
+  }
 };
+
 exports.sendNotification = sendNotification;

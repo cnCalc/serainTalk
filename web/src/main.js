@@ -12,6 +12,8 @@ import ListView from './views/ListView.vue';
 import SigninView from './views/SigninView.vue';
 import MigrationView from './views/MigrationView.vue';
 
+import './utils/ws-eventbus';
+
 Vue.use(VueRouter);
 
 const router = new VueRouter({

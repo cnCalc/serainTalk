@@ -37,13 +37,6 @@ app.use('/uploads', express.static(
   { maxAge: staticConfig.upload.file.maxAge }
 ));
 
-// 默认发送首页
-app.use((req, res, next) => {
-  /* istanbul ignore next */
-  if (utils.env.isMocha) { return next(); }
-  res.sendFile(path.join(staticConfig.frontEnd.filePath, 'index.html'));
-});
-
 // 数据校验禁止附带多余字段
 validation.options({
   allowUnknownHeaders: false,
@@ -53,10 +46,19 @@ validation.options({
   allowUnknownCookies: false,
 });
 
-app.listen(process.env.PORT || 8000);
-console.log('API Service started on port %d', process.env.PORT || 8000);
+// 初始化 websocket
+const server = utils.websocket.attachSocketIO(app).server;
+
+// 默认发送首页
+app.use((req, res, next) => {
+  /* istanbul ignore next */
+  if (utils.env.isMocha) { return next(); }
+  res.sendFile(path.join(staticConfig.frontEnd.filePath, 'index.html'));
+});
+
+server.listen(process.env.PORT || 8000, () => {
+  console.log('API Service started on port %d', process.env.PORT || 8000);
+});
 
 module.exports = app;
 
-// 初始化 websocket
-require('./socket');

@@ -1,10 +1,14 @@
 <template lang="pug">
   .notification-popup-wrapper
     transition-group(name="list-complete" tag="div")
-      div.notification-item(v-for="(item, index) in items" :key="item" @click="items.splice(index, 1)") {{ item }}
+      div(v-for="(item, index) in items" :key="item.key" @click="items.splice(index, 1)" :class="`notification-item notification-${item.type}`") {{ item.body }}
 </template>
 
 <script>
+import bus from '../utils/ws-eventbus';
+
+window.bus = bus;
+
 export default {
   name: 'notification-popup',
   data () {
@@ -13,14 +17,17 @@ export default {
     };
   },
   created () {
-    window.insertItem = (item) => {
-      this.items.push(item);
-    }
+    bus.$on('notification', body => {
+      body.key = new Date().getTime();
+      this.items.push(body);
+    });
   },
 };
 </script>
 
 <style lang="scss">
+@import '../styles/global.scss';
+
 .notification-popup-wrapper {
   width: fit-content;
   height: 500px;
@@ -32,26 +39,34 @@ export default {
   display: flex;
 
   .notification-item {
-    // display: inline-block;
-    // width: 100%;
-    max-width: 320px;
-    width: 100vw;
-    min-height: 50px;
-    background: white;
+    max-width: 280px;
+    width: 80vw;
     text-align: left;
     border-radius: 4px;
     margin: 0 0 15px 0;
-    padding: 5px;
+    padding: 15px 10px;
     font-size: 14px;
     box-shadow: 0 0 5px rgba(black, 0.5);
     pointer-events: initial;
     transition: all 0.3s;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  .notification-error {
+    background-color: rgba(#fdd, 0.95);
+    color: #cc4444;
+  }
+
+  .notification-message {
+    background-color: rgba(mix($theme_color, white, 15%), 0.95);
+    color: $theme_color;
   }
 }
 
 .list-complete-enter, .list-complete-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateX(60px);
 }
 
 .list-complete-leave-active {

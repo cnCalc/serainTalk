@@ -22,4 +22,5 @@ module.exports = {
   time: require('./time'),
   upload: require('./upload'),
   url: require('./url'),
+  websocket: require('./websocket'),
 };
