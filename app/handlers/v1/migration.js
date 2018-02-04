@@ -109,7 +109,7 @@ async function verifyDiscuzMemberInfo (req, res) {
 
     // 将 token 发送至邮箱地址
     try {
-      await utils.mail.sendVerificationCode(memberInfo.email, token);
+      await utils.mail.sendVerificationCode(memberInfo.email, { token, name });
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }

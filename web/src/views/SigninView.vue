@@ -3,9 +3,9 @@
     div.signin-box: form(v-on:submit.prevent="doSignin")
       h2 登录 
       label.block(for="name") 用户名或电子邮件地址
-      input(id="name", placeholder="", type="text", v-model="credentials.name", :readonly="busy")
+      input(id="name", type="text", v-model="credentials.name", :readonly="busy" autocomplete="username")
       label.block(for="passwd") 密码
-      input(id="passwd", placeholder="", type="password", v-model="credentials.password", :readonly="busy")
+      input(id="passwd", type="password", v-model="credentials.password", :readonly="busy" autocomplete="current-password")
       div.remember-wrapper
         input(type="checkbox", id="remember", v-model="rememberMe", :readonly="busy")
         label(for="remember") 记住登录

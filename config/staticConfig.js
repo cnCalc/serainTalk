@@ -6,7 +6,7 @@ module.exports = {
   database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
   pagesize: 10,
   jwtSecret: 'exampleSecret',
-  siteAddress: 'https://www.cncalc.org', // 末尾不要加'/'
+  siteAddress: 'https://next.cncalc.org', // 末尾不要加'/'
   cookie: {
     renewTime: 86400000,
   },

@@ -52,6 +52,10 @@ const router = new VueRouter({
       path: '/migration',
       component: MigrationView,
     }, {
+      path: '/migration/final',
+      component: MigrationView,
+      meta: { step: 'setUpNewInfo' },
+    }, {
       path: '/400',
       component: ErrorView,
       meta: { code: 400 },

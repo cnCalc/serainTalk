@@ -14,17 +14,19 @@
     div.editor-wrapper
       div.editor-container
         editor
+    notification-popup
 </template>
 
 <script>
 import NavBar from './components/NavBar.vue';
 import GlobalTitle from './components/GlobalTitle.vue';
 import Editor from './components/Editor.vue';
+import NotificationPopup from './components/NotificationPopup.vue';
 
 export default {
   name: 'app',
   components: {
-    NavBar, GlobalTitle, Editor,
+    NavBar, GlobalTitle, Editor, NotificationPopup,
   },
   beforeMount () {
     // reload session info.
