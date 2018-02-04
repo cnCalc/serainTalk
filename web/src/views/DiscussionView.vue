@@ -2,7 +2,7 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="post in showingPosts" :id="`index-${post.index}`" v-if="post")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="post in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
         div.discussion-post-container
           article.discussion-post-body
             header.discussion-post-info
@@ -10,7 +10,7 @@
                 div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
                 div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
               span.discussion-post-member {{ members[post.user].username }} 
-              span.discussion-post-index {{ `#${post.index}` }}
+              span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
             post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
             footer.discussion-post-info
               div.discussion-post-date
@@ -19,11 +19,14 @@
               div.button-left-container
                 button.button.vote-up(@click="votePost(post.index, 'up')" :title="(post.votes.up || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.up ? post.votes.up.length : 0 }}
                 button.button.vote-down(@click="votePost(post.index, 'down')" :title="(post.votes.down || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.down ? post.votes.down.length : 0 }}
-                div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse")
+                div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
                   button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
                   button.button(@click="copyLink(post.index)") 复制链接
-                  button.button(v-if="$store.state.me && (post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
-                  button.button(v-if="$store.state.me && $store.state.me.role === 'admin'" @click="banPost(post.index)") 删除
+                  template(v-if="$store.state.me")
+                    button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
+                    template(v-if="$store.state.me.role === 'admin'")
+                      button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") 恢复
+                      button.button(v-else @click="deletePost(post.index)") 删除
                 //- button.button.laugh(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
                 //- button.button.doubt(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
                 //- button.button.cheer(v-if="post.votes.up.length > 0") {{ post.votes.up.length }} 
@@ -110,11 +113,10 @@ export default {
         this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.maxPage });
       }
     },
-    banPost (index) {
-      api.v1.discussion.banPostByDiscussionIdAndIndex({ id: this.$route.params.discussionId, index })
+    deletePost (index) {
+      api.v1.discussion.deletePostByDiscussionIdAndIndex({ id: this.$route.params.discussionId, index })
         .then(() => {
-          window.alert('OK');
-          // window.location.reload();
+          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index, raw: false });
         })
         .catch(err => {
           window.alert('Error, see console for more detail.');
@@ -350,9 +352,13 @@ div.discussion-view {
 
     li {
       transition: background ease 0.5s;
+      &.deleted {
+        background-color: #ffe8e8e8;
+      }
       div.discussion-post-container {
         display: flex;
         padding: 16px 8px;
+
       }
 
       @mixin set-avatar-size($avatar-size) {
