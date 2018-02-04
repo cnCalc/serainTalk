@@ -42,8 +42,8 @@ module.exports = {
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
     reset: 'loading',
     text: {
-      delete: '您发布的内容已被封禁。',
-      recover: '您被封禁的内容已恢复。',
+      delete: '您发布的内容已被删除。',
+      recover: '您被删除的内容已恢复。',
     },
   },
   permissions: 'loading',
@@ -61,16 +61,16 @@ module.exports = {
       href: '/d/${var1}/${var2}#index-${var3}',
     },
     discussionDeleted: {
-      content: '您发布的讨论: ${title} 已被封禁。',
+      content: '您发布的讨论: ${title} 已被删除。',
     },
     discussionRecover: {
-      content: '您被封禁的讨论: ${title} 已恢复。',
+      content: '您被删除的讨论: ${title} 已恢复。',
     },
     postDeleted: {
-      content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被封禁。',
+      content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被删除。',
     },
     postRecover: {
-      content: '您在讨论 ${title} 中被封禁的跟帖: ${content} 已恢复。',
+      content: '您在讨论 ${title} 中被删除的跟帖: ${content} 已恢复。',
     },
   },
   upload: {
