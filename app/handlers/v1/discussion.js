@@ -91,8 +91,7 @@ let getLatestDiscussionList = async (req, res) => {
     if (req.query.tag) query.tags = { $in: req.query.tag };
 
     // 鉴权 能否读取被封禁的 discussion
-    if (req.query.force === 'on'
-      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
@@ -143,8 +142,7 @@ let getDiscussionById = async (req, res) => {
     }
 
     // 鉴权 能否读取被封禁的 discussion
-    if (req.query.force === 'on'
-      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
@@ -205,8 +203,7 @@ let getDiscussionPostsById = async (req, res) => {
       ],
     };
     // 鉴权 能否读取被封禁的 discussion 和 post
-    if (req.query.force === 'on'
-      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
       delete postQuery.$or;
     }
@@ -264,8 +261,7 @@ let getPostByIndex = async (req, res, next) => {
     ],
   };
   // 鉴权 能否读取被封禁的 discussion 和 post
-  if (req.query.force === 'on'
-    && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+  if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
     delete query.$or;
     delete postQuery.$or;
   }
@@ -620,13 +616,11 @@ let getDiscussionUnderMember = async (req, res) => {
     ],
   };
   // 鉴权 能否读取所有分类的讨论
-  if (req.query.force === 'on'
-    && await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
+  if (await utils.permission.checkPermission('discussion - readExtraCategories', req.member.permissions)) {
     delete query.category;
   }
   // 鉴权 能否获取被封禁的讨论
-  if (req.query.force === 'on'
-    && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+  if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
     delete query.$or;
   }
   try {
@@ -692,8 +686,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     // 鉴权 能否获取被封禁的讨论
-    if (req.query.force === 'on'
-      && await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+    if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
 
