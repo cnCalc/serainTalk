@@ -172,7 +172,7 @@ function replyToDiscussion (params) {
  *
  * @returns {Promise}
  */
-function banPostByDiscussionIdAndIndex (params) {
+function deletePostByDiscussionIdAndIndex (params) {
   if (!params.id) return Promise.reject('discussion id is required');
   if (!params.index) return Promise.reject('post index is required');
   return new Promise((resolve, reject) => {
@@ -211,6 +211,6 @@ export default {
   updateDiscussionPostByIdAndIndex,
   createDiscussion,
   replyToDiscussion,
-  banPostByDiscussionIdAndIndex,
+  deletePostByDiscussionIdAndIndex,
   votePostByDiscussionIdAndIndex,
 };
