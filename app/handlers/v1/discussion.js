@@ -740,7 +740,7 @@ let deletePost = async (req, res, next) => {
       time: Date.now(),
     };
     // 如果已封禁则解除封禁
-    let isDeleted = postsDoc[0].status && postsDoc[0].status.type === config.discussion.status.deleted;
+    let isDeleted = postsDoc[0].posts.status && postsDoc[0].posts.status.type === config.discussion.status.deleted;
     if (isDeleted) {
       status = {
         type: config.discussion.status.ok,

@@ -808,6 +808,46 @@ describe('discussion part', async () => {
     });
   });
 
+  it('recover a post by admin.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+          await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+            };
+            let addPostUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(addPostUrl)
+              .send(postPayload)
+              .expect(201);
+
+            let banUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+            await agent.delete(banUrl).expect(204);
+            await agent.delete(banUrl).expect(204);
+
+            let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+            let discussionRes = await agent
+              .get(url)
+              .expect(200);
+            expect(discussionRes.body.status).to.be.equal('ok');
+            let postsInfo = discussionRes.body.posts;
+            expect(postsInfo.length).to.be.equal(2);
+            expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.ok);
+
+            await testTools.member.login(agent, newMemberInfoA);
+            let getNotificationUrl = '/api/v1/notification';
+            let nitificationRes = await agent.get(getNotificationUrl)
+              .expect(200);
+            nitificationRes = nitificationRes.body;
+            let notifications = nitificationRes.notifications;
+            expect(notifications.length).to.be.equal(3);// 封禁通知+被回复通知+恢复通知
+          });
+        });
+      });
+    });
+  });
+
   it('ban a post by commonMember(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {

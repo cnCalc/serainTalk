@@ -19,7 +19,7 @@
         "--colors",
         "${workspaceRoot}/test",
         // "--grep",
-        // "migration\\."
+        // "recover a post by admin"
       ],
       "env": {
         "NODE_ENV": "mocha"
