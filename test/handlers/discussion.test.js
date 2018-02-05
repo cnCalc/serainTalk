@@ -783,26 +783,25 @@ describe('discussion part', async () => {
               .expect(200);
             expect(discussionRes.body.status).to.be.equal('ok');
             let postsInfo = discussionRes.body.posts;
-            expect(postsInfo.length).to.be.equal(1);
-            expect(postsInfo[0].status.type).to.not.be.equal(config.discussion.status.deleted);
-
-            url = `/api/v1/discussions/${newDiscussionInfo.id}/posts?force=on`;
-            discussionRes = await agent
-              .get(url)
-              .expect(200);
-            expect(discussionRes.body.status).to.be.equal('ok');
-            postsInfo = discussionRes.body.posts;
             expect(postsInfo.length).to.be.equal(2);
             expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.deleted);
-
-            await testTools.member.login(agent, newMemberInfoA);
-            let getNotificationUrl = '/api/v1/notification';
-            let nitificationRes = await agent.get(getNotificationUrl)
-              .expect(200);
-            nitificationRes = nitificationRes.body;
-            let notifications = nitificationRes.notifications;
-            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
           });
+          let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
+          let discussionRes = await agent
+            .get(url)
+            .expect(200);
+          expect(discussionRes.body.status).to.be.equal('ok');
+          let postsInfo = discussionRes.body.posts;
+          expect(postsInfo.length).to.be.equal(1);
+          expect(postsInfo[0].status.type).to.not.be.equal(config.discussion.status.deleted);
+
+          await testTools.member.login(agent, newMemberInfoA);
+          let getNotificationUrl = '/api/v1/notification';
+          let nitificationRes = await agent.get(getNotificationUrl)
+            .expect(200);
+          nitificationRes = nitificationRes.body;
+          let notifications = nitificationRes.notifications;
+          expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
         });
       });
     });
@@ -896,14 +895,8 @@ describe('discussion part', async () => {
                 let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}`;
                 await agent.delete(banUrl).expect(204);
 
-                // 不强制获取则取不到制定的 Discussion
-                let url = `/api/v1/discussions/${newDiscussionInfoA.id}`;
+                let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}`;
                 let discussionRes = await agent
-                  .get(url)
-                  .expect(404);
-
-                let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
-                discussionRes = await agent
                   .get(getUrl)
                   .expect(200);
 
