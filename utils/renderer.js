@@ -3,6 +3,7 @@ const hljs = require('highlight.js');
 
 const md = mdit({
   html: false,
+  linkify: true,
   highlight (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {

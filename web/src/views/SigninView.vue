@@ -18,9 +18,11 @@
 
 <script>
 import api from '../api';
+import titleMixin from '../mixins/title';
 
 export default {
   name: 'singin-view',
+  mixins: [titleMixin],
   data () {
     return {
       credentials: {
@@ -30,6 +32,7 @@ export default {
       rememberMe: false,
     };
   },
+  title: '登录',
   computed: {
     busy () {
       return this.$store.state.busy;
@@ -40,6 +43,9 @@ export default {
   },
   beforeMount () {
     this.$store.commit('setGlobalTitles', []);
+  },
+  mounted () {
+    this.updateTitle();
   },
   methods: {
     doSignin () {

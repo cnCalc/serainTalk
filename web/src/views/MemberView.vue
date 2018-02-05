@@ -45,7 +45,6 @@ div
           button.button 修改密码
           button.button 变更邮箱
           button.button 更换头像
-          button.button(@click="sudo") 提权至管理员
         h3 邮件通知
         div.row
           check-box(:checked="false")
@@ -67,9 +66,11 @@ div
         div.row
           check-box(:checked="false")
           span 允许站内用户查看我的电子邮件地址
-        //- div.row
-        //-   check-box(:checked="false")
-        //-   span 
+        h3 调试
+        div.row
+          button.button(@click="sudo") 提权至管理员
+          button.button(@click="emitNotification('message')") 弹出消息通知
+          button.button(@click="emitNotification('error')") 弹出错误通知
 </template>
 
 <script>
@@ -82,6 +83,8 @@ import titleMixin from '../mixins/title.js';
 import axios from 'axios';
 
 import { timeAgo, indexToPage } from '../utils/filters';
+
+import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'member-view',
@@ -164,8 +167,17 @@ export default {
     },
     sudo () {
       axios.get('/api/v1/debug/sudo').then(() => {
-        window.alert('提权成功');
-        window.location.reload();
+        bus.$emit('notification', {
+          type: 'message',
+          body: '提权成功，即将刷新页面以激活变更…',
+        });
+        setTimeout(() => window.location.reload(), 3000);
+      });
+    },
+    emitNotification (type) {
+      bus.$emit('notification', {
+        type,
+        body: navigator.userAgent,
       });
     },
   },

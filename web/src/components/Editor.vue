@@ -32,10 +32,13 @@
 <script>
 import api from '../api';
 import getCaretCoordinates from '../utils/textarea-caret-coordinates';
+import bus from '../utils/ws-eventbus';
+import { indexToPage } from '../utils/filters';
 
 const hljs = window.hljs;
 const md = window.markdownit({
   html: false,
+  linkify: true,
   highlight (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
       try {
@@ -52,7 +55,7 @@ function addSpanEachLine (html) {
 }
 
 // @<Member ID>#<Discussion ID>#<Post Index>
-const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
 
 export default {
   name: 'editor',
@@ -148,6 +151,7 @@ export default {
         this.category = '';
         this.title = '';
         this.typed = false;
+        this.state = {};
 
         this.updatePreview();
       } else if (val === 'mini') {
@@ -220,7 +224,7 @@ export default {
       } else if (event.keyCode === 13 || event.keyCode === 9) { // ENTER key or TAB key
         event.preventDefault();
         event.preventDefault();
-        this.filterInsert(this.dropdownFocus)
+        this.filterInsert(this.dropdownFocus);
       } else {
         if (this.options.length >= 1) {
           this.dropdownFocus = 0;
@@ -358,6 +362,20 @@ export default {
       this.showPreview = !this.showPreview;
       this.updatePreview();
     },
+    errorHandler (error) {
+      if (document.cookie.indexOf('membertoken') < 0) {
+        bus.$emit('notification', {
+          type: 'error',
+          body: '游客无法执行此操作，请登录后再继续。',
+        });
+      } else {
+        console.error(error);
+        bus.$emit('notification', {
+          type: 'error',
+          body: '服务器发生异常，查看 JavaScript 控制台以查看详情。',
+        });
+      }
+    },
     createDiscussion () {
       const payload = {
         title: this.title,
@@ -371,8 +389,8 @@ export default {
       api.v1.discussion.createDiscussion({ discussion: payload }).then(() => {
         // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
         // 此处先直接将浏览器刷新，不管后续了
-        window.location.href = window.location.href;
-      });
+        window.location.reload();
+      }).catch(this.errorHandler);
     },
     replyToIndex () {
       const editorState = this.$store.state.editor;
@@ -391,10 +409,11 @@ export default {
         };
       }
 
-      api.v1.discussion.replyToDiscussion(payload).then(() => {
-        // 同上
-        window.location.reload();
-      });
+      api.v1.discussion.replyToDiscussion(payload).then(res => {
+        bus.$emit('reloadDiscussionView');
+        this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
+        this.$store.commit('updateEditorDisplay', 'none');
+      }).catch(this.errorHandler);
     },
     reply () {
       const editorState = this.$store.state.editor;
@@ -402,10 +421,11 @@ export default {
         id: editorState.discussionId,
         encoding: 'markdown',
         content: this.content,
-      }).then(() => {
-        // 同上
-        window.location.reload();
-      });
+      }).then(res => {
+        bus.$emit('reloadDiscussionView');
+        this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
+        this.$store.commit('updateEditorDisplay', 'none');
+      }).catch(this.errorHandler);
     },
     update () {
       const editorState = this.$store.state.editor;
@@ -427,8 +447,9 @@ export default {
 
       api.v1.discussion.updateDiscussionPostByIdAndIndex(payload).then(() => {
         // 同上
-        window.location.href = window.location.href;
-      });
+        this.$store.dispatch('updateSingleDiscussionPost', { id: this.$store.state.discussionMeta._id, index: editorState.index, raw: false });
+        this.$store.commit('updateEditorDisplay', 'none');
+      }).catch(this.errorHandler);
     },
     submit () {
       switch (this.mode) {

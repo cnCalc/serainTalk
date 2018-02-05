@@ -98,7 +98,7 @@ div.avatar-container {
     $width: 150px;
     position: absolute;
     top: 8px;
-    right: -$avatar_width;
+    right: -$avatar_width / 2;
     width: $width;
     border-radius: 4px;
     font-size: initial;

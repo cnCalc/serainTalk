@@ -76,7 +76,7 @@ export default {
       }
 
       const pattern = this.pattern;
-      const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/;
+      const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
       if (html.match(replyReg)) {
         const match = html.match(replyReg);
         html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to">${this.parentMemeber.username}</span></a>`);
