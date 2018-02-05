@@ -378,7 +378,7 @@ let createPost = async (req, res, next) => {
   };
   if (req.body.replyTo) {
     postInfo.replyTo = req.body.replyTo;
-    postInfo.replyTo.memberId = ObjectID(postInfo.replyTo.memberId);
+    postInfo.replyTo._memberId = ObjectID(postInfo.replyTo.memberId);
   }
 
   // 检索所有出现的 @
@@ -386,7 +386,7 @@ let createPost = async (req, res, next) => {
   const mentionPattern = /\@([0-9a-fA-F]{24})/g;
   postInfo.mentions = (postInfo.content.match(mentionPattern) || []).map(mention => mention.substr(1));
   let filterRepeat = new Set(postInfo.mentions);
-  postInfo.mentions = Array.from(filterRepeat);
+  postInfo.mentions = Array.from(filterRepeat).map(mention => ObjectID(mention));
 
   // 追加一个 Post，同时更新一些元数据
   try {
@@ -425,33 +425,36 @@ let createPost = async (req, res, next) => {
       } else break;
     }
 
-    // 如果回复了某人
-    if (postInfo.replyTo) {
-      // 若 不是回复自己 并且 自身没被被回复人屏蔽 并且 被回复人没有屏蔽该讨论 则向被回复人发送一条通知
-      if (!postInfo.replyTo.memberId.equals(req.member._id)
-        && !await utils.member.isIgnored(postInfo.replyTo.memberId, req.member._id)
-        && !await utils.discussion.isIgnored(postInfo.replyTo.memberId, discussionInfo._id)) {
-        await utils.notification.sendNotification(postInfo.replyTo.memberId, {
-          content: utils.string.fillTemplate(config.notification.postReplied.content, {
-            var1: req.member.username,
-            var2: discussionInfo.title,
-          }),
-          href: utils.string.fillTemplate(config.notification.postReplied.href, {
-            var1: discussionInfo._id,
-            var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-            var3: postInfo.index,
-          }),
-        });
-      }
-    }
+    // 通知优先级: 屏蔽/讨论有跟帖/被回复/被at
 
-    // 没有回复 或者 回复的不是讨论的创建者时 额外向讨论的创建者发送一次通知
-    if (!postInfo.replyTo || !postInfo.replyTo.memberId.equals(discussionInfo.creater)) {
-      // 若 跟帖的不是自己创建的讨论 并且 创建者没有屏蔽该讨论 并且 自身没有被讨论创建者屏蔽 则向讨论创建者发送一条通知
-      if (!discussionInfo.creater.equals(req.member._id)
-        && !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id)
-        && !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
-        await utils.notification.sendNotification(discussionInfo.creater, {
+    // 去重
+    let needNotification = new Set();
+    // 添加楼主
+    needNotification.add(discussionInfo.creater.toString());
+    // 添加被回复者
+    if (postInfo.replyTo) needNotification.add(postInfo.replyTo.memberId);
+    postInfo.mentions.forEach(mention => needNotification.add(mention));
+
+    needNotification = [...needNotification];
+    // 如果已屏蔽则不发送通知
+    let tempList = [];
+    needNotification = needNotification.map(async memberId => {
+      let _memberId = ObjectID(memberId);
+      if (!await utils.member.isIgnored(_memberId, req.member._id)
+        && !await utils.discussion.isIgnored(_memberId, discussionInfo._id)) {
+        tempList.push(_memberId);
+      }
+    });
+    await Promise.all(needNotification);
+    needNotification = tempList;
+
+    // 不给自己发送通知
+    needNotification = needNotification.filter(memberId => !memberId.equals(req.member._id));
+
+    needNotification.map(async _memberId => {
+      // 如果是楼主 则发送有跟帖通知
+      if (_memberId.equals(discussionInfo.creater)) {
+        return await utils.notification.sendNotification(discussionInfo.creater, {
           content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
             var1: req.member.username,
             var2: discussionInfo.title,
@@ -463,12 +466,24 @@ let createPost = async (req, res, next) => {
           }),
         });
       }
-    }
 
-    // 给所有 @ 的人发通知
-    postInfo.mentions.forEach(mention => {
-      // FIXME: 需要 await？
-      utils.notification.sendNotification(ObjectID(mention), {
+      // 如果是被回复者 则发送被回复通知
+      if (postInfo.replyTo && _memberId.equals(postInfo.replyTo._memberId)) {
+        return await utils.notification.sendNotification(postInfo.replyTo._memberId, {
+          content: utils.string.fillTemplate(config.notification.postReplied.content, {
+            var1: req.member.username,
+            var2: discussionInfo.title,
+          }),
+          href: utils.string.fillTemplate(config.notification.postReplied.href, {
+            var1: discussionInfo._id,
+            var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+            var3: postInfo.index,
+          }),
+        });
+      }
+
+      // 其他情况则为被 at 的成员 发送被 at 的通知
+      return await utils.notification.sendNotification(_memberId, {
         content: utils.string.fillTemplate(config.notification.postMentioned.content, {
           var1: req.member.username,
           var2: discussionInfo.title,
@@ -481,7 +496,71 @@ let createPost = async (req, res, next) => {
       });
     });
 
-    return res.status(201).send({ status: 'ok', newPost: postInfo });
+    let members = postInfo.mentions.map(async _mention => {
+      return await utils.resolveMembers.fetchOneMember(_mention);
+    });
+
+    try {
+      await Promise.all(needNotification);
+    } catch (err) {
+      return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+    }
+    // // 如果回复了某人
+    // if (postInfo.replyTo) {
+    //   // 若 不是回复自己 并且 自身没被被回复人屏蔽 并且 被回复人没有屏蔽该讨论 则向被回复人发送一条通知
+    //   if (!postInfo.replyTo.memberId.equals(req.member._id)
+    //     && !await utils.member.isIgnored(postInfo.replyTo._memberId, req.member._id)
+    //     && !await utils.discussion.isIgnored(postInfo.replyTo._memberId, discussionInfo._id)) {
+    //     await utils.notification.sendNotification(postInfo.replyTo._memberId, {
+    //       content: utils.string.fillTemplate(config.notification.postReplied.content, {
+    //         var1: req.member.username,
+    //         var2: discussionInfo.title,
+    //       }),
+    //       href: utils.string.fillTemplate(config.notification.postReplied.href, {
+    //         var1: discussionInfo._id,
+    //         var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+    //         var3: postInfo.index,
+    //       }),
+    //     });
+    //   }
+    // }
+
+    // // 没有回复 或者 回复的不是讨论的创建者时 额外向讨论的创建者发送一次通知
+    // if (!postInfo.replyTo || !postInfo.replyTo._memberId.equals(discussionInfo.creater)) {
+    //   // 若 跟帖的不是自己创建的讨论 并且 创建者没有屏蔽该讨论 并且 自身没有被讨论创建者屏蔽 则向讨论创建者发送一条通知
+    //   if (!discussionInfo.creater.equals(req.member._id)
+    //     && !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id)
+    //     && !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
+    //     await utils.notification.sendNotification(discussionInfo.creater, {
+    //       content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
+    //         var1: req.member.username,
+    //         var2: discussionInfo.title,
+    //       }),
+    //       href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
+    //         var1: discussionInfo._id,
+    //         var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+    //         var3: postInfo.index,
+    //       }),
+    //     });
+    //   }
+    // }
+
+    // // 给所有 @ 的人发通知
+    // postInfo.mentions.forEach(mention => {
+    //   // FIXME: 需要 await？
+    //   utils.notification.sendNotification(ObjectID(mention), {
+    //     content: utils.string.fillTemplate(config.notification.postMentioned.content, {
+    //       var1: req.member.username,
+    //       var2: discussionInfo.title,
+    //     }),
+    //     href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
+    //       var1: discussionInfo._id,
+    //       var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+    //       var3: postInfo.index,
+    //     }),
+    //   });
+    // });
+    return res.status(201).send({ status: 'ok', newPost: postInfo, members: members });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

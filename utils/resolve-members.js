@@ -7,12 +7,12 @@ const { ObjectID } = require('mongodb');
 /**
  * 从数据库中获取一个用户的信息，并将结果保存至 members 数组中。
  *
- * @param {MongoID} memberId 待获取信息的用户 ID
+ * @param {MongoID} _memberId 待获取信息的用户 ID
  */
-let fetchOneMember = async (memberId) => {
+let fetchOneMember = async (_memberId) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne(
-      { _id: memberId },
+      { _id: _memberId },
       { username: 1, uid: 1, avatar: 1, _id: 0 }
     );
     if (!memberInfo) return {};
@@ -52,6 +52,7 @@ async function resolveMembersInDiscussion (discussion) {
 }
 
 module.exports = {
-  resolveMembersInDiscussionArray,
+  fetchOneMember,
   resolveMembersInDiscussion,
+  resolveMembersInDiscussionArray,
 };
