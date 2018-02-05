@@ -322,6 +322,32 @@ describe('member part', () => {
           .get(url)
           .expect(200);
         expect(tempInfo.body.status).to.equal('ok');
+        expect(tempInfo.body.member.recentActivities.length).to.be.equal(1);
+      });
+    });
+  });
+
+  it('get member with deleted recent.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
+          let banUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
+          await agent.delete(banUrl).expect(204);
+
+          let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
+          let tempInfo = await agent
+            .get(url)
+            .expect(200);
+          expect(tempInfo.body.status).to.equal('ok');
+          expect(tempInfo.body.member.recentActivities.length).to.be.equal(1);
+        });
+
+        let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
+        let tempInfo = await agent
+          .get(url)
+          .expect(200);
+        expect(tempInfo.body.status).to.equal('ok');
+        expect(tempInfo.body.member.recentActivities.length).to.be.equal(0);
       });
     });
   });

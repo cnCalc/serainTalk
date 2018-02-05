@@ -43,11 +43,23 @@ let getMemberInfoById = async (req, res, next) => {
       let query = {
         $match: {
           'posts.user': memberId,
+          'status.type': { $in: [config.discussion.status.ok] },
+          category: { $in: config.discussion.category.whiteList },
         },
       };
+      let postQuery = {
+        $and: [
+          { $eq: ['$$post.user', memberId] },
+          { $in: ['$$post.status.type', [config.discussion.status.ok]] },
+        ],
+      };
       // 鉴权 能否读取所有分类中的讨论
-      if (!await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
-        query.$match.category = { $in: config.discussion.category.whiteList };
+      if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+        delete query.$match.category;
+      }
+      if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
+        delete query.$match['status.type'];
+        postQuery.$and = postQuery.$and.filter(q => !q.$in || q.$in[0] !== '$$post.status.type');
       }
       let recentPosts = await dbTool.db.collection('discussion').aggregate([
         query,
@@ -58,7 +70,7 @@ let getMemberInfoById = async (req, res, next) => {
               $filter: {
                 input: '$posts',
                 as: 'post',
-                cond: { $eq: ['$$post.user', memberId] },
+                cond: postQuery,
               },
             },
           },
