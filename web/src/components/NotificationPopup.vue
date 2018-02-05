@@ -1,7 +1,14 @@
 <template lang="pug">
   .notification-popup-wrapper
     transition-group(name="list-complete" tag="div")
-      div(v-for="(item, index) in items" :key="item.key" @click="items.splice(index, 1)" :class="`notification-item notification-${item.type}`") {{ item.body }}
+      div(v-for="(item, index) in items"
+          :key="item.key"
+          :class="`notification-item notification-${item.type}`"
+          v-bind:style="{ cursor: item.href ? 'pointer' : 'initial' }"
+          @click="item.href && goto(item.href)")
+        div.controls
+          button.close(@click="items.splice(index, 1)") ×
+        div.body {{ item.body }}
 </template>
 
 <script>
@@ -22,6 +29,11 @@ export default {
       this.items.push(body);
     });
   },
+  methods: {
+    goto (href) {
+      this.$router.push(href);
+    }
+  }
 };
 </script>
 
@@ -31,26 +43,45 @@ export default {
 .notification-popup-wrapper {
   width: fit-content;
   height: 500px;
+  overflow: visible;
   top: 50px;
   right: 0;
   margin: 10px;
   position: fixed;
+  z-index: 30;
   pointer-events: none;
   display: flex;
 
   .notification-item {
-    max-width: 280px;
+    max-width: 300px;
     width: 80vw;
     text-align: left;
     border-radius: 4px;
     margin: 0 0 15px 0;
-    padding: 15px 10px;
+    padding: 0 0 15px 0;
     font-size: 14px;
     box-shadow: 0 0 5px rgba(black, 0.5);
     pointer-events: initial;
     transition: all 0.3s;
     user-select: none;
-    cursor: pointer;
+    z-index: 31;
+
+    div.controls {
+      height: 15px;
+      font-size: 14px;
+      text-align: right;
+      button {
+        border: none;
+        background: none;
+        box-shadow: none;
+        color: grey;
+        cursor: pointer;
+      }
+    }
+
+    div.body {
+      padding: 0 10px;
+    }
   }
 
   .notification-error {

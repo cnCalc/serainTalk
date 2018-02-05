@@ -45,7 +45,7 @@ let sendNotification = async (_memberId, notification) => {
   const connections = ws.connections[_memberId.toString()];
   if (connections && connections.length > 0) {
     connections.forEach(conn => {
-      conn.emit('notification', notification.content);
+      conn.emit('notification', notification);
     });
   }
 };

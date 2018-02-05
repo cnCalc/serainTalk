@@ -29,10 +29,12 @@ const wsEventBus = new Vue({
         this.$emit('notification', '与服务器连接成功！');
       });
 
-      socket.on('notification', body => {
+      socket.on('notification', res => {
         this.$emit('notification', {
           type: 'message',
-          body: body,
+          body: res.content,
+          href: res.href,
+          emitter: 'server',
         });
       });
 

@@ -4,7 +4,6 @@
     div(v-if="step === 'getMemberName'")
       .explain 
         div 这里是一段解释说明文本。
-        div 迁移的过程中请不要关闭浏览器。
       form(v-on:submit.prevent="doCheckName", autocomplete="off")
         label.block(for="origUserName") 原 cnCalc 用户名：
         input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
@@ -45,9 +44,11 @@
 
 <script>
 import api from '../api';
+import titleMixin from '../mixins/title';
 
 export default {
   name: 'migration-view',
+  mixins: [titleMixin],
   data () {
     return {
       origUserName: '',
@@ -62,6 +63,7 @@ export default {
       inviteCode: '',
     };
   },
+  title: '账户迁移',
   computed: {
     busy () {
       return this.$store.state.busy;
@@ -74,6 +76,9 @@ export default {
       this.newUserName = this.$route.query.name;
       this.verificationCode = this.$route.query.token;
     }
+  },
+  mounted () {
+    this.updateTitle();
   },
   methods: {
     doCheckName () {

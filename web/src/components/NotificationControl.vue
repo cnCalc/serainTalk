@@ -16,6 +16,7 @@
 
 <script>
 import api from '../api';
+import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'notification-control',
@@ -26,9 +27,15 @@ export default {
   },
   computed: {
     notifications () {
-      // return { count: 0, list: [], new: false }; // this.$store.state.notifications;
       return this.$store.state.notifications;
     },
+  },
+  created () {
+    bus.$on('notification', notification => {
+      if (notification.emitter === 'server') {
+        this.$store.dispatch('fetchNotifications');
+      }
+    });
   },
   methods: {
     trigger (e) {
