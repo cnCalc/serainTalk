@@ -32,8 +32,8 @@ export default {
   methods: {
     goto (href) {
       this.$router.push(href);
-    }
-  }
+    },
+  },
 };
 </script>
 

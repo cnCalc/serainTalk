@@ -3,7 +3,6 @@
 const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
-const utils = require('../../utils');
 
 exports = module.exports = {};
 

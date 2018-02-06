@@ -113,7 +113,7 @@ export default {
       }
 
       this.flushGlobalTitles();
-      this.$options.asyncData.call(this, { store: this.$store, route: this.$route })
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
     },
     slug: function (slug) {
       this.flushGlobalTitles();

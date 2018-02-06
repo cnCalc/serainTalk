@@ -17,7 +17,7 @@ export default {
   title: 'Error',
   mounted () {
     this.updateTitle();
-  }
+  },
 };
 </script>
 

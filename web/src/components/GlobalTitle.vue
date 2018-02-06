@@ -7,7 +7,6 @@
 
 <script>
 import decodeHTML from '../utils/decodeHTML';
-import titleMixin from '../mixins/title';
 
 export default {
   name: 'global-title',

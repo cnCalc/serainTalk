@@ -7,8 +7,8 @@
 <script>
 export default {
   name: 'check-box',
-  props: ['checked']
-}
+  props: ['checked'],
+};
 </script>
 
 <style lang="scss">

@@ -169,7 +169,7 @@ export default {
             break;
           }
         }
-        
+
         if (flush) {
           this.state = editorState;
           if (this.state.mode === 'EDIT_POST') {
@@ -192,7 +192,7 @@ export default {
     },
     mentionFilter (filter, oldFilter) {
       this.updateOptions(filter, oldFilter);
-    }
+    },
   },
   methods: {
     filterKeyDown (event) {
