@@ -45,10 +45,21 @@ async function resolveMembersInDiscussionArray (discussions) {
  * @returns {Promise<Array<Member>>}
 */
 async function resolveMembersInDiscussion (discussion) {
-  let members = {};
-  let membersToFetch = discussion.posts.reduce((arr, post) => arr.concat([post.user.toString(), post.replyTo ? post.replyTo.memberId.toString() : null, ...(post.mentions || [])]), []);
-  await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
-  return members;
+  try {
+    let members = {};
+    let membersToFetch = discussion.posts.reduce((arr, post) => {
+      return arr.concat(
+        post.user.toString(),
+        post.replyTo ? post.replyTo.memberId.toString() : [],
+        ...((post.mentions || []).map(mention => mention.toString())),
+        Object.keys(post.votes).reduce((arr, key) => arr.concat(post.votes[key].memberId), []),
+      );
+    }, []);
+    await Promise.all([...new Set(membersToFetch.filter(id => id !== null))].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
+    return members;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 module.exports = {

@@ -34,6 +34,7 @@ module.exports = {
         'up',
         'down',
       ],
+      votePerResolveNumber: 5, // 每种 vote 解析的人数
     },
     status: {
       ok: 'ok',

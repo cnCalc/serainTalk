@@ -620,7 +620,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.up[0]).to.be.equal(newMemberInfo.id);
+        expect(votes.up.memberId[0]).to.be.equal(newMemberInfo.id);
       });
     });
   });
@@ -667,7 +667,8 @@ describe('discussion part', async () => {
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
         for (let vote of voteType) {
-          expect(votes[vote].length).to.be.equal(0);
+          expect(votes[vote].count).to.be.equal(0);
+          expect(votes[vote].memberId.length).to.be.equal(0);
         }
       });
     });
@@ -695,7 +696,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.up[0]).to.be.equal(newMemberInfo.id);
+        expect(votes.up.memberId[0]).to.be.equal(newMemberInfo.id);
       });
     });
   });
@@ -718,7 +719,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.down[0]).to.be.equal(newMemberInfo.id);
+        expect(votes.down.memberId[0]).to.be.equal(newMemberInfo.id);
       });
     });
   });
@@ -752,8 +753,8 @@ describe('discussion part', async () => {
           discussionRes = discussionRes.body;
           let votes = discussionRes.posts[0].votes;
           for (let vote of voteType) {
-            expect(votes[vote]).include(newMemberInfoA.id);
-            expect(votes[vote]).include(newMemberInfoB.id);
+            expect(votes[vote].memberId).include(newMemberInfoA.id);
+            expect(votes[vote].memberId).include(newMemberInfoB.id);
           }
         });
       });

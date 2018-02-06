@@ -4,6 +4,7 @@ const { ObjectID } = require('mongodb');
 
 const config = require('../../../config');
 const dbTool = require('../../../database');
+const _ = require('lodash');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
@@ -226,7 +227,19 @@ let getDiscussionPostsById = async (req, res) => {
       { $skip: offset * pagesize },
       { $limit: pagesize },
     ]).toArray();
-    let posts = postsDoc.map(item => item.posts);
+
+    // resolve vote 中的 memberId
+    let posts = postsDoc.map(doc => {
+      let post = doc.posts;
+      let tempVote = {};
+      for (let voteType of Object.keys(post.votes)) {
+        tempVote[voteType] = {};
+        tempVote[voteType]['memberId'] = _.take(post.votes[voteType], config.discussion.post.votePerResolveNumber).map(_memberId => _memberId.toString());
+        tempVote[voteType]['count'] = post.votes[voteType].length;
+      }
+      post.votes = tempVote;
+      return post;
+    });
     return res.status(200).send({
       status: 'ok',
       posts: utils.renderer.renderPosts(posts),
@@ -306,6 +319,9 @@ let createDiscussion = async (req, res, next) => {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
+  let emptyVote = {};
+  for (let voteType of config.discussion.post.vote) emptyVote[voteType] = [];
+
   let discussionInfo = {
     category: req.body.category,
     createDate: now,
@@ -326,7 +342,7 @@ let createDiscussion = async (req, res, next) => {
           type: config.discussion.status.ok,
         },
         user: req.member._id,
-        votes: {},
+        votes: emptyVote,
       },
     ],
     replies: 1,
@@ -365,6 +381,8 @@ let createPost = async (req, res, next) => {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
   let now = Date.now();
+  let emptyVote = {};
+  for (let voteType of config.discussion.post.vote) emptyVote[voteType] = [];
   let postInfo = {
     allowScript: req.member.role === 'admin',
     content: req.body.content,
@@ -374,7 +392,7 @@ let createPost = async (req, res, next) => {
       type: config.discussion.status.ok,
     },
     user: req.member._id,
-    votes: {},
+    votes: emptyVote,
   };
   if (req.body.replyTo) {
     postInfo.replyTo = req.body.replyTo;
@@ -505,61 +523,6 @@ let createPost = async (req, res, next) => {
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }
-    // // 如果回复了某人
-    // if (postInfo.replyTo) {
-    //   // 若 不是回复自己 并且 自身没被被回复人屏蔽 并且 被回复人没有屏蔽该讨论 则向被回复人发送一条通知
-    //   if (!postInfo.replyTo.memberId.equals(req.member._id)
-    //     && !await utils.member.isIgnored(postInfo.replyTo._memberId, req.member._id)
-    //     && !await utils.discussion.isIgnored(postInfo.replyTo._memberId, discussionInfo._id)) {
-    //     await utils.notification.sendNotification(postInfo.replyTo._memberId, {
-    //       content: utils.string.fillTemplate(config.notification.postReplied.content, {
-    //         var1: req.member.username,
-    //         var2: discussionInfo.title,
-    //       }),
-    //       href: utils.string.fillTemplate(config.notification.postReplied.href, {
-    //         var1: discussionInfo._id,
-    //         var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-    //         var3: postInfo.index,
-    //       }),
-    //     });
-    //   }
-    // }
-
-    // // 没有回复 或者 回复的不是讨论的创建者时 额外向讨论的创建者发送一次通知
-    // if (!postInfo.replyTo || !postInfo.replyTo._memberId.equals(discussionInfo.creater)) {
-    //   // 若 跟帖的不是自己创建的讨论 并且 创建者没有屏蔽该讨论 并且 自身没有被讨论创建者屏蔽 则向讨论创建者发送一条通知
-    //   if (!discussionInfo.creater.equals(req.member._id)
-    //     && !await utils.discussion.isIgnored(discussionInfo.creater, discussionInfo._id)
-    //     && !await utils.member.isIgnored(discussionInfo.creater, req.member._id)) {
-    //     await utils.notification.sendNotification(discussionInfo.creater, {
-    //       content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
-    //         var1: req.member.username,
-    //         var2: discussionInfo.title,
-    //       }),
-    //       href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
-    //         var1: discussionInfo._id,
-    //         var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-    //         var3: postInfo.index,
-    //       }),
-    //     });
-    //   }
-    // }
-
-    // // 给所有 @ 的人发通知
-    // postInfo.mentions.forEach(mention => {
-    //   // FIXME: 需要 await？
-    //   utils.notification.sendNotification(ObjectID(mention), {
-    //     content: utils.string.fillTemplate(config.notification.postMentioned.content, {
-    //       var1: req.member.username,
-    //       var2: discussionInfo.title,
-    //     }),
-    //     href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
-    //       var1: discussionInfo._id,
-    //       var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
-    //       var3: postInfo.index,
-    //     }),
-    //   });
-    // });
     return res.status(201).send({ status: 'ok', newPost: postInfo, members: members });
   } catch (err) {
     /* istanbul ignore next */
