@@ -153,12 +153,13 @@ export default {
       this.$store.commit('setBusy', true);
 
       const lastDate = this.member.recentActivities[this.member.recentActivities.length - 1].posts.createDate;
-      api.v1.member.fetchMoreMemberRecentActivityById({ id: this.member._id, before: lastDate }).then(recentActivities => {
+      api.v1.member.fetchMoreMemberRecentActivityById({ id: this.member._id, before: lastDate }).then(({ recentActivities, members }) => {
         if (recentActivities.length === 0) {
           this.canLoadMoreActivities = false;
         } else {
           this.$store.commit('appendMemberRecentActivity', recentActivities);
         }
+        this.$store.commit('mergeMembers', members);
         this.$store.commit('setBusy', false);
       });
     },

@@ -20,7 +20,10 @@ function fetchMemberInfoByName (param) {
 function fetchMoreMemberRecentActivityById (param) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/member/${param.id}?recent=on&before=${param.before}`)
-      .then(response => resolve(response.data.member.recentActivities))
+      .then(response => resolve({
+        recentActivities: response.data.member.recentActivities,
+        members: response.data.members,
+      }))
       .catch(error => reject(error));
   });
 }
