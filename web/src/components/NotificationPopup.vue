@@ -74,7 +74,7 @@ export default {
         border: none;
         background: none;
         box-shadow: none;
-        color: grey;
+        color: inherit;
         cursor: pointer;
       }
     }

@@ -47,6 +47,16 @@ export default {
       }
     });
   },
+  mounted () {
+    console.log([
+      '%c┌─┐┌┐┌╔═╗┌─┐┬  ┌─┐ ┌─┐┬─┐┌─┐',
+      '│  │││║  ├─┤│  │   │ │├┬┘│ ┬',
+      '└─┘┘└┘╚═╝┴ ┴┴─┘└─┘o└─┘┴└─└─┘%c',
+      'Powered by serainTalk: https://github.com/cnCalc',
+      'Contributors         : kasora, ntzyz, ZephRay',
+      'Version              : closed beta',
+    ].join('\n'), 'color: #1770b3; font-size: 1.7em', 'color: initial');
+  },
 };
 </script>
 
