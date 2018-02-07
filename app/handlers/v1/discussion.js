@@ -288,6 +288,15 @@ let getPostByIndex = async (req, res, next) => {
     ]).toArray();
     if (postsDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     let post = postsDoc[0].posts;
+
+    let tempVote = {};
+    for (let voteType of Object.keys(post.votes)) {
+      tempVote[voteType] = {};
+      tempVote[voteType]['memberId'] = _.take(post.votes[voteType], config.discussion.post.votePerResolveNumber).map(_memberId => _memberId.toString());
+      tempVote[voteType]['count'] = post.votes[voteType].length;
+    }
+    post.votes = tempVote;
+
     return res.status(200).send({
       status: 'ok',
       post: req.query.raw === 'on' ? post : (utils.renderer.renderPosts([post]))[0],
