@@ -5,7 +5,7 @@
       div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
       router-link(:to="`/m/${me._id}`"): li.member 我的主页
-      a: li.message 站内消息
+      router-link(to="/message"): li.message 站内消息
       router-link(:to="`/m/${me._id}/settings`"): li.settings 个人设置
       a(@click="switchTheme"): li(:class="theme === 'light' ? 'night-mode' : 'day-mode'") 切换主题
       a(@click="signout"): li.signout 退出登录

@@ -11,6 +11,7 @@ import MemberView from './views/MemberView.vue';
 import ListView from './views/ListView.vue';
 import SigninView from './views/SigninView.vue';
 import MigrationView from './views/MigrationView.vue';
+import MessageView from './views/MessageView.vue';
 
 import './utils/ws-eventbus';
 
@@ -56,6 +57,10 @@ const router = new VueRouter({
     }, {
       path: '/migration/final',
       component: MigrationView,
+      meta: { step: 'setUpNewInfo' },
+    }, {
+      path: '/message',
+      component: MessageView,
       meta: { step: 'setUpNewInfo' },
     }, {
       path: '/400',

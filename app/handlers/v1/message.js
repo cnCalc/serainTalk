@@ -84,8 +84,8 @@ let sendMessage = async (req, res, next) => {
  * @param {any} next
  */
 let getMessagesInfo = async (req, res, next) => {
-  let pagesize = req.query.pagesize;
-  let offset = req.query.page - 1;
+  // let pagesize = req.query.pagesize;
+  // let offset = req.query.page - 1;
   let messagesInfo = await dbTool.message.aggregate([
     {
       $match: {
@@ -97,8 +97,8 @@ let getMessagesInfo = async (req, res, next) => {
     },
     { $sort: { 'timeline.0.date': -1 } },
     { $project: { members: 1 } },
-    { $skip: offset },
-    { $limit: pagesize },
+    // { $skip: offset },
+    // { $limit: pagesize },
   ]).toArray();
   let count = await dbTool.message.count({
     $or: [
@@ -106,7 +106,8 @@ let getMessagesInfo = async (req, res, next) => {
       { 'members.1': req.member._id },
     ],
   });
-  return res.status(200).send({ status: 'ok', messagesInfo: messagesInfo, count: count });
+  let members = await utils.resolveMembers.resolveMembersInArray(messagesInfo.map(session => session.members).reduce((a, b) => [...a, ...b]));
+  return res.status(200).send({ status: 'ok', messagesInfo, count, members });
 };
 
 /**

@@ -62,8 +62,15 @@ async function resolveMembersInDiscussion (discussion) {
   }
 }
 
+async function resolveMembersInArray (array) {
+  let members = {};
+  await Promise.all([...new Set(array.filter(id => id !== null))].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
+  return members;
+}
+
 module.exports = {
   fetchOneMember,
+  resolveMembersInArray,
   resolveMembersInDiscussion,
   resolveMembersInDiscussionArray,
 };
