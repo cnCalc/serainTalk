@@ -5,9 +5,9 @@
           :key="item.key"
           :class="`notification-item notification-${item.type}`"
           v-bind:style="{ cursor: item.href ? 'pointer' : 'initial' }"
-          @click="item.href && goto(item.href)")
+          @click="item.href && goto(item.href); items.splice(index, 1)")
         div.controls
-          button.close(@click="items.splice(index, 1)") ×
+          button.close(@click="$event.stopPropagation(); items.splice(index, 1)") ×
         div.body {{ item.body }}
 </template>
 

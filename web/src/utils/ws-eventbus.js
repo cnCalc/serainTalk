@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import io from 'socket.io-client';
+import store from '../store';
 
 const wsEventBus = new Vue({
   data () {
@@ -36,6 +37,13 @@ const wsEventBus = new Vue({
           href: res.href,
           emitter: 'server',
         });
+      });
+
+      socket.on('message', payload => {
+        this.$emit('message', payload);
+        if (payload.messageId !== store.state.messageSession) {
+          this.$emit('notification', { type: 'message', body: '您有一条新消息，点击此处查看', href: `/message/${payload.messageId}` });
+        }
       });
 
       socket.on('failure', res => {

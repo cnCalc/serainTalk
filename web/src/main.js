@@ -61,7 +61,9 @@ const router = new VueRouter({
     }, {
       path: '/message',
       component: MessageView,
-      meta: { step: 'setUpNewInfo' },
+    }, {
+      path: '/message/:messageId',
+      component: MessageView,
     }, {
       path: '/400',
       component: ErrorView,

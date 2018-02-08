@@ -12,16 +12,17 @@ const { errorHandler, errorMessages } = utils;
  *
  * @param {MongoID} _messageId 消息 id
  * @param {number} beforeDate 由此日期向前
+ * @param {number} afterDate 由此日期向后
  * @param {number} pagesize 获取的 line 数量
  * @returns {timeline}
  */
-let getTimeLine = async (_messageId, beforeDate, pagesize) => {
+let getTimeLine = async (_messageId, beforeDate, afterDate, pagesize) => {
   // 获取 timeline
   let timeline = await dbTool.message.aggregate([
     { $match: { _id: _messageId } },
     { $project: { timeline: 1, _id: 0 } },
     { $unwind: '$timeline' },
-    { $match: { 'timeline.date': { $lt: beforeDate } } },
+    { $match: { 'timeline.date': { $lt: beforeDate, $gt: afterDate } } },
     { $sort: { 'timeline.date': -1 } },
     { $limit: pagesize },
   ]).toArray();
@@ -73,6 +74,18 @@ let sendMessage = async (req, res, next) => {
     return errorHandler(null, errorMessages.SERVER_ERROR, 400, res);
   }
 
+  // 通过 WebSocket 通知对方有新消息
+  const recipientWsConns = utils.websocket.connections[_recipientId];
+  if (recipientWsConns !== undefined && recipientWsConns.length !== 0) {
+    // 在线用户，发送 ws 通知即可
+    recipientWsConns.forEach(conn => {
+      conn.emit('message', { messageId: updateRes.value._id });
+    });
+  } else {
+    // 不在线，发送传统通知
+    // TODO
+  }
+
   return res.status(201).send({ status: 'ok', messageId: updateRes.value._id });
 };
 
@@ -118,8 +131,9 @@ let getMessagesInfo = async (req, res, next) => {
  * @param {any} next
  */
 let getMessageByMemberId = async (req, res, next) => {
-  let { beforeDate, pagesize } = req.query;
+  let { beforeDate, pagesize, afterDate } = req.query;
   beforeDate = beforeDate || Date.now();
+  afterDate = afterDate || 0;
   let _id = ObjectID(req.params.memberId);
   let members = [req.member._id, _id];
 
@@ -141,7 +155,7 @@ let getMessageByMemberId = async (req, res, next) => {
   }
   messageInfo = messageInfo[0];
 
-  let timeline = await getTimeLine(messageInfo._id, beforeDate, pagesize);
+  let timeline = await getTimeLine(messageInfo._id, beforeDate, afterDate, pagesize);
   let message = Object.assign({}, messageInfo, { timeline });
 
   return res.status(200).send({ status: 'ok', message: message });
@@ -155,8 +169,9 @@ let getMessageByMemberId = async (req, res, next) => {
  * @param {any} next
  */
 let getMessageById = async (req, res, next) => {
-  let { beforeDate, pagesize } = req.query;
+  let { beforeDate, pagesize, afterDate } = req.query;
   beforeDate = beforeDate || Date.now();
+  afterDate = afterDate || 0;
   let _messageId = ObjectID(req.params.id);
 
   // 获取 message 摘要
@@ -169,7 +184,7 @@ let getMessageById = async (req, res, next) => {
   }
   messageInfo = messageInfo[0];
 
-  let timeline = await getTimeLine(messageInfo._id, beforeDate, pagesize);
+  let timeline = await getTimeLine(messageInfo._id, beforeDate, afterDate, pagesize);
   let message = Object.assign({}, messageInfo, { timeline });
 
   return res.status(200).send({ status: 'ok', message: message });

@@ -32,6 +32,7 @@ let getMessageByMemberId = {
   },
   query: {
     beforeDate: joi.number(),
+    afterDate: joi.number(),
     pagesize: interfaceUtils.pagesize,
   },
 };
@@ -44,6 +45,7 @@ let getMessageById = {
   },
   query: {
     beforeDate: joi.number(),
+    afterDate: joi.number(),
     pagesize: interfaceUtils.pagesize,
   },
 };

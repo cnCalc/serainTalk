@@ -29,7 +29,16 @@ function fetchMessageSessionById (param) {
   });
 }
 
+function sendNewMessage (param) {
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}/${config.api.version}/message/${param.id}`, { content: param.content })
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchMessageSessions,
   fetchMessageSessionById,
+  sendNewMessage,
 };

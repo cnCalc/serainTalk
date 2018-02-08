@@ -144,6 +144,10 @@ let mutations = {
     }
   },
 
+  updateMessageSession: (state, messageId) => {
+    state.messageSession = messageId;
+  },
+
   switchScrollBehavior: state => {
     state.autoLoadOnScroll = !state.autoLoadOnScroll;
     window.localStorage['experimental-auto-load-on-scroll'] = state.autoLoadOnScroll ? 'on' : 'off';
