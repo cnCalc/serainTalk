@@ -216,7 +216,7 @@ let updateSettings = async (req, res, next) => {
     );
     let memberInfo = updateDoc.value;
     utils.member.removeSensitiveField(memberInfo);
-    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
     res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
   } catch (err) {
@@ -240,7 +240,7 @@ let updateMemberInfo = async (req, res, next) => {
     );
     let memberInfo = updateDoc.value;
     utils.member.removeSensitiveField(memberInfo);
-    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
     res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
   } catch (err) {
@@ -301,7 +301,7 @@ let login = async (req, res) => {
     );
 
     // 插入 memberToken 作为身份识别码。
-    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
     res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
   } catch (err) {
@@ -354,7 +354,7 @@ let signup = async (req, res) => {
 
   utils.member.removePrivateField(memberInfo);
 
-  let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
@@ -432,7 +432,7 @@ let resetPassword = async (req, res) => {
   utils.member.removePrivateField(memberInfo);
 
   // 返回登录 token
-  let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
   return res.status(201).send({ status: 'ok' });
 };

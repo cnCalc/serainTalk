@@ -424,14 +424,16 @@ describe('member part', () => {
   });
 
   it('upload a avatar.', async () => {
-    let getUrl = '/api/v1/member/avatar';
-    let avatarRes = await agent.post(getUrl)
-      .attach('avatar', 'test/testfile/testpng.png');
+    await testTools.member.createOneMember(agent, { username: 'memberkasora' }, async () => {
+      let getUrl = '/api/v1/member/avatar';
+      let avatarRes = await agent.post(getUrl)
+        .attach('avatar', 'test/testfile/testpng.png');
 
-    expect(avatarRes.body.status).to.be.equal('ok');
-    let picturePath = path.join(config.upload.avatar.path, avatarRes.body.avatarName);
-    expect(fs.existsSync(picturePath)).to.be.true;
+      expect(avatarRes.body.status).to.be.equal('ok');
+      let picturePath = path.join(config.upload.avatar.path, avatarRes.body.avatarName);
+      expect(fs.existsSync(picturePath)).to.be.true;
 
-    fs.unlinkSync(picturePath);
+      fs.unlinkSync(picturePath);
+    });
   });
 });

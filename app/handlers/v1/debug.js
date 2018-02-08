@@ -19,7 +19,7 @@ let sudo = async (req, res, next) => {
     memberInfo.role = 'admin';
 
     // 插入 memberToken 作为身份识别码。
-    let memberToken = jwt.sign(memberInfo, config.jwtSecret);
+    let memberToken = jwt.sign({ id: memberInfo._id.toString(), sudo: true }, config.jwtSecret);
     res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
   } catch (err) {

@@ -3,6 +3,8 @@
 const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
+const dbTool = require('../../database');
+const memberUtils = require('../../utils/member');
 
 exports = module.exports = {};
 
@@ -13,13 +15,16 @@ exports = module.exports = {};
  * @param {any} res 回复
  * @param {any} next 传递给下一中间件
  */
-let getMemberInfo = (req, res, next) => {
+let getMemberInfo = async (req, res, next) => {
   req.member = {};
   if (req.cookies && req.cookies.membertoken) {
     try {
-      req.member = jwt.verify(req.cookies.membertoken, config.jwtSecret);
-      req.member.id = req.member._id;
-      req.member._id = ObjectID(req.member.id);
+      let payload = jwt.verify(req.cookies.membertoken, config.jwtSecret);
+      let memberDoc = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
+      memberUtils.removePrivateField(memberDoc);
+      memberDoc.id = memberDoc._id.toString();
+      if (payload.sudo) memberDoc.role = 'admin';
+      req.member = memberDoc;
     } catch (err) {
       req.member = {};
     }
