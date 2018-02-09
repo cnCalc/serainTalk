@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const staticConfig = require('../config/staticConfig');
 const errorMessage = require('./error-messages');
+const dbTool = require('../database');
 
 exports = module.exports = {};
 
@@ -18,14 +19,18 @@ function attachSocketIO (app) {
     io = socket(server, { path: '/api/ws' });
     connections = {};
 
-    io.on('connection', socket => {
+    io.on('connection', async socket => {
       let member;
       let token = socket.handshake.query.token;
       try {
-        member = jwt.verify(token, staticConfig.jwtSecret);
+        // member = jwt.verify(token, staticConfig.jwtSecret);
 
+        // member.id = member._id;
+        // member._id = ObjectID(member.id);
+        // socket.member = member.id;
+        let payload = jwt.verify(token, staticConfig.jwtSecret);
+        member = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
         member.id = member._id;
-        member._id = ObjectID(member.id);
         socket.member = member.id;
       } catch (err) {
         socket.emit('failure', { status: 'error', message: errorMessage.NEED_LOGIN, code: 'NEED_LOGIN' });

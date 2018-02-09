@@ -19,6 +19,7 @@
 <script>
 import api from '../api';
 import titleMixin from '../mixins/title';
+import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'singin-view',
@@ -58,6 +59,7 @@ export default {
         this.$store.dispatch('fetchNotifications');
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
+        bus.$emit('reconnect');
       }).catch(e => {
         this.$store.commit('setBusy', false);
         window.alert('密码错误');

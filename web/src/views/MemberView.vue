@@ -66,6 +66,9 @@ div
         div.row
           check-box(:checked="false")
           span 允许站内用户查看我的电子邮件地址
+        div.row
+          check-box(:checked="false")
+          span 公开我的在线状态
         h3 调试
         div.row
           button.button(@click="sudo") 提权至管理员

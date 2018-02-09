@@ -1,14 +1,14 @@
 <template lang="pug">
   div.message
-    div.left-sessions
+    div.left-sessions(v-bind:class="{ 'hide-on-mobile': activeSession}")
       h2 消息列表
       ul.session-list
-        li(v-for="session in sessions" @click="$router.push(`/message/${session._id}`)" v-bind:class="{ active: session._id === activeSession }")
+        li(v-for="session in sessions" @click="$router.push(`/message/${session._id}`)" v-bind:class="{ active: session._id == activeSession }")
           template
             div.avatar(v-if="members[session.peer].avatar !== null" v-bind:style="{ backgroundImage: `url(${members[session.peer].avatar})` }")
             div.avatar.fallback(v-else) {{ (members[session.peer].username || '?').substr(0, 1).toUpperCase() }}
           span.username {{ members[session.peer].username }}
-    div.right-messages(v-if="session._id !== undefined && activeSession === session._id")
+    div.right-messages(v-if="session._id !== undefined && activeSession === session._id" v-bind:class="{ 'hide-on-mobile': !activeSession }")
       h2 {{ members[session.peer].username }}
       div.message-session-view(v-if="activeSession !== null")
         ul.message-list
@@ -22,10 +22,10 @@
           template(v-if="!busy")
             li.load-more(v-if="session.canLoadMore" @click="loadMore()") 查看更多历史消息
             li.no-more(v-else) 没有更多消息
-          li.no-more(v-else) 正在加载……
+          li.loading(v-else) 正在加载……
       div.textbox: form(v-on:submit.prevent="sendMessage" style="width: 100%;")
-        input(placeholder="回车键发送", v-model="newMessage", enabled="!busy")
-    div.other-info(v-else)
+        input(placeholder="回车键发送", v-model="newMessage", :disabled="busy")
+    div.other-info.hide-on-mobile(v-else)
       loading-icon(v-if="busy")
       div(v-else) 从左侧选择一个以开始。
 </template>
@@ -33,11 +33,14 @@
 <script>
 import api from '../api';
 import LoadingIcon from '../components/LoadingIcon.vue';
+import titleMixin from '../mixins/title';
+
 import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'message-view',
   components: { LoadingIcon },
+  mixins: [titleMixin],
   data () {
     return {
       sessions: [],
@@ -47,7 +50,15 @@ export default {
       newMessage: '',
     };
   },
+  title () {
+    if (!this.activeSession) {
+      return '站内信';
+    } else {
+      return `与 ${this.members[this.session.peer].username} 的会话`;
+    }
+  },
   created () {
+    this.updateTitle();
     this.loadSessions().then(() => {
       if (this.$route.params.messageId) {
         this.activeSession = this.$route.params.messageId;
@@ -110,7 +121,12 @@ export default {
       });
     },
     sendMessage () {
+      if (this.busy) {
+        return bus.$emit('notification', { type: 'error', body: '上一次发送未完成，请稍后再试……' });
+      }
+
       this.busy = true;
+
       if (this.newMessage === '') {
         return bus.$emit('notification', { type: 'error', body: '内容不能为空' });
       }
@@ -127,6 +143,7 @@ export default {
         let el = this.$el.querySelector('.message-session-view');
         this.session.timeline = [...res.message.timeline, ...this.session.timeline];
         this.$nextTick(() => {
+          this.busy = false;
           el.scrollTop = el.scrollHeight;
         });
       });
@@ -141,7 +158,20 @@ export default {
         this.activeSession = this.$route.params.messageId;
       }
     },
+    busy (val) {
+      if (!val) {
+        const input = this.$el.querySelector('input');
+        if (input) {
+          this.$nextTick(() => {
+            input.focus();
+          });
+        }
+      }
+    },
     activeSession (id) {
+      if (!id) {
+        return;
+      }
       this.busy = true;
       api.v1.message.fetchMessageSessionById({ id }).then(res => {
         this.session = res.message;
@@ -151,6 +181,7 @@ export default {
           this.session.canLoadMore = false;
         }
         this.$store.commit('updateMessageSession', id);
+        this.updateTitle();
         this.$nextTick(() => {
           this.busy = false;
           let el = this.$el.querySelector('.message-session-view');
@@ -170,7 +201,6 @@ div.message {
   display: flex;
   height: calc(100vh - 50px);
   text-align: left;
-  border: 1px solid #ccc;
   box-sizing: border-box;
   
   > * {
@@ -184,8 +214,6 @@ div.message {
     text-align: center;
     user-select: none;
     line-height: 2em;
-    border-bottom: 1px solid #ccc;
-    background: white;
     font-weight: bold;
   }
 
@@ -194,24 +222,29 @@ div.message {
     flex-shrink: 1;
     display: flex;
     flex-direction: column;
-    background-color: #f1f1f1;
     align-items: center;
     text-align: center;
     justify-content: space-around;
-    color: $theme_color;
     font-size: 1.5em;
   }
 
   .left-sessions {
     user-select: none;
-    width: 280px;
+    @include respond-to(laptop) {
+      width: 280px;
+    }
+    @include respond-to(tablet) {
+      width: 280px;
+    }
+    @include respond-to(phone) {
+      width: 100%;
+    }
     flex-grow: 0;
     flex-shrink: 0;
     height: 100%;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #ccc;
 
     ul {
       margin: 0;
@@ -225,14 +258,6 @@ div.message {
       cursor: pointer;
       transition: all ease 0.2s;
 
-      &.active {
-        background: #ddd;
-      }
-
-      &:not(.active):hover {
-        background: #eee;
-      }
-
       > * {
         vertical-align: middle;
       }
@@ -245,11 +270,9 @@ div.message {
       background-size: cover;
       display: inline-block;
       &.fallback {
-        background-color: $theme_color;
         font-size: 22px;
         line-height: 50px;
         text-align: center;
-        color: white;
       }
     }
     span.username {
@@ -264,7 +287,6 @@ div.message {
     flex-direction: column;
 
     div.message-session-view {
-      background-color: #f1f1f1;
       min-height: 0;
       flex-grow: 1;
       flex-shrink: 1;
@@ -300,31 +322,26 @@ div.message {
       list-style: none;
 
       li {
-        margin: 0px 14px 7px 14px;
+        margin: 0px 0 7px 0;
       }
 
-      li.load-more, li.no-more {
+      li.load-more, li.no-more, li.loading {
         font-size: 12px;
         text-align: center;
         margin-top: 1em;
       }
 
       li.load-more {
-        color: $theme_color;
         cursor: pointer;
         &:hover {
           text-decoration: underline;
         }
       }
 
-      li.no-more {
-        color: #aaa;
-      }
     }
 
     div.time {
       font-size: 12px;
-      color: #aaa;
       text-align: center;
       line-height: 25px;
       user-select: none;
@@ -343,11 +360,14 @@ div.message {
     }
 
     div.message-content {
-      background: $theme_color;
       font-size: 14px;
-      color: white;
+      box-sizing: border-box;
       width: fit-content;
+      word-break: break-word;
       max-width: 70%;
+      @include respond-to(phone) {
+        max-width: calc(100% - 100px);
+      }
       padding: 5px 12px;
       border-radius: 10px;
       line-height: 1.7em;
@@ -361,12 +381,135 @@ div.message {
       display: inline-block;
       margin: 0 10px;
       &.fallback {
-        background-color: $theme_color;
         font-size: 16px;
         line-height: 30px;
         text-align: center;
-        color: white;
       }
+    }
+  }
+
+  @include respond-to(phone) {
+    .hide-on-mobile {
+      display: none !important;
+    }
+  }
+}
+
+.light-theme div.message {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  
+  h2 {
+    border-bottom: 1px solid #ccc;
+    background: white;
+  }
+  div.other-info {
+    background-color: #f1f1f1;
+    color: $theme_color;
+  }
+  .left-sessions {
+    border-right: 1px solid #ccc;
+
+    li {
+      &.active {
+        background: #ddd;
+      }
+
+      &:not(.active):hover {
+        background: #eee;
+      }
+    }
+
+    div.avatar.fallback {
+      background-color: $theme_color;
+      color: white;
+    }
+  }
+
+  div.right-messages {
+    div.message-session-view {
+      background-color: #f1f1f1;
+    }
+    li.no-more, li.loading {
+      color: #aaa;
+    }
+    li.load-more {
+      color: $theme_color;
+    }
+    div.time {
+      color: #aaa;
+    }
+    div.message-content {
+      background: $theme_color;
+      color: white;
+    }
+    div.avatar.fallback {
+      background-color: $theme_color;
+      color: white;
+    }
+  }
+}
+
+.dark-theme div.message {
+  border-left: 1px solid #555;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  
+  h2 {
+    border-bottom: 1px solid #555;
+    background: #444;
+    color: white;
+  }
+  div.other-info {
+    background-color: #222;
+    color: #888;
+  }
+  .left-sessions {
+    border-right: 1px solid #555;
+
+    li {
+      color: white;
+
+      &.active {
+        background: #555;
+      }
+
+      &:not(.active):hover {
+        background: #444;
+      }
+    }
+
+    div.avatar.fallback {
+      background-color: $theme_color;
+      color: white;
+    }
+  }
+
+  div.right-messages {
+    div.message-session-view {
+      background-color: #222;
+    }
+    li.no-more, li.loading {
+      color: #aaa;
+    }
+    li.load-more {
+      color: #fff;
+    }
+    div.time {
+      color: #aaa;
+    }
+    div.message-content {
+      background: #666;
+      color: white;
+    }
+    div.avatar.fallback {
+      background-color: $theme_color;
+      color: white;
+    }
+    input {
+      background-color: #444;
+      color: white;
     }
   }
 }

@@ -10,6 +10,10 @@ const wsEventBus = new Vue({
   },
   created () {
     setTimeout(() => this.createConnection(), 1000);
+    this.$on('reconnect', () => {
+      this.destroyConnection();
+      this.createConnection();
+    });
   },
   methods: {
     createConnection () {
@@ -54,6 +58,11 @@ const wsEventBus = new Vue({
           });
         }
       });
+    },
+    destroyConnection () {
+      if (this.socket) {
+        this.socket.disconnect();
+      }
     },
   },
 });

@@ -67,6 +67,7 @@ body {
   margin: 0;
   overflow-y: scroll;
   overflow-x: hidden;
+  word-break: break-word;
 }
 
 #app {
