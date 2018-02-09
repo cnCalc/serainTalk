@@ -10,7 +10,7 @@
           span.username {{ members[session.peer].username }}
     div.right-messages(v-if="session._id !== undefined && activeSession === session._id" v-bind:class="{ 'hide-on-mobile': !activeSession }")
       h2 {{ members[session.peer].username }}
-      div.message-session-view(v-if="activeSession !== null")
+      div.message-session-view(v-if="activeSession !== null || session._id === null")
         ul.message-list
           li(v-for="(message, index) in session.timeline")
             div.time(v-if="session.timeline[index + 1] === undefined || message.from !== session.timeline[index + 1].from") {{ new Date(message.date).toLocaleDateString() }} {{ new Date(message.date).toLocaleTimeString() }}
@@ -62,6 +62,22 @@ export default {
     this.loadSessions().then(() => {
       if (this.$route.params.messageId) {
         this.activeSession = this.$route.params.messageId;
+      }
+      if (this.$route.params.memberId) {
+        const peer = this.$route.params.memberId;
+        api.v1.message.fetchMessageSessionsByPeerId({ id: peer }).then(res => {
+          this.$store.commit('mergeMembers', res.members);
+          if (res.message) {
+            this.$router.push(`/message/${res.message._id}`);
+          } else {
+            this.session = {
+              _id: null,
+              peer,
+              canLoadMore: false,
+              timeline: [],
+            };
+          }
+        });
       }
     });
     this.$store.commit('setGlobalTitles', []);
@@ -150,21 +166,31 @@ export default {
         return bus.$emit('notification', { type: 'error', body: '内容不能为空' });
       }
 
-      api.v1.message.sendNewMessage({
+      let p = api.v1.message.sendNewMessage({
         id: this.session.peer,
         content: this.newMessage,
-      }).then(() => {
-        let after = this.session.timeline[0].date;
-        return api.v1.message.fetchMessageSessionById({ id: this.activeSession, after });
-      }).then(res => {
-        this.busy = false;
-        this.session.timeline = [...res.message.timeline, ...this.session.timeline];
-        this.$nextTick(() => {
-          this.newMessage = '';
-          this.$el.querySelector('input').focus();
-          this.scrollToBottom();
-        });
       });
+
+      if (this.session._id !== null) {
+        p.then(() => {
+          let after = this.session.timeline[0].date;
+          return api.v1.message.fetchMessageSessionById({ id: this.activeSession, after });
+        }).then(res => {
+          this.busy = false;
+          this.session.timeline = [...res.message.timeline, ...this.session.timeline];
+          this.$nextTick(() => {
+            this.newMessage = '';
+            this.$el.querySelector('input').focus();
+            this.scrollToBottom();
+          });
+        });
+      } else {
+        p.then(res => {
+          this.$router.push(`/message/${res.messageId}`);
+          this.newMessage = '';
+          return this.loadSessions();
+        });
+      }
     },
   },
   beforeDestroy () {
@@ -247,6 +273,7 @@ div.message {
     text-align: center;
     justify-content: space-around;
     font-size: 1.5em;
+    user-select: none;
   }
 
   .left-sessions {

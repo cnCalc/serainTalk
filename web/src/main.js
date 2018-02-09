@@ -65,6 +65,10 @@ const router = new VueRouter({
       path: '/message/:messageId',
       component: MessageView,
     }, {
+      path: '/message/new/:memberId',
+      component: MessageView,
+      meta: { newSession: true },
+    }, {
       path: '/400',
       component: ErrorView,
       meta: { code: 400 },

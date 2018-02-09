@@ -9,6 +9,14 @@ function fetchMessageSessions (param) {
   });
 }
 
+function fetchMessageSessionsByPeerId (param) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/message/member/${param.id}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 function fetchMessageSessionById (param) {
   let querys = [];
 
@@ -39,6 +47,7 @@ function sendNewMessage (param) {
 
 export default {
   fetchMessageSessions,
+  fetchMessageSessionsByPeerId,
   fetchMessageSessionById,
   sendNewMessage,
 };

@@ -137,6 +137,9 @@ let getMessageByMemberId = async (req, res, next) => {
   let _id = ObjectID(req.params.memberId);
   let members = [req.member._id, _id];
 
+  // 解析好用户列表
+  let resolvedMembers = await utils.resolveMembers.resolveMembersInArray([_id]);
+
   // 获取 message 摘要
   let messageInfo = await dbTool.message.aggregate([
     {
@@ -149,16 +152,16 @@ let getMessageByMemberId = async (req, res, next) => {
     },
     { $project: { timeline: 0 } },
   ]).toArray();
-  /* istanbul ignore if */
+
   if (messageInfo.length !== 1) {
-    return errorHandler(new Error(`there is ${messageInfo.length} messages belongs to the same couple.`), errorMessages.SERVER_ERROR, 500, res);
+    return res.status(200).send({ status: 'ok', members: resolvedMembers });
   }
   messageInfo = messageInfo[0];
 
   let timeline = await getTimeLine(messageInfo._id, beforeDate, afterDate, pagesize);
   let message = Object.assign({}, messageInfo, { timeline });
 
-  return res.status(200).send({ status: 'ok', message: message });
+  return res.status(200).send({ status: 'ok', message: message, members: resolvedMembers });
 };
 
 /**
