@@ -158,7 +158,6 @@ export default {
         return api.v1.message.fetchMessageSessionById({ id: this.activeSession, after });
       }).then(res => {
         this.busy = false;
-        let el = this.$el.querySelector('.message-session-view');
         this.session.timeline = [...res.message.timeline, ...this.session.timeline];
         this.$nextTick(() => {
           this.newMessage = '';
