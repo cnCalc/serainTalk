@@ -158,16 +158,6 @@ export default {
         this.activeSession = this.$route.params.messageId;
       }
     },
-    busy (val) {
-      if (!val) {
-        const input = this.$el.querySelector('input');
-        if (input) {
-          this.$nextTick(() => {
-            input.focus();
-          });
-        }
-      }
-    },
     activeSession (id) {
       if (!id) {
         return;
@@ -199,7 +189,16 @@ export default {
 
 div.message {
   display: flex;
-  height: calc(100vh - 50px);
+  @include respond-to(phone) {
+    position: fixed;
+    top: 50px; left: 0; right: 0; bottom: 0;
+  }
+  @include respond-to(tablet) {
+    height: calc(100vh - 50px);
+  }
+  @include respond-to(laptop) {
+    height: calc(100vh - 50px);
+  }
   text-align: left;
   box-sizing: border-box;
   

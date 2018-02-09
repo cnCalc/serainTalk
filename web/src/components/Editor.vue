@@ -159,6 +159,10 @@ export default {
         editor.style.top = 'calc(100vh - 1em - 12px)';
       } else {
         app.style.marginBottom = editor.style.top = '50vh';
+        if (window.innerWidth < 600) {
+          // mobile
+          editor.style.top = 'calc(50px)';
+        }
 
         const editorState = Object.assign({}, this.$store.state.editor);
         let flush = false;

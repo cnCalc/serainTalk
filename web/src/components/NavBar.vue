@@ -127,6 +127,7 @@ div.st-header {
       border-radius: 5px;
       color: white;
       transition: all ease 0.4s;
+      min-width: 0;
       width: 180px;
       @include respond-to(phone) {
         flex-grow: 1;

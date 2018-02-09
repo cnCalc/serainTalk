@@ -55,7 +55,7 @@ export default {
       'Powered by serainTalk: https://github.com/cnCalc',
       'Contributors         : kasora, ntzyz, ZephRay',
       'Version              : closed beta',
-    ].join('\n'), 'color: #1770b3; font-size: 1.7em', 'color: initial');
+    ].join('\n'), 'color: #1770b3; font-size: 1.7em; font-family: monospace', 'color: initial; font-family: monospace');
   },
 };
 </script>
@@ -88,8 +88,8 @@ div.editor-wrapper {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;
   z-index: 10;
   pointer-events: none;
 }
