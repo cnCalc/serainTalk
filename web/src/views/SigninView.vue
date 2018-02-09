@@ -9,7 +9,7 @@
       div.remember-wrapper
         input(type="checkbox", id="remember", v-model="rememberMe", :readonly="busy")
         label(for="remember") 记住登录
-      button.button(@click="doSignin", type="button", :disabled="busy") 登录
+      button.button(@click="doSignin", :disabled="busy") 登录
       div.quick-action-wrapper
         router-link(to="/signup") 前往注册
         router-link(:to="`/migration?next=${encodeURIComponent($route.query.next || path)}`") 账户迁移
@@ -80,6 +80,9 @@ div.signin-view {
     text-align: left;
     display: inline-block;
     margin: 100px auto 0 auto;
+    padding: 0 10px;
+    width: 300px;
+    box-sizing: border-box;
   }
 
   label.block {
@@ -92,7 +95,8 @@ div.signin-view {
   }
 
   input[type="text"], input[type="password"] {
-    width: 300px;
+    width: 100%;
+    box-sizing: border-box;
     border-radius: 2px;
     font-size: 1em;
     padding: 6px 8px;

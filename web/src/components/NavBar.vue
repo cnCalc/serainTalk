@@ -167,6 +167,7 @@ div.st-header {
       width: 260px;
       transform: translateX(-260px);
       overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
       background: white;
       padding: 10px;
       pointer-events: none;

@@ -101,6 +101,15 @@ export default {
         return bus.$emit('notification', { type: 'error', body: '游客无法访问此页面，请登录后再继续。' });
       });
     },
+    scrollToBottom () {
+      let el = this.$el.querySelector('.message-session-view');
+      let isMobileView = (window.getComputedStyle(el).overflowY === 'hidden');
+      if (isMobileView) {
+        window.scrollTo(0, document.body.clientHeight);
+      } else {
+        el.scrollTop = el.scrollHeight;
+      }
+    },
     getPeer (members) {
       return members.filter(id => id !== this.me._id)[0];
     },
@@ -111,12 +120,22 @@ export default {
         if (res.message.timeline.length < 10) {
           this.session.canLoadMore = false;
         }
-        let el = this.$el.querySelector('.message-session-view');
-        let recordHeight = el.scrollHeight - el.scrollTop;
         this.session.timeline = [...this.session.timeline, ...res.message.timeline];
+        let el = this.$el.querySelector('.message-session-view');
+        let isMobileView = (window.getComputedStyle(el).overflowY === 'hidden');
+        let diff;
+        if (isMobileView) {
+          diff = document.body.clientHeight - window.scrollY;
+        } else {
+          diff = el.scrollHeight - el.scrollTop;
+        }
         this.$nextTick(() => {
           this.busy = false;
-          el.scrollTop = el.scrollHeight - recordHeight;
+          if (isMobileView) {
+            window.scrollTo(0, document.body.clientHeight - diff);
+          } else {
+            el.scrollTop = el.scrollHeight - diff;
+          }
         });
       });
     },
@@ -135,7 +154,6 @@ export default {
         id: this.session.peer,
         content: this.newMessage,
       }).then(() => {
-        this.newMessage = '';
         let after = this.session.timeline[0].date;
         return api.v1.message.fetchMessageSessionById({ id: this.activeSession, after });
       }).then(res => {
@@ -143,8 +161,9 @@ export default {
         let el = this.$el.querySelector('.message-session-view');
         this.session.timeline = [...res.message.timeline, ...this.session.timeline];
         this.$nextTick(() => {
-          this.busy = false;
-          el.scrollTop = el.scrollHeight;
+          this.newMessage = '';
+          this.$el.querySelector('input').focus();
+          this.scrollToBottom();
         });
       });
     },
@@ -174,8 +193,7 @@ export default {
         this.updateTitle();
         this.$nextTick(() => {
           this.busy = false;
-          let el = this.$el.querySelector('.message-session-view');
-          el.scrollTop = el.scrollHeight;
+          this.scrollToBottom();
         });
       });
     },
@@ -190,8 +208,7 @@ export default {
 div.message {
   display: flex;
   @include respond-to(phone) {
-    position: fixed;
-    top: 50px; left: 0; right: 0; bottom: 0;
+    position: relative;
   }
   @include respond-to(tablet) {
     height: calc(100vh - 50px);
@@ -212,8 +229,14 @@ div.message {
     padding: 0.2em 0.5em;
     text-align: center;
     user-select: none;
-    line-height: 2em;
+    line-height: 2rem;
     font-weight: bold;
+    @include respond-to(phone) {
+      position: fixed;
+      z-index: 1;
+      top: 50px;
+      left: 0; right: 0;
+    }
   }
 
   div.other-info {
@@ -229,27 +252,25 @@ div.message {
 
   .left-sessions {
     user-select: none;
-    @include respond-to(laptop) {
-      width: 280px;
-    }
-    @include respond-to(tablet) {
-      width: 280px;
-    }
-    @include respond-to(phone) {
-      width: 100%;
-    }
     flex-grow: 0;
     flex-shrink: 0;
-    height: 100%;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    width: 280px;
+    @include respond-to(phone) {
+      height: fit-content;
+      width: 100%;
+      margin-top: 2rem;
+    }
 
     ul {
       margin: 0;
       padding: 0;
       list-style: none;
       overflow-y: scroll;
+      -webkit-overflow-scrolling-y: touch;
     }
 
     li {
@@ -284,12 +305,20 @@ div.message {
     flex-shrink: 1;
     display: flex;
     flex-direction: column;
+    @include respond-to(phone) {
+      padding: 2rem 0 48px 0;
+      box-sizing: border-box;
+      min-height: calc(100vh - 50px);
+    }
 
     div.message-session-view {
       min-height: 0;
       flex-grow: 1;
       flex-shrink: 1;
       overflow-y: scroll;
+      @include respond-to(phone) {
+        overflow-y: hidden;
+      }
     }
 
     div.textbox {
@@ -297,10 +326,16 @@ div.message {
       flex-grow: 0;
       flex-shrink: 0;
       display: flex;
+      @include respond-to(phone) {
+        position: fixed;
+        bottom: 0;
+        left: 0; right: 0;
+      }
 
       input {
         border: none;
         box-sizing: border-box;
+        transition: all ease 0.2s;
         vertical-align: top;
         height: 100%;
         width: 100%;
@@ -395,9 +430,14 @@ div.message {
 }
 
 .light-theme div.message {
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  @include respond-to(laptop) {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+  @include respond-to(tablet) {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
   
   h2 {
     border-bottom: 1px solid #ccc;
@@ -428,7 +468,7 @@ div.message {
 
   div.right-messages {
     div.message-session-view {
-      background-color: #f1f1f1;
+      background-color: #e8e8e8;
     }
     li.no-more, li.loading {
       color: #aaa;
@@ -439,7 +479,11 @@ div.message {
     div.time {
       color: #aaa;
     }
-    div.message-content {
+    div.message-item.is-peer div.message-content {
+      background: white;
+      color: black;
+    }
+    div.message-item:not(.is-peer) div.message-content {
       background: $theme_color;
       color: white;
     }
@@ -447,13 +491,21 @@ div.message {
       background-color: $theme_color;
       color: white;
     }
+    div.textbox {
+      border-top: 1px solid #ccc;
+    }
   }
 }
 
 .dark-theme div.message {
-  border-left: 1px solid #555;
-  border-right: 1px solid #555;
-  border-bottom: 1px solid #555;
+  @include respond-to(laptop) {
+    border-left: 1px solid #555;
+    border-right: 1px solid #555;
+  }
+  @include respond-to(tablet) {
+    border-left: 1px solid #555;
+    border-right: 1px solid #555;
+  }
   
   h2 {
     border-bottom: 1px solid #555;
@@ -498,9 +550,13 @@ div.message {
     div.time {
       color: #aaa;
     }
-    div.message-content {
-      background: #666;
+    div.message-item.is-peer div.message-content {
+      background: #555;
       color: white;
+    }
+    div.message-item:not(.is-peer) div.message-content {
+      background: #eee;
+      color: black;
     }
     div.avatar.fallback {
       background-color: $theme_color;
@@ -509,6 +565,9 @@ div.message {
     input {
       background-color: #444;
       color: white;
+    }
+    div.textbox {
+      border-top: 1px solid #555;
     }
   }
 }

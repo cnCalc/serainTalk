@@ -147,6 +147,9 @@ div.mingration-view {
     text-align: left;
     display: inline-block;
     margin: 100px auto 0 auto;
+    padding: 0 10px;
+    width: 300px;
+    box-sizing: border-box;
   }
 
   h2 {
@@ -162,11 +165,12 @@ div.mingration-view {
   }
 
   .explain {
-    width: 300px;
+    width: 100%;
   }
 
   input[type="text"], input[type="password"] {
-    width: 300px;
+    width: 100%;
+    box-sizing: border-box;
     border-radius: 2px;
     font-size: 1em;
     padding: 6px 8px;
