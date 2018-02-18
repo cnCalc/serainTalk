@@ -55,7 +55,7 @@ export default {
       'Powered by serainTalk: https://github.com/cnCalc',
       'Contributors         : kasora, ntzyz, ZephRay',
       'Version              : closed beta',
-    ].join('\n'), 'color: #1770b3; font-size: 1.7em; font-family: monospace', 'color: initial; font-family: monospace');
+    ].join('\n'), 'color: #1770b3; font-size: 1.7em;', 'color: initial; font-family: monospace');
   },
 };
 </script>

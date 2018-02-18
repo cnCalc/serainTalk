@@ -582,6 +582,18 @@ let updatePost = async (req, res, next) => {
       $set[`posts.${postIndex - 1}.replyTo`] = req.body.replyTo;
     }
 
+    // 看看需不需要修改讨论的标题和分区
+    if (postIndex === 1 && req.body.meta) {
+      if (req.body.meta.title) {
+        $set.title = req.body.meta.title;
+      }
+      if (req.body.meta.category) {
+        $set.category = req.body.meta.category;
+      }
+    }
+
+    console.log($set);
+
     await dbTool.discussion.updateOne(
       { _id: _id },
       { $set: $set },

@@ -75,7 +75,6 @@ export default {
    * 获得指定讨论的元数据
    */
   fetchDiscussionsMeta: (state, params = {}) => {
-    state.commit('setBusy', true);
     return api.v1.discussion.fetchDiscussionMetaById(params).then(data => {
       state.commit('setDiscussionMeta', data);
     });

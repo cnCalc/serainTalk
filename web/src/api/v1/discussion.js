@@ -104,6 +104,9 @@ function updateDiscussionPostByIdAndIndex (params) {
     if (params.replyTo) {
       payload.replyTo = params.replyTo;
     }
+    if (params.meta) {
+      payload.meta = params.meta;
+    }
     axios.put(`${config.api.url}/${config.api.version}/discussion/${params.id}/post/${params.index}`, payload)
       .then(response => resolve(response.data))
       .catch(error => reject(error));

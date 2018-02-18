@@ -171,7 +171,7 @@ export default {
       this.fixedSlideBar = window.scrollY > 120 + 15;
     },
     activateEditor (mode, discussionId, memberId, index) {
-      this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, memberId, index });
+      this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, discussionCategory: this.discussionMeta.category, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
     },
     copyLink (idx) {

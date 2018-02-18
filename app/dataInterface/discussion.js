@@ -127,6 +127,10 @@ let updatePost = {
       value: joi.number().required(),
       memberId: interfaceUtils.mongoId.required(),
     },
+    meta: {
+      title: joi.string(),
+      category: joi.string(),
+    },
   },
 };
 exports.updatePost = updatePost;

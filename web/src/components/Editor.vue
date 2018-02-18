@@ -2,7 +2,7 @@
   div.editor(v-bind:class="{ mini: display === 'mini' }")
     div.resize(v-show="display !== 'mini'")
     div.mode(v-text="editorTitle" @click="recover")
-    div.row(v-if="state.mode === 'CREATE_DISCUSSION'")
+    div.row(v-if="state.mode === 'CREATE_DISCUSSION' || (state.mode === 'EDIT_POST' && state.index === 1)")
       input(placeholder="输入标题", v-model="title")
       select(v-model="category")
         option(v-for="category in categories" :value="category.name") {{ category.name }}
@@ -182,6 +182,12 @@ export default {
             api.v1.discussion.fetchDiscussionPostByIdAndIndex({ raw: true, index: this.state.index, id: this.state.discussionId }).then(response => {
               this.editable = true;
               this.content = response.post.content;
+
+              if (this.state.index === 1) {
+                this.title = this.state.discussionTitle;
+                this.category = this.state.discussionCategory;
+              }
+
               this.updatePreview();
             });
             return;
@@ -449,8 +455,18 @@ export default {
         };
       }
 
+      if (editorState.index === 1) {
+        payload.meta = {
+          title: this.title,
+          category: this.category,
+        };
+      }
+
       api.v1.discussion.updateDiscussionPostByIdAndIndex(payload).then(() => {
         // 同上
+        if (editorState.index === 1) {
+          this.$store.dispatch('fetchDiscussionsMeta', { id: this.$store.state.discussionMeta._id });
+        }
         this.$store.dispatch('updateSingleDiscussionPost', { id: this.$store.state.discussionMeta._id, index: editorState.index, raw: false });
         this.$store.commit('updateEditorDisplay', 'none');
       }).catch(this.errorHandler);
