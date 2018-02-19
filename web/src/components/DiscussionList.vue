@@ -16,11 +16,12 @@
             span.discussion-last-reply
               span.discussion-user
                 router-link(:to="'/m/' + discussion.lastMember") {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
-              |{{ discussion.replies === 1 ? '发布于' : ( discussion.replies === 2 ? '回复于' : `等 ${discussion.replies - 1} 人回复于` ) }}{{ timeAgo(discussion.lastDate) }}
+              |{{ discussion.replies === 1 ? '发布于' : '回复于' }}{{ timeAgo(discussion.lastDate) }}
             span.discussion-tags(v-for="tag in discussion.tags"): a {{ tag }}
             span.discussion-tags: a 假装有tag
         div.discussion-meta-right
-          span.discussion-category(v-if="discussion.category"): a {{ discussion.category }}
+          span.discussion-category.hide-on-small-device(v-if="discussion.category"): a {{ discussion.category }}
+          span.discussion-replies {{ Math.max(discussion.replies - 1, 0) }}
 </template>
 
 <script>
@@ -192,22 +193,46 @@ div.discussion-list {
     order: 3;
     flex-shrink: 0;
     flex-grow: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-around;
     padding-left: 12px;
     height: 45px;
     line-height: 45px;
+    > * {
+      flex-grow: 0;
+    }
 
     span.discussion-category {
       font-size: 12px;
-      margin-right: 5px;
+      line-height: 1em;
+      // margin-right: 5px;
       padding: 4px 7px 4px 7px;
       border-radius: 3px;
       cursor: pointer;
-      margin-right: 12px;
     }
   }
 
+  span.discussion-replies {
+    font-size: 12px;
+    display: block;
+    width: 38px;
+    line-height: 13px;
+  }
+
+  span.discussion-replies::before {
+    display: inline-block;
+    content: ' ';
+    background-image: url(../assets/reply.svg);
+    background-size: cover;
+    width: 13px;
+    height: 13px;
+    margin-right: 4px;
+  }
+
   @media only screen and (max-width: 720px) {
-    div.discussion-meta-right {
+    .hide-on-small-device {
       display: none;
     }
   }
@@ -297,6 +322,9 @@ div.discussion-list {
   span.discussion-tags::before {
     color: black;
   }
+  span.discussion-replies {
+    color: $theme_color;
+  }
 }
 
 .dark-theme div.discussion-list {
@@ -328,6 +356,12 @@ div.discussion-list {
   // }
   span.discussion-tags::before {
     color: lightgray;
+  }
+  span.discussion-replies {
+    color: gray;
+  }
+  span.discussion-replies::before {
+    filter: grayscale(100%);
   }
 }
 

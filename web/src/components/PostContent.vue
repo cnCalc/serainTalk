@@ -79,7 +79,7 @@ export default {
       const replyReg = /\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
       if (html.match(replyReg)) {
         const match = html.match(replyReg);
-        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to">${this.parentMemeber.username}</span></a>`);
+        html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to" oncontextmenu="return false">${this.parentMemeber.username}</span></a>`);
 
         this.$nextTick(() => {
           const replyTo = this.$el.querySelector('span.reply-to');
@@ -109,7 +109,7 @@ export default {
         this.previewReplyHtml = 'Loading...';
         api.v1.discussion.fetchDiscussionPostByIdAndIndex({ id: this.discussionId || this.$store.state.discussionMeta._id, index: this.replyTo.value }).then(response => {
           this.previewLoaded = true;
-          this.previewReplyHtml = response.post.content.replace(/\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+?)/, '');
+          this.previewReplyHtml = response.post.content.replace(/\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/, '');
         });
       }
     },
@@ -131,9 +131,9 @@ export default {
 @import '../styles/post-content.scss';
 div.post-content {
   position: relative;
+  box-sizing: border-box;
 
   div.reply-preview-wrapper {
-    position: absolute;
     z-index: 100;
     height: 0;
     overflow: show;
@@ -142,8 +142,7 @@ div.post-content {
 
   $preview-height: 160px;
   div.reply-preview-container {
-    // width: 100%;
-    // display: inline-block;
+    width: 100%;
     height: fit-content;
     max-height: 30vh;
     transform: translateY(calc(2px - 100%));

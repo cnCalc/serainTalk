@@ -54,7 +54,6 @@ a.category-name {
     display: block;
     font-size: 13px;
     line-height: 1.8em;
-    height: 1.8em;
     margin-top: 0.2em;
     padding-left: 5px;
     border-radius: 2px;

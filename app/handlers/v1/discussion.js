@@ -592,8 +592,6 @@ let updatePost = async (req, res, next) => {
       }
     }
 
-    console.log($set);
-
     await dbTool.discussion.updateOne(
       { _id: _id },
       { $set: $set },
@@ -789,12 +787,12 @@ let deletePost = async (req, res, next) => {
   }
   try {
     let _id = ObjectID(req.params.id);
+    let postIndex = req.params.postIndex;
 
     // 查询封禁状态
     let postsDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
       { $unwind: '$posts' },
-      { $match: { 'posts.index': req.params.postIndex } },
     ]).toArray();
 
     let status = {
@@ -802,8 +800,9 @@ let deletePost = async (req, res, next) => {
       operator: req.member._id,
       time: Date.now(),
     };
+
     // 如果已封禁则解除封禁
-    let isDeleted = postsDoc[0].posts.status && postsDoc[0].posts.status.type === config.discussion.status.deleted;
+    let isDeleted = postsDoc[postIndex - 1].posts.status && postsDoc[postIndex - 1].posts.status.type === config.discussion.status.deleted;
     if (isDeleted) {
       status = {
         type: config.discussion.status.ok,
@@ -811,8 +810,16 @@ let deletePost = async (req, res, next) => {
         time: Date.now(),
       };
     }
+
     let updateDate = { $set: {} };
-    updateDate.$set[`posts.${req.params.postIndex - 1}.status`] = status;
+    updateDate.$set[`posts.${postIndex - 1}.status`] = status;
+    postsDoc[postIndex - 1].posts.status = status;
+
+    // 我们还需要顺便更新了最后回复用户和最后回复日期，只要从最后一个 post
+    // 往前数，找到第一个状态正常的帖子即可
+    const lastValidPost = postsDoc.filter(post => post.posts.status.type === config.discussion.status.ok).reverse()[0];
+    updateDate.$set.lastDate = lastValidPost.posts.createDate;
+    updateDate.$set.lastMember = lastValidPost.posts.user;
 
     await dbTool.discussion.findOneAndUpdate(
       { _id: _id },
@@ -825,19 +832,19 @@ let deletePost = async (req, res, next) => {
         ? utils.string.fillTemplate(
           config.notification.postRecover.content,
           {
-            title: postsDoc[0].title,
-            content: postsDoc[0].posts.content,
+            title: postsDoc[postIndex - 1].title,
+            content: postsDoc[postIndex - 1].posts.content,
           }
         )
         : utils.string.fillTemplate(
           config.notification.postDeleted.content,
           {
-            title: postsDoc[0].title,
-            content: postsDoc[0].posts.content,
+            title: postsDoc[postIndex - 1].title,
+            content: postsDoc[postIndex - 1].posts.content,
           }
         ),
     };
-    utils.notification.sendNotification(postsDoc[0].posts.user, notification);
+    utils.notification.sendNotification(postsDoc[postIndex - 1].posts.user, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

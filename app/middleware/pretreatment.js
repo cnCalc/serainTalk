@@ -27,6 +27,7 @@ let getMemberInfo = async (req, res, next) => {
       req.member = memberDoc;
     } catch (err) {
       req.member = {};
+      res.clearCookie('membertoken');
     }
   }
   return next();

@@ -130,7 +130,18 @@ export default {
           this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index, raw: false });
         })
         .catch(err => {
-          console.error(err);
+          if (err.response.status === 401) {
+            bus.$emit('notification', {
+              type: 'error',
+              body: '游客无法执行此操作，请登录后继续。',
+            });
+          } else {
+            console.error(err);
+            bus.$emit('notification', {
+              type: 'error',
+              body: '出现异常，查看控制台以获取详情。',
+            });
+          }
         });
     },
     loadPrevPage () {
@@ -483,7 +494,7 @@ div.discussion-view {
           line-height: 26px;
           font-size: 14px;
           word-wrap: break-word;
-          box-sizing: border-box;
+          // box-sizing: border-box;
         }
 
         footer.discussion-post-info {
