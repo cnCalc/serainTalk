@@ -2,7 +2,7 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="post in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
         div.discussion-post-container
           article.discussion-post-body
             header.discussion-post-info
@@ -12,7 +12,8 @@
               span.discussion-post-member {{ members[post.user].username }} 
               span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
             post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
-            footer.discussion-post-info
+            div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
+            footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
               div.discussion-post-date
                 span 创建于 {{ new Date(post.createDate).toLocaleDateString() }}
                 span(v-if="post.updateDate") ，编辑于 {{ new Date(post.updateDate).toLocaleDateString() }}
@@ -22,16 +23,12 @@
                 div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
                   button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
                   button.button(@click="copyLink(post.index)") 复制链接
+                  button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") 跳至末尾
                   template(v-if="$store.state.me")
                     button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
                     template(v-if="$store.state.me.role === 'admin'")
                       button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") 恢复
                       button.button(v-else @click="deletePost(post.index)") 删除
-                //- button.button.laugh(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
-                //- button.button.doubt(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
-                //- button.button.cheer(v-if="post.votes.up.length > 0") {{ post.votes.up.length }} 
-                //- button.button.emmmm(v-if="post.votes.up.length > 0") {{ post.votes.up.length }}
-              //- div.button-right-container
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
         center 没有可展示的帖子
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
@@ -40,7 +37,6 @@
         div.quick-funcs 快速操作
         button.button.quick-funcs 订阅更新
         button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
-        //- button.button.quick-funcs(@click="createrOnly = !createrOnly") {{ createrOnly ? '查看全部' : '只看楼主' }} 
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs 前往后台
@@ -57,7 +53,7 @@ import bus from '../utils/ws-eventbus';
 
 import config from '../config';
 import { indexToPage } from '../utils/filters';
-import scrollToTop from '../utils/scrollToTop';
+import { scrollToTop, scrollTo } from '../utils/scrollToTop';
 
 function scrollToHash (hash) {
   let el = document.querySelector(hash);
@@ -94,7 +90,8 @@ export default {
       pagesCount: 0,  // 总页数
       pageLoaded: {}, // 已经加载了的页面
       currentDiscussion: null,
-      createrOnly: false,
+      absoluteBottomIndex: null,
+      absoluteBottomWidth: 0,
     };
   },
   title () {
@@ -178,15 +175,39 @@ export default {
           this.loadPrevPage();
         }
       }
+
       // 变更右侧边栏的固定模式
       this.fixedSlideBar = window.scrollY > 120 + 15;
+
+      // 找出需要浮动底部的对应post
+      // TODO: 此处可能会有性能问题？
+      let els = Array.from(this.$el.querySelectorAll('article'));
+      this.absoluteBottomIndex = undefined;
+
+      for (let i = 0; i < els.length; ++i) {
+        let rect = els[i].getBoundingClientRect();
+        if (rect.bottom > window.innerHeight && rect.top < window.innerHeight - 200) {
+          const fakeFooter = this.$el.querySelector('.fake-footer');
+          if (!fakeFooter) {
+            console.log('DOM loading...');
+          } else {
+            this.absoluteBottomIndex = i;
+            this.absoluteBottomWidth = fakeFooter.clientWidth;
+          }
+          break;
+        }
+      }
     },
     activateEditor (mode, discussionId, memberId, index) {
       this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, discussionCategory: this.discussionMeta.category, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
     },
     copyLink (idx) {
-      copyToClipboard(`${window.location.origin}/d/${this.discussionMeta._id}#index-${idx}`);
+      copyToClipboard(`${window.location.origin}/d/${this.discussionMeta._id}/${indexToPage(idx)}#index-${idx}`);
+    },
+    gotoBottom (idx) {
+      let targetScrollTop = this.$el.querySelector(`#index-${idx}`).getBoundingClientRect().bottom + window.scrollY - window.innerHeight;
+      scrollTo(targetScrollTop, 300);
     },
   },
   computed: {
@@ -201,11 +222,7 @@ export default {
       }
     },
     showingPosts () {
-      if (this.createrOnly) {
-        return this.discussionPosts.filter(item => item.user === this.discussionMeta.creater);
-      } else {
-        return this.discussionPosts;
-      }
+      return this.discussionPosts;
     },
     members () {
       return this.$store.state.members;
@@ -232,7 +249,6 @@ export default {
         this.maxPage = page;
         this.minPage = page;
         this.currentPage = page;
-        this.createrOnly = false;
         this.pageLoaded = [];
         this.pageLoaded[this.currentPage] = true;
 
@@ -287,7 +303,6 @@ export default {
     this.maxPage = page;
     this.minPage = page;
     this.currentPage = page;
-    this.createrOnly = false;
     this.pageLoaded[this.currentPage] = true;
 
     if (this.$store.state.autoLoadOnScroll && page !== 1) {
@@ -412,7 +427,7 @@ div.discussion-view {
           z-index: 1;
         }
         .discussion-post-body > * {
-          padding-left: $avatar-size + 12px + 8px;
+          border-left: $avatar-size + 12px + 8px solid rgba(0, 0, 0, 0);
         }
       }
 
@@ -499,7 +514,15 @@ div.discussion-view {
 
         footer.discussion-post-info {
           font-size: 0.8em;
-          position: relative;
+          height: 70px;
+
+          &.fixed {
+            position: fixed;
+            transition: transform ease 0.2s;
+            padding-bottom: 5px;
+            bottom: -30px;
+            transform: translateY(-30px);
+          }
 
           div.discussion-post-date {
             color: grey;
@@ -556,6 +579,9 @@ div.discussion-view {
   div.discussion-post-container {
     border-bottom: mix($theme_color, white, 10%) solid 1px;
   }
+  footer.discussion-post-info.fixed {
+    background-color: rgba(white, 0.9);
+  }
 }
 
 .dark-theme div.discussion-view {
@@ -572,6 +598,9 @@ div.discussion-view {
   }
   div.discussion-post-container {
     border-bottom:  solid 1px #444;
+  }
+  footer.discussion-post-info.fixed {
+    background-color: rgba(#222, 0.9);
   }
 }
 </style>

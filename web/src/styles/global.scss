@@ -7,6 +7,10 @@ body, button, input, textarea {
   font-family: "Noto Sans CJK", "Noto Sans CJK SC", "Source Han Sans", "Source Han Sans CN", "思源黑体", "思源黑体 CN", "WenQuanYi Micro Hei", "Microsoft Yahei UI", "Microsoft Yahei", "微软雅黑", "SimHei", sans-serif;
 }
 
+body {
+  width: 100vw;
+}
+
 div.container {
   margin: 0 auto;
   max-width: 1080px;
@@ -29,7 +33,7 @@ div.container {
 
 a:link, a:active, a:hover, a:visited {
   color: inherit;
-  word-break: break-all;
+  word-break: break-word;
   text-decoration: none;
 }
 

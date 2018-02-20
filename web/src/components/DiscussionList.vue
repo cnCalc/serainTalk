@@ -217,18 +217,18 @@ div.discussion-list {
   span.discussion-replies {
     font-size: 12px;
     display: block;
-    width: 38px;
+    width: 40px;
     line-height: 13px;
   }
 
   span.discussion-replies::before {
     display: inline-block;
-    content: ' ';
-    background-image: url(../assets/reply.svg);
-    background-size: cover;
+    content: '💬';
+    // background-image: url(../assets/reply.svg);
+    // background-size: cover;
     width: 13px;
     height: 13px;
-    margin-right: 4px;
+    margin-right: 6px;
   }
 
   @media only screen and (max-width: 720px) {
