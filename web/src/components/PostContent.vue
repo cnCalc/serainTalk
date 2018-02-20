@@ -142,12 +142,12 @@ div.post-content {
 
   $preview-height: 160px;
   div.reply-preview-container {
-    width: 100%;
+    width: fit-content;
     height: fit-content;
     max-height: 30vh;
     transform: translateY(calc(2px - 100%));
     background: white;
-    box-shadow: 1px 1px 10px rgba(black, 0.5);
+    box-shadow: 0px 0px 5px rgba(black, 0.5);
     padding: .8em 1em;
     box-sizing: border-box;
     border-radius: 5px;

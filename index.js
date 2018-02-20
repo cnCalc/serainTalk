@@ -11,7 +11,7 @@ const app = express();
 
 /* istanbul ignore if */
 if (utils.env.isDev) {
-  console.log('You are running in development mode. Access-Control-Allow-Origin will always be *.');
+  utils.logger.writeInfoLog({ entity: 'Server', content: 'You are running in development mode. Access-Control-Allow-Origin will always be *.' });
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     return next();
@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 });
 
 server.listen(process.env.PORT || 8000, () => {
-  console.log('API Service started on port %d', process.env.PORT || 8000);
+  utils.logger.writeInfoLog({ entity: 'Server', content: `API Service started on port ${process.env.PORT || 8000}` });
 });
 
 module.exports = app;

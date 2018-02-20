@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const staticConfig = require('../config/staticConfig');
 const errorMessage = require('./error-messages');
 const dbTool = require('../database');
+const logger = require('./logger');
 
 exports = module.exports = {};
 
@@ -49,10 +50,18 @@ function attachSocketIO (app) {
             connections[member.id].splice(i, 1);
           }
         }
-        console.log(`Client disconnected: ${member.username}, connections remaining: ${connections[member.id].length}`);
+        logger.writeEventLog({
+          entity: 'WebSocket',
+          type: 'Disconnect',
+          emitter: member.id,
+        });
       });
 
-      console.log('Client connected: ' + member.username);
+      logger.writeEventLog({
+        entity: 'WebSocket',
+        type: 'Connect',
+        emitter: member.id,
+      });
     });
   }
   return { io, server, connections };

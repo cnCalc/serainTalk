@@ -180,17 +180,15 @@ export default {
       this.fixedSlideBar = window.scrollY > 120 + 15;
 
       // 找出需要浮动底部的对应post
-      // TODO: 此处可能会有性能问题？
+      // FIXME: 此处可能会有性能问题？
       let els = Array.from(this.$el.querySelectorAll('article'));
       this.absoluteBottomIndex = undefined;
 
       for (let i = 0; i < els.length; ++i) {
         let rect = els[i].getBoundingClientRect();
-        if (rect.bottom > window.innerHeight && rect.top < window.innerHeight - 200) {
+        if (rect.bottom + 5 > window.innerHeight && rect.top < window.innerHeight - 200) {
           const fakeFooter = this.$el.querySelector('.fake-footer');
-          if (!fakeFooter) {
-            console.log('DOM loading...');
-          } else {
+          if (fakeFooter) {
             this.absoluteBottomIndex = i;
             this.absoluteBottomWidth = fakeFooter.clientWidth;
           }

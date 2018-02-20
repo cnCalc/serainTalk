@@ -5,11 +5,11 @@ const _ = require('lodash');
 
 // 获取数据库相关的静态数据
 const config = require('../config/staticConfig');
-const env = require('../utils/env');
 const dev = require('../config/dev');
 const product = require('../config/product');
 const mocha = require('../config/mocha');
-const { isMocha } = require('../utils/env');
+const env = require('../utils/env');
+const logger = require('../utils/logger');
 
 if (env.isProd) {
   _.merge(config, product);
@@ -28,7 +28,7 @@ let _db = null;
 let mongoConnect = async () => {
   try {
     _db = await MongoClient.connect(config.database);
-    if (isMocha) await _db.dropDatabase();
+    if (env.isMocha) await _db.dropDatabase();
 
     exports.generic = _db.collection('generic');
     exports.discussion = _db.collection('discussion');
@@ -40,7 +40,7 @@ let mongoConnect = async () => {
     exports.message = _db.collection('message');
     exports.token = _db.collection('token');
 
-    console.log('database connected.');
+    logger.writeInfoLog({ entity: 'Database', content: 'Database connected.' });
   } catch (err) {
     /* istanbul ignore next */
     console.error(err);

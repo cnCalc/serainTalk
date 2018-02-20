@@ -8,6 +8,7 @@ module.exports = {
   env: require('./env'),
   errorHandler: require('./error-handler'),
   errorMessages: require('./error-messages'),
+  logger: require('./logger'),
   mail: require('./mail'),
   md5: require('./md5'),
   member: require('./member'),

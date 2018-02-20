@@ -1,6 +1,7 @@
 'use strict';
 
 const db = require('../database');
+const logger = require('../utils/logger');
 
 exports = module.exports = {};
 
@@ -8,7 +9,7 @@ let init = async () => {
   await db.prepare();
   try {
     await db.generic.drop();
-    console.log('generic dropd');
+    logger.writeInfoLog({ entity: 'Database', content: 'generic dropped.' });
   } catch (err) { }
   await db.generic.insertMany([
     {
@@ -182,7 +183,7 @@ let init = async () => {
       permissions: require('../config/permissions'),
     },
   ]);
-  console.log('database initialization complete');
+  logger.writeInfoLog({ entity: 'Database', content: 'Database initialization complete.' });
   // TODO: 如果是命令行启动自动退出
 };
 let initPromise = init();

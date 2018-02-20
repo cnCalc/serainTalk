@@ -364,6 +364,16 @@ let createDiscussion = async (req, res, next) => {
   };
   try {
     await dbTool.discussion.insertOne(discussionInfo);
+
+    utils.logger.writeEventLog({
+      entity: 'Discussion',
+      type: 'Create',
+      emitter: req.member._id,
+      comments: {
+        category: req.body.category,
+      },
+    });
+
     return res.status(201).send({ status: 'ok', discussion: discussionInfo });
   } catch (err) {
     /* istanbul ignore next */
@@ -532,6 +542,17 @@ let createPost = async (req, res, next) => {
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }
+
+    utils.logger.writeEventLog({
+      entity: 'Post',
+      type: 'Create',
+      emitter: req.member._id,
+      comments: {
+        category: discussionInfo.category,
+        discussion: _id,
+      },
+    });
+
     return res.status(201).send({ status: 'ok', newPost: postInfo, members: members });
   } catch (err) {
     /* istanbul ignore next */
@@ -598,6 +619,16 @@ let updatePost = async (req, res, next) => {
       { new: true }
     );
 
+    utils.logger.writeEventLog({
+      entity: 'Post',
+      type: 'Update',
+      emitter: req.member._id,
+      comments: {
+        category: exactPostRes[0].category,
+        discussion: _id,
+      },
+    });
+
     return res.status(201).send({ status: 'ok' });
   } catch (err) {
     /* istanbul ignore next */
@@ -633,6 +664,16 @@ let votePost = async (req, res, next) => {
         { _id: _discussionId },
         removeVoteInfo
       );
+
+      utils.logger.writeEventLog({
+        entity: 'Post',
+        type: 'RemoveVote',
+        emitter: req.member._id,
+        comments: {
+          discussion: _discussionId,
+        },
+      });
+
       // 如果之前存在提交，已抹除成功。
       if (removeDoc.modifiedCount === 1) return res.status(201).send({ status: 'ok' });
     }
@@ -646,6 +687,16 @@ let votePost = async (req, res, next) => {
       { _id: _discussionId },
       addVoteInfo
     );
+
+    utils.logger.writeEventLog({
+      entity: 'Post',
+      type: 'AddVote',
+      emitter: req.member._id,
+      comments: {
+        discussion: _discussionId,
+      },
+    });
+
     return res.status(201).send({ status: 'ok' });
   } catch (err) {
     /* istanbul ignore next */

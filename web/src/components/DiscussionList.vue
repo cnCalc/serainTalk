@@ -223,12 +223,12 @@ div.discussion-list {
 
   span.discussion-replies::before {
     display: inline-block;
-    content: '💬';
-    // background-image: url(../assets/reply.svg);
-    // background-size: cover;
+    content: ' ';
+    background-image: url(../assets/reply-balloon.svg);
+    background-size: cover;
     width: 13px;
     height: 13px;
-    margin-right: 6px;
+    margin-right: 4px;
   }
 
   @media only screen and (max-width: 720px) {
