@@ -84,7 +84,7 @@ export default {
    * 获取某个讨论的指定页内容
    */
   fetchDiscussionPosts: (state, params = {}) => {
-    state.commit('setBusy', true);
+    params.quiet || state.commit('setBusy', true);
     return api.v1.discussion.fetchDiscussionMetaById(params).then(data => {
       state.commit('setDiscussionMeta', data);
       return api.v1.discussion.fetchDiscussionPostsById(params);
@@ -95,7 +95,7 @@ export default {
       } else {
         state.commit('updateDiscussionPosts', data.posts);
       }
-      state.commit('setBusy', false);
+      params.quiet || state.commit('setBusy', false);
     });
   },
 

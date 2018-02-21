@@ -374,6 +374,8 @@ let createDiscussion = async (req, res, next) => {
       },
     });
 
+    utils.websocket.broadcastEvent('Discussion', 'Create', { category: req.body.category });
+
     return res.status(201).send({ status: 'ok', discussion: discussionInfo });
   } catch (err) {
     /* istanbul ignore next */
@@ -553,6 +555,8 @@ let createPost = async (req, res, next) => {
       },
     });
 
+    utils.websocket.broadcastEvent('Post', 'Create', { discussionId: _id, category: discussionInfo.category, postIndex: postInfo.index });
+
     return res.status(201).send({ status: 'ok', newPost: postInfo, members: members });
   } catch (err) {
     /* istanbul ignore next */
@@ -629,6 +633,8 @@ let updatePost = async (req, res, next) => {
       },
     });
 
+    utils.websocket.broadcastEvent('Post', 'Update', { discussionId: _id, category: exactPostRes[0].category, postIndex });
+
     return res.status(201).send({ status: 'ok' });
   } catch (err) {
     /* istanbul ignore next */
@@ -665,17 +671,21 @@ let votePost = async (req, res, next) => {
         removeVoteInfo
       );
 
-      utils.logger.writeEventLog({
-        entity: 'Post',
-        type: 'RemoveVote',
-        emitter: req.member._id,
-        comments: {
-          discussion: _discussionId,
-        },
-      });
-
       // 如果之前存在提交，已抹除成功。
-      if (removeDoc.modifiedCount === 1) return res.status(201).send({ status: 'ok' });
+      if (removeDoc.modifiedCount === 1) {
+        utils.logger.writeEventLog({
+          entity: 'Post',
+          type: 'RemoveVote',
+          emitter: req.member._id,
+          comments: {
+            discussion: _discussionId,
+          },
+        });
+
+        utils.websocket.broadcastEvent('Post', 'RemoveVote', { discussionId: _discussionId, category: postInfo.category, postIndex: req.params.postIndex });
+
+        return res.status(201).send({ status: 'ok' });
+      }
     }
 
     // 新增 vote
@@ -696,6 +706,8 @@ let votePost = async (req, res, next) => {
         discussion: _discussionId,
       },
     });
+
+    utils.websocket.broadcastEvent('Post', 'AddVote', { discussionId: _discussionId, category: postInfo.category, postIndex: req.params.postIndex });
 
     return res.status(201).send({ status: 'ok' });
   } catch (err) {

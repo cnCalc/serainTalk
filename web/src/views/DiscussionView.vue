@@ -29,6 +29,7 @@
                     template(v-if="$store.state.me.role === 'admin'")
                       button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") 恢复
                       button.button(v-else @click="deletePost(post.index)") 删除
+      div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ unread.length }} 条新回复，点击以查看。
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
         center 没有可展示的帖子
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
@@ -92,11 +93,14 @@ export default {
       currentDiscussion: null,
       absoluteBottomIndex: null,
       absoluteBottomWidth: 0,
+      unread: [],
     };
   },
   title () {
     if (this.busy) {
       return 'Loading';
+    } else if (this.unread.length !== 0) {
+      return `(${this.unread.length}) ${this.discussionMeta.title}`;
     }
     return `${this.discussionMeta.title}`;
   },
@@ -207,6 +211,28 @@ export default {
       let targetScrollTop = this.$el.querySelector(`#index-${idx}`).getBoundingClientRect().bottom + window.scrollY - window.innerHeight;
       scrollTo(targetScrollTop, 300);
     },
+    loadUnread () {
+      let foundCurrentPage = false;
+      while (this.unread[0] && this.indexToPage(this.unread[0]) === this.currentPage) {
+        this.unread.shift();
+        foundCurrentPage = true;
+      }
+      if (foundCurrentPage) {
+        this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.$route.params.page, quiet: true });
+        this.updateTitle();
+      } else if (this.unread.length > 0) {
+        this.$store.dispatch('fetchDiscussionsMeta', { id: this.$route.params.discussionId }).then(() => {
+          const page = this.indexToPage(this.unread[0]);
+          this.loadPage(page);
+          this.$nextTick(() => {
+            while (this.unread[0] && this.indexToPage(this.unread[0]) === page) {
+              this.unread.shift();
+            }
+            this.updateTitle();
+          });
+        });
+      }
+    },
   },
   computed: {
     discussionMeta () {
@@ -266,6 +292,7 @@ export default {
       if (this.pageLoaded[Number(route.params.page) || 1]) {
         this.currentPage = Number(route.params.page) || 1;
         this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
+        this.updateTitle();
         return;
       }
 
@@ -273,6 +300,7 @@ export default {
         this.currentPage = Number(route.params.page) || 1;
         this.pageLoaded[this.currentPage] = true;
         this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
+        this.updateTitle();
       });
     },
     '$route.hash': function (hash) {
@@ -281,6 +309,7 @@ export default {
   },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
+
     bus.$on('reloadDiscussionView', () => {
       const page = Number(this.$route.params.page) || 1;
 
@@ -291,7 +320,25 @@ export default {
           this.minPage = page - 1;
           this.pageLoaded[this.currentPage - 1] = true;
         }
+        this.unread = [];
+        this.updateTitle();
       });
+    });
+
+    bus.$on('event', e => {
+      if (e.entity !== 'Post') {
+        return;
+      }
+
+      if (e.affects.discussionId === this.currentDiscussion) {
+        if (e.eventType === 'Create') {
+          this.unread.push(e.affects.postIndex);
+          this.updateTitle();
+          return;
+        } else if (e.eventType === 'Update' && (this.$store.state.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
+          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
+        }
+      }
     });
   },
   mounted () {
@@ -556,11 +603,14 @@ div.discussion-view {
 
   button.vote-up::before { content: '👍 '; }
   button.vote-down::before { content: '👎 '; }
-  button.laugh::before { content: '😄 '; }
-  button.doubt::before { content: '😕 '; }
-  button.love::before { content: '❤️ '; }
-  button.cheer::before { content: '🎉 '; }
-  button.emmmm::before { content: '🌚 '; }
+
+  div.unread-message {
+    text-align: center;
+    font-size: 1.1em;
+    line-height: 80px;
+    color: grey;
+    cursor: pointer;
+  }
 }
 
 .light-theme div.discussion-view {

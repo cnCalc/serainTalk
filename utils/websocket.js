@@ -6,7 +6,7 @@ const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 
 const staticConfig = require('../config/staticConfig');
-const errorMessage = require('./error-messages');
+// const errorMessage = require('./error-messages');
 const dbTool = require('../database');
 const logger = require('./logger');
 
@@ -18,24 +18,22 @@ function attachSocketIO (app) {
   if (app) {
     server = http.Server(app);
     io = socket(server, { path: '/api/ws' });
-    connections = {};
+    connections = {
+      visitor: [],
+    };
 
     io.on('connection', async socket => {
       let member;
       let token = socket.handshake.query.token;
       try {
-        // member = jwt.verify(token, staticConfig.jwtSecret);
-
-        // member.id = member._id;
-        // member._id = ObjectID(member.id);
-        // socket.member = member.id;
         let payload = jwt.verify(token, staticConfig.jwtSecret);
         member = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
         member.id = member._id;
         socket.member = member.id;
       } catch (err) {
-        socket.emit('failure', { status: 'error', message: errorMessage.NEED_LOGIN, code: 'NEED_LOGIN' });
-        return socket.disconnect();
+        member = { id: 'visitor' };
+        // socket.emit('failure', { status: 'error', message: errorMessage.NEED_LOGIN, code: 'NEED_LOGIN' });
+        // return socket.disconnect();
       }
 
       if (!connections[member.id]) {
@@ -68,6 +66,24 @@ function attachSocketIO (app) {
 }
 
 exports.attachSocketIO = attachSocketIO;
+
+/**
+ * 像所有的客户端广播论坛的一个事件
+ *
+ * @param {('Post'|'Discussion')} entity 事件的主体
+ * @param {('Create'|'Update'|'Delete')} eventType 时间的类型
+ * @param {Object} affects 受影响的主体信息
+ * @param {string} affects.discussionId 受影响的讨论 ID
+ * @param {string} affects.category 受影响的分类
+ * @param {string} affects.postIndex 受影响的帖子楼层
+ */
+function broadcastEvent (entity, eventType, affects) {
+  io.emit('event', {
+    entity, eventType, affects,
+  });
+}
+
+exports.broadcastEvent = broadcastEvent;
 
 Object.defineProperty(exports, 'server', {
   get: function () {

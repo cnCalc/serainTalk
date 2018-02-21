@@ -18,6 +18,9 @@ if (utils.env.isDev) {
   });
 }
 
+// 听说这样安全一点……？
+app.disable('x-powered-by');
+
 // 获取 favicon
 app.get('/favicon.ico', (req, res) => {
   /* istanbul ignore next */

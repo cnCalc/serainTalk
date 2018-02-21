@@ -5,6 +5,7 @@
         div.button.create-discussion(@click="showEditor") 创建新帖
         category-list
       div.right
+        div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ unread }} 个新讨论或帖子更新，点击以刷新。
         discussion-list(v-show="!busy || currentPage > 1")
         loading-icon(v-if="busy")
         div.list-nav
@@ -16,6 +17,7 @@ import DiscussionList from '../components/DiscussionList.vue';
 import CategoryList from '../components/CategoryList.vue';
 import LoadingIcon from '../components/LoadingIcon.vue';
 import titleMixin from '../mixins/title.js';
+import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'list-view',
@@ -27,6 +29,8 @@ export default {
     return {
       currentPage: 1,
       currentSlug: '',
+      currentCategory: '',
+      unread: 0,
     };
   },
   computed: {
@@ -47,17 +51,18 @@ export default {
     },
   },
   title () {
+    let base = '';
+    if (this.unread) {
+      base = `(${this.unread}) `;
+    }
+
     if (!this.slug && this.$route.path === '/') {
-      return '首页';
+      base += '首页';
+    } else {
+      base += this.currentCategory;
     }
-    let categoriesGroup = this.$store.state.categoriesGroup;
-    for (let group of categoriesGroup) {
-      for (let item of group.items) {
-        if (item.type === 'category' && item.slug === this.slug) {
-          return item.name;
-        }
-      }
-    }
+
+    return base;
   },
   methods: {
     loadMore () {
@@ -80,6 +85,7 @@ export default {
       this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
     },
     flushGlobalTitles () {
+      this.currentCategory = '';
       if (!this.slug && this.$route.path === '/') {
         return this.$store.commit('setGlobalTitles', []);
       }
@@ -88,13 +94,20 @@ export default {
         for (let item of group.items) {
           if (item.type === 'category' && item.slug === this.slug) {
             this.$store.commit('setGlobalTitles', [item.name, item.description]);
+            this.currentCategory = item.name;
           }
         }
       }
     },
+    refresh () {
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+      this.unread = 0;
+      this.updateTitle();
+    },
   },
   watch: {
     '$route': function (route) {
+      this.unread = 0;
       if (typeof this.slug === 'undefined') {
         return;
       }
@@ -128,6 +141,13 @@ export default {
   },
   created () {
     this.currentSlug = this.slug || '';
+
+    bus.$on('event', e => {
+      if (((this.currentCategory !== '' && this.currentCategory === e.affects.category) || this.currentCategory === '') && (e.eventType === 'Create' || e.eventType === 'Update')) {
+        this.unread++;
+        this.updateTitle();
+      }
+    });
   },
   asyncData ({ store, route }) {
     let p;
@@ -181,6 +201,17 @@ div.nav {
     width: 90%;
     margin-left: 0%;
     color: white;
+  }
+
+  div.unread-message {
+    line-height: 60px;
+    font-size: 1.1em;
+    text-align: center;
+    height: 0px;
+    overflow: hidden;
+    color: grey;
+    cursor: pointer;
+    transition: height ease 0.2s;
   }
 }
 

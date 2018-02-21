@@ -17,17 +17,17 @@ const wsEventBus = new Vue({
   },
   methods: {
     createConnection () {
-      const token = document.cookie.match(/membertoken=([^\;]+)/);
+      let token = document.cookie.match(/membertoken=([^\;]+)/);
 
-      if (!token) {
-        return;
+      if (token && token[1]) {
+        token = token[1];
+      } else {
+        token = undefined;
       }
 
       const socket = this.socket = io.connect(window.location.origin, {
         path: '/api/ws',
-        query: {
-          token: token[1],
-        },
+        query: token ? { token } : {},
       });
 
       socket.on('connection', () => {
@@ -48,6 +48,10 @@ const wsEventBus = new Vue({
         if (payload.messageId !== store.state.messageSession) {
           this.$emit('notification', { type: 'message', body: '您有一条新消息，点击此处查看', href: `/message/${payload.messageId}` });
         }
+      });
+
+      socket.on('event', payload => {
+        this.$emit('event', payload);
       });
 
       socket.on('failure', res => {
