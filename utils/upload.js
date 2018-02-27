@@ -10,7 +10,7 @@ const fileUpload = multer({
     filename (req, file, cb) {
       var fileFormat = (file.originalname).split('.');
       var extName = fileFormat.length === 1 ? '' : '.' + fileFormat[fileFormat.length - 1];
-      if (req.member.id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
+      if (req.member._id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
       else cb(null, `unknown-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
     },
     fieldname: 'file',
@@ -24,7 +24,7 @@ const pictureUpload = multer({
     filename (req, file, cb) {
       var fileFormat = (file.originalname).split('.');
       var extName = fileFormat.length === 1 ? '' : '.' + fileFormat[fileFormat.length - 1];
-      if (req.member.id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
+      if (req.member._id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
       else cb(null, `unknown-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
     },
     fieldname: 'picture',
@@ -45,7 +45,7 @@ const avatarUpload = multer({
     filename (req, file, cb) {
       var fileFormat = (file.originalname).split('.');
       var extName = fileFormat.length === 1 ? '' : '.' + fileFormat[fileFormat.length - 1];
-      if (req.member.id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
+      if (req.member._id) cb(null, `${req.member.id}-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
       else cb(null, `unknown-${Date.now()}-${randomString()}-${file.fieldname}${extName}`);
     },
     fieldname: 'avatar',
