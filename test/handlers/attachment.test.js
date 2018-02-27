@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const fs = require('fs');
 const path = require('path');
 const supertest = require('supertest');
+const testTools = require('../testTools');
 
 const dbTool = require('../../database');
 const staticConfig = require('../../config/staticConfig');
@@ -32,14 +33,16 @@ describe('attachment part.', async () => {
   });
 
   it('upload a file.', async () => {
-    let getUrl = '/api/v1/attachment';
-    let fileRes = await agent.post(getUrl)
-      .attach('file', 'test/testfile/attachment.txt');
+    testTools.member.createOneMember(agent, null, async () => {
+      let getUrl = '/api/v1/attachment';
+      let fileRes = await agent.post(getUrl)
+        .attach('file', 'test/testfile/attachment.txt');
 
-    expect(fileRes.body.status).to.be.equal('ok');
-    let filePath = path.join(staticConfig.upload.file.path, fileRes.body.attachmentName);
-    expect(fs.existsSync(filePath)).to.be.true;
+      expect(fileRes.body.status).to.be.equal('ok');
+      let filePath = path.join(staticConfig.upload.file.path, fileRes.body.attachmentName);
+      expect(fs.existsSync(filePath)).to.be.true;
 
-    fs.unlinkSync(filePath);
+      fs.unlinkSync(filePath);
+    });
   });
 });

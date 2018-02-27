@@ -528,6 +528,7 @@ let route = {
       method: 'post',
       schema: dataInterface.attachment.uploadFile,
       handler: [
+        verifyMember,
         utils.upload.fileUpload.single('file'),
         handlers.v1.attachment.uploadAttachment,
       ],
@@ -556,6 +557,7 @@ let route = {
       method: 'post',
       schema: dataInterface.picture.uploadPicture,
       handler: [
+        verifyMember,
         utils.upload.pictureUpload.single('picture'),
         handlers.v1.picture.uploadPicture,
       ],
