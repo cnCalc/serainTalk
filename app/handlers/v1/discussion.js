@@ -880,7 +880,7 @@ let deletePost = async (req, res, next) => {
 
     // 我们还需要顺便更新了最后回复用户和最后回复日期，只要从最后一个 post
     // 往前数，找到第一个状态正常的帖子即可
-    const lastValidPost = postsDoc.filter(post => post.posts.status.type === config.discussion.status.ok).reverse()[0] || postsDoc.reverse()[0];
+    const lastValidPost = postsDoc.filter(post => post.posts.status.type === config.discussion.status.ok).reverse()[0] || postsDoc[0];
     updateDate.$set.lastDate = lastValidPost.posts.createDate;
     updateDate.$set.lastMember = lastValidPost.posts.user;
 
