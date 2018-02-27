@@ -509,15 +509,27 @@ let route = {
     },
   },
   attachment: {
-    getOne: {
+    getByAttachmentId: {
       description: '获取指定附件的信息。',
       path: [
         '/v1/attachment',
       ],
       method: 'get',
-      schema: dataInterface.attachment.getAttachment,
+      schema: dataInterface.attachment.getAttachmentByAttachmentId,
       handler: [
-        handlers.v1.attachment.getAttachmentByAid,
+        handlers.v1.attachment.getAttachmentByAttachmentId,
+      ],
+    },
+    getByMemberId: {
+      description: '获取指定附件的信息。',
+      path: [
+        '/v1/attachment/me',
+      ],
+      method: 'get',
+      schema: dataInterface.attachment.getAttachmentByMemberId,
+      handler: [
+        verifyMember,
+        handlers.v1.attachment.getAttachmentByMemberId,
       ],
     },
     uploadOne: {

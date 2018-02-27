@@ -4,15 +4,19 @@ const joi = require('joi');
 
 exports = module.exports = {};
 
-let getAttachment = {
+let getAttachmentByAttachmentId = {
   query: {
     aid: joi.number().required(),
   },
+};
+
+let getAttachmentByMemberId = {
 };
 
 let uploadFile = {
 
 };
 
-exports.getAttachment = getAttachment;
+exports.getAttachmentByMemberId = getAttachmentByMemberId;
+exports.getAttachmentByAttachmentId = getAttachmentByAttachmentId;
 exports.uploadFile = uploadFile;

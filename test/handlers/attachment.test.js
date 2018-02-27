@@ -33,9 +33,9 @@ describe('attachment part.', async () => {
   });
 
   it('upload a file.', async () => {
-    testTools.member.createOneMember(agent, null, async () => {
-      let getUrl = '/api/v1/attachment';
-      let fileRes = await agent.post(getUrl)
+    await testTools.member.createOneMember(agent, null, async () => {
+      let uploadUrl = '/api/v1/attachment';
+      let fileRes = await agent.post(uploadUrl)
         .attach('file', 'test/testfile/attachment.txt');
 
       expect(fileRes.body.status).to.be.equal('ok');
@@ -44,5 +44,31 @@ describe('attachment part.', async () => {
 
       fs.unlinkSync(filePath);
     });
+  });
+
+  it('get file upload by self.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      let uploadUrl = '/api/v1/attachment';
+      let fileRes = await agent.post(uploadUrl)
+        .attach('file', 'test/testfile/attachment.txt');
+      let filePath = path.join(staticConfig.upload.file.path, fileRes.body.attachmentName);
+
+      let getUrl = '/api/v1/attachment/me';
+      let attachmentsRes = await agent.get(getUrl);
+      let attachments = attachmentsRes.body.attachments;
+
+      expect(attachments[0].originalName).to.be.equal('attachment.txt');
+      expect(attachments[0].fileName).to.be.equal(fileRes.body.attachmentName);
+
+      fs.unlinkSync(filePath);
+    });
+  });
+
+  it('anonymous upload a file.', async () => {
+    let getUrl = '/api/v1/attachment';
+    let fileRes = await agent.post(getUrl)
+      .attach('file', 'test/testfile/attachment.txt');
+
+    expect(fileRes.body.status).to.be.equal('error');
   });
 });

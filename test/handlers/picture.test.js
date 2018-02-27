@@ -17,7 +17,7 @@ describe('picture part.', async () => {
   });
 
   it('post one picture.', async () => {
-    testTools.member.createOneMember(agent, null, async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
       let getUrl = '/api/v1/picture';
       let pictureRes = await agent.post(getUrl)
         .attach('picture', 'test/testfile/testpng.png');
