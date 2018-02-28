@@ -10,6 +10,7 @@ module.exports = {
   MEMBER_NOT_EXIST: 'member not exist',
   NEED_LOGIN: 'login first please.',
   NOT_FOUND: 'unable to find the specified resources',
+  OUT_OF_LIMIT: 'out of limit.',
   PERMISSION_DENIED: 'permission denied',
   RESET_PASSWORD: 'need to reset password',
   SERVER_ERROR: 'server error',

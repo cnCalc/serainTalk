@@ -1,6 +1,10 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
 const dbTool = require('../../../database');
+const config = require('../../../config');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 
@@ -49,6 +53,18 @@ let getAttachmentByMemberId = async (req, res) => {
  */
 let uploadAttachment = async (req, res, next) => {
   try {
+    let memberInfo = await dbTool.commonMember.aggregate([
+      { $match: { _id: req.member._id } },
+      { $project: { attachment: true } },
+      { $unwind: '$attachment' },
+      { $count: 'count' },
+    ]).toArray();
+
+    let attachmentCount = memberInfo[0] ? memberInfo[0].count : 0;
+    if (attachmentCount >= config.upload.file.maxCount) {
+      fs.unlinkSync(path.join(config.upload.file.path, req.file.filename));
+      return errorHandler(null, errorMessages.OUT_OF_LIMIT, 401, res);
+    }
     await dbTool.commonMember.updateOne(
       { _id: req.member._id },
       {

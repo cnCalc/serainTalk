@@ -64,6 +64,28 @@ describe('attachment part.', async () => {
     });
   });
 
+  it('upload too many file.', async () => {
+    await testTools.member.createOneMember(agent, null, async () => {
+      let uploadUrl = '/api/v1/attachment';
+      let filePath = [];
+      for (let i = 0; i < staticConfig.upload.file.maxCount; i++) {
+        let fileRes = await agent.post(uploadUrl)
+          .attach('file', 'test/testfile/attachment.txt');
+
+        expect(fileRes.body.status).to.be.equal('ok');
+        let tempPath = path.join(staticConfig.upload.file.path, fileRes.body.attachmentName);
+        expect(fs.existsSync(tempPath)).to.be.true;
+        filePath.push(tempPath);
+      }
+
+      await agent.post(uploadUrl)
+          .attach('file', 'test/testfile/attachment.txt')
+          .expect(401);
+
+      filePath.map(path => fs.unlinkSync(path));
+    });
+  });
+
   it('anonymous upload a file.', async () => {
     let getUrl = '/api/v1/attachment';
     let fileRes = await agent.post(getUrl)

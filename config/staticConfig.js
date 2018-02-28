@@ -76,6 +76,7 @@ module.exports = {
   },
   upload: {
     file: {
+      maxCount: 20, // 每个成员最多能上传的附件数量
       path: path.join(__dirname, '..', 'uploads', 'files'),
       maxAge: '7d',
       maxSize: 1000 * 1000 * 100, // 100MB
