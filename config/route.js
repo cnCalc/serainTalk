@@ -615,6 +615,7 @@ let devRoute = {
   },
 };
 
+// TODO: 这块需要小心。这里不会被测试覆盖到
 if (utils.env.isDev || !utils.env.isRelease) {
   Object.assign(route, devRoute);
 }
