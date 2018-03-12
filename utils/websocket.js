@@ -31,6 +31,7 @@ function attachSocketIO (app) {
         member.id = member._id;
         socket.member = member.id;
       } catch (err) {
+        // FIXME: 调整结构
         member = { id: 'visitor' };
         // socket.emit('failure', { status: 'error', message: errorMessage.NEED_LOGIN, code: 'NEED_LOGIN' });
         // return socket.disconnect();

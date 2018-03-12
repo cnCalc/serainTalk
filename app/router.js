@@ -12,7 +12,7 @@ const routeConfig = require('../config/route');
 const middleware = require('./middleware');
 const { log, cache, pretreatment } = middleware;
 const utils = require('../utils');
-const { errorHandler, errorMessages } = utils;
+const { errorHandler, errorMessages, logger } = utils;
 
 let router = express.Router();
 
@@ -34,10 +34,15 @@ router.use(cache.disableCache);
 // 根据路由表批量添加路由
 for (let routeType of Object.keys(routeConfig)) {
   for (let routeName of Object.keys(routeConfig[routeType])) {
-    let route = routeConfig[routeType][routeName];
-    let handler = route.handler.pop();
-    route.handler.push(validation(route.schema));
-    router[route.method](route.path, ...route.handler, handler);
+    try {
+      let route = routeConfig[routeType][routeName];
+      let handler = route.handler.pop();
+      route.handler.push(validation(route.schema));
+      router[route.method](route.path, ...route.handler, handler);
+    } catch (err) {
+      logger.writeInfoLog({ entity: 'router', content: `${routeType}-${routeName} has some problem.` });
+      throw err;
+    }
   }
 }
 

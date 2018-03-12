@@ -510,26 +510,26 @@ let route = {
   },
   attachment: {
     getByAttachmentId: {
-      description: '获取指定附件的信息。',
+      description: '获取 Discuz 兼容的附件信息。',
       path: [
-        '/v1/attachment',
+        '/v1/attachment/info',
       ],
       method: 'get',
       schema: dataInterface.attachment.getAttachmentByAttachmentId,
       handler: [
-        handlers.v1.attachment.getAttachmentByAttachmentId,
+        handlers.v1.attachment.getAttachmentInfoByAttachmentId,
       ],
     },
     getByMemberId: {
-      description: '获取指定附件的信息。',
+      description: '获取自己上传的所有附件的信息。',
       path: [
-        '/v1/attachment/me',
+        '/v1/attachment/info/me',
       ],
       method: 'get',
       schema: dataInterface.attachment.getAttachmentsByMemberId,
       handler: [
         verifyMember,
-        handlers.v1.attachment.getAttachmentsByMemberId,
+        handlers.v1.attachment.getAttachmentsInfoByMemberId,
       ],
     },
     uploadOne: {

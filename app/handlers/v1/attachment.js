@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ObjectID } = require('mongodb');
 
 const dbTool = require('../../../database');
 const config = require('../../../config');
@@ -14,11 +15,23 @@ const { errorHandler, errorMessages } = utils;
  * @param {Request} req
  * @param {Response} res
  */
-let getAttachmentByAttachmentId = async (req, res) => {
-  let attachmentId = req.query.aid;
+let getAttachmentInfoByAttachmentId = async (req, res) => {
   try {
-    let attachmentInfo = await dbTool.attachment.findOne({ aid: attachmentId });
-    return res.status(200).send({ status: 'ok', attachment: attachmentInfo });
+    let attachmentInfo;
+    if (req.query.aid) {
+      attachmentInfo = await dbTool.attachment.findOne({ aid: req.query.aid });
+    }
+    if (req.params.id) {
+      let _attachmentId = ObjectID(req.params.id);
+      attachmentInfo = await dbTool.attachment.findOne({ _id: _attachmentId });
+    }
+
+    if (attachmentInfo) {
+      delete attachmentInfo.filePath;
+      return res.status(200).send({ status: 'ok', attachment: attachmentInfo });
+    }
+
+    return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
   } catch (err) {
     /* istanbul ignore next */
     errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -31,13 +44,12 @@ let getAttachmentByAttachmentId = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  */
-let getAttachmentsByMemberId = async (req, res) => {
+let getAttachmentsInfoByMemberId = async (req, res) => {
   try {
-    let attachmentInfos = await dbTool.commonMember.aggregate([
-      { $match: { _id: req.member._id } },
-      { $project: { attachments: true } },
+    let attachmentInfos = await dbTool.attachment.aggregate([
+      { $match: { _owner: req.member._id } },
+      { $project: { filePath: false } },
     ]).toArray();
-    attachmentInfos = attachmentInfos[0].attachments;
     return res.status(200).send({ status: 'ok', attachments: attachmentInfos });
   } catch (err) {
     /* istanbul ignore next */
@@ -53,32 +65,32 @@ let getAttachmentsByMemberId = async (req, res) => {
  */
 let uploadAttachment = async (req, res, next) => {
   try {
-    let memberInfo = await dbTool.commonMember.aggregate([
-      { $match: { _id: req.member._id } },
-      { $project: { attachments: true } },
-      { $unwind: '$attachments' },
+    let attachmentInfo = await dbTool.attachment.aggregate([
+      { $match: { _owner: req.member._id } },
+      { $project: { filePath: false } },
       { $count: 'count' },
     ]).toArray();
 
-    let attachmentCount = memberInfo[0] ? memberInfo[0].count : 0;
+    // 检测是否超过上传限制
+    let attachmentCount = attachmentInfo[0] ? attachmentInfo[0].count : 0;
     if (attachmentCount >= config.upload.file.maxCount) {
       fs.unlinkSync(path.join(config.upload.file.path, req.file.filename));
       return errorHandler(null, errorMessages.OUT_OF_LIMIT, 401, res);
     }
-    await dbTool.commonMember.updateOne(
-      { _id: req.member._id },
-      {
-        $push: {
-          attachments: {
-            originalName: req.file.originalname,
-            fileName: req.file.filename,
-            size: req.file.size,
-            referer: [],
-          },
-        },
-      }
-    );
-    return res.status(201).send({ status: 'ok', attachmentName: req.file.filename });
+    let attachment = {
+      _id: new ObjectID(),
+      _owner: req.member._id,
+      fileName: req.file.originalname,
+      filePath: req.file.filename,
+      size: req.file.size,
+      status: 'ok',
+      referer: [],
+    };
+    await dbTool.attachment.insertOne(attachment);
+
+    // 对成员隐藏路径信息
+    delete attachment.filePath;
+    return res.status(201).send({ status: 'ok', attachment: attachment });
   } catch (err) {
     /* istanbul ignore next */
     errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -86,7 +98,7 @@ let uploadAttachment = async (req, res, next) => {
 };
 
 module.exports = {
-  getAttachmentByAttachmentId,
+  getAttachmentInfoByAttachmentId,
+  getAttachmentsInfoByMemberId,
   uploadAttachment,
-  getAttachmentsByMemberId,
 };
