@@ -526,10 +526,10 @@ let route = {
         '/v1/attachment/me',
       ],
       method: 'get',
-      schema: dataInterface.attachment.getAttachmentByMemberId,
+      schema: dataInterface.attachment.getAttachmentsByMemberId,
       handler: [
         verifyMember,
-        handlers.v1.attachment.getAttachmentByMemberId,
+        handlers.v1.attachment.getAttachmentsByMemberId,
       ],
     },
     uploadOne: {

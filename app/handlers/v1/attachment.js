@@ -31,13 +31,13 @@ let getAttachmentByAttachmentId = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  */
-let getAttachmentByMemberId = async (req, res) => {
+let getAttachmentsByMemberId = async (req, res) => {
   try {
     let attachmentInfos = await dbTool.commonMember.aggregate([
       { $match: { _id: req.member._id } },
-      { $project: { attachment: true } },
+      { $project: { attachments: true } },
     ]).toArray();
-    attachmentInfos = attachmentInfos[0].attachment;
+    attachmentInfos = attachmentInfos[0].attachments;
     return res.status(200).send({ status: 'ok', attachments: attachmentInfos });
   } catch (err) {
     /* istanbul ignore next */
@@ -55,8 +55,8 @@ let uploadAttachment = async (req, res, next) => {
   try {
     let memberInfo = await dbTool.commonMember.aggregate([
       { $match: { _id: req.member._id } },
-      { $project: { attachment: true } },
-      { $unwind: '$attachment' },
+      { $project: { attachments: true } },
+      { $unwind: '$attachments' },
       { $count: 'count' },
     ]).toArray();
 
@@ -69,7 +69,7 @@ let uploadAttachment = async (req, res, next) => {
       { _id: req.member._id },
       {
         $push: {
-          attachment: {
+          attachments: {
             originalName: req.file.originalname,
             fileName: req.file.filename,
             size: req.file.size,
@@ -88,5 +88,5 @@ let uploadAttachment = async (req, res, next) => {
 module.exports = {
   getAttachmentByAttachmentId,
   uploadAttachment,
-  getAttachmentByMemberId,
+  getAttachmentsByMemberId,
 };

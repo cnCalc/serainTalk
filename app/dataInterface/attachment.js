@@ -10,13 +10,13 @@ let getAttachmentByAttachmentId = {
   },
 };
 
-let getAttachmentByMemberId = {
+let getAttachmentsByMemberId = {
 };
 
 let uploadFile = {
 
 };
 
-exports.getAttachmentByMemberId = getAttachmentByMemberId;
+exports.getAttachmentsByMemberId = getAttachmentsByMemberId;
 exports.getAttachmentByAttachmentId = getAttachmentByAttachmentId;
 exports.uploadFile = uploadFile;
