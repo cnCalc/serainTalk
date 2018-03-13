@@ -1191,4 +1191,133 @@ describe('discussion part', async () => {
       });
     });
   });
+
+  it('upload attachment.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+          await testTools.discussion.closeFreqLimit(async () => {
+            let postPayload = {
+              attachments: [newAttachmentInfo.id],
+              encoding: 'markdown',
+              content: 'hello test',
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            let postRes = await agent.post(url)
+              .send(postPayload)
+              .expect(201);
+
+            let postInfo = postRes.body.newPost;
+
+            let getUrl = '/api/v1/attachment/info/me';
+            let attachmentsRes = await agent.get(getUrl);
+            let attachments = attachmentsRes.body.attachments;
+
+            expect(postInfo.attachments[0]).to.be.equal(newAttachmentInfo.id);
+            expect(attachments[0]._owner).to.be.equal(newMemberInfo.id);
+            expect(attachments[0]._id).to.be.equal(newAttachmentInfo.id);
+          });
+        });
+      });
+    });
+  });
+
+  it('upload attachment with discussion.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
+        await testTools.discussion.createOneDiscussion(agent, { attachments: [newAttachmentInfo.id] }, async (newDiscussionInfo) => {
+          await testTools.discussion.closeFreqLimit(async () => {
+            let getUrl = '/api/v1/attachment/info/me';
+            let attachmentsRes = await agent.get(getUrl);
+            let attachments = attachmentsRes.body.attachments;
+
+            expect(attachments[0]._owner).to.be.equal(newMemberInfo.id);
+            expect(attachments[0]._id).to.be.equal(newAttachmentInfo.id);
+            expect(attachments[0]._id).to.be.equal(newDiscussionInfo.posts[0].attachments[0]);
+            expect(attachments[0].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
+            expect(attachments[0].referer[0].index).to.be.equal(1);
+          });
+        });
+      });
+    });
+  });
+
+  it('upload two attachments.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfoA) => {
+        await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfoB) => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+            await testTools.discussion.closeFreqLimit(async () => {
+              let postPayload = {
+                attachments: [newAttachmentInfoA.id, newAttachmentInfoB.id],
+                encoding: 'markdown',
+                content: 'hello test',
+              };
+              let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+              let postRes = await agent.post(url)
+                .send(postPayload)
+                .expect(201);
+
+              let postInfo = postRes.body.newPost;
+
+              let getUrl = '/api/v1/attachment/info/me';
+              let attachmentsRes = await agent.get(getUrl);
+              let attachments = attachmentsRes.body.attachments;
+
+              expect(attachments.length).to.be.equal(2);
+
+              expect(postInfo.attachments[0]).to.be.equal(newAttachmentInfoA.id);
+              expect(postInfo.attachments[1]).to.be.equal(newAttachmentInfoB.id);
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('update two attachments.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfoA) => {
+        await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfoB) => {
+          await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfoC) => {
+            await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+              await testTools.discussion.closeFreqLimit(async () => {
+                let postPayload = {
+                  attachments: [newAttachmentInfoA.id, newAttachmentInfoB.id],
+                  encoding: 'markdown',
+                  content: 'hello test',
+                };
+                let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+                await agent.post(url).send(postPayload).expect(201);
+
+                let updatePayload = {
+                  attachments: [newAttachmentInfoB.id, newAttachmentInfoC.id],
+                };
+                let updateUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/2`;
+                await agent.put(updateUrl)
+                  .send(updatePayload)
+                  .expect(201);
+
+                let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
+                let postsRes = await agent.get(getUrl).expect(200);
+                let posts = postsRes.body.posts;
+                expect(posts[1].attachments[0]).to.be.equal(newAttachmentInfoB.id);
+                expect(posts[1].attachments[1]).to.be.equal(newAttachmentInfoC.id);
+
+                let attachmentUrl = '/api/v1/attachment/info/me';
+                let attachmentsRes = await agent.get(attachmentUrl);
+                let attachments = attachmentsRes.body.attachments;
+
+                expect(attachments[0].referer.length).to.be.equal(0);
+                expect(attachments[1].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
+                expect(attachments[1].referer[0].index).to.be.equal(2);
+                expect(attachments[2].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
+                expect(attachments[2].referer[0].index).to.be.equal(2);
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });

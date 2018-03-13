@@ -545,6 +545,18 @@ let route = {
         handlers.v1.attachment.uploadAttachment,
       ],
     },
+    delete: {
+      description: '移除一个文件。',
+      path: [
+        '/v1/attachment/:id',
+      ],
+      method: 'delete',
+      schema: dataInterface.attachment.deleteFile,
+      handler: [
+        verifyMember,
+        handlers.v1.attachment.deleteAttachment,
+      ],
+    },
   },
   api: {
     list: {

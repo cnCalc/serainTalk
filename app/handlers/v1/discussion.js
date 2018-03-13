@@ -8,6 +8,7 @@ const _ = require('lodash');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
+const { isSelfAttachment, resolveAttachmentsInPosts } = utils.attachment;
 
 /**
  * 缓存保存对象
@@ -244,6 +245,7 @@ let getDiscussionPostsById = async (req, res) => {
       status: 'ok',
       posts: utils.renderer.renderPosts(posts),
       members: await resolveMembersInDiscussion({ posts }),
+      attachments: await resolveAttachmentsInPosts(posts),
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -301,6 +303,7 @@ let getPostByIndex = async (req, res, next) => {
       status: 'ok',
       post: req.query.raw === 'on' ? post : (utils.renderer.renderPosts([post]))[0],
       members: await resolveMembersInDiscussion({ posts: [post] }),
+      attachments: await resolveAttachmentsInPosts([post]),
     });
   } catch (err) {
     /* istanbul ignore next */
@@ -331,7 +334,17 @@ let createDiscussion = async (req, res, next) => {
   let emptyVote = {};
   for (let voteType of config.discussion.post.vote) emptyVote[voteType] = [];
 
+  // 附件鉴权。是否为本人的附件。
+  let _attachments = [];
+  if (req.body.attachments) {
+    _attachments = req.body.attachments.map(attachmentId => ObjectID(attachmentId));
+  }
+  if (!await isSelfAttachment(req.body.attachments.map(attachmentId => ObjectID(attachmentId)), req.member._id)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  };
+
   let discussionInfo = {
+    _id: ObjectID(),
     category: req.body.category,
     createDate: now,
     creater: req.member._id,
@@ -342,6 +355,7 @@ let createDiscussion = async (req, res, next) => {
     ],
     posts: [
       {
+        attachments: _attachments,
         allowScript: req.member.role === 'admin',
         content: req.body.content.content,
         createDate: now,
@@ -364,6 +378,18 @@ let createDiscussion = async (req, res, next) => {
   };
   try {
     await dbTool.discussion.insertOne(discussionInfo);
+
+    await dbTool.attachment.updateMany(
+      { _id: { $in: _attachments } },
+      {
+        $push: {
+          referer: {
+            _discussionId: discussionInfo._id,
+            index: 1,
+          },
+        },
+      }
+    );
 
     utils.logger.writeEventLog({
       entity: 'Discussion',
@@ -404,7 +430,18 @@ let createPost = async (req, res, next) => {
   let now = Date.now();
   let emptyVote = {};
   for (let voteType of config.discussion.post.vote) emptyVote[voteType] = [];
+
+  // 附件鉴权。是否为本人的附件。
+  let _attachments = [];
+  if (req.body.attachments) {
+    _attachments = req.body.attachments.map(attachmentId => ObjectID(attachmentId));
+  }
+  if (!await isSelfAttachment(_attachments, req.member._id)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  };
+
   let postInfo = {
+    attachments: _attachments,
     allowScript: req.member.role === 'admin',
     content: req.body.content,
     createDate: now,
@@ -458,8 +495,21 @@ let createPost = async (req, res, next) => {
         // 为返回结果添上楼层号
         // 筛选添加的楼层
         /* istanbul ignore else */
-        if (postList[i].createDate === now && postList[i].user.toString() === req.member._id.toString()) {
+        if (postList[i].createDate === now && postList[i].user.equals(req.member._id)) {
           postInfo.index = i + 1;
+
+          // 为附件绑定信息
+          await dbTool.attachment.updateMany(
+            { _id: { $in: _attachments } },
+            {
+              $push: {
+                referer: {
+                  _discussionId: _id,
+                  index: postInfo.index,
+                },
+              },
+            }
+          );
         }
       } else break;
     }
@@ -569,7 +619,6 @@ let updatePost = async (req, res, next) => {
   let postIndex = req.params.postIndex;
   let now = Date.now();
 
-  // 追加一个 Post，同时更新一些元数据
   try {
     let exactPostRes = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
@@ -592,7 +641,7 @@ let updatePost = async (req, res, next) => {
     }
 
     let $set = {};
-    $set[`posts.${postIndex - 1}.content`] = req.body.content;
+    if (req.body.content) $set[`posts.${postIndex - 1}.content`] = req.body.content;
     $set[`posts.${postIndex - 1}.updateDate`] = now;
     $set[`posts.${postIndex - 1}.encoding`] = 'markdown';
     /* istanbul ignore else */
@@ -601,6 +650,7 @@ let updatePost = async (req, res, next) => {
       $set[`posts.${postIndex - 1}.encoding`] = req.body.encoding;
     }
 
+    // TODO: 修改回复人时重新发送通知
     // 修改replyTo
     if (req.body.replyTo) {
       req.body.replyTo.memberId = ObjectID(req.body.replyTo.memberId);
@@ -615,6 +665,48 @@ let updatePost = async (req, res, next) => {
       if (req.body.meta.category) {
         $set.category = req.body.meta.category;
       }
+    }
+
+    if (req.body.attachments) {
+      let _attachments = req.body.attachments.map(attachmentId => ObjectID(attachmentId));
+      if (!await isSelfAttachment(_attachments, req.member._id)) {
+        return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+      };
+
+      $set[`posts.${postIndex - 1}.attachments`] = _attachments;
+
+      let isSame = (a, b) => {
+        return a.toString() === b.toString();
+      };
+
+      // 移除不使用了的附件绑定
+      let uselessAttachments = _.differenceWith(exactPost.attachments, _attachments, isSame);
+      let newAttachments = _.differenceWith(_attachments, exactPost.attachments, isSame);
+
+      // 为附件绑定信息
+      await dbTool.attachment.updateMany(
+        { _id: { $in: newAttachments } },
+        {
+          $push: {
+            referer: {
+              _discussionId: _id,
+              index: postIndex,
+            },
+          },
+        }
+      );
+      // 移除不使用了附件绑定
+      await dbTool.attachment.updateMany(
+        { _id: { $in: uselessAttachments } },
+        {
+          $pull: {
+            referer: {
+              _discussionId: _id,
+              index: postIndex,
+            },
+          },
+        }
+      );
     }
 
     await dbTool.discussion.updateOne(

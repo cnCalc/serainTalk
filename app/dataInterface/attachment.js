@@ -19,6 +19,13 @@ let uploadFile = {
 
 };
 
+let deleteFile = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+  },
+};
+
 exports.getAttachmentByAttachmentId = getAttachmentByAttachmentId;
 exports.getAttachmentsByMemberId = getAttachmentsByMemberId;
 exports.uploadFile = uploadFile;
+exports.deleteFile = deleteFile;

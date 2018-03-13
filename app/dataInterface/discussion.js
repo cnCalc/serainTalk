@@ -76,6 +76,7 @@ exports.getPostByIndex = getPostByIndex;
 
 let createDiscussion = {
   body: {
+    attachments: joi.array().items(interfaceUtils.mongoId).default([]),
     title: joi.string().required(),
     tags: joi.array().items(joi.string()).required(),
     category: joi.string().required(),
@@ -89,6 +90,7 @@ exports.createDiscussion = createDiscussion;
 
 let createPost = {
   body: {
+    attachments: joi.array().items(interfaceUtils.mongoId).default([]),
     encoding: joi.string().required(),
     content: joi.string().required(),
     replyTo: {
@@ -120,8 +122,9 @@ let updatePost = {
     postIndex: joi.number().min(1).required(),
   },
   body: {
+    attachments: joi.array().items(interfaceUtils.mongoId),
     encoding: joi.string(),
-    content: joi.string().required(),
+    content: joi.string(),
     replyTo: {
       type: joi.string().allow(['index']).required(),
       value: joi.number().required(),

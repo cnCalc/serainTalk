@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+  attachment: require('./attachment'),
   category: require('./category'),
   cookie: require('./cookie'),
   createRandomString: require('./random-string'),

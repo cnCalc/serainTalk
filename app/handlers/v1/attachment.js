@@ -93,11 +93,28 @@ let uploadAttachment = async (req, res, next) => {
     return res.status(201).send({ status: 'ok', attachment: attachment });
   } catch (err) {
     /* istanbul ignore next */
-    errorHandler(err, errorMessages.DB_ERROR, 500, res);
-  };
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+let deleteAttachment = async (req, res, next) => {
+  try {
+    let _id = ObjectID(req.params.id);
+    let attachmentInfo = await dbTool.attachment.findOne({ _id: _id });
+    if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
+      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+    }
+    fs.unlinkSync(path.join(config.upload.file.path, attachmentInfo.filePath));
+    await dbTool.attachment.deleteOne({ _id: _id });
+    return res.status(204).send({ status: 'ok' });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
 };
 
 module.exports = {
+  deleteAttachment,
   getAttachmentInfoByAttachmentId,
   getAttachmentsInfoByMemberId,
   uploadAttachment,

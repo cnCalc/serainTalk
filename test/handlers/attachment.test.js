@@ -2,7 +2,6 @@
 
 const expect = require('chai').expect;
 const fs = require('fs');
-const path = require('path');
 const supertest = require('supertest');
 const testTools = require('../testTools');
 
@@ -35,61 +34,50 @@ describe('attachment part.', async () => {
   it('upload a file.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
-      let uploadUrl = '/api/v1/attachment';
-      let fileRes = await agent.post(uploadUrl)
-        .attach('file', 'test/testfile/attachment.txt');
-
-      expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount + 1);
-
-      expect(fileRes.body.status).to.be.equal('ok');
-      expect(fileRes.body.attachment.filePath).to.not.be.ok;
-
-      let fileNames = fs.readdirSync(staticConfig.upload.file.path).filter(fileName => fileName.split('-')[0] === newMemberInfo.id);
-      fileNames = fileNames.map(fileName => path.join(staticConfig.upload.file.path, fileName));
-      fileNames.forEach(filePath => fs.unlinkSync(filePath));
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
+        expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount + 1);
+        expect(newAttachmentInfo.filePath).to.not.be.ok;
+      });
     });
   });
 
   it('get file upload by self.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
+        let getUrl = '/api/v1/attachment/info/me';
+        let attachmentsRes = await agent.get(getUrl);
+        let attachments = attachmentsRes.body.attachments;
 
-      let uploadUrl = '/api/v1/attachment';
-      await agent.post(uploadUrl)
-        .attach('file', 'test/testfile/attachment.txt');
-
-      expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount + 1);
-
-      let getUrl = '/api/v1/attachment/info/me';
-      let attachmentsRes = await agent.get(getUrl);
-      let attachments = attachmentsRes.body.attachments;
-
-      expect(attachments[0].fileName).to.be.equal('attachment.txt');
-      expect(attachments[0].filePath).to.not.be.ok;
-
-      let fileNames = fs.readdirSync(staticConfig.upload.file.path).filter(fileName => fileName.split('-')[0] === newMemberInfo.id);
-      fileNames = fileNames.map(fileName => path.join(staticConfig.upload.file.path, fileName));
-      fileNames.forEach(filePath => fs.unlinkSync(filePath));
+        expect(attachments[0].fileName).to.be.equal('attachment.txt');
+        expect(attachments[0].filePath).to.not.be.ok;
+      });
     });
   });
 
   it('upload too many file.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let uploadUrl = '/api/v1/attachment';
+      let attachments = [];
       for (let i = 0; i < staticConfig.upload.file.maxCount; i++) {
         let fileRes = await agent.post(uploadUrl)
-          .attach('file', 'test/testfile/attachment.txt');
-
-        expect(fileRes.body.status).to.be.equal('ok');
+          .attach('file', 'test/testfile/attachment.txt')
+          .expect(201);
+        attachments.push(fileRes.body.attachment._id);
       }
+
+      let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
 
       await agent.post(uploadUrl)
         .attach('file', 'test/testfile/attachment.txt')
         .expect(401);
 
-      let fileNames = fs.readdirSync(staticConfig.upload.file.path).filter(fileName => fileName.split('-')[0] === newMemberInfo.id);
-      fileNames = fileNames.map(fileName => path.join(staticConfig.upload.file.path, fileName));
-      fileNames.forEach(filePath => fs.unlinkSync(filePath));
+      expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount);
+
+      attachments = attachments.map(attachmentId => {
+        let deleteUrl = `/api/v1/attachment/${attachmentId}`;
+        return agent.delete(deleteUrl).expect(204);
+      });
+      await Promise.all(attachments);
     });
   });
 
