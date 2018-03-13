@@ -113,8 +113,27 @@ let deleteAttachment = async (req, res, next) => {
   }
 };
 
+let getAttachment = async (req, res, next) => {
+  try {
+    let attachmentInfo = await dbTool.attachment.findOne({ _id: ObjectID(req.params.id) });
+
+    let options = {
+      root: config.upload.file.path,
+      dotfiles: 'deny',
+      headers: {
+        'x-timestamp': Date.now(),
+        'x-sent': true,
+      },
+    };
+    return res.sendFile(attachmentInfo.filePath, options);
+  } catch (err) {
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+};
+
 module.exports = {
   deleteAttachment,
+  getAttachment,
   getAttachmentInfoByAttachmentId,
   getAttachmentsInfoByMemberId,
   uploadAttachment,

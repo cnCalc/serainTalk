@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const dbTool = require('../database');
 const errorHandler = require('./error-handler');
 
@@ -46,9 +47,10 @@ let isSelfAttachment = async (_attachments, _memberId) => {
  */
 async function resolveAttachmentsInPosts (posts) {
   let attachmentToFetch = [];
-  posts.reduce((_attachments, post) => {
+  attachmentToFetch = posts.reduce((_attachments, post) => {
     return _attachments.concat(post.attachments);
   }, attachmentToFetch);
+  attachmentToFetch = _.unionWith(attachmentToFetch, (a, b) => a.toString() === b.toString());
   let attachmentsInfo = await Promise.all(attachmentToFetch.map(_attachmentId => {
     return fetchOneAttachment(_attachmentId);
   }));

@@ -14,23 +14,6 @@ describe('attachment part.', async () => {
     await dbTool.prepare();
   });
 
-  it('get attachment by aid.', async () => {
-    let randomAid;
-    let attachmentInfo = 1;
-    while (attachmentInfo) {
-      randomAid = parseInt(Math.random() * 1e15);
-      attachmentInfo = await dbTool.attachment.findOne({ aid: randomAid });
-    }
-    await dbTool.attachment.insertOne({ aid: randomAid });
-
-    let getUrl = `/api/v1/attachment/info?aid=${randomAid}`;
-    let attachmentRes = await agent.get(getUrl).expect(200);
-    let attachmentBody = attachmentRes.body;
-    let attachment = attachmentBody.attachment;
-    expect(attachmentBody.status).to.be.equal('ok');
-    expect(attachment.aid).to.be.equal(randomAid);
-  });
-
   it('upload a file.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
@@ -87,5 +70,15 @@ describe('attachment part.', async () => {
       .attach('file', 'test/testfile/attachment.txt');
 
     expect(fileRes.body.status).to.be.equal('error');
+  });
+
+  it('get a file.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
+        let getUrl = `/api/v1/attachment/${newAttachmentInfo.id}`;
+        let fileRes = await agent.get(getUrl);
+        expect(fileRes.type).to.be.equal('text/plain');
+      });
+    });
   });
 });
