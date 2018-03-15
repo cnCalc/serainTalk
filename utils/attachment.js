@@ -54,7 +54,11 @@ async function resolveAttachmentsInPosts (posts) {
   let attachmentsInfo = await Promise.all(attachmentToFetch.map(_attachmentId => {
     return fetchOneAttachment(_attachmentId);
   }));
-  return attachmentsInfo;
+  let attachments = {};
+  attachmentsInfo.forEach(attachment => {
+    attachments[attachment._id] = attachment;
+  });
+  return attachments;
 }
 
 module.exports = {

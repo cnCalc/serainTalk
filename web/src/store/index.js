@@ -35,6 +35,7 @@ const store = new Vuex.Store({
     },
     notifications: {},
     messageSession: null,
+    attachments: {},
     autoLoadOnScroll: window.localStorage['experimental-auto-load-on-scroll'] === 'on',
   },
   mutations,

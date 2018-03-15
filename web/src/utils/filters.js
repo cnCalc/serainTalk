@@ -17,4 +17,10 @@ function indexToPage (index, pagesize = 10) {
   return Math.floor((index - 1) / pagesize) + 1;
 }
 
-export { timeAgo, indexToPage };
+function fileSize (size) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  let n = Math.floor(Math.log(size) / Math.log(1024));
+  return `${(size / (1024 ** n)).toFixed(2)} ${units[n]}`;
+}
+
+export { timeAgo, indexToPage, fileSize };

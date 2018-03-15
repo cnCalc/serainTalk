@@ -40,7 +40,7 @@ export default {
       while (target !== null && target.tagName !== 'A') {
         target = target.parentNode;
       }
-      if (target && target.href && target.href.indexOf(window.location.origin) === 0) {
+      if (target && target.href && target.href.indexOf(window.location.origin) === 0 && target.target !== '_blank') {
         event.preventDefault();
         let url = new window.URL(target.href);
         this.$router.push(url.href.replace(url.origin, ''));

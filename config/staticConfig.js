@@ -77,12 +77,12 @@ module.exports = {
   upload: {
     file: {
       maxCount: 20, // 每个成员最多能上传的附件数量
-      path: path.join(__dirname, '..', 'uploads', 'files'),
+      path: path.join(__dirname, '..', 'uploads/attachment/forum'),
       maxAge: '7d',
       maxSize: 1000 * 1000 * 100, // 100MB
     },
     picture: {
-      path: path.join(__dirname, '..', 'uploads', 'pictures'),
+      path: path.join(__dirname, '..', 'uploads/attachment/forum'),
       maxSize: 1000 * 1000 * 100, // 100MB
     },
     avatar: {

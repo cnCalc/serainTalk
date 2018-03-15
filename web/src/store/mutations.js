@@ -44,6 +44,13 @@ let mutations = {
   },
 
   /**
+   * 合并 attachment 对象
+   */
+  mergeAttachments: (state, attachments) => {
+    state.attachments = Object.assign(state.attachments, attachments);
+  },
+
+  /**
    * 变更繁忙状态
    */
   setBusy: (state, isBusy) => {

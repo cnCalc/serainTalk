@@ -4,6 +4,7 @@
       loading-icon(v-if="busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)")
       ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
         div.discussion-post-container
+          button.button.quote-button(v-bind:style="quoteButtonStyle") 引用
           article.discussion-post-body
             header.discussion-post-info
               router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
@@ -11,7 +12,14 @@
                 div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
               span.discussion-post-member {{ members[post.user].username }} 
               span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
-            post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding")
+            post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
+            div.discussion-post-attachments(v-if="post.attachments.length > 0")
+              div.attachment-wrapper
+                h3 附件列表
+                ul.attachment-list
+                  li.attachment-item(v-for="id in post.attachments") 
+                    a(:href="`#attach-${id}`") {{ attachments[id].fileName }}
+                    | ({{ fileSize(attachments[id].size) }})
             div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
             footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
               div.discussion-post-date
@@ -41,6 +49,8 @@
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs 前往后台
+    div.hidden
+      a.download-trigger
 </template>
 
 <script>
@@ -53,7 +63,7 @@ import titleMixin from '../mixins/title';
 import bus from '../utils/ws-eventbus';
 
 import config from '../config';
-import { indexToPage } from '../utils/filters';
+import { indexToPage, fileSize } from '../utils/filters';
 import { scrollToTop, scrollTo } from '../utils/scrollToTop';
 
 function scrollToHash (hash) {
@@ -94,6 +104,10 @@ export default {
       absoluteBottomIndex: null,
       absoluteBottomWidth: 0,
       unread: [],
+      quoteButtonStyle: {
+        display: 'none',
+        position: 'absolute',
+      },
     };
   },
   title () {
@@ -105,7 +119,7 @@ export default {
     return `${this.discussionMeta.title}`;
   },
   methods: {
-    indexToPage, scrollToTop, copyToClipboard,
+    indexToPage, scrollToTop, copyToClipboard, fileSize,
     preventScroll () {
       return false;
     },
@@ -169,6 +183,35 @@ export default {
     loadPage (page) {
       scrollToTop(1000);
       this.$router.push(`/d/${this.$route.params.discussionId}/${page}`);
+    },
+    showQuote (post, event) {
+      event.stopPropagation(); return;
+
+      // TODO: fix it
+      // const range = window.getSelection().getRangeAt(0);
+      // const postContent = this.$el.querySelector(`#index-${post.index} div.discussion-post-content`);
+
+      // if (range.startOffset === range.endOffset || !postContent.contains(range.commonAncestorContainer) || !(range.commonAncestorContainer instanceof window.Text)) {
+      //   // 选择的范围超过了一个帖子，或者根本没有选中长度，当然就不能去引用这些玩意儿咯
+      //   this.hideQuote();
+      //   return;
+      // }
+
+      // const rects = window.getSelection().getRangeAt(0).getClientRects();
+      // const lastRect = rects[rects.length - 1];
+      // this.quoteButtonStyle = {
+      //   display: '',
+      //   position: 'absolute',
+      //   top: lastRect.bottom + window.scrollY + 'px',
+      //   left: lastRect.right + 'px',
+      //   transform: 'translateX(-100%)',
+      // };
+    },
+    hideQuote () {
+      this.quoteButtonStyle = {
+        display: 'none',
+        position: 'absolute',
+      };
     },
     scrollWatcher () {
       if (this.$store.state.autoLoadOnScroll) {
@@ -251,6 +294,9 @@ export default {
     members () {
       return this.$store.state.members;
     },
+    attachments () {
+      return this.$store.state.attachments;
+    },
     busy () {
       return this.$store.state.busy;
     },
@@ -304,7 +350,20 @@ export default {
       });
     },
     '$route.hash': function (hash) {
-      hash && scrollToHash(hash);
+      const attachPattern = /\#attach\-([0-9a-fA-F]{24})/;
+      if (hash) {
+        if (attachPattern.test(hash)) {
+          const attachId = hash.match(attachPattern)[1];
+
+          const downloadTrigger = this.$el.querySelector('a.download-trigger');
+          downloadTrigger.href = `/api/v1/attachment/${attachId}`;
+          downloadTrigger.download = this.attachments[attachId].fileName;
+          downloadTrigger.target = '_blank';
+          downloadTrigger.click();
+        } else {
+          scrollToHash(hash);
+        }
+      }
     },
   },
   created () {
@@ -343,6 +402,7 @@ export default {
   },
   mounted () {
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
+    window.addEventListener('mouseup', this.hideQuote, { passive: true });
 
     const page = Number(this.$route.params.page) || 1;
     this.maxPage = page;
@@ -357,13 +417,16 @@ export default {
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
+    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
   },
   activated () {
     this.updateTitle();
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
+    window.addEventListener('mouseup', this.hideQuote, { passive: true });
   },
   deactivated () {
     window.removeEventListener('scroll', this.scrollWatcher);
+    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
   },
   asyncData ({ store, route }) {
     const page = Number(route.params.page) || 1;
@@ -542,6 +605,7 @@ div.discussion-view {
         flex-grow: 1;
         flex-shrink: 1;
         max-width: 100%;
+        // position: relative;
         // padding: 5px;
 
         span.discussion-post-date {
@@ -566,6 +630,7 @@ div.discussion-view {
             transition: transform ease 0.2s;
             padding-bottom: 5px;
             bottom: -30px;
+            z-index: 10;
             transform: translateY(-30px);
           }
 
@@ -596,6 +661,10 @@ div.discussion-view {
       margin-left: 0;
     }
   }
+  button.button.quote-button {
+    font-size: 14px;
+    transition: none;
+  }
 
   button.right {
     float: right;
@@ -610,6 +679,58 @@ div.discussion-view {
     line-height: 80px;
     color: grey;
     cursor: pointer;
+  }
+
+
+  div.discussion-post-attachments {
+    display: block;
+    font-size: 14px;
+    align-self: flex-end;
+    // width: 0;
+    // height: 0;
+    z-index: 5;
+
+    min-width: 0;
+    margin-top: 12px;
+
+    div.attachment-wrapper {
+      border: 2px dotted mix(white, $theme_color, 85%);
+      padding: 12px;
+      background-color: mix(white, $theme_color, 95%);
+      border-radius: 8px;
+      // width: 100%
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 12px;
+      padding-left: 20px;
+      // color: $theme_color;
+    }
+
+    ul.attachment-list {
+      // list-style: none;
+      margin-top: 10px;
+      // FIXME:
+      // transform: translateX(calc(-50% + 34px));
+      // width: 250px;
+      padding-left: 20px;
+      // padding: 1em;
+      // border-radius: 5px;
+      // box-shadow: 0 0 5px #888;
+      // background: white;
+    }
+
+    li.attachment-item {
+      line-height: 20px;
+      font-family: monospace;
+      a {
+        color: $theme_color;
+        margin-right: .5em;
+      }
+    }
   }
 }
 
@@ -630,6 +751,10 @@ div.discussion-view {
   footer.discussion-post-info.fixed {
     background-color: rgba(white, 0.9);
   }
+  button.button.quote-button {
+    color: mix($theme_color, white, 10%);
+    background-color: mix($theme_color, white, 90%);
+  }
 }
 
 .dark-theme div.discussion-view {
@@ -649,6 +774,10 @@ div.discussion-view {
   }
   footer.discussion-post-info.fixed {
     background-color: rgba(#222, 0.9);
+  }
+  button.button.quote-button {
+    color: #222;
+    background-color: #aaa;
   }
 }
 </style>

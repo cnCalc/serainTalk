@@ -82,7 +82,7 @@ div.st-header {
   height: 50px;
   width: 100vw;
   text-align: center;
-  z-index: 10;
+  z-index: 100;
 
   div.container {
     text-align: left;

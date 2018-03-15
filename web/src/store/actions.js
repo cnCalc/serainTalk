@@ -56,7 +56,9 @@ export default {
       return api.v1.discussion.fetchDiscussionPostsById(params);
     }).then(data => {
       state.commit('mergeMembers', data.members);
+      state.commit('mergeAttachments', data.attachments);
       state.commit('updateDiscussionPosts', data.posts);
+
       if (params.preloadPrevPage && params.page !== 1) {
         params.page--;
         return api.v1.discussion.fetchDiscussionPostsById(params);
@@ -65,6 +67,7 @@ export default {
     }).then(data => {
       if (data) {
         state.commit('mergeMembers', data.members);
+        state.commit('mergeAttachments', data.attachments);
         state.commit('updateDiscussionPosts', data.posts);
       }
       state.commit('setBusy', false);
@@ -90,6 +93,7 @@ export default {
       return api.v1.discussion.fetchDiscussionPostsById(params);
     }).then(data => {
       state.commit('mergeMembers', data.members);
+      state.commit('mergeAttachments', data.attachments);
       if (params.overwrite) {
         state.commit('setDiscussionPosts', data.posts);
       } else {
