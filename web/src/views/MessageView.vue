@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.message
+  div.message-view
     div.left-sessions(v-bind:class="{ 'hide-on-mobile': activeSession}")
       h2 消息列表
       ul.session-list
@@ -230,7 +230,7 @@ export default {
 <style lang="scss">
 @import '../styles/global.scss';
 
-div.message {
+div.message-view {
   display: flex;
   @include respond-to(phone) {
     position: relative;
@@ -455,7 +455,7 @@ div.message {
   }
 }
 
-.light-theme div.message {
+.light-theme div.message-view {
   @include respond-to(laptop) {
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
@@ -523,7 +523,7 @@ div.message {
   }
 }
 
-.dark-theme div.message {
+.dark-theme div.message-view {
   @include respond-to(laptop) {
     border-left: 1px solid #555;
     border-right: 1px solid #555;

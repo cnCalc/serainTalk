@@ -48,6 +48,7 @@ let getAttachmentsInfoByMemberId = async (req, res) => {
   try {
     let attachmentInfos = await dbTool.attachment.aggregate([
       { $match: { _owner: req.member._id } },
+      { $sort: { date: -1 } },
       { $project: { filePath: false } },
     ]).toArray();
     return res.status(200).send({ status: 'ok', attachments: attachmentInfos });
@@ -73,7 +74,7 @@ let uploadAttachment = async (req, res, next) => {
 
     // 检测是否超过上传限制
     let attachmentCount = attachmentInfo[0] ? attachmentInfo[0].count : 0;
-    if (attachmentCount >= config.upload.file.maxCount) {
+    if (utils.env.isRelease && attachmentCount >= config.upload.file.maxCount) {
       fs.unlinkSync(path.join(config.upload.file.path, req.file.filename));
       return errorHandler(null, errorMessages.OUT_OF_LIMIT, 401, res);
     }
@@ -81,6 +82,7 @@ let uploadAttachment = async (req, res, next) => {
       _id: new ObjectID(),
       _owner: req.member._id,
       type: 'file',
+      date: new Date().getTime(),
       fileName: req.file.originalname,
       filePath: req.file.path,
       size: req.file.size,

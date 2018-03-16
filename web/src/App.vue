@@ -11,10 +11,9 @@
     div.container
       keep-alive: router-view(v-if="$route.meta.keepAlive")
       router-view(v-if="!$route.meta.keepAlive")
-    div.editor-wrapper
-      div.editor-container
-        editor
+    editor
     notification-popup
+    message-box
 </template>
 
 <script>
@@ -22,11 +21,12 @@ import NavBar from './components/NavBar.vue';
 import GlobalTitle from './components/GlobalTitle.vue';
 import Editor from './components/Editor.vue';
 import NotificationPopup from './components/NotificationPopup.vue';
+import MessageBox from './components/MessageBox.vue';
 
 export default {
   name: 'app',
   components: {
-    NavBar, GlobalTitle, Editor, NotificationPopup,
+    NavBar, GlobalTitle, Editor, NotificationPopup, MessageBox,
   },
   beforeMount () {
     // reload session info.
@@ -82,23 +82,6 @@ body {
 
 #app.dark-theme {
   background: #222;
-}
-
-div.editor-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  pointer-events: none;
-}
-
-div.editor-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
 }
 
 </style>

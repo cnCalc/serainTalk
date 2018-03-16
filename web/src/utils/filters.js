@@ -19,7 +19,7 @@ function indexToPage (index, pagesize = 10) {
 
 function fileSize (size) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-  let n = Math.floor(Math.log(size) / Math.log(1024));
+  let n = Math.max(Math.floor(Math.log(size) / Math.log(1024)), 0);
   return `${(size / (1024 ** n)).toFixed(2)} ${units[n]}`;
 }
 

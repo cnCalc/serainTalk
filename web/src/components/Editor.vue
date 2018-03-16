@@ -1,39 +1,58 @@
 <template lang="pug">
-  div.editor(v-bind:class="{ mini: display === 'mini' }")
-    div.resize(v-show="display !== 'mini'")
-    div.mode(v-text="editorTitle" @click="recover")
-    div.row(v-if="state.mode === 'CREATE_DISCUSSION' || (state.mode === 'EDIT_POST' && state.index === 1)")
-      input(placeholder="输入标题", v-model="title")
-      select(v-model="category")
-        option(v-for="category in categories" :value="category.name") {{ category.name }}
-    div.row(v-if="isAdmin")
-      span 排版语言：
-      select(v-model="lang")
-        option(value="html") HTML
-        option(value="markdown") Markdown
-    div.textarea
-      div.mention-wrapper(v-if="!showPreview")
-        div.mention-dropdown(v-bind:style="dropdownStyle")
-          input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)", placeholder="用户名")
-          div.mention-list
-            div.option-list-item(v-for="(option, index) in options" 
-                                v-bind:class="{ 'highlight': index === dropdownFocus }"
-                                @click="filterInsert(index)"
-                                :key="option") {{ option }}
-        textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @keydown="handleInput" v-on:mousewheel="scrollHelper")
-      div.preview.post-content.scrollable(v-else v-html="preview === '' ? '说些什么吧' : preview" v-on:mousewheel="scrollHelper")
-    div.footer
-      button(@click="submit") 提交
-      button(@click="close") 关闭
-      button(@click="minimum") 最小化
-      button(@click="togglePreview") 切换预览
+  div.editor-wrapper
+    div.editor-container
+      div.editor(v-bind:class="{ mini: display === 'mini' }")
+        div.resize(v-show="display !== 'mini'")
+        div.mode(v-text="editorTitle" @click="recover")
+        div.row(v-if="state.mode === 'CREATE_DISCUSSION' || (state.mode === 'EDIT_POST' && state.index === 1)")
+          input(placeholder="输入标题", v-model="title")
+          select(v-model="category")
+            option(v-for="category in categories" :value="category.name") {{ category.name }}
+        div.row(v-if="isAdmin")
+          span 排版语言：
+          select(v-model="lang")
+            option(value="html") HTML
+            option(value="markdown") Markdown
+        div.textarea
+          div.mention-wrapper(v-if="!showPreview")
+            div.mention-dropdown(v-bind:style="dropdownStyle")
+              input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)", placeholder="用户名")
+              div.mention-list
+                div.option-list-item(v-for="(option, index) in options" 
+                                    v-bind:class="{ 'highlight': index === dropdownFocus }"
+                                    @click="filterInsert(index)"
+                                    :key="option") {{ option }}
+            textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @keydown="handleInput" v-on:mousewheel="scrollHelper")
+          div.preview.post-content.scrollable(v-else v-html="preview === '' ? '说些什么吧' : preview" v-on:mousewheel="scrollHelper")
+        div.footer
+          button.button(@click="submit") 提交
+          button.button(@click="close") 关闭
+          button.button(@click="minimum") 最小化
+          button.button(@click="togglePreview") 切换预览
+          button.button(@click="showAttachmentPicker = true") 插入附件
+      div.attachment-picker-container(v-on:mousewheel="$event.preventDefault()", v-bind:class="{ active: showAttachmentPicker }")
+        div.attachment-picker
+          button.close-button(@click="showAttachmentPicker = false") ×
+          h3.title 插入附件
+          input(type="file" style="display: none" v-on:change="confirmAndUpload($event)")
+          h4 所有未使用附件*
+          ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
+            li(v-for="attach in attachments", @click="insertAttachmentLinks(attach)"): a
+              span.filename {{ attach.fileName }}
+              span.size {{ fileSize(attach.size) }}
+          loading-icon(v-else)
+          span.msg *新的附件在提交前状态将始终为未使用。
+          span.msg **服务器将每月清理未使用的附件，请注意备份。
+          button.upload-button(@click="$el.querySelector('input[type=\"file\"]').click()") 上传新的附件
 </template>
 
 <script>
+import axios from 'axios';
 import api from '../api';
 import getCaretCoordinates from '../utils/textarea-caret-coordinates';
 import bus from '../utils/ws-eventbus';
-import { indexToPage } from '../utils/filters';
+import { indexToPage, fileSize } from '../utils/filters';
+import LoadingIcon from '../components/LoadingIcon.vue';
 
 const hljs = window.hljs;
 const md = window.markdownit({
@@ -59,6 +78,9 @@ const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
 
 export default {
   name: 'editor',
+  components: {
+    LoadingIcon,
+  },
   data () {
     return {
       preview: '',
@@ -79,6 +101,9 @@ export default {
       options: [],
       dropdownFocus: 0,
       apiTimeoutId: null,
+      showAttachmentPicker: false,
+      attachments: [],
+      busy: false,
     };
   },
   mounted () {
@@ -203,8 +228,90 @@ export default {
     mentionFilter (filter, oldFilter) {
       this.updateOptions(filter, oldFilter);
     },
+    showAttachmentPicker (val) {
+      if (val) {
+        this.updateMyAttachmentList();
+      }
+    },
   },
   methods: {
+    fileSize,
+    updateMyAttachmentList () {
+      this.busy = true;
+      return api.v1.attachment.fetchMyAttachmentList().then(attachments => {
+        this.busy = false;
+        this.attachments = attachments.filter(el => el.referer.length === 0);
+      });
+    },
+    confirmAndUpload (event) {
+      const input = this.$el.querySelector('input[type="file"]');
+
+      if (input.files && input.files[0]) {
+        let file = input.files[0];
+        this.$store.dispatch('showMessageBox', {
+          title: '上传确认',
+          type: 'OKCANCEL',
+          message: `确定要上传 ${file.name} 吗？`,
+        }).then(() => {
+          let source = axios.CancelToken.source();
+
+          this.$store.dispatch('showMessageBox', {
+            title: '上传中',
+            type: 'CANCEL',
+            message: '正在上传（0%）',
+          }).catch(() => {
+            source.cancel('用户取消上传');
+          });
+
+          const uploadPromsie = api.v1.attachment.uploadAttachment({
+            file,
+          }, {
+            onUploadProgress: e => {
+              this.$store.dispatch('updateMessageBox', {
+                title: '上传中',
+                message: `正在上传（${(e.loaded / e.total).toFixed(2)}%）`,
+              });
+            },
+            cancelToken: source.token,
+          });
+
+          return uploadPromsie.then(response => {
+            this.$store.dispatch('disposeMessageBox');
+            bus.$emit('notification', {
+              type: 'message',
+              body: '上传成功！',
+            });
+            return this.updateMyAttachmentList();
+          }).catch(error => {
+            this.$store.dispatch('disposeMessageBox');
+            bus.$emit('notification', {
+              type: 'error',
+              body: error.message,
+            });
+          });
+        }).then(() => {
+          input.value = '';
+        }).catch(() => {
+          // doing nothing...
+          input.value = '';
+        });
+      }
+    },
+    insertAttachmentLinks (attach) {
+      const textarea = this.$el.querySelector('textarea');
+      const insertText = /\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(attach.fileName)
+      ? `![${attach.fileName}](/api/v1/attachment/${attach._id})`
+      : `[\\[附件\\] ${attach.fileName}](#attach-${attach._id})`;
+      const begin = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      this.content = this.content.substring(0, begin) + insertText + ' ' + this.content.substring(end);
+      textarea.focus();
+      this.$nextTick(() => {
+        textarea.setSelectionRange(begin + insertText.length + 1, begin + insertText.length + 1);
+        this.updatePreview();
+        this.showAttachmentPicker = false;
+      });
+    },
     filterKeyDown (event) {
       const textarea = this.$el.querySelector('textarea');
       if (event.keyCode === 27) { // ESC key
@@ -364,7 +471,17 @@ export default {
       this.display === 'mini' && this.$store.commit('updateEditorDisplay', 'show');
     },
     close () {
-      if (this.content.length === 0 || window.confirm('Are you sure you want to abandon your post?')) {
+      if (this.content.length !== 0) {
+        this.$store.dispatch('showMessageBox', {
+          title: '警告',
+          type: 'OKCANCEL',
+          message: '你确定要关闭编辑器吗?所有未提交的变更将被放弃。',
+        }).then(() => {
+          this.$store.commit('updateEditorDisplay', 'none');
+        }).catch(() => {
+          // Doing nothing.
+        });
+      } else {
         this.$store.commit('updateEditorDisplay', 'none');
       }
     },
@@ -517,6 +634,23 @@ export default {
 @import '../styles/global.scss';
 @import '../styles/post-content.scss';
 
+div.editor-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+div.editor-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 div.editor {
   position: absolute;
   bottom: 0;
@@ -664,11 +798,164 @@ div.editor {
   }
 
   div.footer {
-    margin: 13px 0;
+    margin: 10px 0;
 
     button {
-      margin-right: 1em;
+      margin-right: .5em;
+      padding: 0.3em 1em;
+      border: 1px solid mix($theme_color, white, 50%);
+      border-radius: 2px;
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+      }
     }
   }
 }
+
+div.attachment-picker-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: all ease 0.2s;
+  z-index: 200;
+
+  div.attachment-picker {
+    max-width: 330px;
+    width: 330px;
+    opacity: 0;
+    transform: translateY(-50px);
+    transition: all ease 0.2s;
+    padding: 1em;
+    max-height: 420px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    border-radius: 4px;
+    box-shadow: 2px 2px 10px #888;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+    > *:not(ul) {
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+  }
+
+  &.active {
+    pointer-events: initial;
+    background: rgba(0, 0, 0, 0.2);
+    div.attachment-picker {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  ul.attachment-list {
+    margin: 0.25em 0;
+    padding: 0;
+    box-sizing: border-box;
+    list-style: none;
+    flex-grow: 1;
+    overflow-y: scroll;
+
+    li {
+      font-size: 14px;
+      height: 24px;
+      line-height: 24px;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      color: $theme_color;
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    span.filename {
+      flex-grow: 0;
+      flex-shrink: 1;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: pre;
+    }
+
+    span.size {
+      flex-grow: 0;
+      flex-shrink: 0;
+      &::before {
+        content: '(';
+      }
+      &::after {
+        content: ')';
+      }
+    }
+  }
+
+  h3, h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  span.msg {
+    font-size: 12px;
+    margin-top: .5em;
+    color: #666;
+  }
+
+  button.close-button {
+    position: absolute;
+    width: 1.5em;
+    line-height: 28px;
+    text-align: center;
+    top: 1em;
+    right: 1em;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: #c22;
+    }
+  }
+
+  button.upload-button {
+    width: 100%;
+    background-color: $theme_color;
+    color: white;
+    line-height: 1.8rem;
+    height: 1.8rem;
+    margin: .5em 0 0 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+}
+
+.dark-theme div.editor {
+  button.button {
+    background: rgba(0, 0, 0, 0);
+    color: lightgrey;
+  }
+}
+
+.light-theme div.editor {
+  button.button {
+    background: #ddd;
+    color: mix($theme_color, black, 90%);
+    &:hover {
+    background: #ccc;
+    }
+  }
+}
+
 </style>

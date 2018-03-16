@@ -75,6 +75,8 @@ div
           button.button(@click="sudo") 提权至管理员
           button.button(@click="emitNotification('message')") 弹出消息通知
           button.button(@click="emitNotification('error')") 弹出错误通知
+          button.button(@click="createMessageBox('OK')") 弹出普通窗口
+          button.button(@click="createMessageBox('OKCANCEL')") 弹出询问窗口
 </template>
 
 <script>
@@ -183,6 +185,23 @@ export default {
       bus.$emit('notification', {
         type,
         body: navigator.userAgent,
+      });
+    },
+    createMessageBox (type) {
+      this.$store.dispatch('showMessageBox', {
+        title: '这是个标题',
+        type,
+        message: '这是正文',
+      }).then(() => {
+        bus.$emit('notification', {
+          type: 'message',
+          body: '确认！',
+        });
+      }).catch(() => {
+        bus.$emit('notification', {
+          type: 'error',
+          body: '取消！',
+        });
       });
     },
   },

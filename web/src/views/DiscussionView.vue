@@ -355,11 +355,21 @@ export default {
         if (attachPattern.test(hash)) {
           const attachId = hash.match(attachPattern)[1];
 
-          const downloadTrigger = this.$el.querySelector('a.download-trigger');
-          downloadTrigger.href = `/api/v1/attachment/${attachId}`;
-          downloadTrigger.download = this.attachments[attachId].fileName;
-          downloadTrigger.target = '_blank';
-          downloadTrigger.click();
+          this.$store.dispatch('showMessageBox', {
+            title: '附件下载确认',
+            type: 'OKCANCEL',
+            message: `<p>你确定要下载 ${this.attachments[attachId].fileName} 吗？</p><p>该操作将会使用 ${this.fileSize(this.attachments[attachId].size)} 流量，您当前剩余流量为 1.00PB。</p>`,
+            html: true,
+          }).then(() => {
+            const downloadTrigger = this.$el.querySelector('a.download-trigger');
+            downloadTrigger.href = `/api/v1/attachment/${attachId}`;
+            downloadTrigger.download = this.attachments[attachId].fileName;
+            downloadTrigger.target = '_blank';
+            downloadTrigger.click();
+            window.history.go(-1);
+          }).catch(() => {
+            window.history.go(-1);
+          });
         } else {
           scrollToHash(hash);
         }

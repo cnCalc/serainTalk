@@ -33,6 +33,12 @@ const store = new Vuex.Store({
       display: 'none',
       index: 0,
     },
+    messageBox: {
+      type: null,
+      title: '',
+      message: '',
+      promise: null,
+    },
     notifications: {},
     messageSession: null,
     attachments: {},

@@ -170,4 +170,28 @@ export default {
       state.commit('updateNofitication', params);
     });
   },
+
+  showMessageBox: (state, { type, title, message, html }) => {
+    let resolve, reject;
+    const p = new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    });
+
+    p.resolve = resolve;
+    p.reject = reject;
+
+    state.commit('updateMessageBox', { type, title, message, promise: p, html });
+
+    return p;
+  },
+
+  updateMessageBox: (state, { title, message }) => {
+    state.commit('updateMessageBox', { title, message });
+  },
+
+  disposeMessageBox: (state) => {
+    console.log('fucked');
+    state.commit('disposeMessageBox', { promise: null });
+  },
 };

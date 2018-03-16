@@ -151,6 +151,20 @@ let mutations = {
     }
   },
 
+  updateMessageBox: (state, params) => {
+    if (params.promise) {
+      state.messageBox = params;
+    } else {
+      state.messageBox = Object.assign(state.messageBox, params);
+    }
+  },
+
+  disposeMessageBox: (state) => {
+    state.messageBox = {
+      promise: null,
+    };
+  },
+
   updateMessageSession: (state, messageId) => {
     state.messageSession = messageId;
   },
