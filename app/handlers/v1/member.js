@@ -2,6 +2,8 @@
 
 const joi = require('joi');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const promisify = require('util').promisify;
 const { ObjectID } = require('mongodb');
 
 const config = require('../../../config');
@@ -166,7 +168,38 @@ let memberStartWith = async (req, res, next) => {
 };
 
 let uploadAvatar = async (req, res, next) => {
-  return res.status(201).send({ status: 'ok', avatarName: req.file.filename });
+  let { left, top, width, height } = req.query;
+
+  let avatar = {
+    _id: new ObjectID(),
+    _owner: req.member._id,
+    type: 'avatar',
+    fileName: req.file.originalname,
+    filePath: req.file.path,
+    size: req.file.size,
+    status: 'ok',
+    referer: [],
+  };
+
+  if (width && height) {
+    try {
+      let optPath = req.file.path.split('.').filter(part => part !== 'temp').join('.');
+      await utils.upload.sharpImage(req.file.path, optPath, { left: left, top: top, width: width, height: height });
+
+      avatar.filePath = optPath;
+      await promisify(fs.unlink)(req.file.path);
+      let stat = await promisify(fs.stat)(optPath);
+      avatar.size = stat.size;
+    } catch (err) {
+      return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+    }
+  }
+
+  await dbTool.attachment.insertOne(avatar);
+
+  // 对成员隐藏路径信息
+  delete avatar.filePath;
+  return res.status(201).send({ status: 'ok', avatar: avatar });
 };
 
 /**

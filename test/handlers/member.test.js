@@ -2,7 +2,6 @@
 
 const expect = require('chai').expect;
 const fs = require('fs');
-const path = require('path');
 const supertest = require('supertest');
 const { ObjectID } = require('mongodb');
 
@@ -425,15 +424,39 @@ describe('member part', () => {
 
   it('upload a avatar.', async () => {
     await testTools.member.createOneMember(agent, { username: 'memberkasora' }, async () => {
-      let getUrl = '/api/v1/member/avatar';
-      let avatarRes = await agent.post(getUrl)
+      let uploadUrl = '/api/v1/member/avatar';
+      let uploadRes = await agent.post(uploadUrl)
         .attach('avatar', 'test/testfile/testpng.png');
 
-      expect(avatarRes.body.status).to.be.equal('ok');
-      let picturePath = path.join(config.upload.avatar.path, avatarRes.body.avatarName);
-      expect(fs.existsSync(picturePath)).to.be.true;
+      expect(uploadRes.body.status).to.be.equal('ok');
 
-      fs.unlinkSync(picturePath);
+      let getUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
+      let avatarRes = await agent.get(getUrl).expect(200);
+      let file = fs.readFileSync('test/testfile/testpng.png');
+
+      expect(file.equals(avatarRes.body)).to.be.true;
+
+      let deleteUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
+      await agent.delete(deleteUrl).expect(204);
+    });
+  });
+
+  it('upload and extract a avatar.', async () => {
+    await testTools.member.createOneMember(agent, { username: 'memberkasora' }, async () => {
+      let uploadUrl = '/api/v1/member/avatar?left=0&top=0&width=1&height=1';
+      let uploadRes = await agent.post(uploadUrl)
+        .attach('avatar', 'test/testfile/testpng.png');
+
+      expect(uploadRes.body.status).to.be.equal('ok');
+
+      let getUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
+      let avatarRes = await agent.get(getUrl).expect(200);
+      let file = fs.readFileSync('test/testfile/avatar-sharp.png');
+
+      expect(file.equals(avatarRes.body)).to.be.true;
+
+      let deleteUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
+      await agent.delete(deleteUrl).expect(204);
     });
   });
 });

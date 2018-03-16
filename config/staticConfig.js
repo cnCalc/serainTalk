@@ -80,13 +80,14 @@ module.exports = {
       path: path.join(__dirname, '..', 'uploads/attachment/forum'),
       maxAge: '7d',
       maxSize: 1000 * 1000 * 100, // 100MB
+      maxDownload: 1000 * 1000 * 1000 * 20, // 20GB
     },
     picture: {
       path: path.join(__dirname, '..', 'uploads/attachment/forum'),
       maxSize: 1000 * 1000 * 100, // 100MB
     },
     avatar: {
-      path: path.join(__dirname, '..', 'uploads', 'avatar'),
+      path: path.join(__dirname, '..', 'uploads', 'avatars'),
       maxSize: 1000 * 1000 * 100, // 100MB
     },
   },

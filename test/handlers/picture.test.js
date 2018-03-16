@@ -23,10 +23,9 @@ describe('picture part.', async () => {
         .attach('picture', 'test/testfile/testpng.png');
 
       expect(pictureRes.body.status).to.be.equal('ok');
-      let picturePath = path.join(staticConfig.upload.picture.path, pictureRes.body.pictureName);
-      expect(fs.existsSync(picturePath)).to.be.true;
 
-      fs.unlinkSync(picturePath);
+      let paths = fs.readdirSync(staticConfig.upload.picture.path);
+      paths.forEach(filePath => fs.unlinkSync(path.join(staticConfig.upload.picture.path, filePath)));
     });
   });
 });

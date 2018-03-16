@@ -74,7 +74,14 @@ let info = {
       page: interfaceUtils.page,
     },
   },
-  uploadAvatar: {},
+  uploadAvatar: {
+    query: joi.object({
+      left: joi.number(),
+      top: joi.number(),
+      width: joi.number(),
+      height: joi.number(),
+    }).and('x', 'y', 'w', 'h'),
+  },
   update: {
     body: {
       avatar: joi.string(),

@@ -66,7 +66,7 @@ let getAttachmentsInfoByMemberId = async (req, res) => {
 let uploadAttachment = async (req, res, next) => {
   try {
     let attachmentInfo = await dbTool.attachment.aggregate([
-      { $match: { _owner: req.member._id } },
+      { $match: { _owner: req.member._id, type: 'file' } },
       { $project: { filePath: false } },
       { $count: 'count' },
     ]).toArray();
@@ -80,8 +80,9 @@ let uploadAttachment = async (req, res, next) => {
     let attachment = {
       _id: new ObjectID(),
       _owner: req.member._id,
+      type: 'file',
       fileName: req.file.originalname,
-      filePath: req.file.filename,
+      filePath: req.file.path,
       size: req.file.size,
       status: 'ok',
       referer: [],
@@ -104,7 +105,7 @@ let deleteAttachment = async (req, res, next) => {
     if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
-    fs.unlinkSync(path.join(config.upload.file.path, attachmentInfo.filePath));
+    fs.unlinkSync(attachmentInfo.filePath);
     await dbTool.attachment.deleteOne({ _id: _id });
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
@@ -117,15 +118,17 @@ let getAttachment = async (req, res, next) => {
   try {
     let attachmentInfo = await dbTool.attachment.findOne({ _id: ObjectID(req.params.id) });
 
+    let pathInfo = path.parse(attachmentInfo.filePath);
+
     let options = {
-      root: config.upload.file.path,
+      root: pathInfo.dir,
       dotfiles: 'deny',
       headers: {
         'x-timestamp': Date.now(),
         'x-sent': true,
       },
     };
-    return res.sendFile(attachmentInfo.filePath, options);
+    return res.sendFile(pathInfo.base, options);
   } catch (err) {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
