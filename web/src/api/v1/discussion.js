@@ -89,6 +89,7 @@ function fetchDiscussionPostByIdAndIndex (params) {
  * @param {number} params.index Index of the post
  * @param {string} params.content Content of the new post
  * @param {string} params.encoding Encoding of the new post
+ * @param {array.<string>} params.attachments Attachments used in the post
  *
  * @returns {Promise} Promise of the request
  */
@@ -106,6 +107,9 @@ function updateDiscussionPostByIdAndIndex (params) {
     }
     if (params.meta) {
       payload.meta = params.meta;
+    }
+    if (params.attachments) {
+      payload.attachments = params.attachments;
     }
     axios.put(`${config.api.url}/${config.api.version}/discussion/${params.id}/post/${params.index}`, payload)
       .then(response => resolve(response.data))
@@ -159,6 +163,9 @@ function replyToDiscussion (params) {
     };
     if (params.replyTo) {
       payload.replyTo = params.replyTo;
+    }
+    if (params.attachments) {
+      payload.attachments = params.attachments;
     }
     axios.post(`${config.api.url}/${config.api.version}/discussion/${params.id}/post`, payload)
       .then(response => resolve(response.data))

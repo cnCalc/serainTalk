@@ -199,6 +199,21 @@ let uploadAvatar = async (req, res, next) => {
 
   // 对成员隐藏路径信息
   delete avatar.filePath;
+
+  // 更新用户信息
+  let info = {
+    avatar: `/api/v1/attachment/${avatar._id}`,
+  };
+  let updateDoc = await dbTool.commonMember.findOneAndUpdate(
+    { _id: req.member._id },
+    { $set: info },
+    { returnOriginal: false }
+  );
+  let memberInfo = updateDoc.value;
+  utils.member.removeSensitiveField(memberInfo);
+  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
+  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+
   return res.status(201).send({ status: 'ok', avatar: avatar });
 };
 

@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { sync } from 'vuex-router-sync';
+import axios from 'axios';
 
 import App from './App.vue';
 import store from './store';
@@ -16,6 +17,11 @@ import MessageView from './views/MessageView.vue';
 import './utils/ws-eventbus';
 
 Vue.use(VueRouter);
+
+axios.defaults.headers.common['cache-control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0';
+axios.defaults.headers.common['expires'] = '0';
+axios.defaults.headers.common['expires'] = 'Tue, 01 Jan 1980 1:00:00 GMT';
+axios.defaults.headers.common['pragma'] = 'no-cache';
 
 const router = new VueRouter({
   mode: 'history',
@@ -48,6 +54,10 @@ const router = new VueRouter({
       path: '/m/:memberId/settings',
       component: MemberView,
       meta: { keepAlive: true, mode: 'settings' },
+    }, {
+      path: '/m/:memberId/change-avatar',
+      component: MemberView,
+      meta: { keepAlive: true, mode: 'avatar' },
     }, {
       path: '/signin',
       component: SigninView,

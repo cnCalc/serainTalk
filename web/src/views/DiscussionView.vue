@@ -185,27 +185,30 @@ export default {
       this.$router.push(`/d/${this.$route.params.discussionId}/${page}`);
     },
     showQuote (post, event) {
-      event.stopPropagation(); return;
+      event.stopPropagation();
 
-      // TODO: fix it
-      // const range = window.getSelection().getRangeAt(0);
-      // const postContent = this.$el.querySelector(`#index-${post.index} div.discussion-post-content`);
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) {
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      const postContent = this.$el.querySelector(`#index-${post.index} div.discussion-post-content`);
 
-      // if (range.startOffset === range.endOffset || !postContent.contains(range.commonAncestorContainer) || !(range.commonAncestorContainer instanceof window.Text)) {
-      //   // 选择的范围超过了一个帖子，或者根本没有选中长度，当然就不能去引用这些玩意儿咯
-      //   this.hideQuote();
-      //   return;
-      // }
+      if (range.startOffset === range.endOffset || !postContent.contains(range.commonAncestorContainer) || !(range.commonAncestorContainer instanceof window.Text)) {
+        // 选择的范围超过了一个帖子，或者根本没有选中长度，当然就不能去引用这些玩意儿咯
+        this.hideQuote();
+        return;
+      }
 
-      // const rects = window.getSelection().getRangeAt(0).getClientRects();
-      // const lastRect = rects[rects.length - 1];
-      // this.quoteButtonStyle = {
-      //   display: '',
-      //   position: 'absolute',
-      //   top: lastRect.bottom + window.scrollY + 'px',
-      //   left: lastRect.right + 'px',
-      //   transform: 'translateX(-100%)',
-      // };
+      const rects = window.getSelection().getRangeAt(0).getClientRects();
+      const lastRect = rects[rects.length - 1];
+      this.quoteButtonStyle = {
+        display: '',
+        position: 'absolute',
+        top: lastRect.bottom + window.scrollY + 'px',
+        left: lastRect.right + 'px',
+        transform: 'translateX(-100%)',
+      };
     },
     hideQuote () {
       this.quoteButtonStyle = {
@@ -354,6 +357,14 @@ export default {
       if (hash) {
         if (attachPattern.test(hash)) {
           const attachId = hash.match(attachPattern)[1];
+
+          if (this.attachments[attachId] === undefined) {
+            window.history.go(-1);
+            return bus.$emit('notification', {
+              type: 'error',
+              body: '该附件链接无效！',
+            });
+          }
 
           this.$store.dispatch('showMessageBox', {
             title: '附件下载确认',
@@ -672,6 +683,7 @@ div.discussion-view {
     }
   }
   button.button.quote-button {
+    z-index: 1;
     font-size: 14px;
     transition: none;
   }

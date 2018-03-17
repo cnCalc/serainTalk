@@ -73,6 +73,17 @@ function fetchMemberWithLeadingString (param) {
   });
 }
 
+function uploadAvatar (param) {
+  let fd = new window.FormData();
+  fd.append('avatar', param.file);
+
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}/${config.api.version}/member/avatar?left=${param.x}&top=${param.y}&width=${param.w}&height=${param.w}`, fd)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -81,4 +92,5 @@ export default {
   signin, signout,
   fetchMe,
   fetchMemberWithLeadingString,
+  uploadAvatar,
 };

@@ -1,3 +1,9 @@
+function filterPosts (posts) {
+  posts.forEach(post => {
+    post.attachments = post.attachments.filter(attachmentId => !(new RegExp(attachmentId, 'i').test(post.content)));
+  });
+}
+
 let mutations = {
   /**
    * 设置帖子列表页面左侧的板块和分组
@@ -65,6 +71,7 @@ let mutations = {
 
   /** 设置帖子内容 */
   setDiscussionPosts: (state, posts) => {
+    filterPosts(posts);
     state.discussionPosts = [];
     posts.forEach(post => {
       state.discussionPosts[post.index] = post;
@@ -73,6 +80,7 @@ let mutations = {
 
   /** 更新帖子内容 */
   updateDiscussionPosts: (state, posts) => {
+    filterPosts(posts);
     posts.forEach(post => {
       state.discussionPosts[post.index] = post;
     });

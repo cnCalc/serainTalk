@@ -29,19 +29,28 @@
           button.button(@click="close") 关闭
           button.button(@click="minimum") 最小化
           button.button(@click="togglePreview") 切换预览
-          button.button(@click="showAttachmentPicker = true") 插入附件
+          button.button(@click="showAttachmentPicker = true") 管理附件
       div.attachment-picker-container(v-on:mousewheel="$event.preventDefault()", v-bind:class="{ active: showAttachmentPicker }")
         div.attachment-picker
           button.close-button(@click="showAttachmentPicker = false") ×
-          h3.title 插入附件
+          h3.title 管理附件
           input(type="file" style="display: none" v-on:change="confirmAndUpload($event)")
-          h4 所有未使用附件*
-          ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
-            li(v-for="attach in attachments", @click="insertAttachmentLinks(attach)"): a
-              span.filename {{ attach.fileName }}
-              span.size {{ fileSize(attach.size) }}
-          loading-icon(v-else)
-          span.msg *新的附件在提交前状态将始终为未使用。
+          template(v-if="usedAttachments.length !== 0")
+            h4 已使用的附件*
+            ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
+              li(v-for="attach in usedAttachments", @click="removeAttachment(attach)"): a.remove-link
+                span.filename {{ refAttachments[attach].fileName }}
+                span.size {{ fileSize(refAttachments[attach].size) }}
+          template(v-if="attachments.length !== 0")
+            h4 未使用的附件**
+            ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
+              li(v-for="attach in attachments", @click="insertAttachmentLinks(attach)"): a
+                span.filename {{ refAttachments[attach].fileName }}
+                span.size {{ fileSize(refAttachments[attach].size) }}
+          template(v-if="attachments.length === 0 && usedAttachments.length === 0")
+            div.no-available 暂无可用附件，上传一个试试？
+          loading-icon(v-if="busy")
+          span.msg *移除附件后若文章中出现附件链接将无法使用，请手动删除
           span.msg **服务器将每月清理未使用的附件，请注意备份。
           button.upload-button(@click="$el.querySelector('input[type=\"file\"]').click()") 上传新的附件
 </template>
@@ -75,6 +84,8 @@ function addSpanEachLine (html) {
 
 // @<Member ID>#<Discussion ID>#<Post Index>
 const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
+// (#attach-<Attachment ID>)
+// const attachReg = /(\(\#attach\-([\da-fA-F]{24})\)|\/api\/v1\/attachment\/([\da-fA-F]{24}))/g;
 
 export default {
   name: 'editor',
@@ -103,6 +114,7 @@ export default {
       apiTimeoutId: null,
       showAttachmentPicker: false,
       attachments: [],
+      usedAttachments: [],
       busy: false,
     };
   },
@@ -157,6 +169,9 @@ export default {
     isAdmin () {
       return !!(this.$store.state.me && this.$store.state.me.role === 'admin');
     },
+    refAttachments () {
+      return this.$store.state.attachments;
+    },
   },
   watch: {
     display (val, oldVal) {
@@ -174,6 +189,7 @@ export default {
 
         this.content = '';
         this.category = '';
+        this.usedAttachments = [];
         this.title = '';
         this.typed = false;
         this.state = {};
@@ -205,8 +221,11 @@ export default {
             this.editable = false;
             this.preview = this.content = '正在获取内容，请稍等……';
             api.v1.discussion.fetchDiscussionPostByIdAndIndex({ raw: true, index: this.state.index, id: this.state.discussionId }).then(response => {
+              this.$store.commit('mergeAttachments', response.attachments);
+
               this.editable = true;
               this.content = response.post.content;
+              this.usedAttachments = response.post.attachments;
 
               if (this.state.index === 1) {
                 this.title = this.state.discussionTitle;
@@ -240,8 +259,19 @@ export default {
       this.busy = true;
       return api.v1.attachment.fetchMyAttachmentList().then(attachments => {
         this.busy = false;
-        this.attachments = attachments.filter(el => el.referer.length === 0);
+        this.attachments = attachments.filter(el => el.referer.length === 0 && this.usedAttachments.indexOf(el._id) === -1).map(el => el._id);
+
+        let attachMap = {};
+        attachments.forEach(el => {
+          attachMap[el._id] = el;
+        });
+
+        this.$store.commit('mergeAttachments', attachMap);
       });
+    },
+    removeAttachment (id) {
+      this.usedAttachments = this.usedAttachments.filter(el => el !== id);
+      this.attachments.push(id);
     },
     confirmAndUpload (event) {
       const input = this.$el.querySelector('input[type="file"]');
@@ -298,16 +328,20 @@ export default {
       }
     },
     insertAttachmentLinks (attach) {
+      this.usedAttachments.push(attach);
+      this.attachments = this.attachments.filter(el => el !== attach);
+
+      const attachment = this.refAttachments[attach];
       const textarea = this.$el.querySelector('textarea');
-      const insertText = /\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(attach.fileName)
-      ? `![${attach.fileName}](/api/v1/attachment/${attach._id})`
-      : `[\\[附件\\] ${attach.fileName}](#attach-${attach._id})`;
+      const insertText = /\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(attachment.fileName)
+      ? `![${attachment.fileName}](/api/v1/attachment/${attachment._id}) `
+      : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `;
       const begin = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      this.content = this.content.substring(0, begin) + insertText + ' ' + this.content.substring(end);
+      this.content = this.content.substring(0, begin) + insertText + this.content.substring(end);
       textarea.focus();
       this.$nextTick(() => {
-        textarea.setSelectionRange(begin + insertText.length + 1, begin + insertText.length + 1);
+        // textarea.setSelectionRange(begin + insertText.length + 1, begin + insertText.length + 1);
         this.updatePreview();
         this.showAttachmentPicker = false;
       });
@@ -379,7 +413,6 @@ export default {
         const textarea = this.$el.querySelector('textarea');
         this.$nextTick(() => {
           const position = getCaretCoordinates(textarea, textarea.selectionEnd);
-          console.log(textarea.scrollTop);
           this.dropdownStyle.top = `${position.top - textarea.scrollTop}px`;
           this.dropdownStyle.left = position.left + 'px';
           this.dropdownStyle.opacity = 1;
@@ -510,6 +543,7 @@ export default {
         content: {
           content: this.content,
           encoding: 'markdown',
+          attachments: this.usedAttachments,
         },
         tags: [],
       };
@@ -526,6 +560,7 @@ export default {
         id: editorState.discussionId,
         encoding: 'markdown',
         content: this.content,
+        attachments: this.usedAttachments,
       };
 
       if (matched) {
@@ -548,6 +583,7 @@ export default {
         id: editorState.discussionId,
         encoding: 'markdown',
         content: this.content,
+        attachments: this.usedAttachments,
       }).then(res => {
         bus.$emit('reloadDiscussionView');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
@@ -556,19 +592,20 @@ export default {
     },
     update () {
       const editorState = this.$store.state.editor;
-      const matched = this.content.match(replyReg);
+      const replyMatched = this.content.match(replyReg);
       const payload = {
         id: editorState.discussionId,
         index: editorState.index,
         encoding: 'markdown',
         content: this.content,
+        attachments: this.usedAttachments,
       };
 
-      if (matched) {
+      if (replyMatched) {
         payload.replyTo = {
           type: 'index',
-          value: matched[3],
-          memberId: matched[1],
+          value: replyMatched[3],
+          memberId: replyMatched[1],
         };
       }
 
@@ -899,9 +936,23 @@ div.attachment-picker-container {
   }
 
   h3, h4 {
-    margin-top: 0;
-    margin-bottom: 12px;
+    margin: 0;
     font-weight: 600;
+  }
+
+  div.no-available {
+    text-align: center;
+    padding: 1em;
+    font-size: 1.2em;
+    color: #888;
+  }
+
+  h3 {
+    margin-bottom: 12px;
+  }
+
+  a.remove-link {
+    color: rgb(199, 58, 58);
   }
 
   span.msg {

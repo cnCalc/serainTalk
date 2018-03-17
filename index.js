@@ -18,6 +18,9 @@ if (utils.env.isDev) {
   });
 }
 
+// 禁用 Etag 的缓存匹配，他会缓存 API 的返回值……
+// app.disable('etag');
+
 // 听说这样安全一点……？
 app.disable('x-powered-by');
 
