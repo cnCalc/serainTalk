@@ -333,11 +333,12 @@ export default {
           });
           this.reloadMemberInfo();
         }).catch(error => {
+          console.error(error);
           bus.$emit('notification', {
             type: 'error',
             body: '发生错误，查看 JavaScript 控制台查看详情。',
           });
-        })
+        });
       }).catch(() => {
         // 用户取消
       });

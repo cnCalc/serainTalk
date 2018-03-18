@@ -143,8 +143,7 @@ let getAttachment = async (req, res, next) => {
       } else {
         return res.sendFile(pathInfo.base, options);
       }
-    })
-
+    });
   } catch (err) {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
