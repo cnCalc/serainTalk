@@ -45,6 +45,7 @@ div
         div.row
           button.button 修改密码
           button.button 变更邮箱
+          button.button(@click="updateBio") 修改简介
           router-link(:to="`/m/${$route.params.memberId}/change-avatar`"): button.button(@click="selectAvatarFile") 更换头像
         h3 邮件通知
         div.row
@@ -77,6 +78,7 @@ div
           button.button(@click="emitNotification('error')") 弹出错误通知
           button.button(@click="createMessageBox('OK')") 弹出普通窗口
           button.button(@click="createMessageBox('OKCANCEL')") 弹出询问窗口
+          button.button(@click="createMessageBox('INPUT')") 弹出输入窗口
       div.member-upload-avatar(v-show="$route.meta.mode === 'avatar' && $route.params.memberId === $store.state.me._id")
         h3 上传头像
         input(type="file", style="display: none", v-on:change="startPreview($event)")
@@ -289,10 +291,10 @@ export default {
         title: '这是个标题',
         type,
         message: '这是正文',
-      }).then(() => {
+      }).then(res => {
         bus.$emit('notification', {
           type: 'message',
-          body: '确认！',
+          body: '确认！返回内容：' + res,
         });
       }).catch(() => {
         bus.$emit('notification', {
@@ -314,11 +316,36 @@ export default {
           message: '文件上传成功，您的头像已经更新。',
         }).then(() => {
           window.history.go(-1);
-          this.$store.dispatch('fetchCurrentSigninedMemberInfo');
-          this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
-            this.updateTitle();
-          });
+          this.reloadMemberInfo();
         });
+      });
+    },
+    updateBio () {
+      this.$store.dispatch('showMessageBox', {
+        title: '修改个人简介',
+        type: 'INPUT',
+        message: '说说你自己吧：',
+      }).then(res => {
+        api.v1.member.updateMemberInfo({ bio: res }).then(() => {
+          bus.$emit('notification', {
+            type: 'message',
+            body: '修改成功',
+          });
+          this.reloadMemberInfo();
+        }).catch(error => {
+          bus.$emit('notification', {
+            type: 'error',
+            body: '发生错误，查看 JavaScript 控制台查看详情。',
+          });
+        })
+      }).catch(() => {
+        // 用户取消
+      });
+    },
+    reloadMemberInfo () {
+      this.$store.dispatch('fetchCurrentSigninedMemberInfo');
+      this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
+        this.updateTitle();
       });
     },
   },
@@ -335,14 +362,25 @@ export default {
         if (route.params.memberId) {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
+            this.canLoadMorePosts = true;
             this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+              if (route.meta.mode === 'discussions') {
+                return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+              } else {
+                return Promise.resolve();
+              }
+            }).then(() => {
               this.updateTitle();
             });
-            this.canLoadMorePosts = true;
+          } else if (this.$store.state.member.discussions === undefined) {
+            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           }
-          this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
           this.currentPage = 1;
         }
+        return;
+      }
+      if (route.params.memberId && route.meta.mode === 'discussions' && this.$store.state.member.discussions === undefined) {
+        this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
       this.updateTitle();
     },
@@ -367,7 +405,7 @@ export default {
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
       if (route.meta.mode === 'discussions') {
-        store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+        return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
     }).then(() => {
       this.updateTitle();
@@ -506,9 +544,6 @@ div.member-activity {
 
       @include respond-to(phone) {
         display: flex;
-        > * {
-          // flex-grow: 1;
-        }
       }
 
       a {
@@ -604,7 +639,7 @@ div.member-activity {
           input.scale {
             position: absolute;
             z-index: 5;
-            transform: rotate(-90deg) translateX(-120px) translateY(40px);
+            transform: rotate(-90deg) translateX(-160px) translateY(120px);
             transform-origin: center;
           }
 

@@ -273,8 +273,11 @@ let updateSettings = async (req, res, next) => {
 };
 
 let updateMemberInfo = async (req, res, next) => {
-  if (req.member._id) return errorHandler(null, errorMessages.NEED_LOGIN, 401, res);
+  if (!req.member._id) return errorHandler(null, errorMessages.NEED_LOGIN, 401, res);
 
+  // TODO 移除头像
+  // TODO 校验 body 是否为空
+  // TODO 允许 bio 字段为空字符串
   let { avatar, bio } = req.body;
   let info = {};
   if (avatar) info.avatar = avatar;

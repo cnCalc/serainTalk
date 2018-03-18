@@ -5,9 +5,10 @@
         h1.title {{ state.title }}
         div.message(v-if="state.html" v-html="state.message")
         div.message(v-else="state.html" v-text="state.message")
+        div.form(v-if="state.type === 'INPUT'"): input(type="text", v-model="text")
         div.controls
-          button.button(v-if="state.type === 'CANCEL' || state.type === 'OKCANCEL'" @click="Cancel") CANCEL
-          button.button(v-if="state.type === 'OK' || state.type === 'OKCANCEL'" @click="OK") OK
+          button.button(v-if="state.type === 'CANCEL' || state.type === 'OKCANCEL' || state.type === 'INPUT'" @click="Cancel") CANCEL
+          button.button(v-if="state.type === 'OK' || state.type === 'OKCANCEL' || state.type === 'INPUT'" @click="OK") OK
 </template>
 
 <script>
@@ -16,6 +17,7 @@ export default {
   data () {
     return {
       showing: false,
+      text: '',
     };
   },
   computed: {
@@ -31,7 +33,7 @@ export default {
     OK () {
       this.showing = false;
       if (this.state.promise instanceof Promise) {
-        this.state.promise.resolve();
+        this.state.promise.resolve(this.text);
       }
     },
     Cancel () {
@@ -47,6 +49,7 @@ export default {
         this.showing = false;
       } else {
         this.showing = true;
+        this.text = '';
       }
     },
   },
@@ -119,6 +122,20 @@ div.message-box-wrapper {
 
       > *:last-child {
         margin-bottom: 0;
+      }
+    }
+
+    div.form {
+      margin: 0 0 0.5em 0;
+      padding: 0.5em 0;
+      border-bottom: 1px solid $theme_color;
+
+      input {
+        border: none;
+        &:focus {
+          outline: none;
+        }
+        width: 100%;
       }
     }
 

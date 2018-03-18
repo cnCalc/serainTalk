@@ -130,7 +130,21 @@ let getAttachment = async (req, res, next) => {
         'x-sent': true,
       },
     };
-    return res.sendFile(pathInfo.base, options);
+
+    fs.lstat(path.join(pathInfo.dir, pathInfo.base), (err, stat) => {
+      if (err) {
+        if (err.errno === -2) {         // ENOENT
+          return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+        } else if (err.errno === -13) { // EACCES
+          return errorHandler(null, errorMessages.PERMISSION_DENIED, 403, res);
+        } else {  // others
+          return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+        }
+      } else {
+        return res.sendFile(pathInfo.base, options);
+      }
+    })
+
   } catch (err) {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }

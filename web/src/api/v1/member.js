@@ -84,6 +84,18 @@ function uploadAvatar (param) {
   });
 }
 
+function updateMemberInfo (param) {
+  let payload = {};
+
+  if (typeof param.bio === 'string') payload.bio = param.bio;
+  
+  return new Promise((resolve, reject) => {
+    axios.put(`${config.api.url}/${config.api.version}/member`, payload)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -93,4 +105,5 @@ export default {
   fetchMe,
   fetchMemberWithLeadingString,
   uploadAvatar,
+  updateMemberInfo,
 };
