@@ -81,7 +81,7 @@ let info = {
       top: joi.number(),
       width: joi.number(),
       height: joi.number(),
-    }).and('x', 'y', 'w', 'h'),
+    }).and('left', 'top', 'width', 'height'),
   },
   update: {
     body: {
