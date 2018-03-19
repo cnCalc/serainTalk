@@ -171,6 +171,10 @@ let uploadAvatar = async (req, res, next) => {
   try {
     let { left, top, width, height } = req.query;
 
+    if (req.file.length !== 1) {
+      return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    }
+
     let avatar = {
       _id: new ObjectID(),
       _owner: req.member._id,

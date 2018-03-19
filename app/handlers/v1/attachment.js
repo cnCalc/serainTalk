@@ -66,6 +66,10 @@ let getAttachmentsInfoByMemberId = async (req, res) => {
  */
 let uploadAttachment = async (req, res, next) => {
   try {
+    if (req.file.length !== 1) {
+      return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    }
+
     let attachmentInfo = await dbTool.attachment.aggregate([
       { $match: { _owner: req.member._id, type: 'file' } },
       { $project: { filePath: false } },
