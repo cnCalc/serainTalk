@@ -1,6 +1,7 @@
 'use strict';
 
 const joi = require('joi');
+const staticConfig = require('../../config/staticConfig');
 const interfaceUtils = require('./interfaceUtils');
 
 exports = module.exports = {};
@@ -84,7 +85,7 @@ let info = {
   },
   update: {
     body: {
-      avatar: joi.string(),
+      device: joi.string().valid(staticConfig.device),
       bio: joi.string(),
     },
   },

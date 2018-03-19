@@ -1308,11 +1308,11 @@ describe('discussion part', async () => {
                 let attachmentsRes = await agent.get(attachmentUrl);
                 let attachments = attachmentsRes.body.attachments;
 
-                expect(attachments[0].referer.length).to.be.equal(0);
+                expect(attachments[2].referer.length).to.be.equal(0);
                 expect(attachments[1].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
                 expect(attachments[1].referer[0].index).to.be.equal(2);
-                expect(attachments[2].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
-                expect(attachments[2].referer[0].index).to.be.equal(2);
+                expect(attachments[0].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
+                expect(attachments[0].referer[0].index).to.be.equal(2);
               });
             });
           });

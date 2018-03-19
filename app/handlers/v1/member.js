@@ -168,53 +168,53 @@ let memberStartWith = async (req, res, next) => {
 };
 
 let uploadAvatar = async (req, res, next) => {
-  let { left, top, width, height } = req.query;
+  try {
+    let { left, top, width, height } = req.query;
 
-  let avatar = {
-    _id: new ObjectID(),
-    _owner: req.member._id,
-    type: 'avatar',
-    fileName: req.file.originalname,
-    filePath: req.file.path,
-    size: req.file.size,
-    status: 'ok',
-    referer: [],
-  };
+    let avatar = {
+      _id: new ObjectID(),
+      _owner: req.member._id,
+      type: 'avatar',
+      fileName: req.file.originalname,
+      filePath: req.file.path,
+      size: req.file.size,
+      status: 'ok',
+      referer: [],
+    };
 
-  if (width && height) {
-    try {
-      let optPath = req.file.path.split('.').filter(part => part !== 'temp').join('.');
-      await utils.upload.sharpImage(req.file.path, optPath, { left: left, top: top, width: width, height: height });
+    if (width && height) {
+      try {
+        let optPath = req.file.path.split('.').filter(part => part !== 'temp').join('.');
+        await utils.upload.sharpImage(req.file.path, optPath, { left: left, top: top, width: width, height: height });
 
-      avatar.filePath = optPath;
-      await promisify(fs.unlink)(req.file.path);
-      let stat = await promisify(fs.stat)(optPath);
-      avatar.size = stat.size;
-    } catch (err) {
-      return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+        avatar.filePath = optPath;
+        await promisify(fs.unlink)(req.file.path);
+        let stat = await promisify(fs.stat)(optPath);
+        avatar.size = stat.size;
+      } catch (err) {
+        return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+      }
     }
+
+    await dbTool.attachment.insertOne(avatar);
+
+    // 对成员隐藏路径信息
+    delete avatar.filePath;
+
+    // 更新用户信息
+    let info = {
+      avatar: `/api/v1/attachment/${avatar._id}`,
+    };
+    await dbTool.commonMember.findOneAndUpdate(
+      { _id: req.member._id },
+      { $set: info },
+      { returnOriginal: false }
+    );
+
+    return res.status(201).send({ status: 'ok', avatar: avatar });
+  } catch (err) {
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
   }
-
-  await dbTool.attachment.insertOne(avatar);
-
-  // 对成员隐藏路径信息
-  delete avatar.filePath;
-
-  // 更新用户信息
-  let info = {
-    avatar: `/api/v1/attachment/${avatar._id}`,
-  };
-  let updateDoc = await dbTool.commonMember.findOneAndUpdate(
-    { _id: req.member._id },
-    { $set: info },
-    { returnOriginal: false }
-  );
-  let memberInfo = updateDoc.value;
-  utils.member.removeSensitiveField(memberInfo);
-  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
-  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
-
-  return res.status(201).send({ status: 'ok', avatar: avatar });
 };
 
 /**
@@ -273,15 +273,14 @@ let updateSettings = async (req, res, next) => {
 };
 
 let updateMemberInfo = async (req, res, next) => {
-  if (!req.member._id) return errorHandler(null, errorMessages.NEED_LOGIN, 401, res);
-
-  // TODO 移除头像
-  // TODO 校验 body 是否为空
-  // TODO 允许 bio 字段为空字符串
-  let { avatar, bio } = req.body;
+  let { bio, device } = req.body;
   let info = {};
-  if (avatar) info.avatar = avatar;
-  if (bio) info.bio = bio;
+  if (bio !== undefined) info.bio = bio;
+  if (device !== undefined) info.device = device;
+
+  if (Object.keys(info).length === 0) {
+    return res.status(200).send({ status: 'ok' });
+  }
 
   try {
     let updateDoc = await dbTool.commonMember.findOneAndUpdate(
@@ -291,9 +290,7 @@ let updateMemberInfo = async (req, res, next) => {
     );
     let memberInfo = updateDoc.value;
     utils.member.removeSensitiveField(memberInfo);
-    let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
-    res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
-    return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
+    return res.status(201).send({ status: 'ok', memberInfo: memberInfo });
   } catch (err) {
     errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
