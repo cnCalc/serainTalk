@@ -180,7 +180,7 @@ let uploadAvatar = async (req, res, next) => {
       _owner: req.member._id,
       type: 'avatar',
       fileName: req.file.originalname,
-      filePath: req.file.path,
+      filePath: req.file.filename,
       size: req.file.size,
       status: 'ok',
       referer: [],
@@ -188,10 +188,11 @@ let uploadAvatar = async (req, res, next) => {
 
     if (width && height) {
       try {
+        let optName = req.file.filename.split('.').filter(part => part !== 'temp').join('.');
         let optPath = req.file.path.split('.').filter(part => part !== 'temp').join('.');
         await utils.upload.sharpImage(req.file.path, optPath, { left: left, top: top, width: width, height: height });
 
-        avatar.filePath = optPath;
+        avatar.filePath = optName;
         await promisify(fs.unlink)(req.file.path);
         let stat = await promisify(fs.stat)(optPath);
         avatar.size = stat.size;

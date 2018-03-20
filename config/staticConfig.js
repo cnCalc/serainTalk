@@ -90,6 +90,11 @@ module.exports = {
       path: path.join(__dirname, '..', 'uploads', 'avatars'),
       maxSize: 1000 * 1000 * 100, // 100MB
     },
+    key: {
+      image: 'picture',
+      avatar: 'avatar',
+      file: 'file',
+    },
   },
   frontEnd: {
     filePath: path.join(__dirname, '..', 'app', 'public'),

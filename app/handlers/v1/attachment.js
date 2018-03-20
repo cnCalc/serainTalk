@@ -88,7 +88,7 @@ let uploadAttachment = async (req, res, next) => {
       type: 'file',
       date: new Date().getTime(),
       fileName: req.file.originalname,
-      filePath: req.file.path,
+      filePath: req.file.filename,
       size: req.file.size,
       status: 'ok',
       referer: [],
@@ -111,7 +111,7 @@ let deleteAttachment = async (req, res, next) => {
     if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
-    fs.unlinkSync(attachmentInfo.filePath);
+    fs.unlinkSync(path.join(config.upload[config.upload.key[attachmentInfo.type]].path, attachmentInfo.filePath));
     await dbTool.attachment.deleteOne({ _id: _id });
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
@@ -124,10 +124,10 @@ let getAttachment = async (req, res, next) => {
   try {
     let attachmentInfo = await dbTool.attachment.findOne({ _id: ObjectID(req.params.id) });
 
-    let pathInfo = path.parse(attachmentInfo.filePath);
-
+    if (!attachmentInfo) return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    let dir = config.upload[config.upload.key[attachmentInfo.type]].path;
     let options = {
-      root: pathInfo.dir,
+      root: dir,
       dotfiles: 'deny',
       headers: {
         'x-timestamp': Date.now(),
@@ -135,7 +135,7 @@ let getAttachment = async (req, res, next) => {
       },
     };
 
-    fs.lstat(path.join(pathInfo.dir, pathInfo.base), (err, stat) => {
+    fs.lstat(path.join(dir, attachmentInfo.filePath), (err, stat) => {
       if (err) {
         if (err.errno === -2) {         // ENOENT
           return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
@@ -145,7 +145,7 @@ let getAttachment = async (req, res, next) => {
           return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
         }
       } else {
-        return res.sendFile(pathInfo.base, options);
+        return res.sendFile(attachmentInfo.filePath, options);
       }
     });
   } catch (err) {
