@@ -171,7 +171,7 @@ let uploadAvatar = async (req, res, next) => {
   try {
     let { left, top, width, height } = req.query;
 
-    if (req.file.length !== 1) {
+    if (!req.file) {
       return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
     }
 

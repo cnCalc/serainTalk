@@ -66,7 +66,7 @@ let getAttachmentsInfoByMemberId = async (req, res) => {
  */
 let uploadAttachment = async (req, res, next) => {
   try {
-    if (req.file.length !== 1) {
+    if (!req.file) {
       return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
     }
 
