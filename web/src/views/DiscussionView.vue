@@ -279,6 +279,45 @@ export default {
         });
       }
     },
+    downloadAttachment (attachId) {
+      this.$store.dispatch('fetchCurrentSigninedMemberInfo').then(() => {
+        const me = this.$store.state.me;
+        console.log(me.download.remainingTraffic);
+        if (me.download && me.download.remainingTraffic < 0) {
+          window.history.go(-1);
+          return bus.$emit('notification', {
+            type: 'error',
+            body: '您今日的下载流量已经用尽，请明日再试。',
+          });
+        }
+
+        if (this.attachments[attachId] === undefined) {
+          window.history.go(-1);
+          return bus.$emit('notification', {
+            type: 'error',
+            body: '该附件链接无效！',
+          });
+        }
+
+        this.$store.dispatch('showMessageBox', {
+          title: '附件下载确认',
+          type: 'OKCANCEL',
+          message: `<p>你确定要下载 ${this.attachments[attachId].fileName} 吗？</p><p>该操作将会使用 ${this.fileSize(this.attachments[attachId].size)} 流量，您当前剩余流量为 ${this.fileSize(me.download.remainingTraffic)}。</p>`,
+          html: true,
+        }).then(() => {
+          const downloadTrigger = this.$el.querySelector('a.download-trigger');
+          downloadTrigger.href = `/api/v1/attachment/${attachId}`;
+          downloadTrigger.download = this.attachments[attachId].fileName;
+          downloadTrigger.target = '_blank';
+          downloadTrigger.click();
+          window.history.go(-1);
+        }).catch(() => {
+          window.history.go(-1);
+        });
+
+      });
+
+    }
   },
   computed: {
     discussionMeta () {
@@ -357,30 +396,7 @@ export default {
       if (hash) {
         if (attachPattern.test(hash)) {
           const attachId = hash.match(attachPattern)[1];
-
-          if (this.attachments[attachId] === undefined) {
-            window.history.go(-1);
-            return bus.$emit('notification', {
-              type: 'error',
-              body: '该附件链接无效！',
-            });
-          }
-
-          this.$store.dispatch('showMessageBox', {
-            title: '附件下载确认',
-            type: 'OKCANCEL',
-            message: `<p>你确定要下载 ${this.attachments[attachId].fileName} 吗？</p><p>该操作将会使用 ${this.fileSize(this.attachments[attachId].size)} 流量，您当前剩余流量为 1.00PB。</p>`,
-            html: true,
-          }).then(() => {
-            const downloadTrigger = this.$el.querySelector('a.download-trigger');
-            downloadTrigger.href = `/api/v1/attachment/${attachId}`;
-            downloadTrigger.download = this.attachments[attachId].fileName;
-            downloadTrigger.target = '_blank';
-            downloadTrigger.click();
-            window.history.go(-1);
-          }).catch(() => {
-            window.history.go(-1);
-          });
+          this.downloadAttachment(attachId);
         } else {
           scrollToHash(hash);
         }
@@ -474,10 +490,8 @@ div.discussion-view {
   }
 
   div.discussion-view-left {
-    // overflow: hidden;
     flex: 1 1;
     min-width: 0;
-    // width: 100%;
     padding-right: 5px;
   }
 
@@ -660,10 +674,6 @@ div.discussion-view {
             line-height: 3em;
           }
 
-          // div.button-left-container {
-          //   display: inline-block;
-          // }
-
           div.button-right-container {
             display: inline-block;
             position: absolute;
@@ -716,9 +726,7 @@ div.discussion-view {
     margin-top: 12px;
 
     div.attachment-wrapper {
-      border: 2px dotted mix(white, $theme_color, 85%);
       padding: 12px;
-      background-color: mix(white, $theme_color, 95%);
       border-radius: 8px;
       // width: 100%
     }
@@ -749,8 +757,10 @@ div.discussion-view {
       line-height: 20px;
       font-family: monospace;
       a {
-        color: $theme_color;
         margin-right: .5em;
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
   }
@@ -777,6 +787,13 @@ div.discussion-view {
     color: mix($theme_color, white, 10%);
     background-color: mix($theme_color, white, 90%);
   }
+  div.attachment-wrapper {
+    border: 2px dotted mix(white, $theme_color, 85%);
+    background-color: mix(white, $theme_color, 95%);
+  }
+  li.attachment-item a {
+    color: $theme_color;
+  }
 }
 
 .dark-theme div.discussion-view {
@@ -800,6 +817,10 @@ div.discussion-view {
   button.button.quote-button {
     color: #222;
     background-color: #aaa;
+  }
+  div.attachment-wrapper {
+    border: 2px dotted #555;
+    background-color: #333;
   }
 }
 </style>

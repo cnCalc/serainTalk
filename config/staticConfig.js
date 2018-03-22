@@ -96,6 +96,9 @@ module.exports = {
       file: 'file',
     },
   },
+  download: {
+    dailyTraffic: 1024 * 1024 * 100,
+  },
   frontEnd: {
     filePath: path.join(__dirname, '..', 'app', 'public'),
   },

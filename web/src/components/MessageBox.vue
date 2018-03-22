@@ -5,10 +5,12 @@
         h1.title {{ state.title }}
         div.message(v-if="state.html" v-html="state.message")
         div.message(v-else="state.html" v-text="state.message")
-        div.form(v-if="state.type === 'INPUT'"): input(type="text", v-model="text")
+        div.form(v-if="state.type === 'INPUT' || state.type === 'PASSWORD'"): form(v-on:submit.prevent="OK")
+          input(type="text", v-show="state.type === 'INPUT'", v-model="text")
+          input(type="password", v-show="state.type === 'PASSWORD'", v-model="text", autocomplete="new-password")
         div.controls
-          button.button(v-if="state.type === 'CANCEL' || state.type === 'OKCANCEL' || state.type === 'INPUT'" @click="Cancel") CANCEL
-          button.button(v-if="state.type === 'OK' || state.type === 'OKCANCEL' || state.type === 'INPUT'" @click="OK") OK
+          button.button(v-if="state.type === 'CANCEL' || state.type === 'OKCANCEL' || state.type === 'INPUT' || state.type === 'PASSWORD'" @click="Cancel") CANCEL
+          button.button(v-if="state.type === 'OK' || state.type === 'OKCANCEL' || state.type === 'INPUT' || state.type === 'PASSWORD'" @click="OK") OK
 </template>
 
 <script>
@@ -98,12 +100,11 @@ div.message-box-wrapper {
     max-width: 300px;
     flex-grow: 1;
     min-width: 0;
-    background: white;
     border-radius: 5px;
     padding: 13px 20px;
     transition: all ease 0.2s;
-    box-shadow: 2px 2px 10px #888;
     margin: 0 20px;
+    user-select: none;
 
     h1 {
       margin: 0;
@@ -126,9 +127,8 @@ div.message-box-wrapper {
     }
 
     div.form {
-      margin: 0 0 0.5em 0;
-      padding: 0.5em 0;
-      border-bottom: 1px solid $theme_color;
+      margin: 0 0 0.3em 0;
+      padding: 0.3em 0;
 
       input {
         border: none;
@@ -140,7 +140,6 @@ div.message-box-wrapper {
     }
 
     div.controls {
-      // height: 40px;
       margin-top: 10px;
       text-align: right;
     }
@@ -162,6 +161,23 @@ div.message-box-wrapper {
   button.button {
     background: rgba(0, 0, 0, 0);
     color: lightgrey;
+    &:hover {
+      background: rgba(white, 0.1);
+    }
+  }
+
+  div.message-box {
+    background: #444;
+    color: white;
+    box-shadow: 2px 2px 10px #000;
+  }
+
+  div.form {
+    border-bottom: 1px solid #888;
+    input {
+      background: rgba(black, 0);
+      color: white;
+    }
   }
 }
 
@@ -172,6 +188,15 @@ div.message-box-wrapper {
     &:hover {
       background: rgba(0, 0, 0, 0.1);
     }
+  }
+
+  div.message-box {
+    background: white;
+    box-shadow: 2px 2px 10px #888;
+  }
+
+  div.form {
+    border-bottom: 1px solid $theme_color;
   }
 }
 </style>

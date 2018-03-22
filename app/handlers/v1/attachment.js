@@ -123,8 +123,30 @@ let deleteAttachment = async (req, res, next) => {
 let getAttachment = async (req, res, next) => {
   try {
     let attachmentInfo = await dbTool.attachment.findOne({ _id: ObjectID(req.params.id) });
+    let downloadInfo = req.member.download || {};
 
-    if (!attachmentInfo) return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    if (!attachmentInfo) {
+      return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+    }
+
+    // 看一看他还有流量不
+    if (!/\.(jpg|jpeg|png|bmp|webp|gif|tga)$/i.test(attachmentInfo.filePath)
+      && (downloadInfo.traffic && downloadInfo.traffic > config.download.dailyTraffic)) {
+      return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
+    }
+
+    downloadInfo.traffic = (downloadInfo.traffic || 0) + (attachmentInfo.size || 0);
+
+    // 更新这个用户的的元数据
+    // 怎么想这个数据库操作都是不需要等待结果的，异步咯
+    dbTool.commonMember.updateOne(
+      {
+        _id: req.member._id,
+      }, {
+        $set: { download: downloadInfo },
+      }
+    ).catch(error => console.error(error));
+
     let dir = config.upload[config.upload.key[attachmentInfo.type]].path;
     let options = {
       root: dir,

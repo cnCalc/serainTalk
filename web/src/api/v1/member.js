@@ -96,6 +96,20 @@ function updateMemberInfo (param) {
   });
 }
 
+function resetPassword (param) {
+  let payload = {};
+
+  if (param.password) {
+    payload.password = param.password;
+  }
+
+  return new Promise((resolve, reject) => {
+    axios.put(`${config.api.url}/${config.api.version}/member/password`, payload)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -106,4 +120,5 @@ export default {
   fetchMemberWithLeadingString,
   uploadAvatar,
   updateMemberInfo,
+  resetPassword,
 };

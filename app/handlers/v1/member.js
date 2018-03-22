@@ -230,12 +230,15 @@ let uploadAvatar = async (req, res, next) => {
  */
 let getSelf = async (req, res) => {
   req.member._id = req.member.id;
+
   let ignores = await dbTool.commonMember.aggregate([
     { $match: { _id: req.member._id } },
     { $project: { ignores: 1 } },
   ]).toArray();
+
   delete req.member.id;
   req.member.ignores = ignores;
+
   return res.status(200).send({ status: 'ok', memberInfo: req.member });
 };
 

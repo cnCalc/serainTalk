@@ -43,7 +43,7 @@ div
       div.member-settings(v-if="$route.meta.mode === 'settings' && $route.params.memberId === $store.state.me._id")
         h3 账户设置
         div.row
-          button.button 修改密码
+          button.button(@click="resetPassword") 修改密码
           button.button 变更邮箱
           button.button(@click="updateBio") 修改简介
           router-link(:to="`/m/${$route.params.memberId}/change-avatar`"): button.button(@click="selectAvatarFile") 更换头像
@@ -78,7 +78,8 @@ div
           button.button(@click="emitNotification('error')") 弹出错误通知
           button.button(@click="createMessageBox('OK')") 弹出普通窗口
           button.button(@click="createMessageBox('OKCANCEL')") 弹出询问窗口
-          button.button(@click="createMessageBox('INPUT')") 弹出输入窗口
+          button.button(@click="createMessageBox('INPUT')") 弹出输入文本窗口
+          button.button(@click="createMessageBox('PASSWORD')") 弹出输入密码窗口
       div.member-upload-avatar(v-show="$route.meta.mode === 'avatar' && $route.params.memberId === $store.state.me._id")
         h3 上传头像
         input(type="file", style="display: none", v-on:change="startPreview($event)")
@@ -347,6 +348,28 @@ export default {
       this.$store.dispatch('fetchCurrentSigninedMemberInfo');
       this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
         this.updateTitle();
+      });
+    },
+    resetPassword () {
+      this.$store.dispatch('showMessageBox', {
+        title: '修改密码',
+        type: 'PASSWORD',
+        message: '输入新的密码：',
+      }).then(res => {
+        api.v1.member.resetPassword({ password: res }).then(() => {
+          bus.$emit('notification', {
+            type: 'message',
+            body: '密码修改成功！',
+          });
+        }).catch(error => {
+          bus.$emit('notification', {
+            type: 'error',
+            body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
+          });
+          console.error(error);
+        })
+      }).catch(() => {
+        // doing nothing.
       });
     },
   },

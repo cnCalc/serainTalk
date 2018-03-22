@@ -17,5 +17,6 @@ module.exports = {
   TIME_OUT: 'time out',
   TOO_FREQUENT: 'requests are too frequent',
   VALIDATION_ERROR: 'validation error',
-  WRONG_ENV: 'the api don\'t open on product',
+  WRONG_ENV: 'the api is not available open on production server',
+  TRAFFIC_LIMIT_EXCEEDED: 'traffic limit exceeded.'
 };

@@ -540,10 +540,10 @@ export default {
       const payload = {
         title: this.title,
         category: this.category,
+        attachments: this.usedAttachments,
         content: {
           content: this.content,
           encoding: 'markdown',
-          attachments: this.usedAttachments,
         },
         tags: [],
       };
