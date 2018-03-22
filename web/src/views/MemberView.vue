@@ -367,7 +367,7 @@ export default {
             body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
           });
           console.error(error);
-        })
+        });
       }).catch(() => {
         // doing nothing.
       });

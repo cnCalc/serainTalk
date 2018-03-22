@@ -37,7 +37,7 @@ let getMemberInfo = async (req, res, next) => {
     req.member.download = {
       lastUpdate: currentDate,
       traffic: 0,
-    }
+    };
   }
 
   req.member.download.remainingTraffic = config.download.dailyTraffic - req.member.download.traffic;

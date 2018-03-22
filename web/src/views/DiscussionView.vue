@@ -314,10 +314,8 @@ export default {
         }).catch(() => {
           window.history.go(-1);
         });
-
       });
-
-    }
+    },
   },
   computed: {
     discussionMeta () {
