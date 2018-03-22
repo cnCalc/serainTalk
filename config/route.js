@@ -509,17 +509,6 @@ let route = {
     },
   },
   attachment: {
-    getById: {
-      description: '获取指定附件。',
-      path: [
-        '/v1/attachment/:id',
-      ],
-      method: 'get',
-      schema: dataInterface.attachment.getAttachmentById,
-      handler: [
-        handlers.v1.attachment.getAttachment,
-      ],
-    },
     getInfoByAttachmentId: {
       description: '获取 Discuz 兼容的附件信息。',
       path: [
@@ -541,6 +530,28 @@ let route = {
       handler: [
         verifyMember,
         handlers.v1.attachment.getAttachmentsInfoByMemberId,
+      ],
+    },
+    getDailyTraffic: {
+      description: '获取每日流量上限。',
+      path: [
+        '/v1/attachment/traffic',
+      ],
+      method: 'get',
+      schema: dataInterface.attachment.getDailyTraffic,
+      handler: [
+        handlers.v1.attachment.getDailyTraffic,
+      ],
+    },
+    getById: {
+      description: '获取指定附件。',
+      path: [
+        '/v1/attachment/:id',
+      ],
+      method: 'get',
+      schema: dataInterface.attachment.getAttachmentById,
+      handler: [
+        handlers.v1.attachment.getAttachment,
       ],
     },
     uploadOne: {

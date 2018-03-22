@@ -21,6 +21,10 @@ let getAttachmentById = {
   },
 };
 
+let getDailyTraffic = {
+
+};
+
 let uploadFile = {
 
 };
@@ -31,8 +35,9 @@ let deleteFile = {
   },
 };
 
-exports.getAttachmentByAttachmentId = getAttachmentByAttachmentId;
-exports.getAttachmentsByMemberId = getAttachmentsByMemberId;
-exports.getAttachmentById = getAttachmentById;
-exports.uploadFile = uploadFile;
 exports.deleteFile = deleteFile;
+exports.getAttachmentByAttachmentId = getAttachmentByAttachmentId;
+exports.getAttachmentById = getAttachmentById;
+exports.getAttachmentsByMemberId = getAttachmentsByMemberId;
+exports.getDailyTraffic = getDailyTraffic;
+exports.uploadFile = uploadFile;

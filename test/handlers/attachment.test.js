@@ -83,4 +83,14 @@ describe('attachment part.', async () => {
       });
     });
   });
+
+  it('get daily traffic.', async () => {
+    let trafficUrl = '/api/v1/attachment/traffic';
+    let trafficRes = await agent.get(trafficUrl);
+    expect(trafficRes.body.dailyTraffic).to.be.equal(0);
+    testTools.member.createOneMember(agent, null, async () => {
+      trafficRes = await agent.get(trafficUrl);
+      expect(trafficRes.body.dailyTraffic).to.be.equal(staticConfig.download.dailyTraffic);
+    });
+  });
 });

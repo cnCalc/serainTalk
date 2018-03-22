@@ -31,17 +31,6 @@ let getMemberInfo = async (req, res, next) => {
     }
   }
 
-  const currentDate = new Date().toDateString();
-
-  if (!req.member.download || req.member.download.lastUpdate !== currentDate) {
-    req.member.download = {
-      lastUpdate: currentDate,
-      traffic: 0,
-    };
-  }
-
-  req.member.download.remainingTraffic = config.download.dailyTraffic - req.member.download.traffic;
-
   return next();
 };
 exports.getMemberInfo = getMemberInfo;

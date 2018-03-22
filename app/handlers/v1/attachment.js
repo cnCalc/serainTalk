@@ -122,30 +122,29 @@ let deleteAttachment = async (req, res, next) => {
 
 let getAttachment = async (req, res, next) => {
   try {
+    const currentDate = new Date().toDateString();
+
+    if (!req.member.download || req.member.download.lastUpdate !== currentDate) {
+      req.member.download = {
+        lastUpdate: currentDate,
+        traffic: 0,
+      };
+    }
+
     let attachmentInfo = await dbTool.attachment.findOne({ _id: ObjectID(req.params.id) });
-    let downloadInfo = req.member.download || {};
+    let downloadInfo = req.member.download;
 
     if (!attachmentInfo) {
-      return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     }
 
     // 看一看他还有流量不
-    if (!/\.(jpg|jpeg|png|bmp|webp|gif|tga)$/i.test(attachmentInfo.filePath)
-      && (downloadInfo.traffic && downloadInfo.traffic > config.download.dailyTraffic)) {
+    if (attachmentInfo.type === 'file'
+      && downloadInfo.traffic + attachmentInfo.size > config.download.dailyTraffic) {
       return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
     }
 
-    downloadInfo.traffic = (downloadInfo.traffic || 0) + (attachmentInfo.size || 0);
-
-    // 更新这个用户的的元数据
-    // 怎么想这个数据库操作都是不需要等待结果的，异步咯
-    dbTool.commonMember.updateOne(
-      {
-        _id: req.member._id,
-      }, {
-        $set: { download: downloadInfo },
-      }
-    ).catch(error => console.error(error));
+    downloadInfo.traffic = downloadInfo.traffic + (attachmentInfo.size || 0);
 
     let dir = config.upload[config.upload.key[attachmentInfo.type]].path;
     let options = {
@@ -157,6 +156,14 @@ let getAttachment = async (req, res, next) => {
       },
     };
 
+    dbTool.commonMember.updateOne(
+      {
+        _id: req.member._id,
+      }, {
+        $set: { download: downloadInfo },
+      }
+    ).catch(error => console.error(error));
+
     fs.lstat(path.join(dir, attachmentInfo.filePath), (err, stat) => {
       if (err) {
         if (err.errno === -2) {         // ENOENT
@@ -167,7 +174,7 @@ let getAttachment = async (req, res, next) => {
           return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
         }
       } else {
-        return res.sendFile(attachmentInfo.filePath, options);
+        res.sendFile(attachmentInfo.filePath, options);
       }
     });
   } catch (err) {
@@ -175,10 +182,18 @@ let getAttachment = async (req, res, next) => {
   }
 };
 
+let getDailyTraffic = async (req, res, next) => {
+  if (req.member._id) {
+    return res.status(200).send({ dailyTraffic: config.download.dailyTraffic });
+  }
+  return res.status(200).send({ dailyTraffic: 0 });
+};
+
 module.exports = {
   deleteAttachment,
   getAttachment,
   getAttachmentInfoByAttachmentId,
   getAttachmentsInfoByMemberId,
+  getDailyTraffic,
   uploadAttachment,
 };
