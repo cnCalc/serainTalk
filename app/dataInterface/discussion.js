@@ -153,6 +153,9 @@ let banDiscussion = {
   params: {
     id: interfaceUtils.mongoId.required(),
   },
+  query: {
+    force: interfaceUtils.flag.default('off'),
+  },
 };
 exports.banDiscussion = banDiscussion;
 
