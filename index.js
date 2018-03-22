@@ -30,7 +30,7 @@ app.get('/favicon.ico', (req, res) => {
   res.status(404).send('undefined');
 });
 // 获取静态文件
-app.use('/uploads/avatar', express.static(staticConfig.upload.avatar.path));
+app.use('/avatar', express.static(staticConfig.upload.avatar.path));
 app.use('/picture', express.static(staticConfig.upload.picture.path));
 app.use(express.static(staticConfig.frontEnd.filePath));
 

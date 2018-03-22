@@ -87,7 +87,7 @@ module.exports = {
       maxSize: 1000 * 1000 * 100, // 100MB
     },
     avatar: {
-      path: path.join(__dirname, '..', 'uploads', 'avatars'),
+      path: path.join(__dirname, '..', 'uploads', 'avatar'),
       maxSize: 1000 * 1000 * 100, // 100MB
     },
     key: {
