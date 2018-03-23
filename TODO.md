@@ -18,6 +18,7 @@
 - [X] Google Chrome 切换夜间模式帖子文本渐变延迟
 - [X] 用户活动页文本太长导致溢出：[参考](https://seraintalk.ntzyz.io/m/59423df4ed4418798378ec20)
 - [X] 帖子文本太长导致溢出：[参考](https://seraintalk.ntzyz.io/d/59423e06ed44187983799a3e)
+- [ ] Safari Mobile 点击空白处侧边栏不收回
 
 ## 后端
 
