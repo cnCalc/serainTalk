@@ -59,11 +59,18 @@ div
           span 当我订阅的话题有更新时
         h3 浏览选项
         div.row
-          check-box(:checked="$store.state.autoLoadOnScroll" v-on:click.native="switchScrollBehavior")
+          check-box(:checked="settings.autoLoadOnScroll" v-on:click.native="updateSetting('autoLoadOnScroll', !settings.autoLoadOnScroll)")
           span 在讨论页面中使用实验性的滚动自动加载
         div.row
-          check-box(:checked="$store.state.theme === 'dark'" v-on:click.native="switchTheme")
+          check-box(:checked="settings.nightmode" v-on:click.native="updateSetting('nightmode', !settings.nightmode)")
           span 启用夜间模式（黑色主题）
+        div.row
+          check-box(:checked="settings.nofixedtoolbar" v-on:click.native="updateSetting('nofixedtoolbar', !settings.nofixedtoolbar)")
+          span 浏览讨论时不要总是在页面底部显示功能栏
+        h3 编辑选项
+        div.row
+          check-box(:checked="settings.newlineAfterAttachmentInsert" v-on:click.native="updateSetting('newlineAfterAttachmentInsert', !settings.newlineAfterAttachmentInsert)")
+          span 插入附件后自动换行
         h3 隐私设置
         div.row
           check-box(:checked="false")
@@ -162,14 +169,15 @@ export default {
     discussions () {
       return this.$store.state.member.discussions;
     },
+    me () {
+      return this.$store.state.me;
+    },
+    settings () {
+      return this.$store.state.settings;
+    },
   },
   methods: {
     timeAgo, indexToPage,
-    switchTheme () {
-      this.updateSetting('nightmode', this.$store.theme === 'light').then(() => {
-        this.$store.commit('switchTheme');
-      });
-    },
     loadMore () {
       this.currentPage++;
       this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId, page: this.currentPage, append: true }).then(count => {
@@ -179,8 +187,13 @@ export default {
       });
     },
     updateSetting (key, value) {
-      return axios.put(`/api/v1/member/settings/${key.replace('.', '/')}`, { value }).then(() => {
-        this.$store.commit('fetchCurrentSigninedMemberInfo');
+      this.$store.dispatch('showMessageBox', {
+        title: '请稍等',
+        type: '',
+        message: '正在更新设置，请稍等……',
+      });
+      this.$store.dispatch('updateSetting', { key, value }).then(() => {
+        this.$store.dispatch('disposeMessageBox');
       });
     },
     loadMoreRecentActivity () {
@@ -305,19 +318,45 @@ export default {
       });
     },
     uploadAvatar () {
+      let source = axios.CancelToken.source();
+
+      this.$store.dispatch('showMessageBox', {
+        title: '上传中',
+        type: 'CANCEL',
+        message: '正在上传（0%）',
+      }).catch(() => {
+        source.cancel('用户取消上传');
+      });
+
       api.v1.member.uploadAvatar({
         file: this.$el.querySelector('input[type="file"]').files[0],
         x: Math.floor(this.cutState.x / this.cutState.ratio),
         y: Math.floor(this.cutState.y / this.cutState.ratio),
         w: Math.floor(this.cutState.size / this.cutState.ratio),
+      }, {
+        onUploadProgress: e => {
+          this.$store.dispatch('updateMessageBox', {
+            title: '上传中',
+            message: `正在上传（${(100 * e.loaded / e.total).toFixed(2)}%）`,
+          });
+        },
+        cancelToken: source.token,
       }).then(() => {
-        this.$store.dispatch('showMessageBox', {
+        this.$store.dispatch('disposeMessageBox');
+        return this.$store.dispatch('showMessageBox', {
           title: '上传成功',
           type: 'OK',
           message: '文件上传成功，您的头像已经更新。',
         }).then(() => {
           window.history.go(-1);
           this.reloadMemberInfo();
+        });
+      }).catch(error => {
+        this.$store.dispatch('disposeMessageBox');
+        console.error(error);
+        bus.$emit('notification', {
+          type: 'error',
+          body: error.message,
         });
       });
     },
@@ -327,6 +366,11 @@ export default {
         type: 'INPUT',
         message: '说说你自己吧：',
       }).then(res => {
+        this.$store.dispatch('showMessageBox', {
+          title: '请稍等',
+          type: '',
+          message: '正在更新个人简介，请稍等……',
+        });
         api.v1.member.updateMemberInfo({ bio: res }).then(() => {
           bus.$emit('notification', {
             type: 'message',
@@ -339,6 +383,8 @@ export default {
             type: 'error',
             body: '发生错误，查看 JavaScript 控制台查看详情。',
           });
+        }).finally(() => {
+          this.$store.dispatch('disposeMessageBox');
         });
       }).catch(() => {
         // 用户取消
@@ -356,6 +402,11 @@ export default {
         type: 'PASSWORD',
         message: '输入新的密码：',
       }).then(res => {
+        this.$store.dispatch('showMessageBox', {
+          title: '请稍等',
+          type: '',
+          message: '正在更新密码，请稍等……',
+        });
         api.v1.member.resetPassword({ password: res }).then(() => {
           bus.$emit('notification', {
             type: 'message',
@@ -367,6 +418,8 @@ export default {
             body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
           });
           console.error(error);
+        }).finally(() => {
+          this.$store.dispatch('disposeMessageBox');
         });
       }).catch(() => {
         // doing nothing.

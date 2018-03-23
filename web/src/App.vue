@@ -1,5 +1,5 @@
 <template lang="pug">
-  div#app(v-bind:class="{ 'dark-theme': $store.state.theme === 'dark', 'light-theme': $store.state.theme === 'light' }")
+  div#app(v-bind:class="{ 'dark-theme': isDarkTheme, 'light-theme': isLightTheme }")
     template(v-if="$store.state.theme === 'light'")
       link(href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-light.min.css" rel="stylesheet")
       meta(name="theme-color" content="#1770B3")
@@ -46,6 +46,14 @@ export default {
         this.$router.push(url.href.replace(url.origin, ''));
       }
     });
+  },
+  computed: {
+    isDarkTheme () {
+      return this.$store.state.settings.nightmode;
+    },
+    isLightTheme () {
+      return !this.isDarkTheme;
+    }
   },
   mounted () {
     console.log([

@@ -139,12 +139,14 @@ let getAttachment = async (req, res, next) => {
     }
 
     // 看一看他还有流量不
-    if (attachmentInfo.type === 'file'
-      && downloadInfo.traffic + attachmentInfo.size > config.download.dailyTraffic) {
-      return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
-    }
+    if (attachmentInfo.type === 'file') {
+      if (downloadInfo.traffic + attachmentInfo.size > config.download.dailyTraffic) {
+        return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
+      }
 
-    downloadInfo.traffic = downloadInfo.traffic + (attachmentInfo.size || 0);
+      // 只有文件计费
+      downloadInfo.traffic = downloadInfo.traffic + (attachmentInfo.size || 0);
+    }
 
     let dir = config.upload[config.upload.key[attachmentInfo.type]].path;
     let options = {
@@ -184,7 +186,11 @@ let getAttachment = async (req, res, next) => {
 
 let getDailyTraffic = async (req, res, next) => {
   if (req.member._id) {
-    return res.status(200).send({ dailyTraffic: config.download.dailyTraffic });
+    return res.status(200).send({
+      status: 'ok',
+      dailyTraffic: config.download.dailyTraffic,
+      usedTraffic: new Date().toDateString() === req.member.download.lastUpdate ? req.member.download.traffic : 0,
+    });
   }
   return res.status(200).send({ dailyTraffic: 0 });
 };

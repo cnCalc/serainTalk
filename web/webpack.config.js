@@ -54,7 +54,7 @@ module.exports = {
       },
     },
     before (app) {
-      app.use('/uploads', express.static('../uploads'));
+      app.use('/avatar', express.static('../uploads/avatar'));
     },
   },
   performance: {

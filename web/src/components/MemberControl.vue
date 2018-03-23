@@ -13,6 +13,7 @@
 
 <script>
 import api from '../api';
+import axios from 'axios';
 
 export default {
   name: 'member-control',
@@ -31,7 +32,9 @@ export default {
   },
   methods: {
     switchTheme () {
-      this.$store.commit('switchTheme');
+      return axios.put(`/api/v1/member/settings/nightmode`, { value: !this.$store.state.settings.nightmode }).then(() => {
+        this.$store.dispatch('fetchCurrentSigninedMemberInfo');
+      });
     },
     trigger () {
       if (!this.activated) {
@@ -98,7 +101,7 @@ div.avatar-container {
     $width: 150px;
     position: absolute;
     top: 8px;
-    right: -$avatar_width / 2;
+    right: -$avatar_width;
     width: $width;
     border-radius: 4px;
     font-size: initial;

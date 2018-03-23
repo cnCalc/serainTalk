@@ -63,6 +63,13 @@ let mutations = {
     state.busy = isBusy;
   },
 
+  /**
+   * 更新设置
+   */
+  setSettings: (state, settings) => {
+    state.settings = settings;
+  },
+
   /** 设置帖子元数据 */
   setDiscussionMeta: (state, meta) => {
     state.discussionMeta = meta.discussionInfo;
@@ -170,6 +177,8 @@ let mutations = {
   disposeMessageBox: (state) => {
     state.messageBox = {
       promise: null,
+      title: state.messageBox.title,
+      message: state.messageBox.message,
     };
   },
 

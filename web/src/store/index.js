@@ -39,6 +39,7 @@ const store = new Vuex.Store({
       message: '',
       promise: null,
     },
+    settings: {},
     notifications: {},
     messageSession: null,
     attachments: {},

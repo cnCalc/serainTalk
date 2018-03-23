@@ -38,13 +38,13 @@
           template(v-if="usedAttachments.length !== 0")
             h4 已使用的附件*
             ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
-              li(v-for="attach in usedAttachments", @click="removeAttachment(attach)"): a.remove-link
+              li.remove-link(v-for="attach in usedAttachments", @click="removeAttachment(attach)")
                 span.filename {{ refAttachments[attach].fileName }}
                 span.size {{ fileSize(refAttachments[attach].size) }}
           template(v-if="attachments.length !== 0")
             h4 未使用的附件**
             ul.attachment-list.scrollable(v-if="!busy" v-on:mousewheel="scrollHelper($event); $event.stopPropagation()")
-              li(v-for="attach in attachments", @click="insertAttachmentLinks(attach)"): a
+              li(v-for="attach in attachments", @click="insertAttachmentLinks(attach)")
                 span.filename {{ refAttachments[attach].fileName }}
                 span.size {{ fileSize(refAttachments[attach].size) }}
           template(v-if="attachments.length === 0 && usedAttachments.length === 0")
@@ -171,6 +171,9 @@ export default {
     },
     refAttachments () {
       return this.$store.state.attachments;
+    },
+    settings () {
+      return this.$store.state.settings;
     },
   },
   watch: {
@@ -299,7 +302,7 @@ export default {
             onUploadProgress: e => {
               this.$store.dispatch('updateMessageBox', {
                 title: '上传中',
-                message: `正在上传（${(e.loaded / e.total).toFixed(2)}%）`,
+                message: `正在上传（${(100 * e.loaded / e.total).toFixed(2)}%）`,
               });
             },
             cancelToken: source.token,
@@ -314,6 +317,7 @@ export default {
             return this.updateMyAttachmentList();
           }).catch(error => {
             this.$store.dispatch('disposeMessageBox');
+            console.error(error);
             bus.$emit('notification', {
               type: 'error',
               body: error.message,
@@ -333,9 +337,9 @@ export default {
 
       const attachment = this.refAttachments[attach];
       const textarea = this.$el.querySelector('textarea');
-      const insertText = /\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(attachment.fileName)
+      const insertText = (/\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(attachment.fileName)
       ? `![${attachment.fileName}](/api/v1/attachment/${attachment._id}) `
-      : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `;
+      : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `) + (this.settings.newlineAfterAttachmentInsert ? '\n' : '');
       const begin = textarea.selectionStart;
       const end = textarea.selectionEnd;
       this.content = this.content.substring(0, begin) + insertText + this.content.substring(end);
@@ -900,6 +904,7 @@ div.attachment-picker-container {
     list-style: none;
     flex-grow: 1;
     overflow-y: scroll;
+    max-height: 130px;
 
     li {
       font-size: 14px;
@@ -912,6 +917,9 @@ div.attachment-picker-container {
       cursor: pointer;
       &:hover {
         text-decoration: underline;
+      }
+      &.remove-link {
+        color: rgb(199, 58, 58);
       }
     }
 
@@ -949,10 +957,6 @@ div.attachment-picker-container {
 
   h3 {
     margin-bottom: 12px;
-  }
-
-  a.remove-link {
-    color: rgb(199, 58, 58);
   }
 
   span.msg {

@@ -73,12 +73,12 @@ function fetchMemberWithLeadingString (param) {
   });
 }
 
-function uploadAvatar (param) {
+function uploadAvatar (param, cfg) {
   let fd = new window.FormData();
   fd.append('avatar', param.file);
 
   return new Promise((resolve, reject) => {
-    axios.post(`${config.api.url}/${config.api.version}/member/avatar?left=${param.x}&top=${param.y}&width=${param.w}&height=${param.w}`, fd)
+    axios.post(`${config.api.url}/${config.api.version}/member/avatar?left=${param.x}&top=${param.y}&width=${param.w}&height=${param.w}`, fd, cfg)
       .then(response => resolve(response.data))
       .catch(reject);
   });
@@ -110,6 +110,14 @@ function resetPassword (param) {
   });
 }
 
+function updateSetting (param) {
+  return new Promise((resolve, reject) => {
+      axios.put(`/api/v1/member/settings/${param.key}`, { value: param.value })
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -121,4 +129,5 @@ export default {
   uploadAvatar,
   updateMemberInfo,
   resetPassword,
+  updateSetting,
 };

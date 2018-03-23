@@ -1,8 +1,8 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      loading-icon(v-if="busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && (!$store.state.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
+      loading-icon(v-if="busy && (!settings.autoLoadOnScroll || maxPage === minPage)")
+      ul.discussion-post-list(v-bind:class="{'hide': busy && (!settings.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
         div.discussion-post-container
           button.button.quote-button(v-bind:style="quoteButtonStyle") 引用
           article.discussion-post-body
@@ -40,7 +40,7 @@
       div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ unread.length }} 条新回复，点击以查看。
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
         center 没有可展示的帖子
-      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!$store.state.autoLoadOnScroll")
+      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!settings.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy ? 0 : 1 }")
         div.quick-funcs 快速操作
@@ -217,7 +217,7 @@ export default {
       };
     },
     scrollWatcher () {
-      if (this.$store.state.autoLoadOnScroll) {
+      if (this.settings.autoLoadOnScroll) {
         if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
           this.loadNextPage();
         }
@@ -231,18 +231,20 @@ export default {
 
       // 找出需要浮动底部的对应post
       // FIXME: 此处可能会有性能问题？
-      let els = Array.from(this.$el.querySelectorAll('article'));
-      this.absoluteBottomIndex = undefined;
+      if (!this.settings.nofixedtoolbar) {
+        let els = Array.from(this.$el.querySelectorAll('article'));
+        this.absoluteBottomIndex = undefined;
 
-      for (let i = 0; i < els.length; ++i) {
-        let rect = els[i].getBoundingClientRect();
-        if (rect.bottom + 5 > window.innerHeight && rect.top < window.innerHeight - 200) {
-          const fakeFooter = this.$el.querySelector('.fake-footer');
-          if (fakeFooter) {
-            this.absoluteBottomIndex = i;
-            this.absoluteBottomWidth = fakeFooter.clientWidth;
+        for (let i = 0; i < els.length; ++i) {
+          let rect = els[i].getBoundingClientRect();
+          if (rect.bottom + 5 > window.innerHeight && rect.top < window.innerHeight - 200) {
+            const fakeFooter = this.$el.querySelector('.fake-footer');
+            if (fakeFooter) {
+              this.absoluteBottomIndex = i;
+              this.absoluteBottomWidth = fakeFooter.clientWidth;
+            }
+            break;
           }
-          break;
         }
       }
     },
@@ -280,10 +282,8 @@ export default {
       }
     },
     downloadAttachment (attachId) {
-      this.$store.dispatch('fetchCurrentSigninedMemberInfo').then(() => {
-        const me = this.$store.state.me;
-        console.log(me.download.remainingTraffic);
-        if (me.download && me.download.remainingTraffic < 0) {
+      api.v1.attachment.getRemainingTraffic().then(traffic => {
+        if (traffic.remainingTraffic < 0) {
           window.history.go(-1);
           return bus.$emit('notification', {
             type: 'error',
@@ -299,10 +299,19 @@ export default {
           });
         }
 
+        if ((/\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(this.attachments[attachId].fileName))) {
+          const downloadTrigger = this.$el.querySelector('a.download-trigger');
+          downloadTrigger.href = `/api/v1/attachment/${attachId}`;
+          downloadTrigger.target = '_blank';
+          downloadTrigger.click();
+          window.history.go(-1);
+          return;
+        }
+        
         this.$store.dispatch('showMessageBox', {
           title: '附件下载确认',
           type: 'OKCANCEL',
-          message: `<p>你确定要下载 ${this.attachments[attachId].fileName} 吗？</p><p>该操作将会使用 ${this.fileSize(this.attachments[attachId].size)} 流量，您当前剩余流量为 ${this.fileSize(me.download.remainingTraffic)}。</p>`,
+          message: `<p>你确定要下载 ${this.attachments[attachId].fileName} 吗？</p><p>该操作将会使用 ${this.fileSize(this.attachments[attachId].size)} 流量，您当前剩余流量为 ${this.fileSize(traffic.dailyTraffic - traffic.usedTraffic)}。</p>`,
           html: true,
         }).then(() => {
           const downloadTrigger = this.$el.querySelector('a.download-trigger');
@@ -322,7 +331,7 @@ export default {
       return this.$store.state.discussionMeta;
     },
     discussionPosts () {
-      if (!this.$store.state.autoLoadOnScroll) {
+      if (!this.settings.autoLoadOnScroll) {
         return this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize + 1);
       } else {
         return this.$store.state.discussionPosts;
@@ -336,6 +345,9 @@ export default {
     },
     attachments () {
       return this.$store.state.attachments;
+    },
+    settings () {
+      return this.$store.state.settings;
     },
     busy () {
       return this.$store.state.busy;
@@ -365,7 +377,7 @@ export default {
         return this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
           this.$forceUpdate();
           this.scrollWatcher();
-          if (this.$store.state.autoLoadOnScroll && page !== 1) {
+          if (this.settings.autoLoadOnScroll && page !== 1) {
             this.minPage = page - 1;
             this.pageLoaded[this.currentPage - 1] = true;
           }
@@ -410,7 +422,7 @@ export default {
       this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
         this.$forceUpdate();
         this.scrollWatcher();
-        if (this.$store.state.autoLoadOnScroll && page !== 1) {
+        if (this.settings.autoLoadOnScroll && page !== 1) {
           this.minPage = page - 1;
           this.pageLoaded[this.currentPage - 1] = true;
         }
@@ -429,7 +441,7 @@ export default {
           this.unread.push(e.affects.postIndex);
           this.updateTitle();
           return;
-        } else if (e.eventType === 'Update' && (this.$store.state.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
+        } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
           this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
         }
       }
@@ -445,7 +457,7 @@ export default {
     this.currentPage = page;
     this.pageLoaded[this.currentPage] = true;
 
-    if (this.$store.state.autoLoadOnScroll && page !== 1) {
+    if (this.settings.autoLoadOnScroll && page !== 1) {
       this.minPage = page - 1;
       this.pageLoaded[this.currentPage - 1] = true;
     }

@@ -148,7 +148,7 @@ div.notification-container {
     width: 320px;
     position: absolute;
     top: 8px;
-    right: -15px;
+    right: -30px;
     border-radius: 4px;
     transition: all ease 0.2s;
     overflow: hidden;

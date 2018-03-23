@@ -149,6 +149,7 @@ export default {
   fetchCurrentSigninedMemberInfo: state => {
     return api.v1.member.fetchMe({}).then(data => {
       state.commit('setCurrentSigninedMemberInfo', data.memberInfo);
+      state.commit('setSettings', data.memberInfo.settings);
     });
   },
 
@@ -191,7 +192,16 @@ export default {
   },
 
   disposeMessageBox: (state) => {
-    console.log('fucked');
     state.commit('disposeMessageBox', { promise: null });
+  },
+
+  updateSetting: (state, { key, value }) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, 300 + 300 * Math.random());      
+    }).then(() => {
+      api.v1.member.updateSetting({ key, value }).then(() => {
+        return state.dispatch('fetchCurrentSigninedMemberInfo');
+      });
+    });
   },
 };

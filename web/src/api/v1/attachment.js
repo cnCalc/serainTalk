@@ -37,7 +37,23 @@ function uploadAttachment (params, cfg) {
   });
 }
 
+/**
+ * Get remaining downlaod traffic.
+ *
+ * @param {Object} params An object containing the parameters
+ *
+ * @returns {Promise} Promise of the request
+ */
+function getRemainingTraffic (params) {
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/attachment/traffic`)
+    .then(response => resolve(response.data))
+    .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchMyAttachmentList,
   uploadAttachment,
+  getRemainingTraffic,
 };
