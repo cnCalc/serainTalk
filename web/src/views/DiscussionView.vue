@@ -17,9 +17,13 @@
               div.attachment-wrapper
                 h3 附件列表
                 ul.attachment-list
-                  li.attachment-item(v-for="id in post.attachments") 
-                    a(:href="`#attach-${id}`") {{ attachments[id].fileName }}
-                    | ({{ fileSize(attachments[id].size) }})
+                  li.attachment-item(v-for="id in post.attachments")
+                    span(v-if="attachments[id].mime.indexOf('image/') !== 0")
+                      a(:href="`#attach-${id}`") {{ attachments[id].fileName }}
+                      | ({{ fileSize(attachments[id].size) }})
+                    span(v-else)
+                      a(:href="`/api/v1/attachment/${id}`", target="_blank") {{ attachments[id].fileName }}
+                      | ({{ fileSize(attachments[id].size) }})
             div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
             footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
               div.discussion-post-date
@@ -297,15 +301,6 @@ export default {
             type: 'error',
             body: '该附件链接无效！',
           });
-        }
-
-        if ((/\.(jpg|jpeg|gif|png|bmp|tga|svg|webp)$/.test(this.attachments[attachId].fileName))) {
-          const downloadTrigger = this.$el.querySelector('a.download-trigger');
-          downloadTrigger.href = `/api/v1/attachment/${attachId}`;
-          downloadTrigger.target = '_blank';
-          downloadTrigger.click();
-          window.history.go(-1);
-          return;
         }
         
         this.$store.dispatch('showMessageBox', {

@@ -45,9 +45,16 @@ let getAttachmentInfoByAttachmentId = async (req, res) => {
  * @param {Response} res
  */
 let getAttachmentsInfoByMemberId = async (req, res) => {
+  const $match = { _owner: req.member._id, referer: [], };
+
+  // TODO: make joi accept this
+  if (req.query.includingUsed === 'true') {
+    delete $match.referer;
+  }
+
   try {
     let attachmentInfos = await dbTool.attachment.aggregate([
-      { $match: { _owner: req.member._id } },
+      { $match },
       { $sort: { date: -1 } },
       { $project: { filePath: false } },
     ]).toArray();
@@ -82,10 +89,13 @@ let uploadAttachment = async (req, res, next) => {
       fs.unlinkSync(path.join(config.upload.file.path, req.file.filename));
       return errorHandler(null, errorMessages.OUT_OF_LIMIT, 401, res);
     }
+
+    const mime = await utils.mime.getMIME(path.join(config.upload.file.path, req.file.filename));
+
     let attachment = {
       _id: new ObjectID(),
       _owner: req.member._id,
-      type: 'file',
+      mime,
       date: new Date().getTime(),
       fileName: req.file.originalname,
       filePath: req.file.filename,
@@ -139,7 +149,7 @@ let getAttachment = async (req, res, next) => {
     }
 
     // 看一看他还有流量不
-    if (attachmentInfo.type === 'file') {
+    if (attachmentInfo.mime.indexOf('image/') !== 0) {
       if (downloadInfo.traffic + attachmentInfo.size > config.download.dailyTraffic) {
         return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
       }
@@ -148,7 +158,7 @@ let getAttachment = async (req, res, next) => {
       downloadInfo.traffic = downloadInfo.traffic + (attachmentInfo.size || 0);
     }
 
-    let dir = config.upload[config.upload.key[attachmentInfo.type]].path;
+    let dir = config.upload.file.path;
     let options = {
       root: dir,
       dotfiles: 'deny',

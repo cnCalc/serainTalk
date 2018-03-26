@@ -13,6 +13,7 @@ module.exports = {
   mail: require('./mail'),
   md5: require('./md5'),
   member: require('./member'),
+  mime: require('./mime'),
   notification: require('./notification'),
   object: require('./object'),
   permission: require('./permission'),
