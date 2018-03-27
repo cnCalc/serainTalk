@@ -74,6 +74,13 @@
         "admin"
       ],
       "enable": true
+    },
+    "lockDiscussion":{
+      "description": "可以锁定一个帖子。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
     }
   },
   "category": {

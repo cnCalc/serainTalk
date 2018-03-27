@@ -636,7 +636,10 @@ let updatePost = async (req, res, next) => {
     }
 
     // 被封禁的 post 禁止修改，存留证据
-    if (exactPost.status && exactPost.status.type === config.discussion.status.deleted) {
+    if (exactPost.status && (
+      exactPost.status.type === config.discussion.status.deleted
+      || exactPost.status.type === config.discussion.status.locked
+    )) {
       return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     }
 
@@ -1025,7 +1028,7 @@ let deleteDiscussion = async (req, res, next) => {
     // 查询封禁状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { baned: 1, title: 1, creater: 1 } },
+      { $project: { title: 1, creater: 1 } },
     ]).toArray();
 
     if (req.query.force === 'on') {
@@ -1106,6 +1109,65 @@ let ignoreMember = async (req, res, next) => {
   return res.status(201).send({ status: 'ok' });
 };
 
+let lockDiscussion = async (req, res, next) => {
+  if (!await utils.permission.checkPermission('discussion-lockDiscussion', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+  try {
+    let _id = ObjectID(req.params.id);
+
+    // 查询封禁状态
+    let discussionDoc = await dbTool.discussion.aggregate([
+      { $match: { _id: _id } },
+      { $project: { title: 1, creater: 1 } },
+    ]).toArray();
+
+    if (!discussionDoc) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    }
+
+    // 如果封禁则记录管理员信息和封禁时间
+    let status = {
+      type: config.discussion.status.locked,
+      operator: req.member._id,
+      time: Date.now(),
+    };
+    // 如果已封禁则解除封禁
+    let isLocked = discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.locked;
+    if (isLocked) {
+      status = {
+        type: config.discussion.status.ok,
+        operator: req.member._id,
+        time: Date.now(),
+      };
+    }
+    let updateDate = { $set: {} };
+    updateDate.$set.status = status;
+
+    let updateDoc = await dbTool.discussion.findOneAndUpdate(
+      { _id: _id },
+      updateDate,
+      { returnOriginal: false }
+    );
+    // TODO: 为通知添加跳转链接（被封禁的 discussion 要不要对发布者开放？）
+    let notification = {
+      content: isLocked
+        ? utils.string.fillTemplate(
+          config.notification.discussionRecover.content,
+          { title: updateDoc.value.title }
+        )
+        : utils.string.fillTemplate(
+          config.notification.discussionLocked.content,
+          { title: updateDoc.value.title }
+        ),
+    };
+    utils.notification.sendNotification(updateDoc.value.creater, notification);
+    return res.status(204).send({ status: 'ok' });
+  } catch (err) {
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
 module.exports = {
   createDiscussion,
   createPost,
@@ -1113,12 +1175,13 @@ module.exports = {
   deletePost,
   getDiscussionById,
   getDiscussionPostsById,
-  getDiscussionUnderMember,
   getDiscussionsByCategory,
+  getDiscussionUnderMember,
   getLatestDiscussionList,
   getPostByIndex,
   ignoreDiscussion,
   ignoreMember,
+  lockDiscussion,
   updatePost,
   votePost,
 };

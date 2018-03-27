@@ -159,6 +159,13 @@ let banDiscussion = {
 };
 exports.banDiscussion = banDiscussion;
 
+let lockDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+  },
+};
+exports.lockDiscussion = lockDiscussion;
+
 let ignoreDiscussion = {
   params: {
     id: interfaceUtils.mongoId.required(),

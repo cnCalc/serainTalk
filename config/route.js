@@ -105,6 +105,18 @@ let route = {
         handlers.v1.discussion.ignoreMember,
       ],
     },
+    lock: {
+      description: '锁定/解锁 指定的 Discussion。',
+      path: [
+        '/v1/discussions/:id/lock',
+        '/v1/discussion/:id/lock',
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.lockDiscussion,
+      handler: [
+        handlers.v1.discussion.lockDiscussion,
+      ],
+    },
   },
   posts: {
     getByDiscussionId: {

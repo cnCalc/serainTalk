@@ -39,6 +39,7 @@ module.exports = {
     status: {
       ok: 'ok',
       deleted: 'deleted',
+      locked: 'locked',
     },
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
     reset: 'loading',
@@ -65,7 +66,10 @@ module.exports = {
       content: '您发布的讨论: ${title} 已被删除。',
     },
     discussionRecover: {
-      content: '您被删除的讨论: ${title} 已恢复。',
+      content: '您的讨论: ${title} 已恢复。',
+    },
+    discussionLocked: {
+      content: '您发布的讨论: ${title} 已被删除。',
     },
     postDeleted: {
       content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被删除。',
