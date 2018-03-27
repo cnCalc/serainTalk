@@ -63,19 +63,22 @@ module.exports = {
       href: '/d/${var1}/${var2}#index-${var3}',
     },
     discussionDeleted: {
-      content: '您发布的讨论: ${title} 已被删除。',
+      content: '您发布的讨论: 「${title}」已被删除。',
     },
     discussionRecover: {
-      content: '您的讨论: ${title} 已恢复。',
+      content: '您的讨论: 「${title}」已恢复。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
     discussionLocked: {
-      content: '您发布的讨论: ${title} 已被删除。',
+      content: '您发布的讨论: 「${title}」已被锁定。',
     },
     postDeleted: {
-      content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被删除。',
+      content: '您在讨论「${title}」中发布的跟帖已被删除。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
     postRecover: {
-      content: '您在讨论 ${title} 中被删除的跟帖: ${content} 已恢复。',
+      content: '您在讨论「${title}」中被删除的跟帖已恢复。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
   },
   upload: {

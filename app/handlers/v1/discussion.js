@@ -72,7 +72,7 @@ let getLatestDiscussionList = async (req, res) => {
       category: { $in: config.discussion.category.whiteList },
       $or: [
         { status: null },
-        { 'status.type': { $in: [config.discussion.status.ok] } },
+        { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
       ],
     };
     // 无权限只显示白名单中的分类
@@ -135,7 +135,7 @@ let getDiscussionById = async (req, res) => {
       category: { $in: config.discussion.category.whiteList },
       $or: [
         { status: null },
-        { 'status.type': { $in: [config.discussion.status.ok] } },
+        { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
       ],
     };
     // 鉴权 能否读取所有分类的讨论
@@ -189,7 +189,7 @@ let getDiscussionPostsById = async (req, res) => {
       category: { $in: config.discussion.category.whiteList },
       $or: [
         { status: null },
-        { 'status.type': { $in: [config.discussion.status.ok] } },
+        { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
       ],
     };
 
@@ -202,6 +202,7 @@ let getDiscussionPostsById = async (req, res) => {
       $or: [
         { 'posts.status': null },
         { 'posts.status.type': { $in: [config.discussion.status.ok] } },
+        { 'posts.user': req.member._id },  // 允许看到自己被删除的帖子
       ],
     };
     // 鉴权 能否读取被封禁的 discussion 和 post
@@ -265,7 +266,7 @@ let getPostByIndex = async (req, res, next) => {
     category: { $in: config.discussion.category.whiteList },
     $or: [
       { status: null },
-      { 'status.type': { $in: [config.discussion.status.ok] } },
+      { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
     ],
   };
   let postQuery = {
@@ -273,6 +274,7 @@ let getPostByIndex = async (req, res, next) => {
     $or: [
       { 'posts.status': null },
       { 'posts.status.type': { $in: [config.discussion.status.ok] } },
+      { 'posts.user': req.member._id },  // 允许看到自己被删除的帖子
     ],
   };
   // 鉴权 能否读取被封禁的 discussion 和 post
@@ -420,6 +422,11 @@ let createPost = async (req, res, next) => {
   // 检查discussion 是否已被封禁
   if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.deleted) {
     return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+  }
+
+  // 检查discussion 是否被锁定
+  if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
+    return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
   }
 
   if (!config.discussion.category.whiteList.includes(discussionInfo.category)
@@ -635,6 +642,12 @@ let updatePost = async (req, res, next) => {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
 
+    let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
+    // 被锁定的讨论不允许修改
+    if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
+      return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
+    }
+    
     // 被封禁的 post 禁止修改，存留证据
     if (exactPost.status && (
       exactPost.status.type === config.discussion.status.deleted
@@ -744,6 +757,12 @@ let votePost = async (req, res, next) => {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     let _discussionId = ObjectID(req.params.id);
+
+    let discussionInfo = await dbTool.discussion.findOne({ _id: _discussionId });
+    // 检查discussion 是否被锁定
+    if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
+      return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
+    }
 
     let postInfo = await dbTool.discussion.aggregate([
       { $match: { _id: _discussionId } },
@@ -984,24 +1003,44 @@ let deletePost = async (req, res, next) => {
       updateDate,
       { returnOriginal: false }
     );
-    // TODO: 为通知添加跳转链接（被封禁的 post 要不要对发布者开放？）
-    let notification = {
-      content: isDeleted
-        ? utils.string.fillTemplate(
+    let notification;
+    if (isDeleted) {
+      notification = {
+        content: utils.string.fillTemplate(
           config.notification.postRecover.content,
           {
             title: postsDoc[postIndex - 1].title,
             content: postsDoc[postIndex - 1].posts.content,
           }
+        ),
+        href: utils.string.fillTemplate(
+          config.notification.postRecover.href,
+          {
+            var1: _id,
+            var2: Math.floor((postIndex - 1) / config.pagesize) + 1,
+            var3: postIndex,
+          }
         )
-        : utils.string.fillTemplate(
+      }
+    } else {
+      notification = {
+        content: utils.string.fillTemplate(
           config.notification.postDeleted.content,
           {
             title: postsDoc[postIndex - 1].title,
             content: postsDoc[postIndex - 1].posts.content,
           }
         ),
-    };
+        href: utils.string.fillTemplate(
+          config.notification.postDeleted.href,
+          {
+            var1: _id,
+            var2: Math.floor((postIndex - 1) / config.pagesize) + 1,
+            var3: postIndex,
+          }
+        )
+      }
+    }
     utils.notification.sendNotification(postsDoc[postIndex - 1].posts.user, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {

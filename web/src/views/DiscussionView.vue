@@ -33,7 +33,7 @@
                 button.button.vote-up(@click="votePost(post.index, 'up')" :title="(post.votes.up.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.up.count }}
                 button.button.vote-down(@click="votePost(post.index, 'down')" :title="(post.votes.down.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.down.count }}
                 div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
-                  button.button(@click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
+                  button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
                   button.button(@click="copyLink(post.index)") 复制链接
                   button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") 跳至末尾
                   template(v-if="$store.state.me")
@@ -48,8 +48,8 @@
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy ? 0 : 1 }")
         div.quick-funcs 快速操作
-        button.button.quick-funcs 订阅更新
-        button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
+        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'") 订阅更新
+        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs 前往后台
@@ -153,6 +153,12 @@ export default {
             bus.$emit('notification', {
               type: 'error',
               body: '游客无法执行此操作，请登录后继续。',
+            });
+          } else if (err.response.data.message === 'the discussion is locked.') {
+            // TODO: use code instead of error message?
+            bus.$emit('notification', {
+              type: 'error',
+              body: '当前讨论已被管理员锁定，无法进行该操作。',
             });
           } else {
             console.error(err);
@@ -320,6 +326,15 @@ export default {
         });
       });
     },
+    updateGlobalTitle () {
+      let { title, category } = this.discussionMeta;
+
+      if (this.discussionMeta.status && this.discussionMeta.status.type === 'locked') {
+        title += '（已锁定）'
+      }
+
+      this.$store.commit('setGlobalTitles', [title, category]);
+    }
   },
   computed: {
     discussionMeta () {
@@ -350,7 +365,7 @@ export default {
   },
   watch: {
     discussionMeta (val) {
-      this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
+      this.updateGlobalTitle();
       this.pagesCount = indexToPage(this.discussionMeta.postsCount);
     },
     '$route': function (route) {
@@ -380,7 +395,7 @@ export default {
       }
 
       this.scrollWatcher();
-      this.$store.commit('setGlobalTitles', [this.discussionMeta.title, this.discussionMeta.category]);
+      this.updateGlobalTitle();
 
       if (this.pageLoaded[Number(route.params.page) || 1]) {
         this.currentPage = Number(route.params.page) || 1;
