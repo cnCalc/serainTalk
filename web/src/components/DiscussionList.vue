@@ -18,7 +18,6 @@
                 router-link(:to="'/m/' + discussion.lastMember") {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
               |{{ discussion.replies === 1 ? '发布于' : '回复于' }}{{ timeAgo(discussion.lastDate) }}
             span.discussion-tags(v-for="tag in discussion.tags"): a {{ tag }}
-            span.discussion-tags: a 假装有tag
         div.discussion-meta-right
           span.discussion-category.hide-on-small-device(v-if="discussion.category"): a {{ discussion.category }}
           span.discussion-replies {{ Math.max(discussion.replies - 1, 0) }}

@@ -39,6 +39,7 @@ module.exports = {
     status: {
       ok: 'ok',
       deleted: 'deleted',
+      locked: 'locked',
     },
     freqLimit: 1000 * 3 * 60, // 发帖间隔（3分钟）
     reset: 'loading',
@@ -62,16 +63,19 @@ module.exports = {
       href: '/d/${var1}/${var2}#index-${var3}',
     },
     discussionDeleted: {
-      content: '您发布的讨论: ${title} 已被删除。',
+      content: '您发布的讨论: 「${title}」已被删除。',
     },
     discussionRecover: {
-      content: '您被删除的讨论: ${title} 已恢复。',
+      content: '您被删除的讨论: 「${title}」已恢复。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
     postDeleted: {
-      content: '您在讨论 ${title} 中发布的跟帖: ${content} 已被删除。',
+      content: '您在讨论「${title}」中发布的跟帖已被删除。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
     postRecover: {
-      content: '您在讨论 ${title} 中被删除的跟帖: ${content} 已恢复。',
+      content: '您在讨论「${title}」中被删除的跟帖已恢复。',
+      href: '/d/${var1}/${var2}#index-${var3}',
     },
   },
   upload: {
