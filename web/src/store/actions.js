@@ -70,6 +70,7 @@ export default {
         state.commit('mergeAttachments', data.attachments);
         state.commit('updateDiscussionPosts', data.posts);
       }
+    }).finally(() => {
       state.commit('setBusy', false);
     });
   },

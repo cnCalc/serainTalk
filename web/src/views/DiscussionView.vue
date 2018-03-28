@@ -54,7 +54,7 @@
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'", @click="lockDiscussion()") 锁定讨论
           button.button.quick-funcs(v-else, @click="lockDiscussion()") 解除锁定
-          button.button.quick-funcs 前往后台
+          button.button.quick-funcs(@click="deleteDiscussion") 删除讨论
     div.hidden
       a.download-trigger
 </template>
@@ -266,6 +266,21 @@ export default {
       }).catch((error) => {
         console.error(error);
       })
+    },
+    deleteDiscussion () {
+      this.$store.dispatch('showMessageBox', {
+        title: '危险操作警告',
+        type: 'OKCANCEL',
+        message: `<p>您确定要<span style="color: #a00; font-weight: 700;">删除</span>该讨论吗？该操作不可恢复！</p><p>如果需要让该讨论对普通用户不可见，只需要编辑一楼，将它的分区改为「内部版块」即可。</p><p>完成删除后将返回至上一个页面，可能需要刷新浏览器才能看到变更。</p>`,
+        html: true,
+      }).then(() => {
+        api.v1.discussion.deleteDiscussionPermanentlyById({ id: this.discussionMeta._id }).then(() => {
+          window.history.go(-1);
+        }).catch((error) => {
+          console.error(error);
+        })
+      }).catch(() => {
+      });
     },
     activateEditor (mode, discussionId, memberId, index) {
       this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, discussionCategory: this.discussionMeta.category, memberId, index });
@@ -501,6 +516,10 @@ export default {
         scrollToHash(window.location.hash);
       }
       this.updateTitle();
+    }).catch(error => {
+      if (error.response.status === 404) {
+        this.$router.replace('/not-found');
+      }
     });
   },
 };

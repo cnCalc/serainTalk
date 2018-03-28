@@ -230,6 +230,23 @@ function lockDiscussionById (params) {
   });
 }
 
+/**
+ * Permanently delete one discussion.
+ *
+ * @param {Object} params
+ * @param {string} params.id
+ *
+ * @returns {Promise}
+ */
+function deleteDiscussionPermanentlyById (params) {
+  if (!params.id) return Promise.reject('discussion id is required');
+  return new Promise((resolve, reject) => {
+    axios.delete(`${config.api.url}/${config.api.version}/discussion/${params.id}?force=on`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -241,4 +258,5 @@ export default {
   lockDiscussionById,
   deletePostByDiscussionIdAndIndex,
   votePostByDiscussionIdAndIndex,
+  deleteDiscussionPermanentlyById,
 };
