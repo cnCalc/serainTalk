@@ -45,7 +45,7 @@ let getMemberInfoById = async (req, res, next) => {
       let query = {
         $match: {
           'posts.user': memberId,
-          'status.type': { $in: [config.discussion.status.ok] },
+          'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] },
           category: { $in: config.discussion.category.whiteList },
         },
       };

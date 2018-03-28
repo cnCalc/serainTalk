@@ -3,7 +3,7 @@
     "readExtraCategories": {
       "description": "可以获取隐藏分类中的 Discussion 和 Post。",
       "allow": [
-        
+        "_admin"
       ],
       "enable": true
     },
@@ -41,9 +41,9 @@
     "updateAnyPost": {
       "description": "可以修改任何人发布的 Discussion 和 Post。",
       "allow": [
-        "admin"
+        "_admin"
       ],
-      "enable": false
+      "enable": true
     },
     "voteToAllPost": {
       "description": "可以给任何一个 Post 投票。",
@@ -87,7 +87,7 @@
     "readExtraCategoriesName": {
       "description": "可以获取隐藏分类的名称。",
       "allow": [
-        
+        "_admin"
       ],
       "enable": true
     },

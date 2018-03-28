@@ -213,6 +213,23 @@ function votePostByDiscussionIdAndIndex (params) {
   });
 }
 
+/**
+ * Lock/unlock one discussion.
+ *
+ * @param {Object} params
+ * @param {string} params.id
+ *
+ * @returns {Promise}
+ */
+function lockDiscussionById (params) {
+  if (!params.id) return Promise.reject('discussion id is required');
+  return new Promise((resolve, reject) => {
+    axios.post(`${config.api.url}/${config.api.version}/discussion/${params.id}/lock`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -221,6 +238,7 @@ export default {
   updateDiscussionPostByIdAndIndex,
   createDiscussion,
   replyToDiscussion,
+  lockDiscussionById,
   deletePostByDiscussionIdAndIndex,
   votePostByDiscussionIdAndIndex,
 };

@@ -14,7 +14,7 @@
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web ; which cnpm > /dev/null 2> /dev/null ; if test -z \"$SKIP_FRONTEND\" ; then if test \"$?\" -eq \"0\" ; then cnpm i ; else npm i ; fi ; fi ;",
     "build": "cd web && npm run build && cp -r dist ../app/public && cp index.html ../app/public",
-    "dev": "node ./index.js",
+    "dev": "node --inspect ./index.js",
     "production:stable": "cross-env NODE_ENV=production RELEASE=stable node ./index.js",
     "production:beta": "cross-env NODE_ENV=production RELEASE=beta node ./index.js"
   },

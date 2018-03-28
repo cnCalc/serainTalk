@@ -28,12 +28,32 @@ let getCategories = async (req, res, next) => {
 
     let categoryDoc = await dbTool.generic.findOne({ key: 'pinned-categories' });
     let categoryGroup = categoryDoc.groups;
+
     // 鉴权 能否读取所有分类名称
     if (!await utils.permission.checkPermission('category-readExtraCategoriesName', req.member.permissions)) {
       for (let group of categoryGroup) {
         group.items = group.items.filter(category => config.discussion.category.whiteList.includes(category.name));
       }
+    } else {
+      // 管理员可以看到不可见的分区，所以还要再查一次
+      let hiddenCategories = (await dbTool.discussion.distinct('category')).filter(category => !config.discussion.category.whiteList.includes(category));
+
+      categoryGroup.push({
+        name: '不可见分区',
+        items: hiddenCategories.map(category => {
+          return {
+            name: category,
+            type: 'category',
+            slug: category,
+            description: '',
+            color: '#000',
+          }
+        })
+      })
     }
+
+    
+
     return res.status(200).send({ status: 'ok', groups: categoryGroup });
   } catch (err) {
     /* istanbul ignore next */

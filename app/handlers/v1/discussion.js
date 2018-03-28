@@ -282,6 +282,10 @@ let getPostByIndex = async (req, res, next) => {
     delete query.$or;
     delete postQuery.$or;
   }
+  // 鉴权 能否读取所有分类中的讨论
+  if (await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+    delete query.category;
+  }
   try {
     // 获取
     let postsDoc = await dbTool.discussion.aggregate([
@@ -634,26 +638,26 @@ let updatePost = async (req, res, next) => {
     ]).toArray();
     let exactPost = exactPostRes[0].posts;
 
-    /* istanbul ignore else */
-    // 只有本人或管理员才可以修改 post
-    if (exactPost.user.toString() !== req.member.id
-      // 鉴权 能否修改任何人的跟帖
-      && !await utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions)) {
-      return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
-    }
-
+    let canUpdateAnyPost = await utils.permission.checkPermission('discussion-updateAnyPost', req.member.permissions);
     let discussionInfo = await dbTool.discussion.findOne({ _id: _id });
-    // 被锁定的讨论不允许修改
-    if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
-      return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
-    }
-    
-    // 被封禁的 post 禁止修改，存留证据
-    if (exactPost.status && (
-      exactPost.status.type === config.discussion.status.deleted
-      || exactPost.status.type === config.discussion.status.locked
-    )) {
-      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+
+    // 不可以编辑任意帖子，需要判断是否为创建者，以及这个讨论的状态
+    /* istanbul ignore else */
+    if (!canUpdateAnyPost) {
+      /* istanbul ignore else */
+      // 只有本人或管理员才可以修改 post
+      if (exactPost.user.toString() !== req.member.id) {
+        return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+      }
+
+      /* istanbul ignore else */
+      if (discussionInfo.status) switch (discussionInfo.status.type) {
+      case config.discussion.status.locked:
+        return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
+      case config.discussion.status.deleted:
+        return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+      }
+
     }
 
     let $set = {};
@@ -850,7 +854,7 @@ let getDiscussionUnderMember = async (req, res) => {
     category: { $in: config.discussion.category.whiteList },
     $or: [
       { status: null },
-      { 'status.type': { $in: [config.discussion.status.ok] } },
+      { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
     ],
   };
   // 鉴权 能否读取所有分类的讨论
@@ -908,7 +912,11 @@ let getDiscussionsByCategory = async (req, res, next) => {
     let category = await slugToCategory(req.params.slug);
     /* istanbul ignore if */
     if (typeof category === 'undefined') {
-      return res.status(200).send({ status: 'ok' });
+      if (!await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
+        return res.status(200).send({ status: 'ok' });
+      } else {
+        category = req.params.slug;
+      }
     }
 
     let query = {
@@ -1003,45 +1011,31 @@ let deletePost = async (req, res, next) => {
       updateDate,
       { returnOriginal: false }
     );
+    
+    const title = postsDoc[postIndex - 1].title;
+    const content = postsDoc[postIndex - 1].posts.content;
+    const href = utils.string.fillTemplate(config.notification.postRecover.href, {
+      var1: _id,
+      var2: Math.floor((postIndex - 1) / config.pagesize) + 1,
+      var3: postIndex,
+    });
+
     let notification;
+
     if (isDeleted) {
       notification = {
-        content: utils.string.fillTemplate(
-          config.notification.postRecover.content,
-          {
-            title: postsDoc[postIndex - 1].title,
-            content: postsDoc[postIndex - 1].posts.content,
-          }
-        ),
-        href: utils.string.fillTemplate(
-          config.notification.postRecover.href,
-          {
-            var1: _id,
-            var2: Math.floor((postIndex - 1) / config.pagesize) + 1,
-            var3: postIndex,
-          }
-        )
+        content: utils.string.fillTemplate(config.notification.postRecover.content, { title, content }),
+        href,
       }
     } else {
       notification = {
-        content: utils.string.fillTemplate(
-          config.notification.postDeleted.content,
-          {
-            title: postsDoc[postIndex - 1].title,
-            content: postsDoc[postIndex - 1].posts.content,
-          }
-        ),
-        href: utils.string.fillTemplate(
-          config.notification.postDeleted.href,
-          {
-            var1: _id,
-            var2: Math.floor((postIndex - 1) / config.pagesize) + 1,
-            var3: postIndex,
-          }
-        )
+        content: utils.string.fillTemplate(config.notification.postDeleted.content, { title, content }),
+        href,
       }
     }
+
     utils.notification.sendNotification(postsDoc[postIndex - 1].posts.user, notification);
+
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -1155,23 +1149,24 @@ let lockDiscussion = async (req, res, next) => {
   try {
     let _id = ObjectID(req.params.id);
 
-    // 查询封禁状态
+    // 查询锁定状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { title: 1, creater: 1 } },
+      { $project: { title: 1, creater: 1, status: 1 } },
     ]).toArray();
 
     if (!discussionDoc) {
       return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
     }
 
-    // 如果封禁则记录管理员信息和封禁时间
+    // 如果锁定则记录管理员信息和锁定时间
     let status = {
       type: config.discussion.status.locked,
       operator: req.member._id,
       time: Date.now(),
     };
-    // 如果已封禁则解除封禁
+
+    // 如果已锁定则解除锁定
     let isLocked = discussionDoc[0].status && discussionDoc[0].status.type === config.discussion.status.locked;
     if (isLocked) {
       status = {
@@ -1188,18 +1183,28 @@ let lockDiscussion = async (req, res, next) => {
       updateDate,
       { returnOriginal: false }
     );
-    // TODO: 为通知添加跳转链接（被封禁的 discussion 要不要对发布者开放？）
-    let notification = {
-      content: isLocked
-        ? utils.string.fillTemplate(
-          config.notification.discussionRecover.content,
-          { title: updateDoc.value.title }
-        )
-        : utils.string.fillTemplate(
-          config.notification.discussionLocked.content,
-          { title: updateDoc.value.title }
-        ),
-    };
+
+    const title = updateDoc.value.title;
+    const href = utils.string.fillTemplate(config.notification.postRecover.href, {
+      var1: _id,
+      var2: Math.floor((updateDoc.value.index - 1) / config.pagesize) + 1,
+      var3: updateDoc.value.index,
+    });
+
+    let notification;
+
+    if (isLocked) {
+      notification = {
+        content: utils.string.fillTemplate(config.notification.discussionRecover.content, { title }),
+        href,
+      }
+    } else {
+      notification = {
+        content: utils.string.fillTemplate(config.notification.discussionLocked.content, { title }),
+        href,
+      }
+    }
+
     utils.notification.sendNotification(updateDoc.value.creater, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {

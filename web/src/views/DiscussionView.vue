@@ -52,6 +52,8 @@
         button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
         button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
+          button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'", @click="lockDiscussion()") 锁定讨论
+          button.button.quick-funcs(v-else, @click="lockDiscussion()") 解除锁定
           button.button.quick-funcs 前往后台
     div.hidden
       a.download-trigger
@@ -257,6 +259,13 @@ export default {
           }
         }
       }
+    },
+    lockDiscussion () {
+      api.v1.discussion.lockDiscussionById({ id: this.discussionMeta._id }).then(() => {
+        this.$store.dispatch('fetchDiscussionsMeta', { id: this.$store.state.discussionMeta._id });
+      }).catch((error) => {
+        console.error(error);
+      })
     },
     activateEditor (mode, discussionId, memberId, index) {
       this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, discussionCategory: this.discussionMeta.category, memberId, index });
