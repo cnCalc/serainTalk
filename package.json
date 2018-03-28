@@ -12,7 +12,7 @@
     "lint": "eslint $(find . \\( -name \"*.js\" -o -name \"*.vue\" \\) -not \\( -path \"./coverage/*\" -o -path \"./node_modules/*\" -o -path \"./web/node_modules/*\" -o -path \"./app/public/*\" -o -path \"./web/dist/*\" -o -path \"./uploads/*\" -o -name \".*\" \\))",
     "test": "cross-env NODE_ENV=mocha nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
-    "postinstall": "cd web ; which cnpm > /dev/null 2> /dev/null ; if test -z \"$SKIP_FRONTEND\" ; then if test \"$?\" -eq \"0\" ; then cnpm i ; else npm i ; fi ; fi ;",
+    "postinstall": "cd web ; which cnpm > /dev/null 2> /dev/null ; if test \"$?\" -eq \"0\" ; then cnpm i ; else npm i ; fi ;",
     "build": "cd web && npm run build && cp -r dist ../app/public && cp index.html ../app/public",
     "dev": "node --inspect ./index.js",
     "production:stable": "cross-env NODE_ENV=production RELEASE=stable node ./index.js",
