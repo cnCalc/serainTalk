@@ -45,7 +45,7 @@ let getAttachmentInfoByAttachmentId = async (req, res) => {
  * @param {Response} res
  */
 let getAttachmentsInfoByMemberId = async (req, res) => {
-  const $match = { _owner: req.member._id, referer: [], };
+  const $match = { _owner: req.member._id, referer: [] };
 
   // TODO: make joi accept this
   if (req.query.includingUsed === 'true') {
@@ -121,7 +121,7 @@ let deleteAttachment = async (req, res, next) => {
     if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
-    fs.unlinkSync(path.join(config.upload[config.upload.key[attachmentInfo.type]].path, attachmentInfo.filePath));
+    fs.unlinkSync(path.join(config.upload.file.path, attachmentInfo.filePath));
     await dbTool.attachment.deleteOne({ _id: _id });
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
@@ -196,6 +196,10 @@ let getAttachment = async (req, res, next) => {
 
 let getDailyTraffic = async (req, res, next) => {
   if (req.member._id) {
+    if (req.member.download === undefined) {
+      req.member.download = {};
+    }
+
     return res.status(200).send({
       status: 'ok',
       dailyTraffic: config.download.dailyTraffic,

@@ -10,7 +10,7 @@ function getMIME (filepath) {
       } else {
         return resolve(res);
       }
-    })
+    });
   });
 }
 

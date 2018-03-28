@@ -19,5 +19,5 @@ module.exports = {
   VALIDATION_ERROR: 'validation error',
   WRONG_ENV: 'the api is not available open on production server',
   TRAFFIC_LIMIT_EXCEEDED: 'traffic limit exceeded.',
-  DISCUSSION_LOCKED: 'the discussion is locked.'
+  DISCUSSION_LOCKED: 'the discussion is locked.',
 };

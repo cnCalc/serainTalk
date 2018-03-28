@@ -112,7 +112,7 @@ function resetPassword (param) {
 
 function updateSetting (param) {
   return new Promise((resolve, reject) => {
-      axios.put(`/api/v1/member/settings/${param.key}`, { value: param.value })
+    axios.put(`/api/v1/member/settings/${param.key}`, { value: param.value })
       .then(response => resolve(response.data))
       .catch(reject);
   });

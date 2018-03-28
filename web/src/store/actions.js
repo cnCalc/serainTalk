@@ -198,7 +198,7 @@ export default {
 
   updateSetting: (state, { key, value }) => {
     return new Promise((resolve, reject) => {
-      setTimeout(resolve, 300 + 300 * Math.random());      
+      setTimeout(resolve, 300 + 300 * Math.random());
     }).then(() => {
       api.v1.member.updateSetting({ key, value }).then(() => {
         return state.dispatch('fetchCurrentSigninedMemberInfo');

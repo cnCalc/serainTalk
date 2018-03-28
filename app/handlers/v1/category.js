@@ -47,12 +47,10 @@ let getCategories = async (req, res, next) => {
             slug: category,
             description: '',
             color: '#000',
-          }
-        })
-      })
+          };
+        }),
+      });
     }
-
-    
 
     return res.status(200).send({ status: 'ok', groups: categoryGroup });
   } catch (err) {

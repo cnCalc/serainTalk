@@ -32,7 +32,7 @@ export default {
   },
   methods: {
     switchTheme () {
-      return axios.put(`/api/v1/member/settings/nightmode`, { value: !this.$store.state.settings.nightmode }).then(() => {
+      return axios.put('/api/v1/member/settings/nightmode', { value: !this.$store.state.settings.nightmode }).then(() => {
         this.$store.dispatch('fetchCurrentSigninedMemberInfo');
       });
     },

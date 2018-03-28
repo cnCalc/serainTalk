@@ -651,13 +651,14 @@ let updatePost = async (req, res, next) => {
       }
 
       /* istanbul ignore else */
-      if (discussionInfo.status) switch (discussionInfo.status.type) {
-      case config.discussion.status.locked:
-        return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
-      case config.discussion.status.deleted:
-        return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+      if (discussionInfo.status) {
+        switch (discussionInfo.status.type) {
+          case config.discussion.status.locked:
+            return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
+          case config.discussion.status.deleted:
+            return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+        }
       }
-
     }
 
     let $set = {};
@@ -763,6 +764,11 @@ let votePost = async (req, res, next) => {
     let _discussionId = ObjectID(req.params.id);
 
     let discussionInfo = await dbTool.discussion.findOne({ _id: _discussionId });
+
+    if (!discussionInfo) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    }
+
     // 检查discussion 是否被锁定
     if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
       return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
@@ -1011,7 +1017,7 @@ let deletePost = async (req, res, next) => {
       updateDate,
       { returnOriginal: false }
     );
-    
+
     const title = postsDoc[postIndex - 1].title;
     const content = postsDoc[postIndex - 1].posts.content;
     const href = utils.string.fillTemplate(config.notification.postRecover.href, {
@@ -1026,12 +1032,12 @@ let deletePost = async (req, res, next) => {
       notification = {
         content: utils.string.fillTemplate(config.notification.postRecover.content, { title, content }),
         href,
-      }
+      };
     } else {
       notification = {
         content: utils.string.fillTemplate(config.notification.postDeleted.content, { title, content }),
         href,
-      }
+      };
     }
 
     utils.notification.sendNotification(postsDoc[postIndex - 1].posts.user, notification);
@@ -1197,12 +1203,12 @@ let lockDiscussion = async (req, res, next) => {
       notification = {
         content: utils.string.fillTemplate(config.notification.discussionRecover.content, { title }),
         href,
-      }
+      };
     } else {
       notification = {
         content: utils.string.fillTemplate(config.notification.discussionLocked.content, { title }),
         href,
-      }
+      };
     }
 
     utils.notification.sendNotification(updateDoc.value.creater, notification);

@@ -53,7 +53,7 @@ export default {
     },
     isLightTheme () {
       return !this.isDarkTheme;
-    }
+    },
   },
   mounted () {
     console.log([

@@ -336,7 +336,7 @@ export default {
       this.attachments = this.attachments.filter(el => el !== attach);
 
       const attachment = this.refAttachments[attach];
-      const textarea = this.$el.querySelector('textarea');console.log(attachment);
+      const textarea = this.$el.querySelector('textarea');
       const insertText = (attachment.mime.indexOf('image/') === 0
       ? `![${attachment.fileName.replace(/\[/g, '\\[').replace(/\]/g, '\\]')}](/api/v1/attachment/${attachment._id}) `
       : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `) + (this.settings.newlineAfterAttachmentInsert ? '\n' : '');
