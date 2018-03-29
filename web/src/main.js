@@ -15,7 +15,9 @@ import MigrationView from './views/MigrationView.vue';
 import MessageView from './views/MessageView.vue';
 
 import './utils/ws-eventbus';
+import i18n from './mixins/i18n';
 
+Vue.mixin(i18n);
 Vue.use(VueRouter);
 
 axios.defaults.headers.common['cache-control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0';

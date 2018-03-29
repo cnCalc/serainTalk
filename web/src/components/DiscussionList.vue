@@ -8,7 +8,7 @@
             div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
-            span {{ members[discussion.creater].username || 'undefined' }} 发布于 {{ new Date(discussion.createDate).toLocaleDateString() }}
+            span {{ members[discussion.creater].username || 'undefined' }} {{ i18n('ui_created_at', { date: new Date(discussion.createDate).toLocaleDateString() }) }}
         div.discussion-meta
           h3.discussion-title
             router-link.default(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
@@ -16,7 +16,7 @@
             span.discussion-last-reply
               span.discussion-user
                 router-link(:to="'/m/' + discussion.lastMember") {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
-              |{{ discussion.replies === 1 ? '发布于' : '回复于' }}{{ timeAgo(discussion.lastDate) }}
+              |{{ i18n( discussion.replies === 1 ? 'ui_created_at' : 'ui_replied_at', { date: timeAgo(discussion.lastDate) })}}
             span.discussion-tags(v-for="tag in discussion.tags"): a {{ tag }}
         div.discussion-meta-right
           span.discussion-category.hide-on-small-device(v-if="discussion.category"): a {{ discussion.category }}

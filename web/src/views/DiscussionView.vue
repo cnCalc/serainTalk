@@ -15,7 +15,7 @@
             post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
             div.discussion-post-attachments(v-if="post.attachments.length > 0")
               div.attachment-wrapper
-                h3 附件列表
+                h3 {{ i18n('ui_attachment_list') }}
                 ul.attachment-list
                   li.attachment-item(v-for="id in post.attachments")
                     span(v-if="attachments[id].mime.indexOf('image/') !== 0")
@@ -27,34 +27,34 @@
             div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
             footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
               div.discussion-post-date
-                span 创建于 {{ new Date(post.createDate).toLocaleDateString() }}
-                span(v-if="post.updateDate") ，编辑于 {{ new Date(post.updateDate).toLocaleDateString() }}
+                span {{ i18n('ui_created_at', { date: new Date(post.createDate).toLocaleDateString() }) }}
+                span(v-if="post.updateDate") {{ i18n('ui_edited_at', { date: new Date(post.updateDate).toLocaleDateString() }) }}
               div.button-left-container
                 button.button.vote-up(@click="votePost(post.index, 'up')" :title="(post.votes.up.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.up.count }}
                 button.button.vote-down(@click="votePost(post.index, 'down')" :title="(post.votes.down.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.down.count }}
                 div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
-                  button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") 回复
-                  button.button(@click="copyLink(post.index)") 复制链接
-                  button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") 跳至末尾
+                  button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") {{ i18n('ui_reply') }}
+                  button.button(@click="copyLink(post.index)") {{ i18n('ui_copy_link') }}
+                  button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") {{ i18n('ui_jump_to_bottom') }}
                   template(v-if="$store.state.me")
-                    button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") 编辑
+                    button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") {{ i18n('ui_edit') }}
                     template(v-if="$store.state.me.role === 'admin'")
-                      button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") 恢复
-                      button.button(v-else @click="deletePost(post.index)") 删除
-      div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ unread.length }} 条新回复，点击以查看。
+                      button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") {{ i18n('ui_undelete') }}
+                      button.button(v-else @click="deletePost(post.index)") {{ i18n('ui_delete') }}
+      div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ i18n('ui_new_replies_event', { count: unread.length }) }}
       div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
-        center 没有可展示的帖子
+        center {{ i18n('ui_no_post_to_show') }}
       pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!settings.autoLoadOnScroll")
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy ? 0 : 1 }")
-        div.quick-funcs 快速操作
-        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'") 订阅更新
-        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") 回复帖子
-        button.button.quick-funcs(@click="scrollToTop(400)") 回到顶部
+        div.quick-funcs {{ i18n('ui_quick_funcs') }}
+        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'") {{ i18n('ui_qf_subscribe') }}
+        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") {{ i18n('ui_qf_reply_to_post') }}
+        button.button.quick-funcs(@click="scrollToTop(400)") {{ i18n('ui_qf_scroll_to_top') }}
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
-          button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'", @click="lockDiscussion()") 锁定讨论
-          button.button.quick-funcs(v-else, @click="lockDiscussion()") 解除锁定
-          button.button.quick-funcs(@click="deleteDiscussion") 删除讨论
+          button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'", @click="lockDiscussion()") {{ i18n('ui_qf_lock_discussion') }}
+          button.button.quick-funcs(v-else, @click="lockDiscussion()") {{ i18n('ui_qf_unlock_discussion') }}
+          button.button.quick-funcs(@click="deleteDiscussion") {{ i18n('ui_qf_delete_discussion') }}
     div.hidden
       a.download-trigger
 </template>
@@ -543,7 +543,7 @@ div.discussion-view {
     padding-right: 5px;
   }
 
-  $right_width: 100px;
+  $right_width: 130px;
   div.discussion-view-right {
     order: 2;
     flex: 0 0 $right_width;

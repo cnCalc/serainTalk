@@ -4,11 +4,21 @@
       div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
       div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
-      router-link(:to="`/m/${me._id}`"): li.member 我的主页
-      router-link(to="/message"): li.message 站内消息
-      router-link(:to="`/m/${me._id}/settings`"): li.settings 个人设置
-      a(@click="switchTheme"): li(:class="theme === 'light' ? 'night-mode' : 'day-mode'") 切换主题
-      a(@click="signout"): li.signout 退出登录
+      router-link(:to="`/m/${me._id}`"): li
+        div.icon.member-icon
+        div.text {{ i18n('link_my_page') }}
+      router-link(to="/message"): li
+        div.icon.message-icon
+        div.text {{ i18n('link_mails') }}
+      router-link(:to="`/m/${me._id}/settings`"): li
+        div.icon.settings-icon
+        div.text {{ i18n('link_settings') }}
+      a(@click="switchTheme"): li
+        div(:class="theme === 'light' ? 'icon night-mode-icon' : 'icon day-mode-icon'")
+        div.text {{ i18n('link_switch_theme') }}
+      a(@click="signout"): li
+        div.icon.signout-icon
+        div.text {{ i18n('link_sign_out') }}
 </template>
 
 <script>
@@ -123,50 +133,49 @@ div.avatar-container {
     }
 
     li {
-      text-align: center;
+      width: 100%;
       font-size: 0.9em;
       height: 2.2em;
       line-height: 2.2em;
+      display: flex;
+      align-items: baseline;
     }
 
-    li::before {
-      content: '';
-      display: inline-block;
-      background-size: cover;
+    div.icon {
       width: 1em;
       height: 1em;
-      margin-right: .5em;
-      vertical-align: baseline;
+      background-size: cover;
+      margin: 0 0.5em 0 1.5em;
     }
 
-    li::after {
-      content: '';
-      display: inline-block;
-      width: 0.5em;
+    div.text {
+      flex-grow: 1;
+      text-align: center;
+      margin-right: 2.6em;
     }
 
-    li.member::before {
+    div.icon.member-icon {
       background-image: url(../assets/member.svg);
     }
 
-    li.settings::before {
+    div.icon.settings-icon {
       background-image: url(../assets/settings.svg);
     }
 
-    li.signout::before {
+    div.icon.signout-icon {
       background-image: url(../assets/signout.svg);
       margin-bottom: -2px; // Fix to baseline
     }
 
-    li.night-mode::before {
+    div.icon.night-mode-icon {
       background-image: url(../assets/night-mode.svg); 
     }
 
-    li.day-mode::before {
+    div.icon.day-mode-icon {
       background-image: url(../assets/day-mode.svg); 
     }
 
-    li.message::before {
+    div.icon.message-icon {
       background-image: url(../assets/message.svg); 
     }
   }
@@ -198,7 +207,7 @@ div.avatar-container {
     li:hover {
       background-color: mix($theme_color, black, 10%);
     }
-    li::before {
+    div.icon {
       filter: grayscale(100%);
     }
   }

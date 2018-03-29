@@ -2,14 +2,14 @@
   div.list-view
     div.nav
       div.left
-        div.button.create-discussion(@click="showEditor") 创建新帖
+        div.button.create-discussion(@click="showEditor") {{ i18n('ui_create_discussion') }}
         category-list
       div.right
-        div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ unread }} 个新讨论或帖子更新，点击以刷新。
+        div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
         discussion-list(v-show="!busy || currentPage > 1")
         loading-icon(v-if="busy")
         div.list-nav
-          button.button.load-more(@click="loadMore", v-if="!busy") 加载更多
+          button.button.load-more(@click="loadMore", v-if="!busy") {{ i18n('ui_load_more') }}
 </template>
 
 <script>
