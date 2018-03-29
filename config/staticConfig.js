@@ -62,6 +62,10 @@ module.exports = {
       content: '${var1} 在讨论 ${var2} 中提及了你',
       href: '/d/${var1}/${var2}#index-${var3}',
     },
+    postWatcher: {
+      content: '${var1} 回复了你关注的讨论 ${var2}',
+      href: '/d/${var1}/${var2}#index-${var3}',
+    },
     discussionDeleted: {
       content: '您发布的讨论: 「${title}」已被删除。',
     },

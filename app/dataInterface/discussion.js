@@ -173,6 +173,20 @@ let ignoreDiscussion = {
 };
 exports.ignoreDiscussion = ignoreDiscussion;
 
+let watchDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+  },
+};
+exports.watchDiscussion = watchDiscussion;
+
+let normalDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+  },
+};
+exports.normalDiscussion = normalDiscussion;
+
 let ignoreMember = {
   params: {
     id: interfaceUtils.mongoId.required(),

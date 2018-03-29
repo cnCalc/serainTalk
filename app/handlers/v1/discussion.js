@@ -535,6 +535,14 @@ let createPost = async (req, res, next) => {
     if (postInfo.replyTo) needNotification.add(postInfo.replyTo.memberId);
     postInfo.mentions.forEach(mention => needNotification.add(mention));
 
+    let watchList = await dbTool.commonMember.aggregate([
+      { $match: { 'attitude.watch.discussions': discussionInfo._id } },
+      { $project: { _id: true } },
+    ]).toArray();
+
+    watchList = watchList.map(member => member._id.toString());
+    watchList.forEach(memberId => { needNotification.add(memberId); });
+
     needNotification = [...needNotification];
     // 如果已屏蔽则不发送通知
     let tempList = [];
@@ -551,10 +559,10 @@ let createPost = async (req, res, next) => {
     // 不给自己发送通知
     needNotification = needNotification.filter(memberId => !memberId.equals(req.member._id));
 
-    needNotification.map(async _memberId => {
+    needNotification.map(_memberId => {
       // 如果是楼主 则发送有跟帖通知
       if (_memberId.equals(discussionInfo.creater)) {
-        return await utils.notification.sendNotification(discussionInfo.creater, {
+        return utils.notification.sendNotification(discussionInfo.creater, {
           content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
             var1: req.member.username,
             var2: discussionInfo.title,
@@ -569,7 +577,7 @@ let createPost = async (req, res, next) => {
 
       // 如果是被回复者 则发送被回复通知
       if (postInfo.replyTo && _memberId.equals(postInfo.replyTo._memberId)) {
-        return await utils.notification.sendNotification(postInfo.replyTo._memberId, {
+        return utils.notification.sendNotification(postInfo.replyTo._memberId, {
           content: utils.string.fillTemplate(config.notification.postReplied.content, {
             var1: req.member.username,
             var2: discussionInfo.title,
@@ -582,9 +590,24 @@ let createPost = async (req, res, next) => {
         });
       }
 
-      // 其他情况则为被 at 的成员 发送被 at 的通知
-      return await utils.notification.sendNotification(_memberId, {
-        content: utils.string.fillTemplate(config.notification.postMentioned.content, {
+      // 如不是 watcher 则为被 at 的成员 发送被 at 的通知
+      if (!watchList.includes(_memberId.toString())) {
+        return utils.notification.sendNotification(_memberId, {
+          content: utils.string.fillTemplate(config.notification.postMentioned.content, {
+            var1: req.member.username,
+            var2: discussionInfo.title,
+          }),
+          href: utils.string.fillTemplate(config.notification.discussionReplied.href, {
+            var1: discussionInfo._id,
+            var2: Math.floor((postInfo.index - 1) / config.pagesize) + 1,
+            var3: postInfo.index,
+          }),
+        });
+      }
+
+      // 其余情况则通知 watcher
+      return utils.notification.sendNotification(_memberId, {
+        content: utils.string.fillTemplate(config.notification.postWatcher.content, {
           var1: req.member.username,
           var2: discussionInfo.title,
         }),
@@ -596,17 +619,12 @@ let createPost = async (req, res, next) => {
       });
     });
 
-    let members = postInfo.mentions.map(async _mention => {
-      return await utils.resolveMembers.fetchOneMember(_mention);
+    let members = postInfo.mentions.map(_mention => {
+      return utils.resolveMembers.fetchOneMember(_mention);
     });
+    members = await Promise.all(members);
 
-    try {
-      await Promise.all(needNotification);
-    } catch (err) {
-      return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
-    }
-
-    utils.logger.writeEventLog({
+    await utils.logger.writeEventLog({
       entity: 'Post',
       type: 'Create',
       emitter: req.member._id,
@@ -616,7 +634,7 @@ let createPost = async (req, res, next) => {
       },
     });
 
-    utils.websocket.broadcastEvent('Post', 'Create', { discussionId: _id, category: discussionInfo.category, postIndex: postInfo.index });
+    await utils.websocket.broadcastEvent('Post', 'Create', { discussionId: _id, category: discussionInfo.category, postIndex: postInfo.index });
 
     return res.status(201).send({ status: 'ok', newPost: postInfo, members: members });
   } catch (err) {
@@ -1133,7 +1151,10 @@ let deleteDiscussion = async (req, res, next) => {
 let ignoreDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
-    { $push: { 'notifications.ignore.discussions': ObjectID(req.params.id) } }
+    {
+      $push: { 'attitude.ignore.discussions': ObjectID(req.params.id) },
+      $pull: { 'attitude.watch.discussions': ObjectID(req.params.id) },
+    }
   );
 
   return res.status(201).send({ status: 'ok' });
@@ -1142,7 +1163,10 @@ let ignoreDiscussion = async (req, res, next) => {
 let watchDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
-    { $push: { 'notifications.watch.discussions': ObjectID(req.params.id) } }
+    {
+      $push: { 'attitude.watch.discussions': ObjectID(req.params.id) },
+      $pull: { 'attitude.ignore.discussions': ObjectID(req.params.id) },
+    }
   );
   return res.status(201).send({ status: 'ok' });
 };
@@ -1152,8 +1176,8 @@ let normalDiscussion = async (req, res, next) => {
     { _id: req.member._id },
     {
       $pull: {
-        'notifications.watch.discussions': ObjectID(req.params.id),
-        'notifications.ignore.discussions': ObjectID(req.params.id),
+        'attitude.watch.discussions': ObjectID(req.params.id),
+        'attitude.ignore.discussions': ObjectID(req.params.id),
       },
     }
   );
@@ -1163,7 +1187,7 @@ let normalDiscussion = async (req, res, next) => {
 let ignoreMember = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
-    { $push: { 'notifications.ignore.members': ObjectID(req.params.id) } }
+    { $push: { 'attitude.ignore.members': ObjectID(req.params.id) } }
   );
 
   return res.status(201).send({ status: 'ok' });

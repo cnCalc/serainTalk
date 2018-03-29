@@ -989,6 +989,39 @@ describe('discussion part', async () => {
     });
   });
 
+  it('watch discussion.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+          // A watch 这个讨论
+          let watchUrl = `/api/v1/discussions/${newDiscussionInfo.id}/watch`;
+          await agent.post(watchUrl);
+
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+            // C 发布新 post
+            let postPayload = {
+              encoding: 'markdown',
+              content: 'hello test',
+            };
+            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+            await agent.post(url)
+              .send(postPayload)
+              .expect(201);
+
+            // A 查看消息队列
+            await testTools.member.login(agent, newMemberInfoA);
+            let notificationUrl = '/api/v1/notification';
+            let notificationRes = await agent.get(notificationUrl)
+              .expect(200);
+            let notificationBody = notificationRes.body;
+            expect(notificationBody.notifications.length).to.be.equal(1);
+            expect(/你关注的/.test(notificationBody.notifications[0].content)).to.be.true;
+          });
+        });
+      });
+    });
+  });
+
   it('ignore member.', async () => {
     await testTools.discussion.closeFreqLimit(async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {

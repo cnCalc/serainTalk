@@ -88,9 +88,33 @@ let route = {
         '/v1/discussion/:id/ignore',
       ],
       method: 'post',
-      schema: dataInterface.discussion.banDiscussion,
+      schema: dataInterface.discussion.ignoreDiscussion,
       handler: [
         handlers.v1.discussion.ignoreDiscussion,
+      ],
+    },
+    watchDiscussion: {
+      description: 'watch 指定的 Discussion。',
+      path: [
+        '/v1/discussions/:id/watch',
+        '/v1/discussion/:id/watch',
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.watchDiscussion,
+      handler: [
+        handlers.v1.discussion.watchDiscussion,
+      ],
+    },
+    normalDiscussion: {
+      description: '将指定 Discussion 的通知设为默认。',
+      path: [
+        '/v1/discussions/:id/normal',
+        '/v1/discussion/:id/normal',
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.normalDiscussion,
+      handler: [
+        handlers.v1.discussion.normalDiscussion,
       ],
     },
     ignoreMember: {
