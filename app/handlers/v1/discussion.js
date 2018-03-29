@@ -1133,16 +1133,37 @@ let deleteDiscussion = async (req, res, next) => {
 let ignoreDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
-    { $push: { 'ignores.notification.discussions': ObjectID(req.params.id) } }
+    { $push: { 'notifications.ignore.discussions': ObjectID(req.params.id) } }
   );
 
+  return res.status(201).send({ status: 'ok' });
+};
+
+let watchDiscussion = async (req, res, next) => {
+  await dbTool.commonMember.updateOne(
+    { _id: req.member._id },
+    { $push: { 'notifications.watch.discussions': ObjectID(req.params.id) } }
+  );
+  return res.status(201).send({ status: 'ok' });
+};
+
+let normalDiscussion = async (req, res, next) => {
+  await dbTool.commonMember.updateOne(
+    { _id: req.member._id },
+    {
+      $pull: {
+        'notifications.watch.discussions': ObjectID(req.params.id),
+        'notifications.ignore.discussions': ObjectID(req.params.id),
+      },
+    }
+  );
   return res.status(201).send({ status: 'ok' });
 };
 
 let ignoreMember = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
-    { $push: { 'ignores.notification.members': ObjectID(req.params.id) } }
+    { $push: { 'notifications.ignore.members': ObjectID(req.params.id) } }
   );
 
   return res.status(201).send({ status: 'ok' });
@@ -1232,6 +1253,8 @@ module.exports = {
   ignoreDiscussion,
   ignoreMember,
   lockDiscussion,
+  normalDiscussion,
   updatePost,
   votePost,
+  watchDiscussion,
 };

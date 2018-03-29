@@ -8,7 +8,7 @@ let isIgnored = async (_accepterId, _discussionId) => {
     { $match: { _id: _accepterId } },
       {
         $project: {
-          exists: { $in: [_discussionId, '$ignores.notification.discussions'] },
+          exists: { $in: [_discussionId, '$notifications.ignore.discussions'] },
         },
       },
     ]).toArray();
