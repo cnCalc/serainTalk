@@ -13,7 +13,6 @@ let getLatestList = {
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off'),
   },
 };
 exports.getLatestList = getLatestList;
@@ -21,7 +20,6 @@ exports.getLatestList = getLatestList;
 let getDiscussionById = {
   params: {
     id: interfaceUtils.mongoId.required(),
-    force: interfaceUtils.flag.default('off'),
   },
 };
 exports.getDiscussionById = getDiscussionById;
@@ -33,7 +31,6 @@ let getDiscussionByMember = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off'),
   },
 };
 exports.getDiscussionByMember = getDiscussionByMember;
@@ -42,7 +39,6 @@ let getDiscussionsByCategory = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off'),
   },
   params: {
     slug: joi.string().required(),
@@ -54,7 +50,6 @@ let getPostsById = {
   query: {
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    force: interfaceUtils.flag.default('off'),
   },
   params: {
     id: interfaceUtils.mongoId.required(),
@@ -64,8 +59,7 @@ exports.getPostsById = getPostsById;
 
 let getPostByIndex = {
   query: {
-    force: interfaceUtils.flag.default('off'),
-    raw: interfaceUtils.flag.default('off'),
+    raw: interfaceUtils.flag,
   },
   params: {
     id: interfaceUtils.mongoId.required(),
@@ -144,7 +138,7 @@ let deletePost = {
     postIndex: joi.number().min(1),
   },
   query: {
-    force: interfaceUtils.flag.default('off'),
+    force: interfaceUtils.flag,
   },
 };
 exports.deletePost = deletePost;
@@ -154,7 +148,7 @@ let banDiscussion = {
     id: interfaceUtils.mongoId.required(),
   },
   query: {
-    force: interfaceUtils.flag.default('off'),
+    force: interfaceUtils.flag,
   },
 };
 exports.banDiscussion = banDiscussion;

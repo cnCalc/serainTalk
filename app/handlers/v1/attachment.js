@@ -45,16 +45,15 @@ let getAttachmentInfoByAttachmentId = async (req, res) => {
  * @param {Response} res
  */
 let getAttachmentsInfoByMemberId = async (req, res) => {
-  const $match = { _owner: req.member._id, referer: [] };
+  const query = { _owner: req.member._id };
 
-  // TODO: make joi accept this
-  if (req.query.includingUsed === 'true') {
-    delete $match.referer;
+  if (req.query.excludingUsed) {
+    query.referer = [];
   }
 
   try {
     let attachmentInfos = await dbTool.attachment.aggregate([
-      { $match },
+      { $match: query },
       { $sort: { date: -1 } },
       { $project: { filePath: false } },
     ]).toArray();
@@ -95,7 +94,8 @@ let uploadAttachment = async (req, res, next) => {
     let attachment = {
       _id: new ObjectID(),
       _owner: req.member._id,
-      mime,
+      type: 'attachment',
+      mime: mime,
       date: new Date().getTime(),
       fileName: req.file.originalname,
       filePath: req.file.filename,
@@ -121,7 +121,8 @@ let deleteAttachment = async (req, res, next) => {
     if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
-    fs.unlinkSync(path.join(config.upload.file.path, attachmentInfo.filePath));
+    let basePath = attachmentInfo.type === 'avatar' ? config.upload.avatar.path : config.upload.file.path;
+    fs.unlinkSync(path.join(basePath, attachmentInfo.filePath));
     await dbTool.attachment.deleteOne({ _id: _id });
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
@@ -158,7 +159,7 @@ let getAttachment = async (req, res, next) => {
       downloadInfo.traffic = downloadInfo.traffic + (attachmentInfo.size || 0);
     }
 
-    let dir = config.upload.file.path;
+    let dir = attachmentInfo.type === 'avatar' ? config.upload.avatar.path : config.upload.file.path;
     let options = {
       root: dir,
       dotfiles: 'deny',

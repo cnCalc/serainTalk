@@ -459,4 +459,36 @@ describe('member part', () => {
       await agent.delete(deleteUrl).expect(204);
     });
   });
+
+  it('update email', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      // console.log(newMemberInfo);
+      let verifyUrl = '/api/v1/member/email/verify';
+      await agent.post(verifyUrl)
+        .send({ email: 'kasorasun@gmail.com' });
+      let updateUrl = '/api/v1/member/email';
+      await agent.put(updateUrl)
+        .send({ token: '000000' });
+      let selfUrl = '/api/v1/member/me';
+      let memberRes = await agent.get(selfUrl);
+      let memberInfo = memberRes.body.memberInfo;
+      expect(memberInfo.email).to.be.equal('kasorasun@gmail.com');
+    });
+  });
+
+  it('update email with wrong token', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      // console.log(newMemberInfo);
+      let verifyUrl = '/api/v1/member/email/verify';
+      await agent.post(verifyUrl)
+        .send({ email: 'kasorasun@gmail.com' });
+      let updateUrl = '/api/v1/member/email';
+      await agent.put(updateUrl)
+        .send({ token: '000001' });
+      let selfUrl = '/api/v1/member/me';
+      let memberRes = await agent.get(selfUrl);
+      let memberInfo = memberRes.body.memberInfo;
+      expect(memberInfo.email).to.be.equal(newMemberInfo.email);
+    });
+  });
 });

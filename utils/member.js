@@ -47,13 +47,21 @@ let getIgnore = async (_memberId) => {
 };
 exports.getIgnore = getIgnore;
 
+let setIgnore = async (_memberId, _blockId) => {
+  return await dbTool.commonMember.updateOne(
+    { _id: _memberId },
+    { $push: { 'subscription.ignore.members': _blockId } },
+  );
+};
+exports.setIgnore = setIgnore;
+
 let isIgnored = async (_accepterId, _senderId) => {
   try {
     let memberInfo = await dbTool.commonMember.aggregate([
       { $match: { _id: _accepterId } },
       {
         $project: {
-          exists: { $in: [_senderId, '$notifications.ignore.members'] },
+          exists: { $in: [_senderId, '$subscription.ignore.members'] },
         },
       },
     ]).toArray();

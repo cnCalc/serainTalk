@@ -4,6 +4,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const promisify = require('util').promisify;
+const path = require('path');
 const { ObjectID } = require('mongodb');
 
 const config = require('../../../config');
@@ -11,7 +12,7 @@ const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const MD5 = utils.md5;
-const { errorHandler, errorMessages } = utils;
+const { errorHandler, errorMessages, env } = utils;
 const { resolveMembersInDiscussion } = utils.resolveMembers;
 
 // #region 成员信息部分
@@ -36,7 +37,7 @@ let getMemberInfoById = async (req, res, next) => {
     utils.member.removeSensitiveField(memberInfo);
 
     // 获得此用户最近的帖子（如果需要）
-    if (req.query.recent === 'on') {
+    if (req.query.recent) {
       // 鉴权 能否读取白名单分类中的讨论
       if (!await utils.permission.checkPermission('discussion-readCategoriesInWhiteList', req.member.permissions)) {
         return res.status(200).send({ status: 'ok', member: memberInfo });
@@ -201,6 +202,9 @@ let uploadAvatar = async (req, res, next) => {
       }
     }
 
+    const mime = await utils.mime.getMIME(path.join(config.upload.avatar.path, avatar.filePath));
+    avatar.mime = mime;
+
     await dbTool.attachment.insertOne(avatar);
 
     // 对成员隐藏路径信息
@@ -302,6 +306,57 @@ let updateMemberInfo = async (req, res, next) => {
   } catch (err) {
     errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
+};
+
+let verifyEmail = async (req, res, next) => {
+  let { email } = req.body;
+  let token = utils.env.isMocha ? '000000' : utils.createRandomString(6);
+  await dbTool.token.findOneAndUpdate(
+    {
+      memberId: req.member._id,
+      type: 'resetEmail',
+    },
+    {
+      type: 'resetEmail',
+      memberId: req.member._id,
+      email: email,
+      token: token,
+      timeStamp: Date.now(),
+      errorTimes: 0,
+    },
+    { upsert: true, returnOriginal: false }
+  );
+  await utils.mail.sendVerificationCode(email, { token });
+  return res.status(201).send({ status: 'ok' });
+};
+
+let updateEmail = async (req, res, next) => {
+  let { token } = req.body;
+  let tokenInfo = await dbTool.token.findOne(
+    {
+      memberId: req.member._id,
+      type: 'resetEmail',
+    }
+  );
+
+  if (!tokenInfo || tokenInfo.token !== token) {
+    // TODO: 添加失败计数。超过一定次数则暂时阻止该用户迁移。
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
+  if (Date.now() - tokenInfo.timestamp > config.password.tokenValidTime) {
+    return errorHandler(null, errorMessages.TIME_OUT, 400, res);
+  }
+
+  let updateDoc = await dbTool.commonMember.findOneAndUpdate(
+    { _id: req.member._id },
+    { email: tokenInfo.email },
+    { returnOriginal: false }
+  );
+  let memberInfo = updateDoc.value;
+  utils.member.removeSensitiveField(memberInfo);
+
+  return res.status(201).send({ status: 'ok', memberInfo: memberInfo });
 };
 
 // #endregion
@@ -569,7 +624,9 @@ module.exports = {
   resetPassword,
   resetPasswordApplication,
   signup,
+  updateEmail,
   updateMemberInfo,
   updateSettings,
   uploadAvatar,
+  verifyEmail,
 };

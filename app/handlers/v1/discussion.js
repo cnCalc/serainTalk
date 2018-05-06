@@ -307,7 +307,7 @@ let getPostByIndex = async (req, res, next) => {
 
     return res.status(200).send({
       status: 'ok',
-      post: req.query.raw === 'on' ? post : (utils.renderer.renderPosts([post]))[0],
+      post: req.query.raw ? post : (utils.renderer.renderPosts([post]))[0],
       members: await resolveMembersInDiscussion({ posts: [post] }),
       attachments: await resolveAttachmentsInPosts([post]),
     });
@@ -536,7 +536,7 @@ let createPost = async (req, res, next) => {
     postInfo.mentions.forEach(mention => needNotification.add(mention));
 
     let watchList = await dbTool.commonMember.aggregate([
-      { $match: { 'attitude.watch.discussions': discussionInfo._id } },
+      { $match: { 'subscription.watch.discussions': discussionInfo._id } },
       { $project: { _id: true } },
     ]).toArray();
 
@@ -1088,7 +1088,7 @@ let deleteDiscussion = async (req, res, next) => {
       { $project: { title: 1, creater: 1 } },
     ]).toArray();
 
-    if (req.query.force === 'on') {
+    if (req.query.force) {
       if (discussionDoc) {
         let notification = {
           content: utils.string.fillTemplate(
@@ -1149,13 +1149,7 @@ let deleteDiscussion = async (req, res, next) => {
 };
 
 let ignoreDiscussion = async (req, res, next) => {
-  await dbTool.commonMember.updateOne(
-    { _id: req.member._id },
-    {
-      $push: { 'attitude.ignore.discussions': ObjectID(req.params.id) },
-      $pull: { 'attitude.watch.discussions': ObjectID(req.params.id) },
-    }
-  );
+  await utils.discussion.setIgnore(req.member._id, ObjectID(req.params.id));
 
   return res.status(201).send({ status: 'ok' });
 };
@@ -1164,8 +1158,8 @@ let watchDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
     {
-      $push: { 'attitude.watch.discussions': ObjectID(req.params.id) },
-      $pull: { 'attitude.ignore.discussions': ObjectID(req.params.id) },
+      $push: { 'subscription.watch.discussions': ObjectID(req.params.id) },
+      $pull: { 'subscription.ignore.discussions': ObjectID(req.params.id) },
     }
   );
   return res.status(201).send({ status: 'ok' });
@@ -1176,8 +1170,8 @@ let normalDiscussion = async (req, res, next) => {
     { _id: req.member._id },
     {
       $pull: {
-        'attitude.watch.discussions': ObjectID(req.params.id),
-        'attitude.ignore.discussions': ObjectID(req.params.id),
+        'subscription.watch.discussions': ObjectID(req.params.id),
+        'subscription.ignore.discussions': ObjectID(req.params.id),
       },
     }
   );
@@ -1185,10 +1179,7 @@ let normalDiscussion = async (req, res, next) => {
 };
 
 let ignoreMember = async (req, res, next) => {
-  await dbTool.commonMember.updateOne(
-    { _id: req.member._id },
-    { $push: { 'attitude.ignore.members': ObjectID(req.params.id) } }
-  );
+  await utils.member.setIgnore(req.member._id, ObjectID(req.params.id));
 
   return res.status(201).send({ status: 'ok' });
 };

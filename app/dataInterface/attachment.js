@@ -13,6 +13,9 @@ let getAttachmentByAttachmentId = {
 };
 
 let getAttachmentsByMemberId = {
+  query: {
+    excludingUsed: interfaceUtils.flag,
+  },
 };
 
 let getAttachmentById = {

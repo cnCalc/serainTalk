@@ -89,6 +89,16 @@ let info = {
       bio: joi.string(),
     },
   },
+  verifyEmail: {
+    body: {
+      email: joi.string().email().required(),
+    },
+  },
+  updateEmail: {
+    body: {
+      token: joi.string().alphanum().length(6),
+    },
+  },
 };
 exports.info = info;
 

@@ -5,10 +5,10 @@ const dbTool = require('../database');
 let isIgnored = async (_accepterId, _discussionId) => {
   try {
     let discussionInfo = await dbTool.commonMember.aggregate([
-    { $match: { _id: _accepterId } },
+      { $match: { _id: _accepterId } },
       {
         $project: {
-          exists: { $in: [_discussionId, '$notifications.ignore.discussions'] },
+          exists: { $in: [_discussionId, '$subscription.ignore.discussions'] },
         },
       },
     ]).toArray();
@@ -18,3 +18,14 @@ let isIgnored = async (_accepterId, _discussionId) => {
   }
 };
 exports.isIgnored = isIgnored;
+
+let setIgnore = async (_memberId, _blockId) => {
+  return await dbTool.commonMember.updateOne(
+    { _id: _memberId },
+    {
+      $push: { 'subscription.ignore.discussions': _blockId },
+      $pull: { 'subscription.watch.discussions': _blockId },
+    }
+  );
+};
+exports.setIgnore = setIgnore;

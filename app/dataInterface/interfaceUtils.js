@@ -14,5 +14,5 @@ exports.pagesize = pagesize;
 let page = joi.number().default(1);
 exports.page = page;
 
-let flag = joi.string().allow(['on', 'off']);
+let flag = joi.boolean().truthy('on').falsy('off');
 exports.flag = flag;

@@ -344,6 +344,30 @@ let route = {
         handlers.v1.member.updateMemberInfo,
       ],
     },
+    verifyEmail: {
+      description: '验证用户邮箱。',
+      path: [
+        '/v1/member/email/verify',
+      ],
+      method: 'post',
+      schema: dataInterface.member.info.verifyEmail,
+      handler: [
+        verifyMember,
+        handlers.v1.member.verifyEmail,
+      ],
+    },
+    updateEmail: {
+      description: '更换用户邮箱。',
+      path: [
+        '/v1/member/email',
+      ],
+      method: 'put',
+      schema: dataInterface.member.info.updateEmail,
+      handler: [
+        verifyMember,
+        handlers.v1.member.updateEmail,
+      ],
+    },
   },
   password: {
     applicationReset: {

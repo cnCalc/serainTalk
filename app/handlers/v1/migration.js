@@ -109,7 +109,8 @@ async function verifyDiscuzMemberInfo (req, res) {
 
     // 将 token 发送至邮箱地址
     try {
-      await utils.mail.sendVerificationCode(memberInfo.email, { token, name });
+      let link = `${config.siteAddress}/migration/final?name=${encodeURIComponent(name)}&token=${token}&next=%2Fsignin`;
+      await utils.mail.sendVerificationCode(memberInfo.email, { token, link });
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }

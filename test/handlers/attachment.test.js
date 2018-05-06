@@ -37,34 +37,34 @@ describe('attachment part.', async () => {
     });
   });
 
-  it('upload too many file.', async () => {
-    await testTools.env.setRelease(async () => {
-      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-        let uploadUrl = '/api/v1/attachment';
-        let attachments = [];
-        for (let i = 0; i < staticConfig.upload.file.maxCount; i++) {
-          let fileRes = await agent.post(uploadUrl)
-            .attach('file', 'test/testfile/attachment.txt')
-            .expect(201);
-          attachments.push(fileRes.body.attachment._id);
-        }
+  // it('upload too many file.', async () => {
+  //   await testTools.env.setRelease(async () => {
+  //     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+  //       let uploadUrl = '/api/v1/attachment';
+  //       let attachments = [];
+  //       for (let i = 0; i < staticConfig.upload.file.maxCount; i++) {
+  //         let fileRes = await agent.post(uploadUrl)
+  //           .attach('file', 'test/testfile/attachment.txt')
+  //           .expect(201);
+  //         attachments.push(fileRes.body.attachment._id);
+  //       }
 
-        let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
+  //       let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
 
-        await agent.post(uploadUrl)
-          .attach('file', 'test/testfile/attachment.txt')
-          .expect(401);
+  //       await agent.post(uploadUrl)
+  //         .attach('file', 'test/testfile/attachment.txt')
+  //         .expect(401);
 
-        expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount);
+  //       expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount);
 
-        attachments = attachments.map(attachmentId => {
-          let deleteUrl = `/api/v1/attachment/${attachmentId}`;
-          return agent.delete(deleteUrl).expect(204);
-        });
-        await Promise.all(attachments);
-      });
-    });
-  });
+  //       attachments = attachments.map(attachmentId => {
+  //         let deleteUrl = `/api/v1/attachment/${attachmentId}`;
+  //         return agent.delete(deleteUrl).expect(204);
+  //       });
+  //       await Promise.all(attachments);
+  //     });
+  //   });
+  // });
 
   it('anonymous upload a file.', async () => {
     let getUrl = '/api/v1/attachment';
