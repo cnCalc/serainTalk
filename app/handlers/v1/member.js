@@ -12,7 +12,7 @@ const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
 const MD5 = utils.md5;
-const { errorHandler, errorMessages, env } = utils;
+const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussion } = utils.resolveMembers;
 
 // #region 成员信息部分
