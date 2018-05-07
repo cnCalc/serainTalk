@@ -27,7 +27,7 @@ let _db = null;
  */
 let mongoConnect = async () => {
   try {
-    _db = await MongoClient.connect(config.database);
+    _db = (await MongoClient.connect(config.database)).db(config.databaseName);
     if (env.isMocha) await _db.dropDatabase();
 
     exports.generic = _db.collection('generic');
