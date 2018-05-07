@@ -18,6 +18,7 @@ module.exports = {
   object: require('./object'),
   permission: require('./permission'),
   promise: require('./promise'),
+  promisify: require('./promisify'),
   renderer: require('./renderer'),
   resolveMembers: require('./resolve-members'),
   router: require('./router'),
