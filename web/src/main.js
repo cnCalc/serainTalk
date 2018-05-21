@@ -11,6 +11,7 @@ import DiscussionView from './views/DiscussionView.vue';
 import MemberView from './views/MemberView.vue';
 import ListView from './views/ListView.vue';
 import SigninView from './views/SigninView.vue';
+import SignupView from './views/SignupView.vue';
 import MigrationView from './views/MigrationView.vue';
 import MessageView from './views/MessageView.vue';
 
@@ -63,6 +64,9 @@ const router = new VueRouter({
     }, {
       path: '/signin',
       component: SigninView,
+    }, {
+      path: '/signup',
+      component: SignupView,
     }, {
       path: '/migration',
       component: MigrationView,

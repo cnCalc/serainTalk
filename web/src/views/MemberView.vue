@@ -44,7 +44,7 @@ div
         h3 账户设置
         div.row
           button.button(@click="resetPassword") 修改密码
-          button.button 变更邮箱
+          button.button(@click="changeEmail") 变更邮箱
           button.button(@click="updateBio") 修改简介
           router-link(:to="`/m/${$route.params.memberId}/change-avatar`"): button.button(@click="selectAvatarFile") 更换头像
         h3 邮件通知
@@ -395,6 +395,41 @@ export default {
       this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
         this.updateTitle();
       });
+    },
+    changeEmail () {
+      this.$store.dispatch('showMessageBox', {
+        title: '修改邮箱',
+        type: 'INPUT',
+        message: '输入新的邮箱，我们将会向新的邮箱地址发送一个验证码以确保可用：',
+      }).then(email => {
+        api.v1.member.verifyEmailAddress({ email }).then(() => {
+          this.$store.dispatch('showMessageBox', {
+            title: '修改邮箱',
+            type: 'INPUT',
+            message: '验证码已发送，请前往邮箱查看',
+          }).then(token => {
+            api.v1.member.changeEmailAddress({ token }).then(() => {
+              bus.$emit('notification', {
+                type: 'message',
+                body: '邮箱修改成功！',
+              });
+            }).catch(error => {
+              bus.$emit('notification', {
+                type: 'error',
+                body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
+              });
+              console.error(error);
+            });
+          }).catch(e => { /* doing nothing after user cancel */ });
+        }).catch(e => {
+          if (e.response.data.message === 'validation error') {
+            bus.$emit('notification', {
+              type: 'error',
+              body: '邮箱地址无效，修改邮箱已终止。',
+            });
+          }
+        });
+      }).catch(ex => { /* doing nothing after user cancel */ });
     },
     resetPassword () {
       this.$store.dispatch('showMessageBox', {

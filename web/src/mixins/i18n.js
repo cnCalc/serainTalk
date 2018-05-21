@@ -81,8 +81,8 @@ const translations = {
 const internationalizationMixin = {
   methods: {
     i18n (key, params = {}) {
-      const locale = 'en-us';
-      // const locale = 'zh-cn';
+      // const locale = 'en-us';
+      const locale = 'zh-cn';
       const template = (translations[locale] || {})[key];
 
       if (template === undefined) {
