@@ -18,10 +18,6 @@ exports.sendMessage = sendMessage;
 
 // 获取自己所有的私信列表（摘要）
 let getMessagesInfo = {
-  query: {
-    pagesize: interfaceUtils.pagesize,
-    page: interfaceUtils.page,
-  },
 };
 exports.getMessagesInfo = getMessagesInfo;
 
