@@ -221,6 +221,22 @@ function updateSetting (params) {
   });
 }
 
+function verifyEmailAddress (params) {
+  return new Promise((resolve, reject) => {
+    axios.post('/api/v1/member/email/verify', { email: params.email })
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
+function changeEmailAddress (params) {
+  return new Promise((resolve, reject) => {
+    axios.put('/api/v1/member/email', { token: params.token })
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -233,4 +249,6 @@ export default {
   updateMemberInfo,
   resetPassword,
   updateSetting,
+  verifyEmailAddress,
+  changeEmailAddress,
 };
