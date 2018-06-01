@@ -708,7 +708,7 @@ let updatePost = async (req, res, next) => {
 
     if (req.body.attachments) {
       let _attachments = req.body.attachments.map(attachmentId => ObjectID(attachmentId));
-      if (!await isSelfAttachment(_attachments, req.member._id)) {
+      if (!canUpdateAnyPost && !await isSelfAttachment(_attachments, req.member._id)) {
         return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
       };
 
