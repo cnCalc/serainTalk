@@ -7,12 +7,21 @@ const interfaceUtils = require('./interfaceUtils');
 exports = module.exports = {};
 
 // region 注册登录部分
-// 成员注册
-let signup = {
+
+// 成员注册之验证邮箱
+let prepareSignup = {
   body: {
+    email: joi.string().email().required(),
+  },
+};
+exports.prepareSignup = prepareSignup;
+
+// 成员注册之执行注册
+let performSignup = {
+  body: {
+    token: joi.string().required(),
     username: joi.string().required(),
     password: joi.string().required(),
-    email: joi.string().email().required(),
 
     gender: joi.number(),
     birthyear: joi.number(),
@@ -28,7 +37,7 @@ let signup = {
     device: joi.string(),
   },
 };
-exports.signup = signup;
+exports.performSignup = performSignup;
 
 // 成员登录
 let login = {

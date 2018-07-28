@@ -91,7 +91,7 @@ async function verifyDiscuzMemberInfo (req, res) {
     // 保存迁移 token，留着下一步使用
     let token = utils.createRandomString(6);
     if (utils.env.isMocha) token = 'kasora';
-    await dbTool.token.findOneAndUpdate(
+    await dbTool.token.replaceOne(
       {
         name: name,
         type: 'migration',

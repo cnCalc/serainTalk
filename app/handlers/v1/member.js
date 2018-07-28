@@ -469,6 +469,104 @@ let signup = async (req, res) => {
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
+
+/**
+ * [处理函数] 账户注册前的验证邮箱
+ * post: /api/v1/member/signup/prepare
+ * body: {
+ *   email: string,
+ * }
+ * @param {*} req
+ * @param {*} res
+ */
+let prepareSignup = async (req, res) => {
+  const { email } = req.body;
+
+  // 邮箱是否已被占用
+  let existInfo = await dbTool.commonMember.findOne({ email: email });
+  if (existInfo) {
+    return errorHandler(null, errorMessages.EMAIL_EXIST, 400, res);
+  }
+
+  // 保存 token
+  let token = utils.createRandomString(6);
+  if (utils.env.isMocha) token = 'kasora';
+  await dbTool.token.replaceOne(
+    {
+      email,
+      type: 'signup',
+    },
+    {
+      email,
+      type: 'signup',
+      token,
+      timeStamp: Date.now(),
+      errorTimes: 0,
+    },
+    { upsert: true, returnOriginal: false }
+  );
+
+  // 将 token 发送至邮箱地址
+  try {
+    let link = `${config.siteAddress}/signup?token=${token}`;
+    await utils.mail.sendVerificationCode(email, { token, link });
+  } catch (err) {
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+
+  return res.status(201).send({ status: 'ok' });
+};
+
+/**
+ * [处理函数] 执行注册
+ * POST: /api/v1/member/signup/perform
+ * @param {*} req
+ * @param {*} res
+ */
+let performSignup = async (req, res) => {
+  let memberInfo = req.body;
+  let { token } = memberInfo;
+
+  // 校验 token 并获得邮箱地址
+  const tokenInfo = dbTool.token.findOne({
+    token,
+    type: 'signup',
+  });
+
+  if (!tokenInfo) {
+    return errorHandler(null, errorMessages.BAD_VERIFICATION_CODE, 400, res);
+  }
+
+  memberInfo.role = 'member';
+  memberInfo.email = tokenInfo.email;
+
+  // 生成成员身份信息
+  memberInfo.credentials = {};
+  memberInfo.credentials.salt = utils.createRandomString();
+  memberInfo.credentials.type = 'seraintalk';
+  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.body.password);
+  memberInfo.lastlogintime = Date.now();
+
+  try {
+    let tempMemberInfo = await dbTool.commonMember.findOne(
+      { username: memberInfo.username },
+      { notifications: 0, credentials: 0 }
+    );
+    if (tempMemberInfo) return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
+  } catch (err) {
+    /* istanbul ignore next */
+    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
+  }
+
+  await dbTool.commonMember.insertOne(memberInfo);
+
+  utils.member.removePrivateField(memberInfo);
+
+  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
+  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+  return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
+};
+
 // #endregion
 
 // #region 成员密码部分
@@ -623,7 +721,9 @@ module.exports = {
   passwordModify,
   resetPassword,
   resetPasswordApplication,
-  signup,
+  signup, // TODO: remove
+  prepareSignup,
+  performSignup,
   updateEmail,
   updateMemberInfo,
   updateSettings,

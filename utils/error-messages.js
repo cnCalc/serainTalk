@@ -3,6 +3,7 @@ module.exports = {
   BAD_COOKIE: 'invalid or bad user token',
   BAD_PASSWORD: 'invalid password',
   BAD_REQUEST: 'invalid or bad request',
+  BAD_VERIFICATION_CODE: 'invalid verification code',
   DB_ERROR: 'server-side database error',
   EMAIL_EXIST: 'email is exist',
   LACK_INFO: 'need more information',

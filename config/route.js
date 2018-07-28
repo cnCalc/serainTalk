@@ -269,16 +269,40 @@ let route = {
         handlers.v1.member.memberStartWith,
       ],
     },
-    addOne: {
-      description: '新成员注册。',
+    // addOne: {
+    //   description: '新成员注册。',
+    //   path: [
+    //     '/v1/members/signup',
+    //     '/v1/member/signup',
+    //   ],
+    //   method: 'post',
+    //   schema: dataInterface.member.signup,
+    //   handler: [
+    //     handlers.v1.member.signup,
+    //   ],
+    // },
+    prepareAddOne: {
+      description: '新用户注册之邮箱验证',
       path: [
-        '/v1/members/signup',
-        '/v1/member/signup',
+        '/v1/members/signup/prepare',
+        '/v1/member/signup/prepare',
       ],
       method: 'post',
-      schema: dataInterface.member.signup,
+      schema: dataInterface.member.prepareSignup,
       handler: [
-        handlers.v1.member.signup,
+        handlers.v1.member.prepareSignup,
+      ],
+    },
+    performAddOne: {
+      description: '新用户注册之执行注册',
+      path: [
+        '/v1/members/signup/perform',
+        '/v1/member/signup/perform',
+      ],
+      method: 'post',
+      schema: dataInterface.member.performSignup,
+      handler: [
+        handlers.v1.member.performSignup,
       ],
     },
     login: {
