@@ -1,7 +1,7 @@
 <template lang="pug">
   div.avatar-container
     button.avatar(@click="trigger")
-      div.avatar-image(v-if="me.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
+      div.avatar-image(v-if="me.avatar" v-bind:style="{ backgroundImage: 'url(' + me.avatar + ')'}")
       div.avatar-fallback(v-else) {{ (me.username || '?').substr(0, 1).toUpperCase() }}
     div.dropdown-wrapper: div.menu(v-bind:class="{ 'activated': activated }"): ul
       router-link(:to="`/m/${me._id}`"): li

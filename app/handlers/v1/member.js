@@ -372,7 +372,10 @@ let updateEmail = async (req, res, next) => {
 let login = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne(
-      { username: req.body.name },
+      { $or: [
+        { username: req.body.name },
+        { email: req.body.name },
+      ] },
       { notifications: 0 }
     );
 

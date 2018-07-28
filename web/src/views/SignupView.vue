@@ -1,20 +1,30 @@
 <template lang="pug">
   div.signup-view
-    div.signup-box: form(v-on:submit.prevent="doSignup")
-      h2 注册
-      label.block(for="name") 用户名或电子邮件地址
-      input(id="name", type="text", v-model="credentials.name", :readonly="busy" autocomplete="username")
-      label.block(for="passwd") 密码
-      input(id="passwd", type="password", v-model="credentials.password", :readonly="busy" autocomplete="current-password")
-      button.button(@click="doSignin", :disabled="busy") 登录
-      div.quick-action-wrapper
-        router-link(to="/signin") 前往登录
-        router-link(:to="`/migration?next=${encodeURIComponent($route.query.next || path)}`") 账户迁移
-        router-link(to="/reset-password") 忘记密码
+    div.signup-box
+      form(v-on:submit.prevent="doPrepareSignUp" v-if="!hasToken")
+        h2 注册
+        .explain 这里是一段解释说明的文本
+        label.block(for="email") 电子邮件地址：
+        input(id="email", type="text", v-model="email", :readonly="busy" autocomplete="email")
+        button.button(:disabled="busy") 验证邮件地址
+        div.quick-action-wrapper
+          router-link(to="/signin") 前往登录
+          router-link(:to="`/migration?next=${encodeURIComponent($route.query.next || path)}`") 账户迁移
+          router-link(to="/reset-password") 忘记密码
+      form(v-on:submit.prevent="doPerformSignup" v-else)
+        h2 完成注册
+        .explain 说明文本
+        label.block(for="token") 验证码：
+        input(id="token", type="text", v-model="token", :readonly="busy")
+        label.block(for="username") 用户名：
+        input(id="username", type="text", v-model="credentials.username", :readonly="busy")
+        label.block(for="password") 登录密码：
+        input(id="password", type="password", v-model="credentials.password", :readonly="busy")
+        button.button(:disabled="busy") 完成注册
 </template>
 
 <script>
-// import api from '../api';
+import api from '../api';
 import titleMixin from '../mixins/title';
 // import bus from '../utils/ws-eventbus';
 
@@ -27,7 +37,9 @@ export default {
         name: '',
         password: '',
       },
-      rememberMe: false,
+      email: '',
+      hasToken: false,
+      token: '',
     };
   },
   title: '注册',
@@ -44,10 +56,33 @@ export default {
   },
   mounted () {
     this.updateTitle();
+    if (this.$route.query.token) {
+      this.hasToken = true;
+      this.token = this.$route.query.token;
+    }
   },
   methods: {
-    doSignin () {
-      window.alert('TODO');
+    doPrepareSignUp () {
+      api.v1.member.prepareSignup({ email: this.email }).then(() => {
+        window.alert('发送成功！');
+        this.hasToken = true;
+      }).catch(err => {
+        window.alert('发送失败！查看 JavaScript 控制台确认问题！');
+        console.error(err);
+      })
+    },
+    doPerformSignup () {
+      api.v1.member.performSignup({
+        username: this.credentials.username,
+        password: this.credentials.password,
+        token: this.token,
+      }).then(() => {
+        window.alert('注册成功');
+        this.$router.push('/signin');
+      }).catch(err => {
+        window.alert('失败！查看 JavaScript 控制台确认问题！');
+        console.error(err);
+      })
     },
   },
 };

@@ -237,6 +237,28 @@ function changeEmailAddress (params) {
   });
 }
 
+function prepareSignup (params) {
+  return new Promise((resolve, reject) => {
+    axios.post('/api/v1/member/signup/prepare', { email: params.email })
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
+function performSignup (params) {
+  let payload = {};
+
+  payload.username = params.username;
+  payload.password = params.password;
+  payload.token = params.token;
+
+  return new Promise((resolve, reject) => {
+    axios.post('/api/v1/member/signup/perform', payload)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -251,4 +273,6 @@ export default {
   updateSetting,
   verifyEmailAddress,
   changeEmailAddress,
+  prepareSignup,
+  performSignup,
 };

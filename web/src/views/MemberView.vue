@@ -3,7 +3,7 @@ div
   loading-icon(v-if="busy && !member._id", style="margin-top: 20px;")
   div.member-info(v-if="member._id")
     div.avatar
-      div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+      div.avatar-image(v-if="member.avatar" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
       div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
     div.name-and-bio-container
       h1.member-name {{ member.username }}
@@ -25,7 +25,7 @@ div
           div.activity-info
             div.activity-member-info
               router-link(:to="'/m/' + member._id").discussion-post-avater: div.discussion-post-avater
-                div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+                div.avatar-image(v-if="member.avatar" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
                 div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
               div.activity-member-name
                 b {{ member.username }} 
@@ -99,7 +99,7 @@ div
               input.scale(type="range" min="10" max="100" setp="5" v-model="cutState.scale")
           //- div.preview
           //-   div.avatar
-          //-     div.avatar-image(v-if="member.avatar !== null" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
+          //-     div.avatar-image(v-if="member.avatar" v-bind:style="{ backgroundImage: 'url(' + member.avatar + ')'}")
           //-     div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
           //-   span.info 当前头像
         div.button-container(v-if="localImageUrl !== ''")

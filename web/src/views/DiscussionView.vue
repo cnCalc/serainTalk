@@ -8,7 +8,7 @@
           article.discussion-post-body
             header.discussion-post-info
               router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
-                div.avatar-image(v-if="members[post.user].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
+                div.avatar-image(v-if="members[post.user].avatar" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
                 div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
               span.discussion-post-member {{ members[post.user].username }} 
               span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}

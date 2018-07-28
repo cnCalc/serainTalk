@@ -5,7 +5,7 @@
       ul.session-list
         li(v-for="session in sessions" @click="$router.push(`/message/${session._id}`)" v-bind:class="{ active: session._id == activeSession }")
           template
-            div.avatar(v-if="members[session.peer].avatar !== null" v-bind:style="{ backgroundImage: `url(${members[session.peer].avatar})` }")
+            div.avatar(v-if="members[session.peer].avatar" v-bind:style="{ backgroundImage: `url(${members[session.peer].avatar})` }")
             div.avatar.fallback(v-else) {{ (members[session.peer].username || '?').substr(0, 1).toUpperCase() }}
           span.username {{ members[session.peer].username }}
     div.right-messages(v-if="session._id !== undefined && activeSession === session._id" v-bind:class="{ 'hide-on-mobile': !activeSession }")
@@ -16,7 +16,7 @@
             div.time(v-if="session.timeline[index + 1] === undefined || message.from !== session.timeline[index + 1].from") {{ new Date(message.date).toLocaleDateString() }} {{ new Date(message.date).toLocaleTimeString() }}
             div.message-item(v-bind:class="{ 'is-peer': message.from !== me._id }")
               div.avatar-wrapper(v-bind:style="{ opacity: (session.timeline[index - 1] === undefined || message.from !== session.timeline[index - 1].from) ? 1 : 0,  }")
-                div.avatar(v-if="members[message.from].avatar !== null" v-bind:style="{ backgroundImage: `url(${members[message.from].avatar})` }")
+                div.avatar(v-if="members[message.from].avatar" v-bind:style="{ backgroundImage: `url(${members[message.from].avatar})` }")
                 div.avatar.fallback(v-else) {{ (members[message.from].username || '?').substr(0, 1).toUpperCase() }}
               div.message-content {{ message.content }}
           template(v-if="!busy")

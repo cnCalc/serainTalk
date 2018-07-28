@@ -4,7 +4,7 @@
       li(v-for="(discussion, index) in discussions" :key="discussion._id + index" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
-            div.avatar-image(v-if="members[discussion.creater].avatar !== null" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
+            div.avatar-image(v-if="members[discussion.creater].avatar" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
             div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
             div.triangle-left
