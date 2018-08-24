@@ -268,7 +268,7 @@ describe('member part', () => {
         .send(resetPayload)
         .expect(403);
       expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.message).to.be.equal(utils.errorMessages.TIME_OUT);
+      expect(resetRes.body.message).to.be.equal(utils.errorMessages.TOKEN_EXPIRED);
     });
   });
 

@@ -151,6 +151,10 @@ let getAttachment = async (req, res, next) => {
 
     // 看一看他还有流量不
     if (attachmentInfo.mime.indexOf('image/') !== 0) {
+      if (req.member._id === undefined) {
+        return errorHandler(null, errorMessages.NEED_LOGIN, 403, res);
+      }
+
       if (downloadInfo.traffic + attachmentInfo.size > config.download.dailyTraffic) {
         return errorHandler(null, errorMessages.TRAFFIC_LIMIT_EXCEEDED, 403, res);
       }
@@ -207,7 +211,8 @@ let getDailyTraffic = async (req, res, next) => {
       usedTraffic: new Date().toDateString() === req.member.download.lastUpdate ? req.member.download.traffic : 0,
     });
   }
-  return res.status(200).send({ dailyTraffic: 0 });
+
+  return errorHandler(null, errorMessages.NEED_LOGIN, 403, res);
 };
 
 module.exports = {

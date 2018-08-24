@@ -348,7 +348,22 @@ export default {
         }).catch(() => {
           window.history.go(-1);
         });
-      });
+      }).catch((error) => {
+        if (error.response.data.code === 'ERR_REQUIRE_AUTHORIZATION') {
+          bus.$emit('notification', {
+            type: 'error',
+            body: '游客无法执行此操作，请登录后再继续。',
+          });          
+        } else {
+          console.error(error.response.data);
+          bus.$emit('notification', {
+            type: 'error',
+            body: '服务器发生异常，查看 JavaScript 控制台以查看详情。',
+          });
+        }
+
+        history.go(-1);
+      })
     },
     updateGlobalTitle () {
       let { title, category } = this.discussionMeta;

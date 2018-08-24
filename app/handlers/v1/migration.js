@@ -151,7 +151,7 @@ async function performMigration (req, res) {
   if (Date.now() - tokenDoc.timestamp > config.password.tokenValidTime) {
     // FIXME: 未到时间却超时
     console.warn(`now:${Date.now()}\ntoken:${token}\ninfo:${migrateTokens[token]}\nvalidTime${config.password.tokenValidTime}`);
-    return errorHandler(null, errorMessages.TIME_OUT, 400, res);
+    return errorHandler(null, errorMessages.TOKEN_EXPIRED, 400, res);
   }
 
   try {

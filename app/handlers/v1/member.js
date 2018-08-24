@@ -317,12 +317,14 @@ let verifyEmail = async (req, res, next) => {
       type: 'resetEmail',
     },
     {
-      type: 'resetEmail',
-      memberId: req.member._id,
-      email: email,
-      token: token,
-      timeStamp: Date.now(),
-      errorTimes: 0,
+      $set: {
+        type: 'resetEmail',
+        memberId: req.member._id,
+        email: email,
+        token: token,
+        timeStamp: Date.now(),
+        errorTimes: 0,
+      },
     },
     { upsert: true, returnOriginal: false }
   );
@@ -345,12 +347,12 @@ let updateEmail = async (req, res, next) => {
   }
 
   if (Date.now() - tokenInfo.timestamp > config.password.tokenValidTime) {
-    return errorHandler(null, errorMessages.TIME_OUT, 400, res);
+    return errorHandler(null, errorMessages.TOKEN_EXPIRED, 400, res);
   }
 
   let updateDoc = await dbTool.commonMember.findOneAndUpdate(
     { _id: req.member._id },
-    { email: tokenInfo.email },
+    { $set: { email: tokenInfo.email } },
     { returnOriginal: false }
   );
   let memberInfo = updateDoc.value;
@@ -602,7 +604,7 @@ let resetPassword = async (req, res) => {
 
   // 超时则报错
   if (Date.now() - tokenInfo.time > config.password.tokenValidTime) {
-    return errorHandler(null, errorMessages.TIME_OUT, 403, res);
+    return errorHandler(null, errorMessages.TOKEN_EXPIRED, 403, res);
   }
 
   // 目标成员不存在则报错
