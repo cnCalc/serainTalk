@@ -533,7 +533,7 @@ let performSignup = async (req, res) => {
   let { token } = memberInfo;
 
   // 校验 token 并获得邮箱地址
-  const tokenInfo = dbTool.token.findOne({
+  const tokenInfo = await dbTool.token.findOne({
     token,
     type: 'signup',
   });

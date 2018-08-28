@@ -18,7 +18,7 @@ describe('validation part.', async () => {
         let sendRes = await agent.post(postUrl)
           .send(payload)
           .expect(400);
-        expect(sendRes.body.message).to.be.equal(errorMessages.VALIDATION_ERROR);
+        expect(sendRes.body.code).to.be.equal(errorMessages.VALIDATION_ERROR.code);
       });
     });
   });

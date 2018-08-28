@@ -154,7 +154,7 @@ describe('discussion part', async () => {
           .expect(404);
         discussionRes = discussionRes.body;
         expect(discussionRes.status).to.be.equal('error');
-        expect(discussionRes.message).to.be.equal(errorMessages.NOT_FOUND);
+        expect(discussionRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
       });
     });
   });
@@ -206,7 +206,7 @@ describe('discussion part', async () => {
           .expect(404);
         discussionRes = discussionRes.body;
         expect(discussionRes.status).to.be.equal('error');
-        expect(discussionRes.message).to.be.equal(errorMessages.NOT_FOUND);
+        expect(discussionRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
       });
     });
   });
@@ -381,7 +381,7 @@ describe('discussion part', async () => {
             let updateRes = await agent.put(updateUrl)
               .send(updatePayload)
               .expect(401);
-            expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
+            expect(updateRes.body.code).to.be.equal(errorMessages.PERMISSION_DENIED.code);
 
             let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
             let postsRes = await agent.get(getUrl).expect(200);
@@ -418,7 +418,7 @@ describe('discussion part', async () => {
               let updateRes = await agent.put(updateUrl)
                 .send(updatePayload)
                 .expect(401);
-              expect(updateRes.body.message).to.be.equal(errorMessages.PERMISSION_DENIED);
+              expect(updateRes.body.code).to.be.equal(errorMessages.PERMISSION_DENIED.code);
 
               let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
               let postsRes = await agent.get(getUrl).expect(200);
@@ -560,7 +560,7 @@ describe('discussion part', async () => {
             return;
           });
         } catch (err) {
-          expect(err.message).to.be.equal(errorMessages.TOO_FREQUENT);
+          expect(err.code).to.be.equal(errorMessages.TOO_FREQUENT.code);
         }
 
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
@@ -571,7 +571,7 @@ describe('discussion part', async () => {
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url).send(postPayload).expect(201);
           let Res = await agent.post(url).send(postPayload).expect(403);
-          expect(Res.body.message).to.be.equal(errorMessages.TOO_FREQUENT);
+          expect(Res.body.code).to.be.equal(errorMessages.TOO_FREQUENT.code);
         });
       });
     });
@@ -639,7 +639,7 @@ describe('discussion part', async () => {
           .expect(404);
         voteRes = voteRes.body;
         expect(voteRes.status).to.be.equal('error');
-        expect(voteRes.message).to.be.equal(errorMessages.NOT_FOUND);
+        expect(voteRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
       });
     });
   });

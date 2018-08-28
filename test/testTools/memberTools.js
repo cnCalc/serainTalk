@@ -7,7 +7,9 @@ const dbTool = require('../../database');
 const randomString = require('../../utils/random-string');
 const testTools = require('./');
 
-const signUpUrl = '/api/v1/member/signup';
+// const signUpUrl = '/api/v1/member/signup';
+const prepareSignupUrl = '/api/v1/member/signup/prepare';
+const performSignupUrl = '/api/v1/member/signup/perform';
 const loginUrl = '/api/v1/member/login';
 
 exports = module.exports = {};
@@ -83,16 +85,26 @@ let createOneMember = async (agent, memberInfo, next) => {
 
   // name 已存在则随机生成一个新的 name
   let newMemberBody;
+
+  const temp = await agent
+    .post(prepareSignupUrl)
+    .send({ email: tempMemberInfo.email })
+    // .expect(201);
+
+  delete tempMemberInfo.email;
+  tempMemberInfo.token = 'kasora';
+
   try {
     newMemberBody = await agent
-      .post(signUpUrl)
-      .send(info2signUp(tempMemberInfo))
+      .post(performSignupUrl)
+      .send(tempMemberInfo)
       .expect(201);
   } catch (err) {
     tempMemberInfo.username = randomString();
+
     newMemberBody = await agent
-      .post(signUpUrl)
-      .send(info2signUp(tempMemberInfo))
+      .post(performSignupUrl)
+      .send(tempMemberInfo)
       .expect(201);
   }
 

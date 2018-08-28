@@ -87,7 +87,7 @@ describe('attachment part.', async () => {
   it('get daily traffic.', async () => {
     let trafficUrl = '/api/v1/attachment/traffic';
     let trafficRes = await agent.get(trafficUrl);
-    expect(trafficRes.body.dailyTraffic).to.be.equal(0);
+    expect(trafficRes.body.status).to.be.equal('error');
     testTools.member.createOneMember(agent, null, async () => {
       trafficRes = await agent.get(trafficUrl);
       expect(trafficRes.body.dailyTraffic).to.be.equal(staticConfig.download.dailyTraffic);

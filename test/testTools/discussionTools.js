@@ -52,7 +52,9 @@ let createOneDiscussion = async (agent, discussionInfo, next) => {
     .send(tempDiscussionInfo);
   try {
     if (newDiscussionRes.body.status === 'error') {
-      throw new Error(newDiscussionRes.body.message);
+      const error = new Error(newDiscussionRes.body.message);
+      error.code = newDiscussionRes.body.code;
+      throw error;
     }
     expect(newDiscussionRes.statusCode).to.be.equal(201);
     expect(newDiscussionRes.body.status).to.equal('ok');

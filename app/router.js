@@ -51,7 +51,7 @@ router.use((err, req, res, next) => {
   /* istanbul ignore else */
   if (err.message === 'validation error') {
     /* istanbul ignore if */
-    if (utils.env.isDev) console.error(JSON.stringify(err, null, '  '));
+    if (!utils.env.isProd) console.error(JSON.stringify(err, null, '  '));
     return errorHandler(null, errorMessages.VALIDATION_ERROR, 400, res);
   } else {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);

@@ -36,7 +36,9 @@ let sendVerificationCode = async (address, { token, link }) => {
     html,
     text: html,
   });
-  console.log(html);
+  if (!env.isMocha) {
+    console.log(html);
+  }
 };
 
 let sendMessage = async (address, message) => {

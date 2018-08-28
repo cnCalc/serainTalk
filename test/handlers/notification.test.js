@@ -58,7 +58,7 @@ describe('notification part', async () => {
         await utils.notification.sendNotification(utils.createRandomString(24, { hax: true }), notification);
         throw new Error('it should be wrong.');
       } catch (err) {
-        expect(err.message).to.be.equal(errorMessages.MEMBER_NOT_EXIST);
+        expect(err.code).to.be.equal(errorMessages.MEMBER_NOT_EXIST.code);
       }
     });
   });

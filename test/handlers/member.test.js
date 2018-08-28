@@ -19,21 +19,21 @@ describe('member part', () => {
     await config.prepare();
   });
 
-  it('member signup', async () => {
-    await dbTool.commonMember.removeOne({ username: testTools.testObject.memberInfo.username });
+  // it('member signup', async () => {
+  //   await dbTool.commonMember.removeOne({ username: testTools.testObject.memberInfo.username });
 
-    let url = '/api/v1/member/signup';
-    let signupBody = await agent
-      .post(url)
-      .send(testTools.testObject.memberInfo)
-      .expect(201);
-    expect(signupBody.body.status).to.equal('ok');
-    expect(signupBody.header['set-cookie']).to.be.ok;
+  //   let url = '/api/v1/member/signup';
+  //   let signupBody = await agent
+  //     .post(url)
+  //     .send(testTools.testObject.memberInfo)
+  //     .expect(201);
+  //   expect(signupBody.body.status).to.equal('ok');
+  //   expect(signupBody.header['set-cookie']).to.be.ok;
 
-    let signupInfo = signupBody.body.memberinfo;
-    testTools.member.checkMemberInfo(signupInfo);
-    await dbTool.commonMember.removeOne({ _id: ObjectID(signupInfo._id) });
-  });
+  //   let signupInfo = signupBody.body.memberinfo;
+  //   testTools.member.checkMemberInfo(signupInfo);
+  //   await dbTool.commonMember.removeOne({ _id: ObjectID(signupInfo._id) });
+  // });
 
   it('test my member tools', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
@@ -42,23 +42,13 @@ describe('member part', () => {
   });
 
   it('signup twice.', async () => {
-    let url = '/api/v1/member/signup';
-    let signupBody = await agent
-      .post(url)
-      .send(testTools.testObject.memberInfo)
-      .expect(201);
-    expect(signupBody.body.status).to.equal('ok');
-    expect(signupBody.header['set-cookie']).to.be.ok;
-
-    let signupInfo = signupBody.body.memberinfo;
-    testTools.member.checkMemberInfo(signupInfo);
-
-    await agent
-      .post(url)
-      .send(testTools.testObject.memberInfo)
-      .expect(400);
-
-    await dbTool.commonMember.removeOne({ _id: ObjectID(signupInfo._id) });
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      try {
+        testTools.member.createOneMember(agent, null, () => Promise.resolve());
+      } catch (e) {
+        expect(e).to.be.not.null();
+      }
+    });
   });
 
   it('member login', async () => {
@@ -104,7 +94,7 @@ describe('member part', () => {
         })
         .expect(400);
       expect(applicationRes.body.status).to.be.equal('error');
-      expect(applicationRes.body.message).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST);
+      expect(applicationRes.body.code).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
   });
 
@@ -176,7 +166,7 @@ describe('member part', () => {
         .send(resetPayload)
         .expect(400);
       expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.message).to.be.equal(utils.errorMessages.BAD_REQUEST);
+      expect(resetRes.body.code).to.be.equal(utils.errorMessages.BAD_REQUEST.code);
     });
   });
 
@@ -204,7 +194,7 @@ describe('member part', () => {
         .send(resetPayload)
         .expect(400);
       expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.message).to.be.equal(utils.errorMessages.BAD_REQUEST);
+      expect(resetRes.body.code).to.be.equal(utils.errorMessages.BAD_REQUEST.code);
     });
   });
 
@@ -236,7 +226,7 @@ describe('member part', () => {
         .send(resetPayload)
         .expect(400);
       expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.message).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST);
+      expect(resetRes.body.code).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
   });
 
@@ -268,7 +258,7 @@ describe('member part', () => {
         .send(resetPayload)
         .expect(403);
       expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.message).to.be.equal(utils.errorMessages.TOKEN_EXPIRED);
+      expect(resetRes.body.code).to.be.equal(utils.errorMessages.TOKEN_EXPIRED.code);
     });
   });
 

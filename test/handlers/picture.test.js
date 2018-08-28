@@ -25,7 +25,9 @@ describe('picture part.', async () => {
       expect(pictureRes.body.status).to.be.equal('ok');
 
       let paths = fs.readdirSync(staticConfig.upload.picture.path);
-      paths.forEach(filePath => fs.unlinkSync(path.join(staticConfig.upload.picture.path, filePath)));
+      paths.forEach(filePath => {
+        try { fs.unlinkSync(path.join(staticConfig.upload.picture.path, filePath)) } catch (_) {};
+      });
     });
   });
 });

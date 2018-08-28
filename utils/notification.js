@@ -28,7 +28,11 @@ let sendNotification = async (_memberId, notification) => {
 
   // 动态生成 index
   let memberInfo = await dbTool.commonMember.findOne({ _id: _memberId });
-  if (!memberInfo) throw new Error(errorMessages.MEMBER_NOT_EXIST);
+  if (!memberInfo) {
+    let err = new Error(errorMessages.MEMBER_NOT_EXIST.message);
+    err.code = errorMessages.MEMBER_NOT_EXIST.code;
+    throw err;
+  }
 
   let notificationList = memberInfo.notifications;
   for (let i = notificationList.length - 1; i >= 0; i--) {
