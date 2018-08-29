@@ -69,7 +69,7 @@ export default {
       }).catch(err => {
         window.alert('发送失败！查看 JavaScript 控制台确认问题！');
         console.error(err);
-      })
+      });
     },
     doPerformSignup () {
       api.v1.member.performSignup({
@@ -82,7 +82,7 @@ export default {
       }).catch(err => {
         window.alert('失败！查看 JavaScript 控制台确认问题！');
         console.error(err);
-      })
+      });
     },
   },
 };

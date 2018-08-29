@@ -3,7 +3,6 @@
 const expect = require('chai').expect;
 const fs = require('fs');
 const supertest = require('supertest');
-const { ObjectID } = require('mongodb');
 
 const dbTool = require('../../database');
 const testTools = require('../testTools');

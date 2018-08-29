@@ -353,7 +353,7 @@ export default {
           bus.$emit('notification', {
             type: 'error',
             body: '游客无法执行此操作，请登录后再继续。',
-          });          
+          });
         } else {
           console.error(error.response.data);
           bus.$emit('notification', {
@@ -362,8 +362,8 @@ export default {
           });
         }
 
-        history.go(-1);
-      })
+        window.history.go(-1);
+      });
     },
     updateGlobalTitle () {
       let { title, category } = this.discussionMeta;

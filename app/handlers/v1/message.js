@@ -120,7 +120,9 @@ let getMessagesInfo = async (req, res, next) => {
     ],
   });
   let members = [];
-  messagesInfo.map(session => session.members).forEach(ids => members = members.concat(ids));
+  messagesInfo.map(session => session.members).forEach(ids => {
+    members = members.concat(ids);
+  });
   let membersInfo = await utils.resolveMembers.resolveMembersInArray(members);
   return res.status(200).send({ status: 'ok', messagesInfo, count, members: membersInfo });
 };

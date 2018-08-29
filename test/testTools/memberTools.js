@@ -86,10 +86,10 @@ let createOneMember = async (agent, memberInfo, next) => {
   // name 已存在则随机生成一个新的 name
   let newMemberBody;
 
-  const temp = await agent
+  await agent
     .post(prepareSignupUrl)
     .send({ email: tempMemberInfo.email })
-    // .expect(201);
+    .expect(201);
 
   delete tempMemberInfo.email;
   tempMemberInfo.token = 'kasora';
@@ -97,14 +97,14 @@ let createOneMember = async (agent, memberInfo, next) => {
   try {
     newMemberBody = await agent
       .post(performSignupUrl)
-      .send(tempMemberInfo)
+      .send(info2signUp(tempMemberInfo))
       .expect(201);
   } catch (err) {
     tempMemberInfo.username = randomString();
 
     newMemberBody = await agent
       .post(performSignupUrl)
-      .send(tempMemberInfo)
+      .send(info2signUp(tempMemberInfo))
       .expect(201);
   }
 

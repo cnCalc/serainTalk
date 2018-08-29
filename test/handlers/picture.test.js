@@ -26,7 +26,7 @@ describe('picture part.', async () => {
 
       let paths = fs.readdirSync(staticConfig.upload.picture.path);
       paths.forEach(filePath => {
-        try { fs.unlinkSync(path.join(staticConfig.upload.picture.path, filePath)) } catch (_) {};
+        try { fs.unlinkSync(path.join(staticConfig.upload.picture.path, filePath)); } catch (_) {};
       });
     });
   });
