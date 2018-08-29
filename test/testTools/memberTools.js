@@ -20,7 +20,7 @@ exports = module.exports = {};
  * @return {any}
  */
 let info2signUp = (memberInfo) => {
-  let allowKeys = ['username', 'password', 'email', 'gender', 'birthyear', 'birthmonth',
+  let allowKeys = ['username', 'password', 'email', 'gender', 'birthyear', 'birthmonth', 'token',
     'birthday', 'address', 'qq', 'site', 'bio', 'regip', 'regdate', 'secques', 'device'];
   let tempMemberInfo = {};
   for (let key of allowKeys) {
@@ -86,10 +86,17 @@ let createOneMember = async (agent, memberInfo, next) => {
   // name 已存在则随机生成一个新的 name
   let newMemberBody;
 
-  await agent
-    .post(prepareSignupUrl)
-    .send({ email: tempMemberInfo.email })
-    .expect(201);
+  try {
+    await agent
+      .post(prepareSignupUrl)
+      .send({ email: tempMemberInfo.email })
+      .expect(201);
+  } catch (err) {
+    await agent
+      .post(prepareSignupUrl)
+      .send({ email: randomString() + '@local.lan' })
+      .expect(201);
+  }
 
   delete tempMemberInfo.email;
   tempMemberInfo.token = 'kasora';
