@@ -43,7 +43,7 @@ describe('member part', () => {
   it('signup twice.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       try {
-        testTools.member.createOneMember(agent, null, () => Promise.resolve());
+        await testTools.member.createOneMember(agent, null, () => Promise.resolve());
       } catch (e) {
         expect(e).to.be.not.null();
       }
