@@ -1,6 +1,8 @@
 var path = require('path');
 var webpack = require('webpack');
 var express = require('express');
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+var { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
   entry: './src/main.js',
@@ -9,6 +11,7 @@ module.exports = {
     publicPath: '/dist/',
     filename: 'build.js',
   },
+  mode: 'development',
   module: {
     rules: [
       {
@@ -37,6 +40,18 @@ module.exports = {
           name: '[name].[ext]?[hash]',
         },
       },
+      {
+        test: /\.scss$/,
+        use: [
+          'vue-style-loader',
+          'css-loader',
+          'sass-loader',
+        ],
+      },
+      {
+        test: /\.pug$/,
+        loader: 'pug-plain-loader',
+      },
     ],
   },
   resolve: {
@@ -60,22 +75,32 @@ module.exports = {
   performance: {
     hints: false,
   },
-  devtool: '#eval-source-map',
+  devtool: '#source-map',
+  plugins: [
+    new VueLoaderPlugin(),
+  ]
 };
 
 if (process.env.NODE_ENV === 'production') {
   module.exports.devtool = '#source-map';
+  module.exports.mode = 'production';
+  module.exports.optimization = {
+    runtimeChunk: {
+      name: 'manifest'
+    },
+    // minimizer: [
+    //   new UglifyJsPlugin({
+    //     cache: true,
+    //     parallel: true,
+    //     sourceMap: true,
+    //   }),
+    // ],
+  };
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"',
-      },
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      compress: {
-        warnings: false,
       },
     }),
     new webpack.LoaderOptionsPlugin({
