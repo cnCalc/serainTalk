@@ -43,6 +43,23 @@ let mutations = {
   },
 
   /**
+   * TODO
+   */
+  setCategoryDiscussions: (state, { category, discussions }) => {
+    state.category = {
+      categoryName: category,
+      discussions,
+    };
+  },
+
+  /**
+   * TODO
+   */
+  appendCategoryDiscussions: (state, discussions) => {
+    state.category.discussions = [...state.category.discussions, ...discussions];
+  },
+
+  /**
    * 合并 member 对象
    */
   mergeMembers: (state, members) => {
@@ -60,7 +77,13 @@ let mutations = {
    * 变更繁忙状态
    */
   setBusy: (state, isBusy) => {
-    state.busy = isBusy;
+    if (isBusy || process.env.VUE_ENV === 'server') {
+      state.busy = isBusy;
+    } else {
+      setTimeout(() => {
+        state.busy = isBusy;
+      }, 0);
+    }
   },
 
   /**
@@ -112,7 +135,7 @@ let mutations = {
    * 设置帖子列表正在展示的帖子
    */
   setMemberDiscussions: (state, discussions) => {
-    state.member.discussions = discussions;
+    state.member = Object.assign(state.member, { discussions });
   },
 
   /**

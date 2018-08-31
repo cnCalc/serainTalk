@@ -63,20 +63,7 @@ import bus from '../utils/ws-eventbus';
 import { indexToPage, fileSize } from '../utils/filters';
 import LoadingIcon from '../components/LoadingIcon.vue';
 
-const hljs = window.hljs;
-const md = window.markdownit({
-  html: false,
-  linkify: true,
-  highlight (str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
-      } catch (__) {}
-    }
-
-    return addSpanEachLine(str.trim());
-  },
-});
+let hljs, md;
 
 function addSpanEachLine (html) {
   return html.split('\n').map(l => `<span class="__line">${l}</span>`).join('\n');
@@ -119,6 +106,21 @@ export default {
     };
   },
   mounted () {
+    hljs = window.hljs;
+    md = window.markdownit({
+      html: false,
+      linkify: true,
+      highlight (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
+          } catch (__) {}
+        }
+
+        return addSpanEachLine(str.trim());
+      },
+    });
+
     const resize = document.querySelector('div.resize');
     const editor = document.querySelector('div.editor');
     const textarea = document.querySelector('textarea');

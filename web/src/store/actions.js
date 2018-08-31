@@ -15,7 +15,11 @@ export default {
    */
   fetchLatestDiscussions: (state, params = {}) => {
     state.commit('setBusy', true);
-    params.append || state.commit('setDiscussions', []);
+    // params.append || state.commit('setDiscussions', []);
+    state.commit('setCategoryDiscussions', {
+      category: '',
+      discussions: [],
+    });
     return api.v1.discussion.fetchLatestDiscussions(params).then(data => {
       state.commit('mergeMembers', data.members);
       if (params.append) {
@@ -32,13 +36,16 @@ export default {
    */
   fetchDiscussionsUnderCategory: (state, params = {}) => {
     state.commit('setBusy', true);
-    params.append || state.commit('setDiscussions', []);
+    // params.append || state.commit('setDiscussions', []);
     return api.v1.category.fetchDiscussionsUnderCategory(params).then(data => {
       state.commit('mergeMembers', data.members);
       if (params.append) {
-        state.commit('appendDiscussions', data.discussions);
+        state.commit('appendCategoryDiscussions', data.discussions);
       } else {
-        state.commit('setDiscussions', data.discussions);
+        state.commit('setCategoryDiscussions', {
+          category: data.category,
+          discussions: data.discussions,
+        });
       }
       state.commit('setBusy', false);
     });
@@ -70,7 +77,8 @@ export default {
         state.commit('mergeAttachments', data.attachments);
         state.commit('updateDiscussionPosts', data.posts);
       }
-    }).finally(() => {
+    }).then(() => {
+      console.log('alldone');
       state.commit('setBusy', false);
     });
   },

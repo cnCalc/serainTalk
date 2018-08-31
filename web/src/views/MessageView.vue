@@ -58,7 +58,7 @@ export default {
     }
   },
   created () {
-    this.updateTitle();
+    // this.updateTitle();
     this.loadSessions().then(() => {
       if (this.$route.params.messageId) {
         this.activeSession = this.$route.params.messageId;
@@ -215,7 +215,7 @@ export default {
           this.session.canLoadMore = false;
         }
         this.$store.commit('updateMessageSession', id);
-        this.updateTitle();
+        // this.updateTitle();
         this.$nextTick(() => {
           this.busy = false;
           this.scrollToBottom();

@@ -72,24 +72,7 @@ import config from '../config';
 import { indexToPage, fileSize } from '../utils/filters';
 import { scrollToTop, scrollTo } from '../utils/scrollToTop';
 
-function scrollToHash (hash) {
-  let el = document.querySelector(hash);
-  if (!el) {
-    console.log('element not found: ' + hash);
-    // throw new Error('fuck')
-    return;
-  }
-  el.classList.add('highlight');
-  setTimeout(() => {
-    el.classList.remove('highlight');
-  }, 2000);
-  el.scrollIntoView();
-  setTimeout(() => {
-    if (el.getBoundingClientRect().top < 60) {
-      window.scrollTo(0, window.scrollY - 60); // Height of NavBar
-    }
-  }, 0);
-}
+let scrollToHash;
 
 export default {
   name: 'discussion-view',
@@ -301,7 +284,7 @@ export default {
       }
       if (foundCurrentPage) {
         this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: this.$route.params.page, quiet: true });
-        this.updateTitle();
+        // this.updateTitle();
       } else if (this.unread.length > 0) {
         this.$store.dispatch('fetchDiscussionsMeta', { id: this.$route.params.discussionId }).then(() => {
           const page = this.indexToPage(this.unread[0]);
@@ -310,7 +293,7 @@ export default {
             while (this.unread[0] && this.indexToPage(this.unread[0]) === page) {
               this.unread.shift();
             }
-            this.updateTitle();
+            // this.updateTitle();
           });
         });
       }
@@ -423,7 +406,7 @@ export default {
         this.pageLoaded = [];
         this.pageLoaded[this.currentPage] = true;
 
-        return this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
+        this.dataPromise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
           this.$forceUpdate();
           this.scrollWatcher();
           if (this.settings.autoLoadOnScroll && page !== 1) {
@@ -431,15 +414,16 @@ export default {
             this.pageLoaded[this.currentPage - 1] = true;
           }
         });
+        return;
       }
 
-      this.scrollWatcher();
+      // this.scrollWatcher();
       this.updateGlobalTitle();
 
       if (this.pageLoaded[Number(route.params.page) || 1]) {
         this.currentPage = Number(route.params.page) || 1;
         this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
-        this.updateTitle();
+        // this.updateTitle();
         return;
       }
 
@@ -447,7 +431,7 @@ export default {
         this.currentPage = Number(route.params.page) || 1;
         this.pageLoaded[this.currentPage] = true;
         this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
-        this.updateTitle();
+        // this.updateTitle();
       });
     },
     '$route.hash': function (hash) {
@@ -476,7 +460,7 @@ export default {
           this.pageLoaded[this.currentPage - 1] = true;
         }
         this.unread = [];
-        this.updateTitle();
+        // this.updateTitle();
       });
     });
 
@@ -488,7 +472,7 @@ export default {
       if (e.affects.discussionId === this.currentDiscussion) {
         if (e.eventType === 'Create') {
           this.unread.push(e.affects.postIndex);
-          this.updateTitle();
+          // this.updateTitle();
           return;
         } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
           this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
@@ -497,6 +481,32 @@ export default {
     });
   },
   mounted () {
+    if (!scrollToHash) {
+      scrollToHash = (hash) => {
+        Promise.all([
+          this.promise,
+          this.dataPromise
+        ]).then(() => {
+          let el = document.querySelector(hash);
+          if (!el) {
+            console.log('element not found: ' + hash);
+            return;
+          }
+          console.log(el);
+          el.classList.add('highlight');
+          setTimeout(() => {
+            el.classList.remove('highlight');
+          }, 2000);
+          el.scrollIntoView();
+          this.$nextTick(() => {
+            if (el.getBoundingClientRect().top < 60) {
+              window.scrollTo(0, window.scrollY - 60); // Height of NavBar
+            }
+          });
+        });
+      }
+    }
+
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
     window.addEventListener('mouseup', this.hideQuote, { passive: true });
 
@@ -510,13 +520,21 @@ export default {
       this.minPage = page - 1;
       this.pageLoaded[this.currentPage - 1] = true;
     }
+
+    this.$nextTick(() => {
+      if (window.location.hash) {
+        (this.promise || this.dataPromise).then(() => scrollToHash(window.location.hash));
+      }
+    });
+
+    this.updateGlobalTitle();
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.scrollWatcher);
     window.removeEventListener('mouseup', this.hideQuote, { passive: true });
   },
   activated () {
-    this.updateTitle();
+    // this.updateTitle();
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
     window.addEventListener('mouseup', this.hideQuote, { passive: true });
   },
@@ -526,12 +544,9 @@ export default {
   },
   asyncData ({ store, route }) {
     const page = Number(route.params.page) || 1;
-    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll }).then(() => {
-      if (window.location.hash) {
-        scrollToHash(window.location.hash);
-      }
-      this.updateTitle();
-    }).catch(error => {
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
+    .catch(error => {
+      console.log(error);
       if (error.response.status === 404) {
         this.$router.replace('/not-found');
       }

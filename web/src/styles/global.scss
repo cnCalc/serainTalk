@@ -56,9 +56,13 @@ a:hover {
 .list-enter-active {
   transition: all .3s;
 }
-// .list-leave-active {
-//   transition: all .08s;
-// }
+.list-move {
+  opacity: 0;
+}
+.list-leave-active {
+  // transition: all .08s;
+  // position: absolute;
+}
 .list-enter, .list-leave-to {
   opacity: 0;
 }

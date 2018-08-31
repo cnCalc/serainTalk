@@ -11,7 +11,7 @@
         router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
       div.spring
       input.search(type="text", placeholder="搜索")
-      template(v-if="typeof me._id === 'undefined'")
+      template(v-if="!me || typeof me._id === 'undefined'")
         router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
       template(v-else)

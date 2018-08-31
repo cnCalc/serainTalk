@@ -31,6 +31,9 @@ export default {
   created () {
     this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
   },
+  mounted () {
+    this.addPreviewEvents();
+  },
   computed: {
     pattern () {
       return `@${this.replyTo.memberId}#${this.discussionId || this.$store.state.discussionMeta._id}#${this.replyTo.value}`;
@@ -80,16 +83,7 @@ export default {
       if (html.match(replyReg)) {
         const match = html.match(replyReg);
         html = html.replace(pattern, `<a href="${`/d/${match[2]}/${indexToPage(this.replyTo.value)}#index-${this.replyTo.value}`}"><span class="reply-to" oncontextmenu="return false">${this.parentMemeber.username}</span></a>`);
-
-        this.$nextTick(() => {
-          const replyTo = this.$el.querySelector('span.reply-to');
-          replyTo.addEventListener('mouseover', () => {
-            this.showReplyPreview();
-          });
-          replyTo.addEventListener('mouseout', () => {
-            this.hideReplyPreview();
-          });
-        });
+        this.addPreviewEvents();
       }
 
       return html;
@@ -99,6 +93,23 @@ export default {
       // 替换全文中出现的 mention
       return html.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<a href="/m/${id}"><span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span></a>`);
     },
+    addPreviewEvents () {
+      if (!this.replyTo) {
+        return;
+      }
+      this.$nextTick(() => {
+        if (!this.$el) {
+          return;
+        }
+        const replyTo = this.$el.querySelector('span.reply-to');
+        replyTo.addEventListener('mouseover', () => {
+          this.showReplyPreview();
+        });
+        replyTo.addEventListener('mouseout', () => {
+          this.hideReplyPreview();
+        });
+      });
+    }
   },
   watch: {
     content () {

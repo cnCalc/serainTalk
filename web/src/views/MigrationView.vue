@@ -78,7 +78,7 @@ export default {
     }
   },
   mounted () {
-    this.updateTitle();
+    // this.updateTitle();
   },
   methods: {
     doCheckName () {

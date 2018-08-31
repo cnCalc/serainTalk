@@ -6,10 +6,10 @@
         category-list
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
-        discussion-list(v-show="!busy || currentPage > 1")
-        loading-icon(v-if="busy")
+        discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug")
+        loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
         div.list-nav
-          button.button.load-more(@click="loadMore", v-if="!busy") {{ i18n('ui_load_more') }}
+          button.button.load-more(@click="loadMore", v-show="!busy") {{ i18n('ui_load_more') }}
 </template>
 
 <script>
@@ -41,7 +41,11 @@ export default {
       return this.$store.state.busy;
     },
     discussions () {
-      return this.$store.state.discussions;
+      if (this.slug && this.$store.state.category.discussions.length > 0) {
+        return this.$store.state.category.discussions;
+      } else {
+        return this.$store.state.discussions;
+      }
     },
     members () {
       return this.$store.state.members;
@@ -59,7 +63,7 @@ export default {
     if (!this.slug && this.$route.path === '/') {
       base += '首页';
     } else {
-      base += this.currentCategory;
+      base += this.$store.state.category.categoryName;
     }
 
     return base;
@@ -102,7 +106,7 @@ export default {
     refresh () {
       this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
       this.unread = 0;
-      this.updateTitle();
+      // this.updateTitle();
     },
   },
   watch: {
@@ -126,7 +130,7 @@ export default {
       }
 
       this.flushGlobalTitles();
-      this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
     },
     slug: function (slug) {
       this.flushGlobalTitles();
@@ -136,8 +140,8 @@ export default {
     },
   },
   activated () {
-    // this.flushGlobalTitles();
-    this.updateTitle();
+    this.flushGlobalTitles();
+    // // this.updateTitle();
   },
   created () {
     this.currentSlug = this.slug || '';
@@ -145,7 +149,7 @@ export default {
     bus.$on('event', e => {
       if (((this.currentCategory !== '' && this.currentCategory === e.affects.category) || this.currentCategory === '') && (e.eventType === 'Create' || e.eventType === 'Update')) {
         this.unread++;
-        this.updateTitle();
+        // this.updateTitle();
       }
     });
   },
@@ -157,7 +161,10 @@ export default {
       p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
     }
     return p.then(() => {
-      this.updateTitle();
+      // FIXME:
+      // if (// this.updateTitle) {
+      //   // this.updateTitle();
+      // }
     });
   },
 };

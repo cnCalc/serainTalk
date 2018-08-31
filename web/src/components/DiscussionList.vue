@@ -1,7 +1,7 @@
 <template lang="pug">
   div.discussion-list
-    ul: transition-group(name="list")
-      li(v-for="(discussion, index) in discussions" :key="discussion._id + index" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
+    transition-group(tag="ul" name="list")
+      li(v-for="(discussion, index) in discussions" :key="(keyPrefix || 'dft') + discussion._id" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
             div.avatar-image(v-if="members[discussion.creater].avatar" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
@@ -29,7 +29,12 @@ import decodeHTML from '../utils/decodeHTML';
 
 export default {
   name: 'discussion-list',
-  props: ['hideavatar', 'list'],
+  props: ['hideavatar', 'list', 'key-prefix'],
+  data () {
+    return {
+      lastKeyPrefix: null,
+    };
+  },
   computed: {
     discussions () {
       return this.$props.list || this.$store.state.discussions;

@@ -34,18 +34,18 @@ export default {
       .then(() => { this.$store.dispatch('fetchNotifications'); })
       .catch(e => {});
 
-    // keep SPA
-    window.addEventListener('click', event => {
-      let target = event.target;
-      while (target !== null && target.tagName !== 'A') {
-        target = target.parentNode;
-      }
-      if (target && target.href && target.href.indexOf(window.location.origin) === 0 && target.target !== '_blank') {
-        event.preventDefault();
-        let url = new window.URL(target.href);
-        this.$router.push(url.href.replace(url.origin, ''));
-      }
-    });
+    // // keep SPA
+    // window.addEventListener('click', event => {
+    //   let target = event.target;
+    //   while (target !== null && target.tagName !== 'A') {
+    //     target = target.parentNode;
+    //   }
+    //   if (target && target.href && target.href.indexOf(window.location.origin) === 0 && target.target !== '_blank') {
+    //     event.preventDefault();
+    //     let url = new window.URL(target.href);
+    //     this.$router.push(url.href.replace(url.origin, ''));
+    //   }
+    // });
   },
   computed: {
     isDarkTheme () {

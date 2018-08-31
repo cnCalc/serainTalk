@@ -1,4 +1,4 @@
-import config from '../config.js';
+import config from '../config';
 
 function getTitle (vm) {
   const { title } = vm.$options;
@@ -19,12 +19,64 @@ const serverTitleMixin = {
 };
 
 const clientTitleMixin = {
-  methods: {
-    updateTitle () {
+  data () {
+    return {
+      isActive: false,
+    };
+  },
+  mounted () {
+    const title = getTitle(this);
+    if (title) {
+      document.title = `${title} - ${config.title}`;
+    }
+  },
+  activated () {
+    this.isActive = true;
+    const updateTitle = function () {
       const title = getTitle(this);
       if (title) {
         document.title = `${title} - ${config.title}`;
       }
+    }.bind(this);
+
+    this.$nextTick(() => {
+      const promise = Promise.all([this.promise, this.dataPromise]);
+      console.log(promise);
+      if (promise) {
+        promise.then(() => {
+          updateTitle();
+        });
+      } else {
+        updateTitle();
+      }
+    });
+  },
+  deactivated () {
+    this.isActive = false;
+  },
+  watch: {
+    '$route': function () {
+      if (!this.isActive) {
+        return;
+      }
+      const updateTitle = function () {
+        const title = getTitle(this);
+        if (title) {
+          document.title = `${title} - ${config.title}`;
+        }
+      }.bind(this);
+
+      this.$nextTick(() => {
+        const promise = Promise.all([this.promise, this.dataPromise]);
+        console.log(promise);
+        if (promise) {
+          promise.then(() => {
+            updateTitle();
+          });
+        } else {
+          updateTitle();
+        }
+      });
     },
   },
 };

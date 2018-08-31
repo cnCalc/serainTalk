@@ -35,7 +35,7 @@ div
           button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
         div.list-nav(v-else): span.already-max 没有更多了
       div.member-recent-posts(v-if="$route.meta.mode === 'discussions'")
-        discussion-list(:hideavatar="true" :list="$store.state.member.discussions") 
+        discussion-list(:hideavatar="true" :list="member.discussions") 
         loading-icon(v-if="busy")
         div.list-nav(v-if="canLoadMorePosts")
           button.button.load-more(@click="loadMore" v-if="!busy") 加载更多
@@ -393,7 +393,7 @@ export default {
     reloadMemberInfo () {
       this.$store.dispatch('fetchCurrentSigninedMemberInfo');
       this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
-        this.updateTitle();
+        // this.updateTitle();
       });
     },
     changeEmail () {
@@ -467,6 +467,7 @@ export default {
   },
   watch: {
     '$route': function (route) {
+      console.log(this.$store.state.member.discussions);
       if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
         // 如果 currentMember 和路由中的 member 不一致时，显然可以算作是首次进入。
         let needRefetchMemberInfo = (this.currentMember !== route.params.memberId);
@@ -482,10 +483,13 @@ export default {
                 return Promise.resolve();
               }
             }).then(() => {
-              this.updateTitle();
+              // this.updateTitle();
             });
           } else if (this.$store.state.member.discussions === undefined) {
-            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId })
+            .then(() => {
+              this.$forceUpdate();
+            })
           }
           this.currentPage = 1;
         }
@@ -494,7 +498,7 @@ export default {
       if (route.params.memberId && route.meta.mode === 'discussions' && this.$store.state.member.discussions === undefined) {
         this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
-      this.updateTitle();
+      // this.updateTitle();
     },
     'cutState.scale': function () {
       const maxSize = Math.min(this.cutState.showingWidth, this.cutState.showingHeight);
@@ -512,7 +516,7 @@ export default {
       this.canLoadMorePosts = true;
     }
     this.$store.commit('setGlobalTitles', [' ', ' ', true]);
-    this.updateTitle();
+    // this.updateTitle();
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
@@ -520,7 +524,7 @@ export default {
         return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
     }).then(() => {
-      this.updateTitle();
+      // this.updateTitle();
     });
   },
 };

@@ -1,23 +1,25 @@
 <template lang="pug">
   // Codes from http://tobiasahlin.com/spinkit/, licensed under MIT.
-  div.sk-circle
-    div.sk-child.sk-circle1
-    div.sk-child.sk-circle2
-    div.sk-child.sk-circle3
-    div.sk-child.sk-circle4
-    div.sk-child.sk-circle5
-    div.sk-child.sk-circle6
-    div.sk-child.sk-circle7
-    div.sk-child.sk-circle8
-    div.sk-child.sk-circle9
-    div.sk-child.sk-circle10
-    div.sk-child.sk-circle11
-    div.sk-child.sk-circle12
+  div.icon-wrapper(:style="{ paddingTop: noPaddingTop ? '0' : '30vh' }")
+    div.sk-circle
+      div.sk-child.sk-circle1
+      div.sk-child.sk-circle2
+      div.sk-child.sk-circle3
+      div.sk-child.sk-circle4
+      div.sk-child.sk-circle5
+      div.sk-child.sk-circle6
+      div.sk-child.sk-circle7
+      div.sk-child.sk-circle8
+      div.sk-child.sk-circle9
+      div.sk-child.sk-circle10
+      div.sk-child.sk-circle11
+      div.sk-child.sk-circle12
 </template>
 
 <script>
 export default {
   name: 'loading-icon',
+  props: ['no-padding-top']
 };
 </script>
 

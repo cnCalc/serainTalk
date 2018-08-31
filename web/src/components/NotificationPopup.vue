@@ -14,7 +14,7 @@
 <script>
 import bus from '../utils/ws-eventbus';
 
-window.bus = bus;
+// window.bus = bus;
 
 export default {
   name: 'notification-popup',

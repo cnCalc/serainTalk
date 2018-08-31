@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import io from 'socket.io-client';
-import store from '../store';
+// import store from '../store';
 
 const wsEventBus = new Vue({
   data () {
@@ -9,7 +9,7 @@ const wsEventBus = new Vue({
     };
   },
   created () {
-    setTimeout(() => this.createConnection(), 1000);
+    // setTimeout(() => this.createConnection(), 1000);
     this.$on('reconnect', () => {
       this.destroyConnection();
       this.createConnection();
@@ -45,9 +45,9 @@ const wsEventBus = new Vue({
 
       socket.on('message', payload => {
         this.$emit('message', payload);
-        if (payload.messageId !== store.state.messageSession) {
-          this.$emit('notification', { type: 'message', body: '您有一条新消息，点击此处查看', href: `/message/${payload.messageId}` });
-        }
+        // if (payload.messageId !== store.state.messageSession) {
+        //   this.$emit('notification', { type: 'message', body: '您有一条新消息，点击此处查看', href: `/message/${payload.messageId}` });
+        // }
       });
 
       socket.on('event', payload => {
