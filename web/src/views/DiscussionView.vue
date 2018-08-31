@@ -485,7 +485,7 @@ export default {
       scrollToHash = (hash) => {
         Promise.all([
           this.promise,
-          this.dataPromise
+          this.dataPromise,
         ]).then(() => {
           let el = document.querySelector(hash);
           if (!el) {
@@ -504,7 +504,7 @@ export default {
             }
           });
         });
-      }
+      };
     }
 
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });

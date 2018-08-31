@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { createApp } from './app.js';
 import axios from 'axios';
 // import regeneratorRuntime from 'regenerator-runtime';

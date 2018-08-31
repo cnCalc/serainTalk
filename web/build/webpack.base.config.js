@@ -17,7 +17,7 @@ module.exports = {
         options: {
           loaders: {
             'scss': 'vue-style-loader!css-loader!sass-loader',
-            'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
+            'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
           },
         },
       },
@@ -36,7 +36,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.(png|jpg|gif|svg)$/,
@@ -68,7 +68,7 @@ module.exports = {
     }),
     new webpack.IgnorePlugin(/server/, /plugins/),
     new VueLoaderPlugin(),
-  ]
+  ],
 };
 
 if (process.env.NODE_ENV === 'production') {

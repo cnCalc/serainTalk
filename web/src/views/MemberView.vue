@@ -486,10 +486,9 @@ export default {
               // this.updateTitle();
             });
           } else if (this.$store.state.member.discussions === undefined) {
-            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId })
-            .then(() => {
+            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
               this.$forceUpdate();
-            })
+            });
           }
           this.currentPage = 1;
         }

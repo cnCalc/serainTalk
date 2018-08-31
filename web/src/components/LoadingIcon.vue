@@ -19,7 +19,7 @@
 <script>
 export default {
   name: 'loading-icon',
-  props: ['no-padding-top']
+  props: ['no-padding-top'],
 };
 </script>
 

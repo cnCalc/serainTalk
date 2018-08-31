@@ -974,7 +974,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
     ]).toArray();
 
     let members = await resolveMembersInDiscussionArray(discussions);
-    return res.send({ status: 'ok', discussions: discussions, members: members });
+    return res.send({ status: 'ok', category, discussions: discussions, members: members });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

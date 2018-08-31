@@ -109,7 +109,7 @@ export default {
           this.hideReplyPreview();
         });
       });
-    }
+    },
   },
   watch: {
     content () {
