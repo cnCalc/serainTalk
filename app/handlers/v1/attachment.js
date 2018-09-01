@@ -183,11 +183,11 @@ let getAttachment = async (req, res, next) => {
 
     fs.lstat(path.join(dir, attachmentInfo.filePath), (err, stat) => {
       if (err) {
-        if (err.errno === -2) {         // ENOENT
+        if (err.errno === -2) { // ENOENT
           return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
         } else if (err.errno === -13) { // EACCES
           return errorHandler(null, errorMessages.PERMISSION_DENIED, 403, res);
-        } else {  // others
+        } else { // others
           return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
         }
       } else {

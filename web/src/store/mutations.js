@@ -17,7 +17,8 @@ let mutations = {
    */
   setGlobalTitles: (state, [title, subtitle, isMobileMemberView]) => {
     state.globalTitle = {
-      title, subtitle, isMobileMemberView,
+      title, subtitle,
+      isMobileMemberView: isMobileMemberView || false,
     };
   },
 
@@ -50,6 +51,20 @@ let mutations = {
       categoryName: category,
       discussions,
     };
+
+    if (process.env.VUE_ENV === 'server') {
+      state.globalTitle = {
+        title: category,
+        isMobileMemberView: state.globalTitle.isMobileMemberView,
+      };
+      state.categoriesGroup.forEach(cat => {
+        cat.items.forEach(item => {
+          if (item.name === category) {
+            state.globalTitle.subtitle = item.description;
+          }
+        });
+      });
+    }
   },
 
   /**
@@ -97,6 +112,13 @@ let mutations = {
   setDiscussionMeta: (state, meta) => {
     state.discussionMeta = meta.discussionInfo;
     state.discussionMeta.postsCount = meta.count;
+    if (process.env.VUE_ENV === 'server') {
+      state.globalTitle = {
+        title: meta.discussionInfo.title,
+        subtitle: meta.discussionInfo.category,
+        isMobileMemberView: state.globalTitle.isMobileMemberView,
+      };
+    }
   },
 
   /** 设置帖子内容 */

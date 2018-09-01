@@ -7,7 +7,7 @@
 <script>
 export default {
   name: 'not-found',
-  created () {
+  activated () {
     this.$store.commit('setGlobalTitles', []);
   },
 };

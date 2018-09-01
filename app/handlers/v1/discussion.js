@@ -202,7 +202,7 @@ let getDiscussionPostsById = async (req, res) => {
       $or: [
         { 'posts.status': null },
         { 'posts.status.type': { $in: [config.discussion.status.ok] } },
-        { 'posts.user': req.member._id },  // 允许看到自己被删除的帖子
+        { 'posts.user': req.member._id }, // 允许看到自己被删除的帖子
       ],
     };
     // 鉴权 能否读取被封禁的 discussion 和 post
@@ -274,7 +274,7 @@ let getPostByIndex = async (req, res, next) => {
     $or: [
       { 'posts.status': null },
       { 'posts.status.type': { $in: [config.discussion.status.ok] } },
-      { 'posts.user': req.member._id },  // 允许看到自己被删除的帖子
+      { 'posts.user': req.member._id }, // 允许看到自己被删除的帖子
     ],
   };
   // 鉴权 能否读取被封禁的 discussion 和 post

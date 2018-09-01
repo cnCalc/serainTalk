@@ -2,51 +2,52 @@
   div.discussion-view
     div.discussion-view-left
       loading-icon(v-if="busy && (!settings.autoLoadOnScroll || maxPage === minPage)")
-      ul.discussion-post-list(v-bind:class="{'hide': busy && (!settings.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
-        div.discussion-post-container
-          button.button.quote-button(v-bind:style="quoteButtonStyle") 引用
-          article.discussion-post-body
-            header.discussion-post-info
-              router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
-                div.avatar-image(v-if="members[post.user].avatar" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
-                div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
-              span.discussion-post-member {{ members[post.user].username }} 
-              span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
-            post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
-            div.discussion-post-attachments(v-if="post.attachments.length > 0")
-              div.attachment-wrapper
-                h3 {{ i18n('ui_attachment_list') }}
-                ul.attachment-list
-                  li.attachment-item(v-for="id in post.attachments")
-                    span(v-if="attachments[id].mime.indexOf('image/') !== 0")
-                      a(:href="`#attach-${id}`") {{ attachments[id].fileName }}
-                      | ({{ fileSize(attachments[id].size) }})
-                    span(v-else)
-                      a(:href="`/api/v1/attachment/${id}`", target="_blank") {{ attachments[id].fileName }}
-                      | ({{ fileSize(attachments[id].size) }})
-            div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
-            footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
-              div.discussion-post-date
-                span {{ i18n('ui_created_at', { date: new Date(post.createDate).toLocaleDateString() }) }}
-                span(v-if="post.updateDate") {{ i18n('ui_edited_at', { date: new Date(post.updateDate).toLocaleDateString() }) }}
-              div.button-left-container
-                button.button.vote-up(@click="votePost(post.index, 'up')" :title="(post.votes.up.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.up.count }}
-                button.button.vote-down(@click="votePost(post.index, 'down')" :title="(post.votes.down.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.down.count }}
-                div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
-                  button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") {{ i18n('ui_reply') }}
-                  button.button(@click="copyLink(post.index)") {{ i18n('ui_copy_link') }}
-                  button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") {{ i18n('ui_jump_to_bottom') }}
-                  template(v-if="$store.state.me")
-                    button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") {{ i18n('ui_edit') }}
-                    template(v-if="$store.state.me.role === 'admin'")
-                      button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") {{ i18n('ui_undelete') }}
-                      button.button(v-else @click="deletePost(post.index)") {{ i18n('ui_delete') }}
-      div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ i18n('ui_new_replies_event', { count: unread.length }) }}
-      div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
-        center {{ i18n('ui_no_post_to_show') }}
-      pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!settings.autoLoadOnScroll")
+      div
+        ul.discussion-post-list(v-bind:class="{'hide': busy && (!settings.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
+          div.discussion-post-container
+            button.button.quote-button(v-bind:style="quoteButtonStyle") 引用
+            article.discussion-post-body
+              header.discussion-post-info
+                router-link(:to="'/m/' + post.user").discussion-post-avater: div.discussion-post-avater
+                  div.avatar-image(v-if="members[post.user].avatar" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
+                  div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
+                span.discussion-post-member {{ members[post.user].username }} 
+                span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
+              post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
+              div.discussion-post-attachments(v-if="post.attachments.length > 0")
+                div.attachment-wrapper
+                  h3 {{ i18n('ui_attachment_list') }}
+                  ul.attachment-list
+                    li.attachment-item(v-for="id in post.attachments")
+                      span(v-if="attachments[id].mime.indexOf('image/') !== 0")
+                        a(:href="`#attach-${id}`") {{ attachments[id].fileName }}
+                        | ({{ fileSize(attachments[id].size) }})
+                      span(v-else)
+                        a(:href="`/api/v1/attachment/${id}`", target="_blank") {{ attachments[id].fileName }}
+                        | ({{ fileSize(attachments[id].size) }})
+              div.fake-footer(v-bind:style="{ height: index === absoluteBottomIndex ? '70px': '0px' }")
+              footer.discussion-post-info(v-bind:class="{ fixed: index === absoluteBottomIndex }", v-bind:style="{ width: index === absoluteBottomIndex ? absoluteBottomWidth + 'px' : ''}")
+                div.discussion-post-date
+                  span {{ i18n('ui_created_at', { date: new Date(post.createDate).toLocaleDateString() }) }}
+                  span(v-if="post.updateDate") {{ i18n('ui_edited_at', { date: new Date(post.updateDate).toLocaleDateString() }) }}
+                div.button-left-container
+                  button.button.vote-up(@click="votePost(post.index, 'up')" :title="(post.votes.up.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.up.count }}
+                  button.button.vote-down(@click="votePost(post.index, 'down')" :title="(post.votes.down.memberId || []).map(id => (members[id] || { username: 'undefined' }).username).join(', ')") {{ post.votes.down.count }}
+                  div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
+                    button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") {{ i18n('ui_reply') }}
+                    button.button(@click="copyLink(post.index)") {{ i18n('ui_copy_link') }}
+                    button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") {{ i18n('ui_jump_to_bottom') }}
+                    template(v-if="$store.state.me")
+                      button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") {{ i18n('ui_edit') }}
+                      template(v-if="$store.state.me.role === 'admin'")
+                        button.button(v-if="post.status.type === 'deleted'" @click="deletePost(post.index)") {{ i18n('ui_undelete') }}
+                        button.button(v-else @click="deletePost(post.index)") {{ i18n('ui_delete') }}
+        div.unread-message(v-if="!busy && unread.length !== 0" @click="loadUnread") {{ i18n('ui_new_replies_event', { count: unread.length }) }}
+        div(v-if="!busy && showingPosts.length === 0" style="height: 200px; line-height: 200px; font-size: 1.2em; color: grey")
+          center {{ i18n('ui_no_post_to_show') }}
+        pagination(v-bind:class="{'hide': busy}" :length="9" :active="currentPage" :max="pagesCount" :handler="loadPage" v-if="!settings.autoLoadOnScroll")
     div.discussion-view-right
-      div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy ? 0 : 1 }")
+      div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy && (!settings.autoLoadOnScroll || maxPage === minPage) ? 0 : 1 }")
         div.quick-funcs {{ i18n('ui_quick_funcs') }}
         button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'") {{ i18n('ui_qf_subscribe') }}
         button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") {{ i18n('ui_qf_reply_to_post') }}
@@ -87,7 +88,7 @@ export default {
       maxPage: null, // 当前已加载的最大页数，仅在滚动自加载模式中有效
       currentPage: null,
       fixedSlideBar: false,
-      pagesCount: 0, // 总页数
+      // pagesCount: 0, // 总页数
       pageLoaded: {}, // 已经加载了的页面
       currentDiscussion: null,
       absoluteBottomIndex: null,
@@ -213,7 +214,7 @@ export default {
     },
     scrollWatcher () {
       if (this.settings.autoLoadOnScroll) {
-        if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.clientHeight) {
+        if (window.scrollY + window.innerHeight + config.discussionView.boundingThreshold.bottom > document.body.scrollHeight) {
           this.loadNextPage();
         }
         if (window.scrollY < config.discussionView.boundingThreshold.top) {
@@ -359,6 +360,9 @@ export default {
     },
   },
   computed: {
+    pagesCount () {
+      return indexToPage(this.discussionMeta.postsCount);
+    },
     discussionMeta () {
       return this.$store.state.discussionMeta;
     },
@@ -388,7 +392,7 @@ export default {
   watch: {
     discussionMeta (val) {
       this.updateGlobalTitle();
-      this.pagesCount = indexToPage(this.discussionMeta.postsCount);
+      // this.pagesCount = indexToPage(this.discussionMeta.postsCount);
     },
     '$route': function (route) {
       if (!route.params.discussionId) {
@@ -417,7 +421,7 @@ export default {
         return;
       }
 
-      // this.scrollWatcher();
+      this.scrollWatcher();
       this.updateGlobalTitle();
 
       if (this.pageLoaded[Number(route.params.page) || 1]) {
@@ -448,6 +452,10 @@ export default {
   },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
+    const page = Number(this.$route.params.page) || 1;
+    this.maxPage = page;
+    this.minPage = page;
+    this.currentPage = page;
 
     bus.$on('reloadDiscussionView', () => {
       const page = Number(this.$route.params.page) || 1;
@@ -571,6 +579,11 @@ div.discussion-view {
     flex: 1 1;
     min-width: 0;
     padding-right: 5px;
+    position: relative;
+    > * {
+      position: absolute;
+      left: 0; right: 0;
+    }
   }
 
   $right_width: 130px;
@@ -578,6 +591,7 @@ div.discussion-view {
     order: 2;
     flex: 0 0 $right_width;
     position: relative;
+    z-index: -100;
     @include respond-to(phone){
       display: none;
     }

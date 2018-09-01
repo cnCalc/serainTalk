@@ -52,6 +52,7 @@ site.use('/dist', serve('./dist', true));
 site.use('/public', serve('./public', true));
 site.use('/manifest.json', serve('./manifest.json', true));
 site.use('/service-worker.js', serve('./dist/service-worker.js'));
+site.get('/favicon.ico', (req, res) => res.status(404).end());
 
 // The actual render entry.
 function render (req, res) {

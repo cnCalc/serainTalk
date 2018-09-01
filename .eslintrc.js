@@ -2,15 +2,19 @@ module.exports = {
     "env": {
         "es6": true,
         "node": true,
-        "mocha": true
+        "mocha": true,
+        "browser": true,
     },
+    "parser": "babel-eslint",
     "parserOptions": {
-        "ecmaVersion": 8
+        "ecmaVersion": 8,
+        "allowImportExportEverywhere": true
     },
     "extends": "vue",
     "plugins": [
         "standard",
-        "promise"
+        "promise",
+        "babel"
     ],
     "rules": {
         "indent": [
