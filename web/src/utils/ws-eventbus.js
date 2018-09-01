@@ -8,14 +8,14 @@ const wsEventBus = new Vue({
       socket: null,
     };
   },
-  created () {
-    // setTimeout(() => this.createConnection(), 1000);
-    this.$on('reconnect', () => {
-      this.destroyConnection();
-      this.createConnection();
-    });
-  },
   methods: {
+    initialize () {
+      setTimeout(() => this.createConnection(), 1000);
+      this.$on('reconnect', () => {
+        this.destroyConnection();
+        this.createConnection();
+      });
+    },
     createConnection () {
       let token = document.cookie.match(/membertoken=([^\;]+)/);
 

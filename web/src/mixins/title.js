@@ -25,41 +25,18 @@ const clientTitleMixin = {
     };
   },
   mounted () {
-    const title = getTitle(this);
-    if (title) {
-      document.title = `${title} - ${config.title}`;
-    }
+    this.updateTitle();
   },
   activated () {
     this.isActive = true;
-    const updateTitle = function () {
-      const title = getTitle(this);
-      if (title) {
-        document.title = `${title} - ${config.title}`;
-      }
-    }.bind(this);
-
-    this.$nextTick(() => {
-      const promise = Promise.all([this.promise, this.dataPromise]);
-      console.log(promise);
-      if (promise) {
-        promise.then(() => {
-          updateTitle();
-        });
-      } else {
-        updateTitle();
-      }
-    });
+    this.updateTitle();
   },
   deactivated () {
     this.isActive = false;
   },
-  watch: {
-    '$route': function () {
-      if (!this.isActive) {
-        return;
-      }
-      const updateTitle = function () {
+  methods: {
+    updateTitle () {
+      const getAndSetTitle = function () {
         const title = getTitle(this);
         if (title) {
           document.title = `${title} - ${config.title}`;
@@ -68,15 +45,22 @@ const clientTitleMixin = {
 
       this.$nextTick(() => {
         const promise = Promise.all([this.promise, this.dataPromise]);
-        console.log(promise);
         if (promise) {
           promise.then(() => {
-            updateTitle();
+            getAndSetTitle();
           });
         } else {
-          updateTitle();
+          getAndSetTitle();
         }
       });
+    },
+  },
+  watch: {
+    '$route': function () {
+      if (!this.isActive) {
+        return;
+      }
+      this.updateTitle();
     },
   },
 };

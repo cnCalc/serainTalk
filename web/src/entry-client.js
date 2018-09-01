@@ -3,7 +3,6 @@ import { createApp } from './app.js';
 createApp().then(({ app, store, router }) => {
   if (window.__INITIAL_STATE__) {
     store.replaceState(window.__INITIAL_STATE__);
-    console.log('[INFO] store replaced');
   }
 
   router.onError((error) => {

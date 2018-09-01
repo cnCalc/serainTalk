@@ -40,19 +40,13 @@ export default context => new Promise((resolve, reject) => {
         checkComponent(C);
       });
 
-      console.log(componentsWithAsyncData);
-
       Promise.all(componentsWithAsyncData.map(Component => {
         let promise = Component.asyncData({
           store,
           route: router.currentRoute,
         });
-        console.log(Component, 'started');
-        return promise.then(() => {
-          console.log(Component, 'finished');
-        });
+        return promise;
       })).then(() => {
-        console.log('all resolved');
         context.state = store.state;
         resolve(app);
       }).catch(error => {

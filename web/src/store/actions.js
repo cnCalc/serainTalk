@@ -78,7 +78,6 @@ export default {
         state.commit('updateDiscussionPosts', data.posts);
       }
     }).then(() => {
-      console.log('alldone');
       state.commit('setBusy', false);
     });
   },
