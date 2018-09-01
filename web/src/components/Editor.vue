@@ -340,8 +340,8 @@ export default {
       const attachment = this.refAttachments[attach];
       const textarea = this.$el.querySelector('textarea');
       const insertText = (attachment.mime.indexOf('image/') === 0
-      ? `![${attachment.fileName.replace(/\[/g, '\\[').replace(/\]/g, '\\]')}](/api/v1/attachment/${attachment._id}) `
-      : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `) + (this.settings.newlineAfterAttachmentInsert ? '\n' : '');
+        ? `![${attachment.fileName.replace(/\[/g, '\\[').replace(/\]/g, '\\]')}](/api/v1/attachment/${attachment._id}) `
+        : `[\\[附件\\] ${attachment.fileName}](#attach-${attachment._id}) `) + (this.settings.newlineAfterAttachmentInsert ? '\n' : '');
       const begin = textarea.selectionStart;
       const end = textarea.selectionEnd;
       this.content = this.content.substring(0, begin) + insertText + this.content.substring(end);

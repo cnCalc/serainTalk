@@ -11,8 +11,8 @@ import config from '../../config.js';
 function fetchMyAttachmentList (params) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/attachment/info/me`)
-    .then(response => resolve(response.data.attachments))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data.attachments))
+      .catch(error => reject(error));
   });
 }
 
@@ -32,8 +32,8 @@ function uploadAttachment (params, cfg) {
 
   return new Promise((resolve, reject) => {
     axios.post(`${config.api.url}/${config.api.version}/attachment`, fd, cfg)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 
@@ -47,8 +47,8 @@ function uploadAttachment (params, cfg) {
 function getRemainingTraffic (params) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/attachment/traffic`)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 

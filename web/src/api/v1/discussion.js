@@ -12,8 +12,8 @@ import config from '../../config.js';
 function fetchLatestDiscussions (params) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}`)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 
@@ -29,8 +29,8 @@ function fetchDiscussionMetaById (params) {
   if (!params.id) return Promise.reject('require id for discussion.');
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}`)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 
@@ -47,16 +47,16 @@ function fetchDiscussionPostsById (params) {
   if (!params.id) return Promise.reject('require id for discussion.');
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}/posts?page=${params.page || 1}`)
-    .then(response => {
-      const data = response.data;
-      if (data.posts.length >= 1 && typeof data.posts[0].index === 'undefined') {
-        data.posts.forEach((post, idx) => {
-          post.index = ((params.page || 1) - 1) * config.api.pagesize + idx + 1;
-        });
-      }
-      resolve(data);
-    })
-    .catch(error => reject(error));
+      .then(response => {
+        const data = response.data;
+        if (data.posts.length >= 1 && typeof data.posts[0].index === 'undefined') {
+          data.posts.forEach((post, idx) => {
+            post.index = ((params.page || 1) - 1) * config.api.pagesize + idx + 1;
+          });
+        }
+        resolve(data);
+      })
+      .catch(error => reject(error));
   });
 }
 
@@ -76,8 +76,8 @@ function fetchDiscussionPostByIdAndIndex (params) {
 
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/discussions/${params.id}/post/${params.index}${params.raw ? '?raw=on' : ''}`)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 
@@ -135,8 +135,8 @@ function createDiscussion (params) {
   if (!params.discussion) return Promise.reject('require discussion');
   return new Promise((resolve, reject) => {
     axios.post(`${config.api.url}/${config.api.version}/discussions`, params.discussion)
-    .then(response => resolve(response.data))
-    .catch(error => reject(error));
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
   });
 }
 

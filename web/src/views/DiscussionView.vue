@@ -83,11 +83,11 @@ export default {
   data () {
     return {
       pagesize: config.api.pagesize,
-      minPage: null,  // 当前已加载的最小页数，仅在滚动自加载模式中有效
-      maxPage: null,  // 当前已加载的最大页数，仅在滚动自加载模式中有效
+      minPage: null, // 当前已加载的最小页数，仅在滚动自加载模式中有效
+      maxPage: null, // 当前已加载的最大页数，仅在滚动自加载模式中有效
       currentPage: null,
       fixedSlideBar: false,
-      pagesCount: 0,  // 总页数
+      pagesCount: 0, // 总页数
       pageLoaded: {}, // 已经加载了的页面
       currentDiscussion: null,
       absoluteBottomIndex: null,
@@ -545,12 +545,12 @@ export default {
   asyncData ({ store, route }) {
     const page = Number(route.params.page) || 1;
     return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
-    .catch(error => {
-      console.log(error);
-      if (error.response.status === 404) {
-        this.$router.replace('/not-found');
-      }
-    });
+      .catch(error => {
+        console.log(error);
+        if (error.response.status === 404) {
+          this.$router.replace('/not-found');
+        }
+      });
   },
 };
 </script>

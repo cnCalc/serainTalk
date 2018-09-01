@@ -5,12 +5,12 @@
 // into their shorthand (e.g. padding-top, padding-bottom etc. -> padding),
 // so we have to list every single property explicitly.
 var properties = [
-  'direction',  // RTL support
+  'direction', // RTL support
   'boxSizing',
-  'width',  // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
+  'width', // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
   'height',
   'overflowX',
-  'overflowY',  // copy the scrollbar for IE
+  'overflowY', // copy the scrollbar for IE
 
   'borderTopWidth',
   'borderRightWidth',
@@ -36,7 +36,7 @@ var properties = [
   'textAlign',
   'textTransform',
   'textIndent',
-  'textDecoration',  // might not make a difference, but better be safe
+  'textDecoration', // might not make a difference, but better be safe
 
   'letterSpacing',
   'wordSpacing',
@@ -66,20 +66,20 @@ function getCaretCoordinates (element, position, options) {
   document.body.appendChild(div);
 
   var style = div.style;
-  var computed = window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;  // currentStyle for IE < 9
+  var computed = window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle; // currentStyle for IE < 9
   var isInput = element.nodeName === 'INPUT';
 
   // Default textarea styles
   style.whiteSpace = 'pre-wrap';
   if (!isInput) {
     style.wordWrap = 'break-word';
-  }  // only for textarea-s
+  } // only for textarea-s
 
   // Position off-screen
-  style.position = 'absolute';  // required to return coordinates properly
+  style.position = 'absolute'; // required to return coordinates properly
   if (!debug) {
     style.visibility = 'hidden';
-  }  // not 'display: none' because we want rendering
+  } // not 'display: none' because we want rendering
 
   // Transfer the element's properties to the div
   properties.forEach(function (prop) {
@@ -97,7 +97,7 @@ function getCaretCoordinates (element, position, options) {
       style.overflowY = 'scroll';
     }
   } else {
-    style.overflow = 'hidden';  // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
+    style.overflow = 'hidden'; // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
   }
 
   div.textContent = element.value.substring(0, position);
@@ -113,7 +113,7 @@ function getCaretCoordinates (element, position, options) {
   // The  *only* reliable way to do that is to copy the *entire* rest of the
   // textarea's content into the <span> created at the caret position.
   // For inputs, just '.' would be enough, but no need to bother.
-  span.textContent = element.value.substring(position) || '.';  // || because a completely empty faux span doesn't render at all
+  span.textContent = element.value.substring(position) || '.'; // || because a completely empty faux span doesn't render at all
   div.appendChild(span);
 
   var coordinates = {

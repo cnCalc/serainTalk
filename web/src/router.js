@@ -1,14 +1,14 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 
-import ErrorView from './views/ErrorView.vue';
-import DiscussionView from './views/DiscussionView.vue';
-import MemberView from './views/MemberView.vue';
-import ListView from './views/ListView.vue';
-import SigninView from './views/SigninView.vue';
-import SignupView from './views/SignupView.vue';
-import MigrationView from './views/MigrationView.vue';
-import MessageView from './views/MessageView.vue';
+const ErrorView = () => import(/* webpackChunkName: "ErrorView" */ './views/ErrorView.vue');
+const DiscussionView = () => import(/* webpackChunkName: "DiscussionView" */ './views/DiscussionView.vue');
+const MemberView = () => import(/* webpackChunkName: "MemberView" */ './views/MemberView.vue');
+const ListView = () => import(/* webpackChunkName: "ListView" */ './views/ListView.vue');
+const SigninView = () => import(/* webpackChunkName: "SigninView" */ './views/SigninView.vue');
+const SignupView = () => import(/* webpackChunkName: "SignupView" */ './views/SignupView.vue');
+const MigrationView = () => import(/* webpackChunkName: "MigrationView" */ './views/MigrationView.vue');
+const MessageView = () => import(/* webpackChunkName: "MessageView" */ './views/MessageView.vue');
 
 Vue.use(VueRouter);
 
