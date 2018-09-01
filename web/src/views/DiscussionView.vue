@@ -100,7 +100,7 @@ export default {
     };
   },
   title () {
-    if (this.busy) {
+    if (!this.discussionMeta.title) {
       return 'Loading';
     } else if (this.unread.length !== 0) {
       return `(${this.unread.length}) ${this.discussionMeta.title}`;
