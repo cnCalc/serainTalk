@@ -147,7 +147,7 @@ export default {
     };
   },
   title () {
-    if (this.busy) {
+    if (!this.member.username) {
       return 'Loading';
     }
     switch (this.$route.meta.mode) {
