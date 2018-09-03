@@ -693,6 +693,21 @@ let route = {
       ],
     },
   },
+  search: {
+    searchPostContent: {
+      description: '搜索帖子内容',
+      path: [
+        '/v1/search/post',
+      ],
+      method: 'get',
+      schema: {
+        query: { keywords: require('joi').string().required() },
+      },
+      handler: [
+        handlers.v1.search.searchPostContent,
+      ],
+    },
+  },
 };
 
 let devRoute = {
