@@ -467,7 +467,6 @@ export default {
   },
   watch: {
     '$route': function (route) {
-      console.log(this.$store.state.member.discussions);
       if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
         // 如果 currentMember 和路由中的 member 不一致时，显然可以算作是首次进入。
         let needRefetchMemberInfo = (this.currentMember !== route.params.memberId);

@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 // import store from '../store';
 
 export function createWsEventBus (store) {
-  new Vue({
+  return new Vue({
     data () {
       return {
         socket: null,

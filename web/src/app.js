@@ -35,6 +35,11 @@ export function createApp () {
   sync(store, router);
 
   const app = new Vue({
+    data () {
+      return {
+        eventBus: null,
+      };
+    },
     router,
     store,
     render: h => h(App),

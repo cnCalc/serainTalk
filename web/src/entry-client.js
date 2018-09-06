@@ -5,7 +5,7 @@ import { createWsEventBus } from './utils/ws-eventbus';
 Vue.mixin({
   computed: {
     bus () {
-      return this.$root._bus;
+      return this.$root.eventBus;
     },
   },
 });
@@ -16,7 +16,7 @@ createApp().then(({ app, store, router }) => {
   }
 
   const wsEventBus = createWsEventBus(store);
-  app.$root._bus = wsEventBus;
+  app.$root.eventBus = wsEventBus;
 
   router.onError((error) => {
     console.log(error);

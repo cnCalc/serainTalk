@@ -24,6 +24,7 @@ import NotificationPopup from './components/NotificationPopup.vue';
 import MessageBox from './components/MessageBox.vue';
 
 // import bus from './utils/ws-eventbus';
+import { createWsEventBus } from './utils/ws-eventbus';
 
 export default {
   name: 'app',
@@ -35,20 +36,8 @@ export default {
     this.$store.dispatch('fetchCurrentSigninedMemberInfo')
       .then(() => { this.$store.dispatch('fetchNotifications'); })
       .catch(e => {});
-    this.$root.bus.initialize();
 
-    // // keep SPA
-    // window.addEventListener('click', event => {
-    //   let target = event.target;
-    //   while (target !== null && target.tagName !== 'A') {
-    //     target = target.parentNode;
-    //   }
-    //   if (target && target.href && target.href.indexOf(window.location.origin) === 0 && target.target !== '_blank') {
-    //     event.preventDefault();
-    //     let url = new window.URL(target.href);
-    //     this.$router.push(url.href.replace(url.origin, ''));
-    //   }
-    // });
+    this.bus.initialize();
   },
   computed: {
     isDarkTheme () {
