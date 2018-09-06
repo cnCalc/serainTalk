@@ -67,7 +67,7 @@ import Pagination from '../components/Pagination.vue';
 import copyToClipboard from '../utils/clipboard';
 import api from '../api';
 import titleMixin from '../mixins/title';
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 import config from '../config';
 import { indexToPage, fileSize } from '../utils/filters';
@@ -136,19 +136,19 @@ export default {
         })
         .catch(err => {
           if (err.response.status === 401) {
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'error',
               body: '游客无法执行此操作，请登录后继续。',
             });
           } else if (err.response.data.message === 'the discussion is locked.') {
             // TODO: use code instead of error message?
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'error',
               body: '当前讨论已被管理员锁定，无法进行该操作。',
             });
           } else {
             console.error(err);
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'error',
               body: '出现异常，查看控制台以获取详情。',
             });
@@ -303,7 +303,7 @@ export default {
       api.v1.attachment.getRemainingTraffic().then(traffic => {
         if (traffic.remainingTraffic < 0) {
           window.history.go(-1);
-          return bus.$emit('notification', {
+          return this.bus.$emit('notification', {
             type: 'error',
             body: '您今日的下载流量已经用尽，请明日再试。',
           });
@@ -311,7 +311,7 @@ export default {
 
         if (this.attachments[attachId] === undefined) {
           window.history.go(-1);
-          return bus.$emit('notification', {
+          return this.bus.$emit('notification', {
             type: 'error',
             body: '该附件链接无效！',
           });
@@ -334,13 +334,13 @@ export default {
         });
       }).catch((error) => {
         if (error.response.data.code === 'ERR_REQUIRE_AUTHORIZATION') {
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'error',
             body: '游客无法执行此操作，请登录后再继续。',
           });
         } else {
           console.error(error.response.data);
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'error',
             body: '服务器发生异常，查看 JavaScript 控制台以查看详情。',
           });
@@ -456,37 +456,6 @@ export default {
     this.maxPage = page;
     this.minPage = page;
     this.currentPage = page;
-
-    bus.$on('reloadDiscussionView', () => {
-      const page = Number(this.$route.params.page) || 1;
-
-      this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
-        this.$forceUpdate();
-        this.scrollWatcher();
-        if (this.settings.autoLoadOnScroll && page !== 1) {
-          this.minPage = page - 1;
-          this.pageLoaded[this.currentPage - 1] = true;
-        }
-        this.unread = [];
-        // this.updateTitle();
-      });
-    });
-
-    bus.$on('event', e => {
-      if (e.entity !== 'Post') {
-        return;
-      }
-
-      if (e.affects.discussionId === this.currentDiscussion) {
-        if (e.eventType === 'Create') {
-          this.unread.push(e.affects.postIndex);
-          // this.updateTitle();
-          return;
-        } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
-          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
-        }
-      }
-    });
   },
   mounted () {
     if (!scrollToHash) {
@@ -517,6 +486,37 @@ export default {
 
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
     window.addEventListener('mouseup', this.hideQuote, { passive: true });
+    
+    this.bus.$on('reloadDiscussionView', () => {
+      const page = Number(this.$route.params.page) || 1;
+
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
+        this.$forceUpdate();
+        this.scrollWatcher();
+        if (this.settings.autoLoadOnScroll && page !== 1) {
+          this.minPage = page - 1;
+          this.pageLoaded[this.currentPage - 1] = true;
+        }
+        this.unread = [];
+        // this.updateTitle();
+      });
+    });
+
+    this.bus.$on('event', e => {
+      if (e.entity !== 'Post') {
+        return;
+      }
+
+      if (e.affects.discussionId === this.currentDiscussion) {
+        if (e.eventType === 'Create') {
+          this.unread.push(e.affects.postIndex);
+          // this.updateTitle();
+          return;
+        } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
+          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
+        }
+      }
+    });
 
     const page = Number(this.$route.params.page) || 1;
     this.maxPage = page;

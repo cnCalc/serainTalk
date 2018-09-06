@@ -35,7 +35,7 @@ import api from '../api';
 import LoadingIcon from '../components/LoadingIcon.vue';
 import titleMixin from '../mixins/title';
 
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'message-view',
@@ -81,7 +81,7 @@ export default {
       }
     });
     this.$store.commit('setGlobalTitles', []);
-    bus.$on('message', payload => {
+    this.bus.$on('message', payload => {
       let id = payload.messageId;
       if (id === this.activeSession) {
         this.busy = true;
@@ -114,7 +114,7 @@ export default {
           return el;
         });
       }).catch(() => {
-        return bus.$emit('notification', { type: 'error', body: '游客无法访问此页面，请登录后再继续。' });
+        return this.bus.$emit('notification', { type: 'error', body: '游客无法访问此页面，请登录后再继续。' });
       });
     },
     scrollToBottom () {
@@ -157,13 +157,13 @@ export default {
     },
     sendMessage () {
       if (this.busy) {
-        return bus.$emit('notification', { type: 'error', body: '上一次发送未完成，请稍后再试……' });
+        return this.bus.$emit('notification', { type: 'error', body: '上一次发送未完成，请稍后再试……' });
       }
 
       this.busy = true;
 
       if (this.newMessage === '') {
-        return bus.$emit('notification', { type: 'error', body: '内容不能为空' });
+        return this.bus.$emit('notification', { type: 'error', body: '内容不能为空' });
       }
 
       let p = api.v1.message.sendNewMessage({

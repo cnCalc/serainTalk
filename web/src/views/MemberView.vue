@@ -118,7 +118,7 @@ import axios from 'axios';
 
 import { timeAgo, indexToPage } from '../utils/filters';
 
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'member-view',
@@ -287,7 +287,7 @@ export default {
     },
     sudo () {
       axios.get('/api/v1/debug/sudo').then(() => {
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'message',
           body: '提权成功，即将刷新页面以激活变更…',
         });
@@ -295,7 +295,7 @@ export default {
       });
     },
     emitNotification (type) {
-      bus.$emit('notification', {
+      this.bus.$emit('notification', {
         type,
         body: navigator.userAgent,
       });
@@ -306,12 +306,12 @@ export default {
         type,
         message: '这是正文',
       }).then(res => {
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'message',
           body: '确认！返回内容：' + res,
         });
       }).catch(() => {
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'error',
           body: '取消！',
         });
@@ -354,7 +354,7 @@ export default {
       }).catch(error => {
         this.$store.dispatch('disposeMessageBox');
         console.error(error);
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'error',
           body: error.message,
         });
@@ -372,14 +372,14 @@ export default {
           message: '正在更新个人简介，请稍等……',
         });
         api.v1.member.updateMemberInfo({ bio: res }).then(() => {
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'message',
             body: '修改成功',
           });
           this.reloadMemberInfo();
         }).catch(error => {
           console.error(error);
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'error',
             body: '发生错误，查看 JavaScript 控制台查看详情。',
           });
@@ -409,12 +409,12 @@ export default {
             message: '验证码已发送，请前往邮箱查看',
           }).then(token => {
             api.v1.member.changeEmailAddress({ token }).then(() => {
-              bus.$emit('notification', {
+              this.bus.$emit('notification', {
                 type: 'message',
                 body: '邮箱修改成功！',
               });
             }).catch(error => {
-              bus.$emit('notification', {
+              this.bus.$emit('notification', {
                 type: 'error',
                 body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
               });
@@ -423,7 +423,7 @@ export default {
           }).catch(e => { /* doing nothing after user cancel */ });
         }).catch(e => {
           if (e.response.data.message === 'validation error') {
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'error',
               body: '邮箱地址无效，修改邮箱已终止。',
             });
@@ -443,12 +443,12 @@ export default {
           message: '正在更新密码，请稍等……',
         });
         api.v1.member.resetPassword({ password: res }).then(() => {
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'message',
             body: '密码修改成功！',
           });
         }).catch(error => {
-          bus.$emit('notification', {
+          this.bus.$emit('notification', {
             type: 'error',
             body: '服务端返回异常，查看 JavaScript 控制台查看详情！',
           });

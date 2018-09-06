@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 // window.bus = bus;
 
@@ -23,8 +23,8 @@ export default {
       items: [],
     };
   },
-  created () {
-    bus.$on('notification', body => {
+  mounted () {
+    this.bus.$on('notification', body => {
       body.key = new Date().getTime();
       this.items.push(body);
     });

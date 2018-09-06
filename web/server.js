@@ -97,7 +97,7 @@ site.get('*', (isProd || isTest)
 
 // Establish database connection and start http service
 site.listen(9281, /* 'localhost', */() => {
-  console.log(`Server started on port ${9281}`);
+  console.log(`Server started on port ${9281} with ${isProd ? 'production' : (isTest ? 'test' : 'development')} mdoe`);
 });
 
 module.exports = site;

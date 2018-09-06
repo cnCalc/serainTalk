@@ -17,7 +17,7 @@ import DiscussionList from '../components/DiscussionList.vue';
 import CategoryList from '../components/CategoryList.vue';
 import LoadingIcon from '../components/LoadingIcon.vue';
 import titleMixin from '../mixins/title.js';
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'list-view',
@@ -141,17 +141,16 @@ export default {
   },
   activated () {
     this.flushGlobalTitles();
-    // // this.updateTitle();
-  },
-  created () {
-    this.currentSlug = this.slug || '';
-
-    bus.$on('event', e => {
+    // this.updateTitle();
+    this.bus.$on('event', e => {
       if (((this.currentCategory !== '' && this.currentCategory === e.affects.category) || this.currentCategory === '') && (e.eventType === 'Create' || e.eventType === 'Update')) {
         this.unread++;
         // this.updateTitle();
       }
     });
+  },
+  created () {
+    this.currentSlug = this.slug || '';
   },
   asyncData ({ store, route }) {
     let p;

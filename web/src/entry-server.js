@@ -47,7 +47,6 @@ export default context => new Promise((resolve, reject) => {
         });
         return promise;
       })).then(() => {
-        console.log('all resolved');
         context.state = store.state;
         resolve(app);
       }).catch(error => {

@@ -16,7 +16,7 @@
 
 <script>
 import api from '../api';
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 
 export default {
   name: 'notification-control',
@@ -31,7 +31,7 @@ export default {
     },
   },
   created () {
-    bus.$on('notification', notification => {
+    this.bus.$on('notification', notification => {
       if (notification.emitter === 'server') {
         this.$store.dispatch('fetchNotifications');
       }

@@ -59,7 +59,7 @@
 import axios from 'axios';
 import api from '../api';
 import getCaretCoordinates from '../utils/textarea-caret-coordinates';
-import bus from '../utils/ws-eventbus';
+// import bus from '../utils/ws-eventbus';
 import { indexToPage, fileSize } from '../utils/filters';
 import LoadingIcon from '../components/LoadingIcon.vue';
 
@@ -312,7 +312,7 @@ export default {
 
           return uploadPromsie.then(response => {
             this.$store.dispatch('disposeMessageBox');
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'message',
               body: '上传成功！',
             });
@@ -320,7 +320,7 @@ export default {
           }).catch(error => {
             this.$store.dispatch('disposeMessageBox');
             console.error(error);
-            bus.$emit('notification', {
+            this.bus.$emit('notification', {
               type: 'error',
               body: error.message,
             });
@@ -530,13 +530,13 @@ export default {
     },
     errorHandler (error) {
       if (document.cookie.indexOf('membertoken') < 0) {
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'error',
           body: '游客无法执行此操作，请登录后再继续。',
         });
       } else {
         console.error(error);
-        bus.$emit('notification', {
+        this.bus.$emit('notification', {
           type: 'error',
           body: '服务器发生异常，查看 JavaScript 控制台以查看详情。',
         });
@@ -578,7 +578,7 @@ export default {
       }
 
       api.v1.discussion.replyToDiscussion(payload).then(res => {
-        bus.$emit('reloadDiscussionView');
+        this.bus.$emit('reloadDiscussionView');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
       }).catch(this.errorHandler);
@@ -591,7 +591,7 @@ export default {
         content: this.content,
         attachments: this.usedAttachments,
       }).then(res => {
-        bus.$emit('reloadDiscussionView');
+        this.bus.$emit('reloadDiscussionView');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
       }).catch(this.errorHandler);

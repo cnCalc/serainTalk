@@ -54,6 +54,3 @@ export function createStore () {
 
   return store;
 }
-
-// FIXME:
-// export default createStore();
