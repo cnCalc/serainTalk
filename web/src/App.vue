@@ -23,9 +23,6 @@ import Editor from './components/Editor.vue';
 import NotificationPopup from './components/NotificationPopup.vue';
 import MessageBox from './components/MessageBox.vue';
 
-// import bus from './utils/ws-eventbus';
-import { createWsEventBus } from './utils/ws-eventbus';
-
 export default {
   name: 'app',
   components: {
