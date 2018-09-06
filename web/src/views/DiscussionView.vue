@@ -486,7 +486,7 @@ export default {
 
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
     window.addEventListener('mouseup', this.hideQuote, { passive: true });
-    
+
     this.bus.$on('reloadDiscussionView', () => {
       const page = Number(this.$route.params.page) || 1;
 
