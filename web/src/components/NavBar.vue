@@ -10,7 +10,23 @@
         a.extra-link(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
         router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
       div.spring
-      input.search(type="text", placeholder="搜索")
+      div.search-wrapper
+        input.search(type="text", placeholder="搜索", v-model="search", @focus="setHintVisiable(true)", @blur="setHintVisiable(false)")
+        div.input-hint-container(v-bind:class="{ visiable: searchHintsVisiable }"): div.input-hint
+          div.search-info(v-if="search === '' || loadingSearchResult") 输入关键字搜索标题和用户，按下回车搜索内容
+          template(v-else)
+            div.section 帖子
+            ul(v-if="search !== '' && searchHints.discussions.length !== 0")
+              router-link(v-for="hint in searchHints.discussions" :to="`/d/${hint._id}`")
+                li
+                  span(style="font-family: monospace; color: gray") ({{ hint.postsCount }})
+                  | &nbsp;{{ hint.title }}
+            div.search-not-found(v-else) 没有找到相关标题，尝试回车搜索全文？
+            div.section 用户
+            ul(v-if="search !== '' && searchHints.members.length !== 0")
+              router-link(v-for="hint in searchHints.members" :to="`/m/${hint._id}`")
+                li {{ hint.username }}
+            div.search-not-found(v-else) 没有找到相关用户。
       template(v-if="!me || typeof me._id === 'undefined'")
         router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
@@ -26,11 +42,13 @@
 import CategoryList from '../components/CategoryList.vue';
 import NotificationControl from './NotificationControl.vue';
 import MemberControl from './MemberControl.vue';
+import LoadingIcon from './LoadingIcon.vue';
+import api from '../api';
 
 export default {
   name: 'nav-bar',
   components: {
-    CategoryList, NotificationControl, MemberControl,
+    CategoryList, NotificationControl, MemberControl, LoadingIcon,
   },
   data () {
     return {
@@ -40,6 +58,14 @@ export default {
         { href: 'http://tieba.baidu.com/f?kw=fx%2Des%28ms%29', external: true, text: 'fx-es(ms) 吧' },
       ],
       isCategoryDrawerActivated: false,
+      search: '',
+      searchHints: {
+        discussions: [],
+        members: [],
+      },
+      updateSearchHintsTimeoutId: null,
+      searchHintsVisiable: false,
+      loadingSearchResult: false,
     };
   },
   computed: {
@@ -65,6 +91,50 @@ export default {
     categoryDrawerDeactivate () {
       this.isCategoryDrawerActivated = false;
       document.removeEventListener('click', this.categoryDrawerDeactivate);
+    },
+    setHintVisiable (visiable) {
+      if (visiable) {
+        this.searchHintsVisiable = true;
+      } else {
+        setTimeout(() => {
+          this.searchHintsVisiable = false;
+        }, 200);
+      }
+    },
+    updateSearchHints () {
+      if (this.search === '') {
+        this.searchHints = [];
+        return;
+      }
+
+      this.searchHintsVisiable = true;
+      this.loadingSearchResult = true;
+      if (this.updateSearchHintsTimeoutId) {
+        clearTimeout(this.updateSearchHintsTimeoutId);
+      }
+
+      this.updateSearchHintsTimeoutId = setTimeout(() => {
+        this.loadingSearchResult = true;
+        if (this.search === '') {
+          this.loadingSearchResult = false;
+          return;
+        }
+        Promise.all([
+          api.v1.search.searchDiscussionTitle({ keywords: this.search }),
+          api.v1.search.searchMember({ keywords: this.search }),
+        ]).then(([discussionRes, memberRes]) => {
+          this.searchHints = {
+            discussions: discussionRes.result,
+            members: memberRes.result,
+          };
+          this.loadingSearchResult = false;
+        });
+      }, 300);
+    },
+  },
+  watch: {
+    search () {
+      this.updateSearchHints();
     },
   },
 };
@@ -121,6 +191,11 @@ div.st-header {
       line-height: 50px;
     }
 
+    div.search-wrapper {
+      width: fit-content;
+      position: relative;
+    }
+
     input.search {
       border: none;
       padding: 5px;
@@ -128,7 +203,7 @@ div.st-header {
       color: white;
       transition: all ease 0.4s;
       min-width: 0;
-      width: 180px;
+      width: 320px;
       @include respond-to(phone) {
         flex-grow: 1;
         flex-shrink: 1;
@@ -137,9 +212,81 @@ div.st-header {
 
       &:focus {
         outline: none;
-        width: 260px;
+        // width: 320px;
         @include respond-to(phone) {
           width: 100%;
+        }
+      }
+    }
+
+    div.input-hint-container {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: all ease 0.2s;
+      &.visiable {
+        display: block;
+        opacity: 1;
+        pointer-events: initial;
+      }
+    }
+
+    div.input-hint {
+      font-size: 12px;
+      background: white;
+      padding: 0.5em;
+      color: $theme_color;
+      border: 1px solid $theme_color;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      text-align: left;
+      box-shadow: 0 2px 4px rgba(black, 0.3);
+      padding-left: 0;
+      padding-right: 0;
+      > * {
+        padding: 0 0.7em;
+      }
+    }
+
+    div.input-hint {
+      div.search-info {
+        padding: 0.3em 0.7em;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 4px 0;
+        margin: 0;
+      }
+
+      li {
+        padding: 0.3em 0.7em;
+        color: $theme_color;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        &:hover {
+          background: mix($theme_color, white, 10%);
+        }
+      }
+
+      // .search-not-found {
+      //   margin: 4px 0;
+      // }
+
+      .section {
+        font-weight: bold;
+        color: black;
+        &:not(:first-child) {
+          border-top: 1px solid mix($theme_color, white, 20%);
+          margin-top: 3px;
+          padding-top: 3px;
         }
       }
     }

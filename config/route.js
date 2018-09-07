@@ -707,6 +707,32 @@ let route = {
         handlers.v1.search.searchPostContent,
       ],
     },
+    searchDiscussionTitle: {
+      description: '搜索帖子标题',
+      path: [
+        '/v1/search/discussion',
+      ],
+      method: 'get',
+      schema: {
+        query: { keywords: require('joi').string().required() },
+      },
+      handler: [
+        handlers.v1.search.searchDiscussionTitle,
+      ],
+    },
+    searchMembers: {
+      description: '搜索用户',
+      path: [
+        '/v1/search/member',
+      ],
+      method: 'get',
+      schema: {
+        query: { keywords: require('joi').string().required() },
+      },
+      handler: [
+        handlers.v1.search.searchMembers,
+      ],
+    },
   },
 };
 
