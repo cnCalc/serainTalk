@@ -5,9 +5,14 @@ const expect = require('chai').expect;
 const testTools = require('../testTools');
 const utils = require('../../utils');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('debug part.', async () => {
+  before('prepare config.', async () => {
+    await app.prepare();
+  });
+
   it('sudo in dev.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let sudoUrl = '/api/v1/debug/sudo';

@@ -4,9 +4,14 @@ const supertest = require('supertest');
 const expect = require('chai').expect;
 const testTools = require('../testTools');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('categroy part.', async () => {
+  before('prepare config.', async () => {
+    await app.prepare();
+  });
+
   it('get category list.', async () => {
     let getUrl = '/api/v1/categories';
     let categoryRes = await agent.get(getUrl)

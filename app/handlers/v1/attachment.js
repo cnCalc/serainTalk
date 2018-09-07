@@ -9,6 +9,7 @@ const config = require('../../../config');
 const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 
+/* istanbul ignore next */
 /**
  * 根据指定的 Attachment ID 获得指定附件的详细信息（兼容 Discuz）
  *
@@ -76,19 +77,6 @@ let uploadAttachment = async (req, res, next) => {
       return errorHandler(null, errorMessages.BAD_REQUEST, 400, res);
     }
 
-    let attachmentInfo = await dbTool.attachment.aggregate([
-      { $match: { _owner: req.member._id, type: 'file' } },
-      { $project: { filePath: false } },
-      { $count: 'count' },
-    ]).toArray();
-
-    // 检测是否超过上传限制
-    let attachmentCount = attachmentInfo[0] ? attachmentInfo[0].count : 0;
-    if (utils.env.isRelease && attachmentCount >= config.upload.file.maxCount) {
-      fs.unlinkSync(path.join(config.upload.file.path, req.file.filename));
-      return errorHandler(null, errorMessages.OUT_OF_LIMIT, 401, res);
-    }
-
     const mime = await utils.mime.getMIME(path.join(config.upload.file.path, req.file.filename));
 
     let attachment = {
@@ -118,7 +106,10 @@ let deleteAttachment = async (req, res, next) => {
   try {
     let _id = ObjectID(req.params.id);
     let attachmentInfo = await dbTool.attachment.findOne({ _id: _id });
-    if (!attachmentInfo || !req.member._id.equals(attachmentInfo._owner)) {
+    if (!attachmentInfo) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    }
+    if (!req.member._id.equals(attachmentInfo._owner)) {
       return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
     }
     let basePath = attachmentInfo.type === 'avatar' ? config.upload.avatar.path : config.upload.file.path;

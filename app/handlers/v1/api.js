@@ -42,11 +42,7 @@ let listApi = async (req, res, next) => {
     }
   }
   buffer = tempBuffer;
-  try {
-    res.status(200).send({ status: 'ok', apis: buffer });
-  } catch (err) {
-    console.log(err);
-  }
+  res.status(200).send({ status: 'ok', apis: buffer });
 };
 
 module.exports = {

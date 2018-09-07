@@ -58,13 +58,19 @@ const server = utils.websocket.attachSocketIO(app).server;
 // 默认发送首页
 app.use((req, res, next) => {
   /* istanbul ignore next */
-  if (utils.env.isMocha) { return next(); }
+  if (utils.env.isMocha) { return next(); } // 防止文件不存在导致报错
+
+  /* istanbul ignore next */
   res.sendFile(path.join(staticConfig.frontEnd.filePath, 'index.html'));
 });
 
-server.listen(process.env.PORT || 8000, () => {
-  utils.logger.writeInfoLog({ entity: 'Server', content: `API Service started on port ${process.env.PORT || 8000}` });
+let listenPromise = new Promise((resolve, reject) => {
+  server.listen(process.env.PORT || 8000, () => {
+    resolve();
+    utils.logger.writeInfoLog({ entity: 'Server', content: `API Service started on port ${process.env.PORT || 8000}` });
+  });
 });
+app.prepare = async () => await listenPromise;
 
 module.exports = app;
 

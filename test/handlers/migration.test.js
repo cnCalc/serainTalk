@@ -12,6 +12,7 @@
 
 // describe('migration part.', async () => {
 //   before('prepare config.', async () => {
+//     await app.prepare();
 //     await config.prepare();
 //     await dbTool.prepare();
 //   });

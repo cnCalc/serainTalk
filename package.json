@@ -10,7 +10,7 @@
   "scripts": {
     "init": "node ./database-init/index.js",
     "lint": "eslint --fix $(find . \\( -name \"*.js\" -o -name \"*.vue\" \\) -not \\( -path \"./coverage/*\" -o -path \"./node_modules/*\" -o -path \"./web/node_modules/*\" -o -path \"./app/public/*\" -o -path \"./web/dist/*\" -o -path \"./uploads/*\" -o -name \".*\" \\))",
-    "test": "cross-env NODE_ENV=mocha nyc _mocha ./test/ -R spec --compilers js:babel-core/register --require babel-polyfill --recursive -u tdd --timeout 999999 --colors",
+    "test": "cross-env NODE_ENV=mocha nyc _mocha ./test/ -R spec --recursive -u tdd --timeout 999999 --colors --exit",
     "cover": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage && rm -rf ./.nyc_output",
     "postinstall": "cd web ; which cnpm > /dev/null 2> /dev/null ; if test \"$?\" -eq \"0\" ; then cnpm i ; else npm i ; fi ;",
     "build": "cd web && npm run build",
@@ -20,7 +20,8 @@
   },
   "nyc": {
     "require": [
-      "babel-register"
+      "babel-register",
+      "babel-polyfill"
     ],
     "reporter": [
       "lcov",
@@ -28,6 +29,14 @@
     ],
     "sourceMap": false,
     "instrument": false
+  },
+  "babel": {
+    "presets": [
+      "babel-preset-env"
+    ],
+    "plugins": [
+      "transform-async-to-generator"
+    ]
   },
   "dependencies": {
     "body-parser": "^1.18.1",

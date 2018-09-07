@@ -53,8 +53,10 @@ exports.checkMemberInfo = checkMemberInfo;
  * @param {Agent} agent superAgent 实例
  * @param {any} memberInfo 选填，按指定信息登录。
  */
-let login = async (agent, memberInfo) => {
+let login = async (agent, memberInfo, next) => {
   await dbTool.prepare();
+
+  let cookie = agent.jar.getCookie('membertoken', { path: '/' });
 
   memberInfo = memberInfo || testTools.testObject.memberInfo;
   let loginRes = await agent
@@ -64,10 +66,36 @@ let login = async (agent, memberInfo) => {
       password: memberInfo.password,
     })
     .expect(201);
+
+  await next();
+
+  agent.jar.setCookie(cookie);
+
   expect(loginRes.body.status).to.equal('ok');
   expect(loginRes.header['set-cookie']).to.be.ok;
 };
 exports.login = login;
+
+/**
+ * 退出登录 刷新 agent 中的 token
+ *
+ * @param {Agent} agent superAgent 实例
+ * @param {any} memberInfo 选填，按指定信息登录。
+ */
+let logout = async (agent, next) => {
+  await dbTool.prepare();
+
+  let cookie = agent.jar.getCookie('membertoken', { path: '/' });
+
+  await agent
+    .delete(loginUrl)
+    .expect(204);
+
+  await next();
+
+  agent.jar.setCookie(cookie);
+};
+exports.logout = logout;
 
 /**
  * [工具] 快速新建成员。
@@ -80,8 +108,11 @@ exports.login = login;
 let createOneMember = async (agent, memberInfo, next) => {
   // 初始化数据库
   await dbTool.prepare();
+  let tempAgent = Object.assign({}, agent);
   let tempMemberInfo = JSON.parse(JSON.stringify(testTools.testObject.memberInfo));
   if (memberInfo) _.merge(tempMemberInfo, memberInfo);
+
+  let cookie = agent.jar.getCookie('membertoken', { path: '/' });
 
   // name 已存在则随机生成一个新的 name
   let newMemberBody;
@@ -129,6 +160,7 @@ let createOneMember = async (agent, memberInfo, next) => {
   try {
     // 执行后续操作
     await next(newMemberInfo);
+    agent.jar.setCookie(cookie);
   } catch (err) {
     // 无论情况如何，清理临时用户
     await dbTool.commonMember.removeOne({ _id: newMemberInfo._id });
@@ -154,14 +186,11 @@ let setAdmin = async (agent, _id, next) => {
   let memberInfo = await dbTool.commonMember.findOne({ _id: _id });
 
   // 刷新 token
-  await login(agent, memberInfo);
-
-  await next();
+  await login(agent, memberInfo, next);
 
   await dbTool.commonMember.updateOne(
     { _id: _id },
     { $set: { role: 'member' } }
   );
-  await login(agent, memberInfo);
 };
 exports.setAdmin = setAdmin;

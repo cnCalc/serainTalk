@@ -16,6 +16,7 @@
       "name": "Mocha Tests",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
+        "--exit",
         "--recursive",
         "-b",
         "-u",

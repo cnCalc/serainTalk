@@ -10,10 +10,12 @@ const utils = require('../../utils');
 const config = require('../../config');
 const jwt = require('jsonwebtoken');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('member part', () => {
   before(async () => {
+    await app.prepare();
     await dbTool.prepare();
     await config.prepare();
   });

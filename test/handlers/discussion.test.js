@@ -7,10 +7,12 @@ const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
 const utils = require('../../utils');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('discussion part', async () => {
   before('prepare config.', async () => {
+    await app.prepare();
     await config.prepare();
   });
 
@@ -312,7 +314,6 @@ describe('discussion part', async () => {
             .expect(201);
         });
 
-        await testTools.member.login(agent, newMemberInfoA);
         // A 查看消息队列
         let notificationUrl = '/api/v1/notification';
         let notificationRes = await agent.get(notificationUrl)
@@ -795,15 +796,13 @@ describe('discussion part', async () => {
           let postsInfo = discussionRes.body.posts;
           expect(postsInfo.length).to.be.equal(1);
           expect(postsInfo[0].status.type).to.not.be.equal(config.discussion.status.deleted);
-
-          await testTools.member.login(agent, newMemberInfoA);
-          let getNotificationUrl = '/api/v1/notification';
-          let nitificationRes = await agent.get(getNotificationUrl)
-            .expect(200);
-          nitificationRes = nitificationRes.body;
-          let notifications = nitificationRes.notifications;
-          expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
         });
+        let getNotificationUrl = '/api/v1/notification';
+        let notificationRes = await agent.get(getNotificationUrl)
+          .expect(200);
+        notificationRes = notificationRes.body;
+        let notifications = notificationRes.notifications;
+        expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
       });
     });
   });
@@ -834,16 +833,16 @@ describe('discussion part', async () => {
             let postsInfo = discussionRes.body.posts;
             expect(postsInfo.length).to.be.equal(2);
             expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.ok);
-
-            await testTools.member.login(agent, newMemberInfoA);
-            let getNotificationUrl = '/api/v1/notification';
-            let nitificationRes = await agent.get(getNotificationUrl)
-              .expect(200);
-            nitificationRes = nitificationRes.body;
-            let notifications = nitificationRes.notifications;
-            expect(notifications.length).to.be.equal(3);// 封禁通知+被回复通知+恢复通知
           });
         });
+
+        let getNotificationUrl = '/api/v1/notification';
+        let notificationRes = await agent.get(getNotificationUrl)
+          .expect(200);
+        notificationRes = notificationRes.body;
+        let notifications = notificationRes.notifications;
+        expect(notifications.length).to.be.equal(3);// 封禁通知+被回复通知+恢复通知
+
       });
     });
   });
@@ -904,16 +903,15 @@ describe('discussion part', async () => {
                 expect(discussionRes.body.status).to.be.equal('ok');
                 let discussionInfo = discussionRes.body.discussionInfo;
                 expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
-
-                await testTools.member.login(agent, newMemberInfoA);
-                let getNotificationUrl = '/api/v1/notification';
-                let nitificationRes = await agent.get(getNotificationUrl)
-                  .expect(200);
-                nitificationRes = nitificationRes.body;
-                let notifications = nitificationRes.notifications;
-                expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
               });
             });
+            let getNotificationUrl = '/api/v1/notification';
+            let notificationRes = await agent.get(getNotificationUrl)
+              .expect(200);
+            notificationRes = notificationRes.body;
+            let notifications = notificationRes.notifications;
+            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
+
           });
         });
       });
@@ -942,16 +940,15 @@ describe('discussion part', async () => {
                 // 强制获取也获取不到的。
                 let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}?force=on`;
                 await agent.get(getUrl).expect(404);
-
-                await testTools.member.login(agent, newMemberInfoA);
-                let getNotificationUrl = '/api/v1/notification';
-                let nitificationRes = await agent.get(getNotificationUrl)
-                  .expect(200);
-                nitificationRes = nitificationRes.body;
-                let notifications = nitificationRes.notifications;
-                expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
               });
             });
+
+            let getNotificationUrl = '/api/v1/notification';
+            let notificationRes = await agent.get(getNotificationUrl)
+              .expect(200);
+            notificationRes = notificationRes.body;
+            let notifications = notificationRes.notifications;
+            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
           });
         });
       });
@@ -959,15 +956,14 @@ describe('discussion part', async () => {
   });
 
   it('ignore discussion.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
-      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
-        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-          // 忽略这个讨论
-          let ignoreUrl = `/api/v1/discussions/${newDiscussionInfo.id}/ignore`;
-          await agent.post(ignoreUrl);
+    await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+      await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
+        // 忽略这个讨论
+        let ignoreUrl = `/api/v1/discussions/${newDiscussionInfo.id}/ignore`;
+        await agent.post(ignoreUrl);
 
+        await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
           // B 回复这个讨论
-          await testTools.member.login(agent, newMemberInfoB);
           let postPayload = {
             encoding: 'markdown',
             content: 'hello test',
@@ -976,15 +972,14 @@ describe('discussion part', async () => {
           await agent.post(url)
             .send(postPayload)
             .expect(201);
-
-          // A 查看消息队列
-          await testTools.member.login(agent, newMemberInfoA);
-          let notificationUrl = '/api/v1/notification';
-          let notificationRes = await agent.get(notificationUrl)
-            .expect(200);
-          let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(0);
         });
+
+        // A 查看消息队列
+        let notificationUrl = '/api/v1/notification';
+        let notificationRes = await agent.get(notificationUrl)
+          .expect(200);
+        let notificationBody = notificationRes.body;
+        expect(notificationBody.notifications.length).to.be.equal(0);
       });
     });
   });
@@ -1007,16 +1002,15 @@ describe('discussion part', async () => {
             await agent.post(url)
               .send(postPayload)
               .expect(201);
-
-            // A 查看消息队列
-            await testTools.member.login(agent, newMemberInfoA);
-            let notificationUrl = '/api/v1/notification';
-            let notificationRes = await agent.get(notificationUrl)
-              .expect(200);
-            let notificationBody = notificationRes.body;
-            expect(notificationBody.notifications.length).to.be.equal(1);
-            expect(/你关注的/.test(notificationBody.notifications[0].content)).to.be.true;
           });
+
+          // A 查看消息队列
+          let notificationUrl = '/api/v1/notification';
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(1);
+          expect(/你关注的/.test(notificationBody.notifications[0].content)).to.be.true;
         });
       });
     });
@@ -1032,18 +1026,18 @@ describe('discussion part', async () => {
             await agent.post(ignoreUrl);
 
             // B 回复这个讨论
-            await testTools.member.login(agent, newMemberInfoB);
-            let postPayload = {
-              encoding: 'markdown',
-              content: 'hello test',
-            };
-            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-            await agent.post(url)
-              .send(postPayload)
-              .expect(201);
+            await testTools.member.login(agent, newMemberInfoB, async () => {
+              let postPayload = {
+                encoding: 'markdown',
+                content: 'hello test',
+              };
+              let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+              await agent.post(url)
+                .send(postPayload)
+                .expect(201);
+            });
 
             // A 查看消息队列
-            await testTools.member.login(agent, newMemberInfoA);
             let notificationUrl = '/api/v1/notification';
             let notificationRes = await agent.get(notificationUrl)
               .expect(200);
@@ -1070,7 +1064,6 @@ describe('discussion part', async () => {
             .expect(201);
 
           // A 查看消息队列
-          await testTools.member.login(agent, newMemberInfoA);
           let notificationUrl = '/api/v1/notification';
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
@@ -1113,7 +1106,6 @@ describe('discussion part', async () => {
           });
 
           // A 查看消息队列
-          await testTools.member.login(agent, newMemberInfoA);
           let notificationUrl = '/api/v1/notification';
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
@@ -1125,6 +1117,7 @@ describe('discussion part', async () => {
   });
 
   it('other one reply other one post in my discussion.', async () => {
+    let notificationUrl = '/api/v1/notification';
     await testTools.discussion.closeFreqLimit(async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
         await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
@@ -1154,24 +1147,20 @@ describe('discussion part', async () => {
               await agent.post(url)
                 .send(postPayload)
                 .expect(201);
-
-              // A 查看消息队列
-              await testTools.member.login(agent, newMemberInfoA);
-              let notificationUrl = '/api/v1/notification';
-              let notificationRes = await agent.get(notificationUrl)
-                .expect(200);
-              let notificationBody = notificationRes.body;
-              expect(notificationBody.notifications.length).to.be.equal(2);
-
-              // B 查看消息队列
-              await testTools.member.login(agent, newMemberInfoB);
-              notificationUrl = '/api/v1/notification';
-              notificationRes = await agent.get(notificationUrl)
-                .expect(200);
-              notificationBody = notificationRes.body;
-              expect(notificationBody.notifications.length).to.be.equal(1);
             });
+
+            // B 查看消息队列
+            let notificationRes = await agent.get(notificationUrl)
+              .expect(200);
+            let notificationBody = notificationRes.body;
+            expect(notificationBody.notifications.length).to.be.equal(1);
           });
+
+          // A 查看消息队列
+          let notificationRes = await agent.get(notificationUrl)
+            .expect(200);
+          let notificationBody = notificationRes.body;
+          expect(notificationBody.notifications.length).to.be.equal(2);
         });
       });
     });
@@ -1186,34 +1175,34 @@ describe('discussion part', async () => {
             let ignoreUrl = `/api/v1/member/${newMemberInfoB.id}/ignore`;
             await agent.post(ignoreUrl);
 
-            // B 回复这个讨论
-            await testTools.member.login(agent, newMemberInfoB);
-            let postPayload = {
-              encoding: 'markdown',
-              content: 'hello test',
-            };
-            let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-            await agent.post(url)
-              .send(postPayload)
-              .expect(201);
+            await testTools.member.login(agent, newMemberInfoB, async () => {
+              // B 回复这个讨论
+              let postPayload = {
+                encoding: 'markdown',
+                content: 'hello test',
+              };
+              let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+              await agent.post(url)
+                .send(postPayload)
+                .expect(201);
 
-            // B 回复 A 的帖子
-            postPayload = {
-              encoding: 'markdown',
-              content: 'hello test',
-              replyTo: {
-                type: 'index',
-                value: 1,
-                memberId: newMemberInfoA.id,
-              },
-            };
-            url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
-            await agent.post(url)
-              .send(postPayload)
-              .expect(201);
+              // B 回复 A 的帖子
+              postPayload = {
+                encoding: 'markdown',
+                content: 'hello test',
+                replyTo: {
+                  type: 'index',
+                  value: 1,
+                  memberId: newMemberInfoA.id,
+                },
+              };
+              url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
+              await agent.post(url)
+                .send(postPayload)
+                .expect(201);
+            });
 
             // A 查看消息队列
-            await testTools.member.login(agent, newMemberInfoA);
             let notificationUrl = '/api/v1/notification';
             let notificationRes = await agent.get(notificationUrl)
               .expect(200);

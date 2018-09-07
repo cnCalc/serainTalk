@@ -5,10 +5,12 @@ const expect = require('chai').expect;
 const testTools = require('../testTools');
 const config = require('../../config');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('message part', async () => {
   before(async () => {
+    await app.prepare();
     await config.prepare();
   });
 

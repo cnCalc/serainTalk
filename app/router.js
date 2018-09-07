@@ -40,7 +40,9 @@ for (let routeType of Object.keys(routeConfig)) {
       route.handler.push(validation(route.schema));
       router[route.method](route.path, ...route.handler, handler);
     } catch (err) {
+      /* istanbul ignore next */
       logger.writeInfoLog({ entity: 'router', content: `${routeType}-${routeName} has some problem.` });
+      /* istanbul ignore next */
       throw err;
     }
   }
@@ -50,7 +52,7 @@ for (let routeType of Object.keys(routeConfig)) {
 router.use((err, req, res, next) => {
   /* istanbul ignore else */
   if (err.message === 'validation error') {
-    /* istanbul ignore if */
+    /* istanbul ignore next */
     if (!utils.env.isProd) console.error(JSON.stringify(err, null, '  '));
     return errorHandler(null, errorMessages.VALIDATION_ERROR, 400, res);
   } else {

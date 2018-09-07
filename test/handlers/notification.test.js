@@ -8,10 +8,12 @@ const config = require('../../config');
 const utils = require('../../utils');
 const _ = require('lodash');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('notification part', async () => {
   before(async () => {
+    await app.prepare();
     await config.prepare();
   });
 
@@ -172,9 +174,6 @@ describe('notification part', async () => {
           expect(notification.hasRead).to.be.equal(true);
         }
       });
-
-      // A 重新登录
-      await testTools.member.login(agent, newMemberInfoA);
 
       // 验证 A 的通知是否被误读
       let nitificationRes = await agent.get(getUrl)

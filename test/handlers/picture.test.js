@@ -9,10 +9,12 @@ const testTools = require('../testTools');
 const dbTool = require('../../database');
 const staticConfig = require('../../config/staticConfig');
 
-let agent = supertest.agent(require('../../index'));
+let app = require('../../index');
+let agent = supertest.agent(app);
 
 describe('picture part.', async () => {
   before('prepare database.', async () => {
+    await app.prepare();
     await dbTool.prepare();
   });
 
