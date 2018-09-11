@@ -75,7 +75,7 @@ describe('attachment part.', async () => {
           let fileRes = await agent.get(getUrl);
           expect(fileRes.body.status).to.be.equal('error');
           expect(fileRes.body.code).to.be.equal('ERR_REQUIRE_AUTHORIZATION');
-        })
+        });
       });
     });
   });
@@ -162,7 +162,9 @@ describe('attachment part.', async () => {
       await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachment) => {
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
           let deleteUrl = `/api/v1/attachment/${newAttachment.id}`;
-          let a = await agent.delete(deleteUrl).expect(401);
+          let deleteRes = await agent.delete(deleteUrl).expect(401);
+          expect(deleteRes.body.status).to.be.equal('error');
+          expect(deleteRes.body.code).to.be.equal('ERR_PERMISSION_DENIED');
         });
       });
     });

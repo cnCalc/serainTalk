@@ -842,7 +842,6 @@ describe('discussion part', async () => {
         notificationRes = notificationRes.body;
         let notifications = notificationRes.notifications;
         expect(notifications.length).to.be.equal(3);// 封禁通知+被回复通知+恢复通知
-
       });
     });
   });
@@ -911,7 +910,6 @@ describe('discussion part', async () => {
             notificationRes = notificationRes.body;
             let notifications = notificationRes.notifications;
             expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
-
           });
         });
       });

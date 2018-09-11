@@ -35,7 +35,7 @@ exports.uploadOneAttachment = uploadOneAttachment;
 
 /**
  * 创建指定大小的附件
- * 
+ *
  * @param {Number} fileName 要创建的附件名称
  * @param {Number} size 要创建的附件大小
  * @param {Promise} next 新建完成后需要执行的操作函数。会将新附件的路径作为参数传入。
