@@ -109,8 +109,9 @@ describe('notification part', async () => {
       }
 
       let readUrl = '/api/v1/notification/1/read';
-      await agent.post(readUrl)
+      let readRes = await agent.post(readUrl)
         .expect(201);
+      expect(readRes.body.notificationInfo.hasRead).to.be.equal(true);
 
       let getUrl = '/api/v1/notification?pagesize=2';
       let nitificationRes = await agent.get(getUrl)

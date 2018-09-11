@@ -2,9 +2,10 @@
 
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
+const services = require('../../services');
 const { errorHandler, errorMessages } = utils;
 
-// region 发送通知（暂不启用）
+// #region 发送通知（暂不启用）
 // /**
 //  * 发送一条通知给指定成员
 //  *
@@ -52,7 +53,7 @@ const { errorHandler, errorMessages } = utils;
 //   }
 //   return res.status(201).send({ status: 'ok', newNotification: notification });
 // };
-// endregion
+// #endregion
 
 /**
  * 获取自己的通知列表
@@ -63,27 +64,17 @@ const { errorHandler, errorMessages } = utils;
  */
 let getNotification = async (req, res, next) => {
   try {
-    let pagesize = req.query.pagesize;
-    let offset = req.query.page - 1;
-    let notifications = await dbTool.commonMember.aggregate([
-      { $match: { _id: req.member._id } },
-      { $project: { notifications: 1, _id: 0 } },
-      { $unwind: '$notifications' },
-      { $match: { 'notifications.date': { $gt: req.query.after } } },
-      { $sort: { 'notifications.date': -1 } },
-      { $skip: offset },
-      { $limit: pagesize },
-    ]).toArray();
-    let count = await dbTool.commonMember.aggregate([
-      { $match: { _id: req.member._id } },
-      { $project: { notifications: 1, _id: 0 } },
-      { $unwind: '$notifications' },
-      { $match: { 'notifications.date': { $gt: req.query.after } } },
-      { $count: 'count' },
-    ]).toArray();
-    notifications = notifications.map(notificationItem => notificationItem.notifications);
-    count = count[0] ? count[0].count : 0;
-    return res.status(200).send({ status: 'ok', notifications: notifications, count: count });
+    let option = {
+      after: req.query.after,
+      pagesize: req.query.pagesize,
+      offset: req.query.page - 1,
+    };
+    let query = {
+      _id: req.member._id,
+    };
+    let notificationsInfo = await services.v1.notification.findAndCount(query, option);
+
+    return res.status(200).send(Object.assign({ status: 'ok' }, notificationsInfo));
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -92,15 +83,15 @@ let getNotification = async (req, res, next) => {
 
 let readNotification = async (req, res, next) => {
   try {
-    let data = {};
-    data[`notifications.${req.params.index - 1}.hasRead`] = true;
-    await dbTool.commonMember.updateOne(
-      { _id: req.member._id },
-      { $set: data }
-    );
+    let query = {
+      _id: req.member._id,
+    };
+    let option = {
+      index: req.params.index,
+    };
+    let readInfo = await services.v1.notification.read(query, option);
 
-    let resinfo = await dbTool.commonMember.findOne({ _id: req.member._id });
-    return res.status(201).send(resinfo.notifications[req.params.index]);
+    return res.status(201).send({ status: 'ok', notificationInfo: readInfo });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
