@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const assert = require('assert');
 const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 const dbTool = require('../../database');
@@ -38,11 +38,13 @@ let info2signUp = (memberInfo) => {
 let checkMemberInfo = (receiveInfo, tempMemberInfo) => {
   tempMemberInfo = tempMemberInfo || testTools.testObject.memberInfo;
   let _memberInfo = Object.assign({}, tempMemberInfo);
-  expect(receiveInfo._id).to.not.be.null;
-  expect(receiveInfo.credentials).to.not.be.ok;
+  assert(receiveInfo._id !== null);
+  assert(!receiveInfo.credentials);
   delete _memberInfo.password;
   Object.keys(_memberInfo).forEach(key => {
-    expect(_memberInfo[key]).to.be.oneOf([receiveInfo[key], parseInt(receiveInfo[key])]);
+    assert(
+      [receiveInfo[key], parseInt(receiveInfo[key])].indexOf(_memberInfo[key]) !== -1
+    );
   });
 };
 exports.checkMemberInfo = checkMemberInfo;
@@ -71,8 +73,8 @@ let login = async (agent, memberInfo, next) => {
 
   agent.jar.setCookie(cookie);
 
-  expect(loginRes.body.status).to.equal('ok');
-  expect(loginRes.header['set-cookie']).to.be.ok;
+  assert(loginRes.body.status === 'ok');
+  assert(loginRes.header['set-cookie']);
 };
 exports.login = login;
 
@@ -108,7 +110,6 @@ exports.logout = logout;
 let createOneMember = async (agent, memberInfo, next) => {
   // 初始化数据库
   await dbTool.prepare();
-  let tempAgent = Object.assign({}, agent);
   let tempMemberInfo = JSON.parse(JSON.stringify(testTools.testObject.memberInfo));
   if (memberInfo) _.merge(tempMemberInfo, memberInfo);
 
@@ -147,8 +148,8 @@ let createOneMember = async (agent, memberInfo, next) => {
   }
 
   // 简单的数据校验
-  expect(newMemberBody.body.status).to.equal('ok');
-  expect(newMemberBody.header['set-cookie']).to.be.ok;
+  assert(newMemberBody.body.status === 'ok');
+  assert(newMemberBody.header['set-cookie']);
 
   // 生成字符串版的 id 和 MongoID版的 _id
   let newMemberInfo = newMemberBody.body.memberinfo;

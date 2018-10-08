@@ -21,7 +21,8 @@
   "nyc": {
     "require": [
       "babel-register",
-      "babel-polyfill"
+      "babel-polyfill",
+      "intelli-espower-loader"
     ],
     "reporter": [
       "lcov",
@@ -66,7 +67,6 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
     "babel-register": "^6.24.1",
-    "chai": "^4.0.2",
     "coveralls": "^2.13.1",
     "cross-env": "^5.0.1",
     "eslint": "^4.0.0",
@@ -78,10 +78,12 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-plugin-vue": "^2.0.1",
+    "intelli-espower-loader": "^1.0.1",
     "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.3",
     "mocha-lcov-reporter": "^1.3.0",
     "nyc": "^11.0.2",
+    "power-assert": "^1.6.1",
     "supertest": "^3.0.0"
   }
 }

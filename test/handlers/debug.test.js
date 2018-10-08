@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 const utils = require('../../utils');
 
@@ -17,12 +17,12 @@ describe('debug part.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let sudoUrl = '/api/v1/debug/sudo';
       let sudoRes = await agent.get(sudoUrl).expect(201);
-      expect(sudoRes.body.status).to.equal('ok');
-      expect(sudoRes.header['set-cookie']).to.be.ok;
+      assert(sudoRes.body.status === 'ok');
+      assert(sudoRes.header['set-cookie']);
 
       let adminUrl = '/api/v1/debug/isadmin';
       let adminRes = await agent.get(adminUrl);
-      expect(adminRes.body.isAdmin).to.be.ok;
+      assert(adminRes.body.isAdmin);
 
       let loginUrl = '/api/v1/member/login';
       await agent
@@ -34,7 +34,7 @@ describe('debug part.', async () => {
         .expect(201);
       adminUrl = '/api/v1/debug/isadmin';
       adminRes = await agent.get(adminUrl);
-      expect(adminRes.body.isAdmin).to.not.be.ok;
+      assert(!adminRes.body.isAdmin);
     });
   });
 
@@ -42,8 +42,8 @@ describe('debug part.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let sudoUrl = '/api/v1/debug/sudo';
       let sudoRes = await agent.get(sudoUrl).expect(201);
-      expect(sudoRes.body.status).to.equal('ok');
-      expect(sudoRes.header['set-cookie']).to.be.ok;
+      assert(sudoRes.body.status === 'ok');
+      assert(sudoRes.header['set-cookie']);
     });
   });
 
@@ -56,7 +56,7 @@ describe('debug part.', async () => {
       };
       notificationUrl = utils.url.createRESTfulUrl(notificationUrl, payload);
       let sudoRes = await agent.get(notificationUrl).send(payload).expect(201);
-      expect(sudoRes.body.status).to.equal('ok');
+      assert(sudoRes.body.status === 'ok');
     });
   });
 });

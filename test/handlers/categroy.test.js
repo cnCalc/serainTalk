@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 
 let app = require('../../index');
@@ -17,9 +17,7 @@ describe('categroy part.', async () => {
     let categoryRes = await agent.get(getUrl)
       .expect(200);
     categoryRes = categoryRes.body;
-    let categories = categoryRes.groups;
-    expect(categoryRes.status).to.be.equal('ok');
-    expect(categories).to.be.an('array');
+    assert(categoryRes.status === 'ok');
   });
 
   it('get discussions under specified category.', async () => {
@@ -30,9 +28,8 @@ describe('categroy part.', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let discussions = discussionRes.discussions;
-        expect(discussionRes.status).to.be.equal('ok');
-        expect(discussions).to.be.an('array');
-        expect(discussions.length).to.be.above(0);
+        assert(discussionRes.status === 'ok');
+        assert(discussions.length > 0);
       });
     });
   });
@@ -44,8 +41,6 @@ describe('categroy part.', async () => {
     discussionRes = await agent.get(getUrl)
       .expect(200);
     discussionRes = discussionRes.body;
-    let discussions = discussionRes.discussions;
-    expect(discussionRes.status).to.be.equal('ok');
-    expect(discussions).to.be.an('array');
+    assert(discussionRes.status === 'ok');
   });
 });

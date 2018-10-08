@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const supertest = require('supertest');
@@ -24,7 +24,7 @@ describe('picture part.', async () => {
       let pictureRes = await agent.post(getUrl)
         .attach('picture', 'test/testfile/testpng.png');
 
-      expect(pictureRes.body.status).to.be.equal('ok');
+      assert(pictureRes.body.status === 'ok');
 
       let paths = fs.readdirSync(staticConfig.upload.picture.path);
       paths.forEach(filePath => {

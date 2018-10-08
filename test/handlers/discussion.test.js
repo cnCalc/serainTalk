@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
@@ -19,7 +19,7 @@ describe('discussion part', async () => {
   it('add a discussion.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        expect(newDiscussionInfo.posts[0].index).to.be.equal(1);
+        assert(newDiscussionInfo.posts[0].index === 1);
       });
     });
   });
@@ -28,7 +28,7 @@ describe('discussion part', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
         await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDiscussionInfo) => {
-          expect(newDiscussionInfo.posts[0].encoding).to.be.equal('html');
+          assert(newDiscussionInfo.posts[0].encoding === 'html');
         });
       });
     });
@@ -37,7 +37,7 @@ describe('discussion part', async () => {
   it('add a html discussion by member.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, { content: { encoding: 'html' } }, async (newDiscussionInfo) => {
-        expect(newDiscussionInfo.posts[0].encoding).to.be.equal('markdown');
+        assert(newDiscussionInfo.posts[0].encoding === 'markdown');
       });
     });
   });
@@ -64,10 +64,10 @@ describe('discussion part', async () => {
         let discussionRes = await agent
           .get(url)
           .expect(200);
-        expect(discussionRes.body.status).to.be.equal('ok');
+        assert(discussionRes.body.status === 'ok');
         let discussions = discussionRes.body.discussions;
         delete testDiscussion.content;
-        expect(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion)).to.be.ok;
+        assert(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion));
       });
       config.discussion.category.whiteList = tempWhiteList;
     });
@@ -95,10 +95,10 @@ describe('discussion part', async () => {
         let discussionRes = await agent
           .get(url)
           .expect(200);
-        expect(discussionRes.body.status).to.be.equal('ok');
+        assert(discussionRes.body.status === 'ok');
         let discussions = discussionRes.body.discussions;
         delete testDiscussion.content;
-        expect(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion)).to.be.ok;
+        assert(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion));
       });
       config.discussion.category.whiteList = tempWhiteList;
     });
@@ -122,10 +122,10 @@ describe('discussion part', async () => {
         let discussionRes = await agent
           .get(url)
           .expect(200);
-        expect(discussionRes.body.status).to.be.equal('ok');
+        assert(discussionRes.body.status === 'ok');
         let discussions = discussionRes.body.discussions;
         delete testDiscussion.content;
-        expect(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion)).to.be.ok;
+        assert(testTools.discussion.isSameDiscussion(discussions[0], testDiscussion));
       });
       config.discussion.category.whiteList = tempWhiteList;
     });
@@ -138,11 +138,11 @@ describe('discussion part', async () => {
         let discussionRes = await agent
           .get(url)
           .expect(200);
-        expect(discussionRes.body.status).to.be.equal('ok');
+        assert(discussionRes.body.status === 'ok');
         let discussionInfo = discussionRes.body.discussionInfo;
         let tempDiscussion = JSON.parse(JSON.stringify(testTools.testObject.discussionInfo));
         delete tempDiscussion.content;
-        expect(testTools.discussion.isSameDiscussion(discussionInfo, tempDiscussion)).to.be.ok;
+        assert(testTools.discussion.isSameDiscussion(discussionInfo, tempDiscussion));
       });
     });
   });
@@ -155,8 +155,8 @@ describe('discussion part', async () => {
           .get(url)
           .expect(404);
         discussionRes = discussionRes.body;
-        expect(discussionRes.status).to.be.equal('error');
-        expect(discussionRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
+        assert(discussionRes.status === 'error');
+        assert(discussionRes.code === errorMessages.NOT_FOUND.code);
       });
     });
   });
@@ -172,9 +172,9 @@ describe('discussion part', async () => {
           postsRes = postsRes.body;
           let members = postsRes.members;
           let posts = postsRes.posts;
-          expect(postsRes.status).to.be.equal('ok');
-          expect(Object.keys(members)).include(newMemberInfo.id);
-          expect(posts.length).to.be.equal(1);
+          assert(postsRes.status === 'ok');
+          assert(Object.keys(members).includes(newMemberInfo.id));
+          assert(posts.length === 1);
 
           // 分页测试
           let postPayload = {
@@ -192,8 +192,8 @@ describe('discussion part', async () => {
             .get(getUrl2)
             .expect(200);
           let postsBody = postsRes.body;
-          expect(postsBody.status).to.be.equal('ok');
-          expect(postsBody.posts.length).to.be.equal(6);
+          assert(postsBody.status === 'ok');
+          assert(postsBody.posts.length === 6);
         });
       });
     });
@@ -207,8 +207,8 @@ describe('discussion part', async () => {
           .get(url)
           .expect(404);
         discussionRes = discussionRes.body;
-        expect(discussionRes.status).to.be.equal('error');
-        expect(discussionRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
+        assert(discussionRes.status === 'error');
+        assert(discussionRes.code === errorMessages.NOT_FOUND.code);
       });
     });
   });
@@ -219,7 +219,7 @@ describe('discussion part', async () => {
         let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1`;
         let postRes = await agent.get(getUrl);
         let post = postRes.body.post;
-        expect(post.content).to.be.equal('<p>a</p>\n');
+        assert(post.content === '<p>a</p>\n');
       });
     });
   });
@@ -230,7 +230,7 @@ describe('discussion part', async () => {
         let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/post/1?raw=on`;
         let postRes = await agent.get(getUrl);
         let post = postRes.body.post;
-        expect(post.content).to.be.equal('a');
+        assert(post.content === 'a');
       });
     });
   });
@@ -257,8 +257,8 @@ describe('discussion part', async () => {
             let discussionRes = await agent
               .get(url)
               .expect(200);
-            expect(discussionRes.body.status).to.be.equal('ok');
-            expect(discussionRes.body.discussions.length).to.be.equal(0);
+            assert(discussionRes.body.status === 'ok');
+            assert(discussionRes.body.discussions.length === 0);
           });
 
           let payload = {
@@ -269,8 +269,8 @@ describe('discussion part', async () => {
           let discussionRes = await agent
             .get(url)
             .expect(200);
-          expect(discussionRes.body.status).to.be.equal('ok');
-          expect(discussionRes.body.discussions.length).to.be.equal(1);
+          assert(discussionRes.body.status === 'ok');
+          assert(discussionRes.body.discussions.length === 1);
         });
       });
     });
@@ -290,10 +290,10 @@ describe('discussion part', async () => {
             .expect(201);
 
           let postInfo = postRes.body.newPost;
-          expect(postInfo).to.be.ok;
-          expect(postInfo.index).to.be.equal(2);
-          expect(postInfo.content).to.be.equal(postPayload.content);
-          expect(postInfo.encoding).to.be.equal(postPayload.encoding);
+          assert(postInfo);
+          assert(postInfo.index === 2);
+          assert(postInfo.content === postPayload.content);
+          assert(postInfo.encoding === postPayload.encoding);
         });
       });
     });
@@ -319,7 +319,7 @@ describe('discussion part', async () => {
         let notificationRes = await agent.get(notificationUrl)
           .expect(200);
         let notificationBody = notificationRes.body;
-        expect(notificationBody.notifications.length).to.be.equal(1);
+        assert(notificationBody.notifications.length === 1);
       });
     });
   });
@@ -352,9 +352,9 @@ describe('discussion part', async () => {
 
             let exactPost = postsRes.posts[1];
             let otherPost = postsRes.posts[0];
-            expect(exactPost.updateDate).to.be.ok;
-            expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
-            expect(otherPost.content).to.be.equal('<p>hello test</p>\n');
+            assert(exactPost.updateDate);
+            assert(exactPost.content === '<p>changed content.</p>\n');
+            assert(otherPost.content === '<p>hello test</p>\n');
           });
         });
       });
@@ -382,15 +382,15 @@ describe('discussion part', async () => {
             let updateRes = await agent.put(updateUrl)
               .send(updatePayload)
               .expect(401);
-            expect(updateRes.body.code).to.be.equal(errorMessages.PERMISSION_DENIED.code);
+            assert(updateRes.body.code === errorMessages.PERMISSION_DENIED.code);
 
             let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
             let postsRes = await agent.get(getUrl).expect(200);
             postsRes = postsRes.body;
 
             let exactPost = postsRes.posts[1];
-            expect(exactPost.updateDate).to.not.be.ok;
-            expect(exactPost.content).to.be.equal('<p>hello test</p>\n');
+            assert(!exactPost.updateDate);
+            assert(exactPost.content === '<p>hello test</p>\n');
           });
         });
       });
@@ -419,15 +419,15 @@ describe('discussion part', async () => {
               let updateRes = await agent.put(updateUrl)
                 .send(updatePayload)
                 .expect(401);
-              expect(updateRes.body.code).to.be.equal(errorMessages.PERMISSION_DENIED.code);
+              assert(updateRes.body.code === errorMessages.PERMISSION_DENIED.code);
 
               let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
               let postsRes = await agent.get(getUrl).expect(200);
               postsRes = postsRes.body;
 
               let exactPost = postsRes.posts[1];
-              expect(exactPost.updateDate).to.not.be.ok;
-              expect(exactPost.content).to.be.equal('<p>hello test</p>\n');
+              assert(!exactPost.updateDate);
+              assert(exactPost.content === '<p>hello test</p>\n');
             });
           });
         });
@@ -462,9 +462,9 @@ describe('discussion part', async () => {
           postsRes = postsRes.body;
 
           let exactPost = postsRes.posts[1];
-          expect(exactPost.updateDate).to.be.ok;
-          expect(exactPost.encoding).to.be.equal('markdown');
-          expect(exactPost.content).to.be.equal('<p>changed content.</p>\n');
+          assert(exactPost.updateDate);
+          assert(exactPost.encoding === 'markdown');
+          assert(exactPost.content === '<p>changed content.</p>\n');
         });
       });
     });
@@ -498,9 +498,9 @@ describe('discussion part', async () => {
             postsRes = postsRes.body;
 
             let exactPost = postsRes.posts[1];
-            expect(exactPost.updateDate).to.be.ok;
-            expect(exactPost.encoding).to.be.equal('html');
-            expect(exactPost.content).to.be.equal('changed content.');
+            assert(exactPost.updateDate);
+            assert(exactPost.encoding === 'html');
+            assert(exactPost.content === 'changed content.');
           });
         });
       });
@@ -522,7 +522,7 @@ describe('discussion part', async () => {
               .expect(201);
 
             let postInfo = postRes.body.newPost;
-            expect(postInfo.encoding).to.be.equal(postPayload.encoding);
+            assert(postInfo.encoding === postPayload.encoding);
           });
         });
       });
@@ -543,8 +543,8 @@ describe('discussion part', async () => {
             .expect(201);
 
           let postInfo = postRes.body.newPost;
-          expect(postInfo.index).to.be.ok;
-          expect(postInfo.encoding).to.be.equal('markdown');
+          assert(postInfo.index);
+          assert(postInfo.encoding === 'markdown');
         });
       });
     });
@@ -561,7 +561,7 @@ describe('discussion part', async () => {
             return;
           });
         } catch (err) {
-          expect(err.code).to.be.equal(errorMessages.TOO_FREQUENT.code);
+          assert(err.code === errorMessages.TOO_FREQUENT.code);
         }
 
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
@@ -572,7 +572,7 @@ describe('discussion part', async () => {
           let url = `/api/v1/discussion/${newDiscussionInfo.id}/post`;
           await agent.post(url).send(postPayload).expect(201);
           let Res = await agent.post(url).send(postPayload).expect(403);
-          expect(Res.body.code).to.be.equal(errorMessages.TOO_FREQUENT.code);
+          assert(Res.body.code === errorMessages.TOO_FREQUENT.code);
         });
       });
     });
@@ -598,8 +598,8 @@ describe('discussion part', async () => {
 
           // 检查是否有 replyTo 字段
           let postInfo = postRes.body.newPost;
-          expect(postInfo.replyTo).to.be.ok;
-          expect(postInfo.encoding).to.be.equal('markdown');
+          assert(postInfo.replyTo);
+          assert(postInfo.encoding === 'markdown');
         });
       });
     });
@@ -621,7 +621,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.up.memberId[0]).to.be.equal(newMemberInfo.id);
+        assert(votes.up.memberId[0] === newMemberInfo.id);
       });
     });
   });
@@ -639,8 +639,8 @@ describe('discussion part', async () => {
           .send(voteInfo)
           .expect(404);
         voteRes = voteRes.body;
-        expect(voteRes.status).to.be.equal('error');
-        expect(voteRes.code).to.be.equal(errorMessages.NOT_FOUND.code);
+        assert(voteRes.status === 'error');
+        assert(voteRes.code === errorMessages.NOT_FOUND.code);
       });
     });
   });
@@ -668,8 +668,8 @@ describe('discussion part', async () => {
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
         for (let vote of voteType) {
-          expect(votes[vote].count).to.be.equal(0);
-          expect(votes[vote].memberId.length).to.be.equal(0);
+          assert(votes[vote].count === 0);
+          assert(votes[vote].memberId.length === 0);
         }
       });
     });
@@ -697,7 +697,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.up.memberId[0]).to.be.equal(newMemberInfo.id);
+        assert(votes.up.memberId[0] === newMemberInfo.id);
       });
     });
   });
@@ -720,7 +720,7 @@ describe('discussion part', async () => {
           .expect(200);
         discussionRes = discussionRes.body;
         let votes = discussionRes.posts[0].votes;
-        expect(votes.down.memberId[0]).to.be.equal(newMemberInfo.id);
+        assert(votes.down.memberId[0] === newMemberInfo.id);
       });
     });
   });
@@ -754,8 +754,8 @@ describe('discussion part', async () => {
           discussionRes = discussionRes.body;
           let votes = discussionRes.posts[0].votes;
           for (let vote of voteType) {
-            expect(votes[vote].memberId).include(newMemberInfoA.id);
-            expect(votes[vote].memberId).include(newMemberInfoB.id);
+            assert(votes[vote].memberId.includes(newMemberInfoA.id));
+            assert(votes[vote].memberId.includes(newMemberInfoB.id));
           }
         });
       });
@@ -783,26 +783,26 @@ describe('discussion part', async () => {
             let discussionRes = await agent
               .get(url)
               .expect(200);
-            expect(discussionRes.body.status).to.be.equal('ok');
+            assert(discussionRes.body.status === 'ok');
             let postsInfo = discussionRes.body.posts;
-            expect(postsInfo.length).to.be.equal(2);
-            expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.deleted);
+            assert(postsInfo.length === 2);
+            assert(postsInfo[0].status.type === config.discussion.status.deleted);
           });
           let url = `/api/v1/discussions/${newDiscussionInfo.id}/posts`;
           let discussionRes = await agent
             .get(url)
             .expect(200);
-          expect(discussionRes.body.status).to.be.equal('ok');
+          assert(discussionRes.body.status === 'ok');
           let postsInfo = discussionRes.body.posts;
-          expect(postsInfo.length).to.be.equal(1);
-          expect(postsInfo[0].status.type).to.not.be.equal(config.discussion.status.deleted);
+          assert(postsInfo.length === 1);
+          assert(postsInfo[0].status.type !== config.discussion.status.deleted);
         });
         let getNotificationUrl = '/api/v1/notification';
         let notificationRes = await agent.get(getNotificationUrl)
           .expect(200);
         notificationRes = notificationRes.body;
         let notifications = notificationRes.notifications;
-        expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
+        assert(notifications.length === 2);// 封禁通知+被回复通知
       });
     });
   });
@@ -829,10 +829,10 @@ describe('discussion part', async () => {
             let discussionRes = await agent
               .get(url)
               .expect(200);
-            expect(discussionRes.body.status).to.be.equal('ok');
+            assert(discussionRes.body.status === 'ok');
             let postsInfo = discussionRes.body.posts;
-            expect(postsInfo.length).to.be.equal(2);
-            expect(postsInfo[0].status.type).to.be.equal(config.discussion.status.ok);
+            assert(postsInfo.length === 2);
+            assert(postsInfo[0].status.type === config.discussion.status.ok);
           });
         });
 
@@ -841,7 +841,7 @@ describe('discussion part', async () => {
           .expect(200);
         notificationRes = notificationRes.body;
         let notifications = notificationRes.notifications;
-        expect(notifications.length).to.be.equal(3);// 封禁通知+被回复通知+恢复通知
+        assert(notifications.length === 3);// 封禁通知+被回复通知+恢复通知
       });
     });
   });
@@ -866,10 +866,10 @@ describe('discussion part', async () => {
           let discussionRes = await agent
             .get(url)
             .expect(200);
-          expect(discussionRes.body.status).to.be.equal('ok');
+          assert(discussionRes.body.status === 'ok');
           let postsInfo = discussionRes.body.posts;
-          expect(postsInfo.length).to.be.equal(2);
-          expect(postsInfo[0].baned).to.not.be.ok;
+          assert(postsInfo.length === 2);
+          assert(!postsInfo[0].baned);
         });
       });
     });
@@ -899,9 +899,9 @@ describe('discussion part', async () => {
                   .get(getUrl)
                   .expect(200);
 
-                expect(discussionRes.body.status).to.be.equal('ok');
+                assert(discussionRes.body.status === 'ok');
                 let discussionInfo = discussionRes.body.discussionInfo;
-                expect(discussionInfo.status.type).to.be.equal(config.discussion.status.deleted);
+                assert(discussionInfo.status.type === config.discussion.status.deleted);
               });
             });
             let getNotificationUrl = '/api/v1/notification';
@@ -909,7 +909,7 @@ describe('discussion part', async () => {
               .expect(200);
             notificationRes = notificationRes.body;
             let notifications = notificationRes.notifications;
-            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
+            assert(notifications.length === 2);// 封禁通知+被回复通知
           });
         });
       });
@@ -946,7 +946,7 @@ describe('discussion part', async () => {
               .expect(200);
             notificationRes = notificationRes.body;
             let notifications = notificationRes.notifications;
-            expect(notifications.length).to.be.equal(2);// 封禁通知+被回复通知
+            assert(notifications.length === 2);// 封禁通知+被回复通知
           });
         });
       });
@@ -977,7 +977,7 @@ describe('discussion part', async () => {
         let notificationRes = await agent.get(notificationUrl)
           .expect(200);
         let notificationBody = notificationRes.body;
-        expect(notificationBody.notifications.length).to.be.equal(0);
+        assert(notificationBody.notifications.length === 0);
       });
     });
   });
@@ -1007,8 +1007,8 @@ describe('discussion part', async () => {
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
           let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(1);
-          expect(/你关注的/.test(notificationBody.notifications[0].content)).to.be.true;
+          assert(notificationBody.notifications.length === 1);
+          assert(/你关注的/.test(notificationBody.notifications[0].content) === true);
         });
       });
     });
@@ -1040,7 +1040,7 @@ describe('discussion part', async () => {
             let notificationRes = await agent.get(notificationUrl)
               .expect(200);
             let notificationBody = notificationRes.body;
-            expect(notificationBody.notifications.length).to.be.equal(0);
+            assert(notificationBody.notifications.length === 0);
           });
         });
       });
@@ -1066,7 +1066,7 @@ describe('discussion part', async () => {
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
           let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(0);
+          assert(notificationBody.notifications.length === 0);
         });
       });
     });
@@ -1108,7 +1108,7 @@ describe('discussion part', async () => {
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
           let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(1);
+          assert(notificationBody.notifications.length === 1);
         });
       });
     });
@@ -1151,14 +1151,14 @@ describe('discussion part', async () => {
             let notificationRes = await agent.get(notificationUrl)
               .expect(200);
             let notificationBody = notificationRes.body;
-            expect(notificationBody.notifications.length).to.be.equal(1);
+            assert(notificationBody.notifications.length === 1);
           });
 
           // A 查看消息队列
           let notificationRes = await agent.get(notificationUrl)
             .expect(200);
           let notificationBody = notificationRes.body;
-          expect(notificationBody.notifications.length).to.be.equal(2);
+          assert(notificationBody.notifications.length === 2);
         });
       });
     });
@@ -1205,7 +1205,7 @@ describe('discussion part', async () => {
             let notificationRes = await agent.get(notificationUrl)
               .expect(200);
             let notificationBody = notificationRes.body;
-            expect(notificationBody.notifications.length).to.be.equal(0);
+            assert(notificationBody.notifications.length === 0);
           });
         });
       });
@@ -1233,9 +1233,9 @@ describe('discussion part', async () => {
             let attachmentsRes = await agent.get(getUrl);
             let attachments = attachmentsRes.body.attachments;
 
-            expect(postInfo.attachments[0]).to.be.equal(newAttachmentInfo.id);
-            expect(attachments[0]._owner).to.be.equal(newMemberInfo.id);
-            expect(attachments[0]._id).to.be.equal(newAttachmentInfo.id);
+            assert(postInfo.attachments[0] === newAttachmentInfo.id);
+            assert(attachments[0]._owner === newMemberInfo.id);
+            assert(attachments[0]._id === newAttachmentInfo.id);
           });
         });
       });
@@ -1251,11 +1251,11 @@ describe('discussion part', async () => {
             let attachmentsRes = await agent.get(getUrl);
             let attachments = attachmentsRes.body.attachments;
 
-            expect(attachments[0]._owner).to.be.equal(newMemberInfo.id);
-            expect(attachments[0]._id).to.be.equal(newAttachmentInfo.id);
-            expect(attachments[0]._id).to.be.equal(newDiscussionInfo.posts[0].attachments[0]);
-            expect(attachments[0].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
-            expect(attachments[0].referer[0].index).to.be.equal(1);
+            assert(attachments[0]._owner === newMemberInfo.id);
+            assert(attachments[0]._id === newAttachmentInfo.id);
+            assert(attachments[0]._id === newDiscussionInfo.posts[0].attachments[0]);
+            assert(attachments[0].referer[0]._discussionId === newDiscussionInfo.id);
+            assert(attachments[0].referer[0].index === 1);
           });
         });
       });
@@ -1284,10 +1284,10 @@ describe('discussion part', async () => {
               let attachmentsRes = await agent.get(getUrl);
               let attachments = attachmentsRes.body.attachments;
 
-              expect(attachments.length).to.be.equal(2);
+              assert(attachments.length === 2);
 
-              expect(postInfo.attachments[0]).to.be.equal(newAttachmentInfoA.id);
-              expect(postInfo.attachments[1]).to.be.equal(newAttachmentInfoB.id);
+              assert(postInfo.attachments[0] === newAttachmentInfoA.id);
+              assert(postInfo.attachments[1] === newAttachmentInfoB.id);
             });
           });
         });
@@ -1321,18 +1321,18 @@ describe('discussion part', async () => {
                 let getUrl = `/api/v1/discussion/${newDiscussionInfo.id}/posts`;
                 let postsRes = await agent.get(getUrl).expect(200);
                 let posts = postsRes.body.posts;
-                expect(posts[1].attachments[0]).to.be.equal(newAttachmentInfoB.id);
-                expect(posts[1].attachments[1]).to.be.equal(newAttachmentInfoC.id);
+                assert(posts[1].attachments[0] === newAttachmentInfoB.id);
+                assert(posts[1].attachments[1] === newAttachmentInfoC.id);
 
                 let attachmentUrl = '/api/v1/attachment/info/me';
                 let attachmentsRes = await agent.get(attachmentUrl);
                 let attachments = attachmentsRes.body.attachments;
 
-                expect(attachments[2].referer.length).to.be.equal(0);
-                expect(attachments[1].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
-                expect(attachments[1].referer[0].index).to.be.equal(2);
-                expect(attachments[0].referer[0]._discussionId).to.be.equal(newDiscussionInfo.id);
-                expect(attachments[0].referer[0].index).to.be.equal(2);
+                assert(attachments[2].referer.length === 0);
+                assert(attachments[1].referer[0]._discussionId === newDiscussionInfo.id);
+                assert(attachments[1].referer[0].index === 2);
+                assert(attachments[0].referer[0]._discussionId === newDiscussionInfo.id);
+                assert(attachments[0].referer[0].index === 2);
               });
             });
           });

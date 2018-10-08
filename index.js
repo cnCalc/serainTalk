@@ -6,6 +6,13 @@ const validation = require('express-validation');
 
 const staticConfig = require('./config/staticConfig');
 const utils = require('./utils');
+const router = require('./app/router');
+
+// promise 错误直接抛出
+process.on('unhandledRejection', (error, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', error);
+  process.exit(1);
+});
 
 const app = express();
 
@@ -35,7 +42,7 @@ app.use('/picture', express.static(staticConfig.upload.picture.path));
 app.use(express.static(staticConfig.frontEnd.filePath));
 
 // 处理请求
-app.use('/api', require('./app/router'));
+app.use('/api', router);
 
 // TODO: file 需要单独鉴权
 app.use('/uploads', express.static(

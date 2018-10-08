@@ -1,30 +1,30 @@
 'use strict';
 
-module.exports = {
-  attachment: require('./attachment'),
-  category: require('./category'),
-  cookie: require('./cookie'),
-  createRandomString: require('./random-string'),
-  discussion: require('./discussion'),
-  env: require('./env'),
-  errorHandler: require('./error-handler'),
-  errorMessages: require('./error-messages'),
-  logger: require('./logger'),
-  mail: require('./mail'),
-  md5: require('./md5'),
-  member: require('./member'),
-  mime: require('./mime'),
-  notification: require('./notification'),
-  object: require('./object'),
-  permission: require('./permission'),
-  promise: require('./promise'),
-  promisify: require('./promisify'),
-  renderer: require('./renderer'),
-  resolveMembers: require('./resolve-members'),
-  router: require('./router'),
-  string: require('./string'),
-  time: require('./time'),
-  upload: require('./upload'),
-  url: require('./url'),
-  websocket: require('./websocket'),
-};
+exports = module.exports = {};
+
+exports.cookie = require('./cookie');
+exports.createRandomString = require('./random-string');
+exports.env = require('./env');
+exports.errorHandler = require('./error-handler');
+exports.errorMessages = require('./error-messages');
+exports.logger = require('./logger');
+exports.mail = require('./mail');
+exports.md5 = require('./md5');
+exports.mime = require('./mime');
+exports.object = require('./object');
+exports.promisify = require('./promisify');
+exports.renderer = require('./renderer');
+exports.router = require('./router');
+exports.string = require('./string');
+exports.time = require('./time');
+exports.upload = require('./upload');
+exports.url = require('./url');
+exports.websocket = require('./websocket');
+
+exports.permission = require('./permission');
+exports.attachment = require('./attachment');
+exports.category = require('./category');
+exports.discussion = require('./discussion');
+exports.member = require('./member');
+exports.notification = require('./notification');
+exports.resolveMembers = require('./resolve-members');

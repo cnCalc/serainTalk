@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 const config = require('../../config');
 
@@ -26,24 +26,24 @@ describe('message part', async () => {
           .expect(201);
         sendMessageRes = sendMessageRes.body;
         let messageId = sendMessageRes.messageId;
-        expect(sendMessageRes.status).to.be.equal('ok');
-        expect(messageId).to.be.ok;
+        assert(sendMessageRes.status === 'ok');
+        assert(messageId);
 
         let getUrl = `/api/v1/message/${messageId}`;
 
         let getMessageRes = await agent.get(getUrl).expect(200);
         getMessageRes = getMessageRes.body;
         let message = getMessageRes.message;
-        expect(getMessageRes.status).to.be.equal('ok');
-        expect(message._id).to.be.equal(messageId);
-        expect(message.members).to.be.an('array');
-        expect(message.members.length).to.be.equal(2);
-        expect(message.members).includes(newMemberInfoA.id);
-        expect(message.members).includes(newMemberInfoB.id);
-        expect(message.timeline).to.be.an('array');
-        expect(message.timeline[0].content).to.be.equal(payload.content);
-        expect(message.timeline[0].date).to.be.ok;
-        expect(message.timeline[0].from).to.be.equal(newMemberInfoB.id);
+        assert(getMessageRes.status === 'ok');
+        assert(message._id === messageId);
+        ;
+        assert(message.members.length === 2);
+        assert(message.members.includes(newMemberInfoA.id));
+        assert(message.members.includes(newMemberInfoB.id));
+        ;
+        assert(message.timeline[0].content === payload.content);
+        assert(message.timeline[0].date);
+        assert(message.timeline[0].from === newMemberInfoB.id);
       });
     });
   });
@@ -64,14 +64,14 @@ describe('message part', async () => {
         messageRes = messageRes.body;
         let messagesInfo = messageRes.messagesInfo;
         let count = messageRes.count;
-        expect(messagesInfo).to.be.an('array');
-        expect(messagesInfo[0]).to.be.ok;
-        expect(messagesInfo[0]._id).to.be.ok;
-        expect(messagesInfo[0].members).to.be.an('array');
-        expect(messagesInfo[0].members.length).to.be.equal(2);
-        expect(messagesInfo[0].members).includes(newMemberInfoA.id);
-        expect(messagesInfo[0].members).includes(newMemberInfoB.id);
-        expect(count).to.be.ok;
+        ;
+        assert(messagesInfo[0]);
+        assert(messagesInfo[0]._id);
+        ;
+        assert(messagesInfo[0].members.length === 2);
+        assert(messagesInfo[0].members.includes(newMemberInfoA.id));
+        assert(messagesInfo[0].members.includes(newMemberInfoB.id));
+        assert(count);
       });
     });
   });
@@ -92,9 +92,11 @@ describe('message part', async () => {
         let messageRes = await agent.get(getUrl)
           .expect(200);
         let message = messageRes.body.message;
-        expect(message.timeline).to.be.an('array');
-        expect(message.timeline.length).to.be.equal(config.pagesize);
-        expect(Object.keys(message.timeline[0])).to.include.members(['from', 'date', 'content']);
+        ;
+        assert(message.timeline.length === config.pagesize);
+        for (let key of Object.keys(message.timeline[0])) {
+          assert(['from', 'date', 'content'].includes(key));
+        }
       });
     });
   });
@@ -120,9 +122,11 @@ describe('message part', async () => {
         messageRes = await agent.get(getUrl)
           .expect(200);
         let message = messageRes.body.message;
-        expect(message.timeline).to.be.an('array');
-        expect(message.timeline.length).to.be.equal(config.pagesize);
-        expect(Object.keys(message.timeline[0])).to.include.members(['from', 'date', 'content']);
+        ;
+        assert(message.timeline.length === config.pagesize);
+        for (let key of Object.keys(message.timeline[0])) {
+          assert(['from', 'date', 'content'].includes(key));
+        }
       });
     });
   });

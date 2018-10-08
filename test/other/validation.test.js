@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
 
@@ -18,7 +18,7 @@ describe('validation part.', async () => {
         let sendRes = await agent.post(postUrl)
           .send(payload)
           .expect(400);
-        expect(sendRes.body.code).to.be.equal(errorMessages.VALIDATION_ERROR.code);
+        assert(sendRes.body.code === errorMessages.VALIDATION_ERROR.code);
       });
     });
   });

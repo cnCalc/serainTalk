@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const assert = require('assert');
 const fs = require('fs');
 const supertest = require('supertest');
 
@@ -47,7 +47,7 @@ describe('member part', () => {
       try {
         await testTools.member.createOneMember(agent, null, () => Promise.resolve());
       } catch (e) {
-        expect(e).to.be.not.null();
+        assert(e !== null)();
       }
     });
   });
@@ -62,8 +62,8 @@ describe('member part', () => {
           password: newMemberInfo.password,
         })
         .expect(201);
-      expect(loginBody.body.status).to.equal('ok');
-      expect(loginBody.header['set-cookie']).to.be.ok;
+      assert(loginBody.body.status === 'ok');
+      assert(loginBody.header['set-cookie']);
       let loginInfo = loginBody.body.memberinfo;
       testTools.member.checkMemberInfo(loginInfo);
     });
@@ -79,9 +79,9 @@ describe('member part', () => {
           password: 'fakepassword',
         })
         .expect(401);
-      expect(loginBody.body.status).to.equal('error');
-      expect(loginBody.header['set-cookie']).to.not.be.ok;
-      expect(loginBody.body.memberinfo).to.not.be.ok;
+      assert(loginBody.body.status === 'error');
+      assert(!loginBody.header['set-cookie']);
+      assert(!loginBody.body.memberinfo);
     });
   });
 
@@ -94,8 +94,8 @@ describe('member part', () => {
           memberName: utils.createRandomString(70),
         })
         .expect(400);
-      expect(applicationRes.body.status).to.be.equal('error');
-      expect(applicationRes.body.code).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST.code);
+      assert(applicationRes.body.status === 'error');
+      assert(applicationRes.body.code === utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
   });
 
@@ -108,7 +108,7 @@ describe('member part', () => {
           memberName: newMemberInfo.username,
         })
         .expect(201);
-      expect(applicationRes.body.status).to.be.equal('ok');
+      assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
       let emailPayload = {
@@ -126,7 +126,7 @@ describe('member part', () => {
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
         .expect(201);
-      expect(resetRes.body.status).to.be.equal('ok');
+      assert(resetRes.body.status === 'ok');
 
       let loginUrl = '/api/v1/member/login';
       let loginBody = await agent
@@ -136,8 +136,8 @@ describe('member part', () => {
           password: newPassword,
         })
         .expect(201);
-      expect(loginBody.body.status).to.equal('ok');
-      expect(loginBody.header['set-cookie']).to.be.ok;
+      assert(loginBody.body.status === 'ok');
+      assert(loginBody.header['set-cookie']);
       let loginInfo = loginBody.body.memberinfo;
       testTools.member.checkMemberInfo(loginInfo);
     });
@@ -152,7 +152,7 @@ describe('member part', () => {
           memberName: newMemberInfo.username,
         })
         .expect(201);
-      expect(applicationRes.body.status).to.be.equal('ok');
+      assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
       let emailPayload = utils.createRandomString(80);
@@ -166,8 +166,8 @@ describe('member part', () => {
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
         .expect(400);
-      expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.code).to.be.equal(utils.errorMessages.BAD_REQUEST.code);
+      assert(resetRes.body.status === 'error');
+      assert(resetRes.body.code === utils.errorMessages.BAD_REQUEST.code);
     });
   });
 
@@ -180,7 +180,7 @@ describe('member part', () => {
           memberName: newMemberInfo.username,
         })
         .expect(201);
-      expect(applicationRes.body.status).to.be.equal('ok');
+      assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
       let emailPayload = '';
@@ -194,8 +194,8 @@ describe('member part', () => {
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
         .expect(400);
-      expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.code).to.be.equal(utils.errorMessages.BAD_REQUEST.code);
+      assert(resetRes.body.status === 'error');
+      assert(resetRes.body.code === utils.errorMessages.BAD_REQUEST.code);
     });
   });
 
@@ -208,7 +208,7 @@ describe('member part', () => {
           memberName: newMemberInfo.username,
         })
         .expect(201);
-      expect(applicationRes.body.status).to.be.equal('ok');
+      assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
       let emailPayload = {
@@ -226,8 +226,8 @@ describe('member part', () => {
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
         .expect(400);
-      expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.code).to.be.equal(utils.errorMessages.MEMBER_NOT_EXIST.code);
+      assert(resetRes.body.status === 'error');
+      assert(resetRes.body.code === utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
   });
 
@@ -240,7 +240,7 @@ describe('member part', () => {
           memberName: newMemberInfo.username,
         })
         .expect(201);
-      expect(applicationRes.body.status).to.be.equal('ok');
+      assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
       let emailPayload = {
@@ -258,8 +258,8 @@ describe('member part', () => {
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
         .expect(403);
-      expect(resetRes.body.status).to.be.equal('error');
-      expect(resetRes.body.code).to.be.equal(utils.errorMessages.TOKEN_EXPIRED.code);
+      assert(resetRes.body.status === 'error');
+      assert(resetRes.body.code === utils.errorMessages.TOKEN_EXPIRED.code);
     });
   });
 
@@ -273,12 +273,12 @@ describe('member part', () => {
           password: newMemberInfo.password,
         });
       // .expect(201);
-      expect(loginBody.body.status).to.equal('ok');
+      assert(loginBody.body.status === 'ok');
       let loginCookies = {};
       loginBody.header['set-cookie'].forEach(function (cookie) {
         Object.assign(loginCookies, utils.cookie.parse(cookie));
       });
-      expect(loginCookies.membertoken).to.be.ok;
+      assert(loginCookies.membertoken);
 
       let logoutBody = await agent
         .delete(loginUrl)
@@ -287,7 +287,7 @@ describe('member part', () => {
       logoutBody.header['set-cookie'].forEach(function (cookie) {
         Object.assign(logoutCookies, utils.cookie.parse(cookie));
       });
-      expect(logoutCookies.membertoken).to.be.equal('');
+      assert(logoutCookies.membertoken === '');
     });
   });
 
@@ -297,7 +297,7 @@ describe('member part', () => {
       let memberRes = await agent
         .get(url)
         .expect(200);
-      expect(memberRes.body.status).to.equal('ok');
+      assert(memberRes.body.status === 'ok');
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
       testTools.member.checkMemberInfo(memberInfo);
@@ -311,8 +311,8 @@ describe('member part', () => {
         let tempInfo = await agent
           .get(url)
           .expect(200);
-        expect(tempInfo.body.status).to.equal('ok');
-        expect(tempInfo.body.member.recentActivities.length).to.be.equal(1);
+        assert(tempInfo.body.status === 'ok');
+        assert(tempInfo.body.member.recentActivities.length === 1);
       });
     });
   });
@@ -328,16 +328,16 @@ describe('member part', () => {
           let tempInfo = await agent
             .get(url)
             .expect(200);
-          expect(tempInfo.body.status).to.equal('ok');
-          expect(tempInfo.body.member.recentActivities.length).to.be.equal(1);
+          assert(tempInfo.body.status === 'ok');
+          assert(tempInfo.body.member.recentActivities.length === 1);
         });
 
         let url = `/api/v1/member/${newMemberInfo.id}?recent=on`;
         let tempInfo = await agent
           .get(url)
           .expect(200);
-        expect(tempInfo.body.status).to.equal('ok');
-        expect(tempInfo.body.member.recentActivities.length).to.be.equal(0);
+        assert(tempInfo.body.status === 'ok');
+        assert(tempInfo.body.member.recentActivities.length === 0);
       });
     });
   });
@@ -348,11 +348,11 @@ describe('member part', () => {
       let memberBody = await agent
         .get(url)
         .expect(200);
-      expect(memberBody.body.status).to.equal('ok');
+      assert(memberBody.body.status === 'ok');
       delete memberBody.body.status;
       let memberList = memberBody.body.list;
       for (let member of memberList) {
-        expect(member.device).to.equal(testTools.testObject.memberInfo.device);
+        assert(member.device === testTools.testObject.memberInfo.device);
       }
     });
   });
@@ -375,12 +375,12 @@ describe('member part', () => {
         .expect(201);
       let settings = updateRes.body.settings;
       for (let key of Object.keys(updatePayload)) {
-        expect(settings[key]).to.be.equal(updatePayload[key]);
+        assert(settings[key] === updatePayload[key]);
       }
 
       let selfUrl = '/api/v1/members/me';
       let res = await agent.get(selfUrl).expect(200);
-      expect(res.body.memberInfo.settings.nightMode).to.be.equal(true);
+      assert(res.body.memberInfo.settings.nightMode === true);
     });
   });
 
@@ -394,7 +394,7 @@ describe('member part', () => {
         .send(updatePayload)
         .expect(201);
       let settings = updateRes.body.settings;
-      expect(settings.mail.onReply).to.be.equal(updatePayload.value);
+      assert(settings.mail.onReply === updatePayload.value);
     });
   });
 
@@ -406,7 +406,7 @@ describe('member part', () => {
             let startWithUrl = '/api/v1/members/startwith/member';
             let res = await agent.get(startWithUrl);
             let startWithBody = res.body;
-            expect(startWithBody.members.length).to.be.equal(2);
+            assert(startWithBody.members.length === 2);
           });
         });
       });
@@ -419,13 +419,13 @@ describe('member part', () => {
       let uploadRes = await agent.post(uploadUrl)
         .attach('avatar', 'test/testfile/testpng.png');
 
-      expect(uploadRes.body.status).to.be.equal('ok');
+      assert(uploadRes.body.status === 'ok');
 
       let getUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
       let avatarRes = await agent.get(getUrl).expect(200);
       let file = fs.readFileSync('test/testfile/testpng.png');
 
-      expect(file.equals(avatarRes.body)).to.be.true;
+      assert(file.equals(avatarRes.body) === true);
 
       let deleteUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
       await agent.delete(deleteUrl).expect(204);
@@ -438,13 +438,13 @@ describe('member part', () => {
       let uploadRes = await agent.post(uploadUrl)
         .attach('avatar', 'test/testfile/testpng.png');
 
-      expect(uploadRes.body.status).to.be.equal('ok');
+      assert(uploadRes.body.status === 'ok');
 
       let getUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
       let avatarRes = await agent.get(getUrl).expect(200);
       let file = fs.readFileSync('test/testfile/avatar-sharp.png');
 
-      expect(file.equals(avatarRes.body)).to.be.true;
+      assert(file.equals(avatarRes.body) === true);
 
       let deleteUrl = `/api/v1/attachment/${uploadRes.body.avatar._id}`;
       await agent.delete(deleteUrl).expect(204);
@@ -463,7 +463,7 @@ describe('member part', () => {
       let selfUrl = '/api/v1/member/me';
       let memberRes = await agent.get(selfUrl);
       let memberInfo = memberRes.body.memberInfo;
-      expect(memberInfo.email).to.be.equal('kasorasun@gmail.com');
+      assert(memberInfo.email === 'kasorasun@gmail.com');
     });
   });
 
@@ -479,7 +479,7 @@ describe('member part', () => {
       let selfUrl = '/api/v1/member/me';
       let memberRes = await agent.get(selfUrl);
       let memberInfo = memberRes.body.memberInfo;
-      expect(memberInfo.email).to.be.equal(newMemberInfo.email);
+      assert(memberInfo.email === newMemberInfo.email);
     });
   });
 });
