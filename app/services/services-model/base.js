@@ -11,6 +11,6 @@ exports = module.exports = class Service {
   }
 
   send () {
-    this.res.status(this.status).send(output);
+    this.res.status(this.status).send(this.output);
   }
 };
