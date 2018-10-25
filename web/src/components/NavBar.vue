@@ -21,7 +21,7 @@
               span 帖子
               div.loading-icon(v-show="loadingSearchResult")
             ul(v-if="search !== '' && searchHints.discussions.length !== 0")
-              router-link(v-for="hint in searchHints.discussions" :to="`/d/${hint._id}`")
+              router-link(v-for="hint in searchHints.discussions" :to="`/d/${hint._id}`" :key="hint._id")
                 li
                   span(style="font-family: monospace; color: gray") ({{ hint.postsCount }})
                   | &nbsp;{{ hint.title }}
@@ -30,7 +30,7 @@
               span 用户
               div.loading-icon(v-show="loadingSearchResult")
             ul(v-if="search !== '' && searchHints.members.length !== 0")
-              router-link(v-for="hint in searchHints.members" :to="`/m/${hint._id}`")
+              router-link(v-for="hint in searchHints.members" :to="`/m/${hint._id}`" :key="hint._id")
                 li {{ hint.username }}
             div.search-not-found(v-else) 没有找到相关用户。
       template(v-if="!me || typeof me._id === 'undefined'")

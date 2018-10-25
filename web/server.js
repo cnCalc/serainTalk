@@ -59,7 +59,7 @@ site.get('/robots.txt', (req, res) => {
     'User-agent: *',
     'Disallow: /',
   ].join('\n'));
-})
+});
 
 // The actual render entry.
 function render (req, res) {

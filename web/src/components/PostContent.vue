@@ -63,16 +63,18 @@ export default {
     },
     injectLinks () {
       this.$nextTick(() => {
-        this.$el.querySelectorAll('.inject-link a').forEach(el => {
-          el.addEventListener('click', e => {
-            const url = new URL(el.href);
-            const hostname = url.hostname;
-            if (hostname === location.hostname) {
-              e.preventDefault();
-              this.$router.push(`${url.pathname}${url.search}${url.hash}`);
-            }
-          })
-        });
+        if (process.env.VUE_ENV !== 'server') {
+          this.$el.querySelectorAll('.inject-link a').forEach(el => {
+            el.addEventListener('click', e => {
+              const url = new URL(el.href);
+              const hostname = url.hostname;
+              if (hostname === location.hostname) {
+                e.preventDefault();
+                this.$router.push(`${url.pathname}${url.search}${url.hash}`);
+              }
+            });
+          });
+        }
       });
     },
     hideReplyPreview () {
