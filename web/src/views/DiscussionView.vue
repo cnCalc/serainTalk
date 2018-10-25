@@ -531,7 +531,7 @@ export default {
 
     this.$nextTick(() => {
       if (window.location.hash) {
-        (this.promise || this.dataPromise).then(() => scrollToHash(window.location.hash));
+        (this.promise || this.dataPromise || Promise.resolve()).then(() => scrollToHash(window.location.hash));
       }
     });
 

@@ -6,8 +6,8 @@
           div.avatar
             div.avatar-image(v-if="parentMemeber.avatar" v-bind:style="{ backgroundImage: `url(${parentMemeber.avatar})` }")
           div: router-link(:to="`/m/${this.replyTo.memberId}`") {{ parentMemeber.username }}
-        div.reply-preview-content(v-html="previewReplyHtml")
-    div(v-html="html")
+        div.inject-link.reply-preview-content(v-html="previewReplyHtml")
+    div.inject-link(v-html="html")
 </template>
 
 <script>
@@ -30,6 +30,7 @@ export default {
   },
   created () {
     this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
+    this.injectLinks();
   },
   mounted () {
     this.addPreviewEvents();
@@ -59,6 +60,20 @@ export default {
         this.preview = true;
         this.timeoutId = null;
       }, 500);
+    },
+    injectLinks () {
+      this.$nextTick(() => {
+        this.$el.querySelectorAll('.inject-link a').forEach(el => {
+          el.addEventListener('click', e => {
+            const url = new URL(el.href);
+            const hostname = url.hostname;
+            if (hostname === location.hostname) {
+              e.preventDefault();
+              this.$router.push(`${url.pathname}${url.search}${url.hash}`);
+            }
+          })
+        });
+      });
     },
     hideReplyPreview () {
       if (this.timeoutId) {
