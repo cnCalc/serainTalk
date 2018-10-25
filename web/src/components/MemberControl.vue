@@ -98,6 +98,13 @@ div.avatar-container {
       height: $avatar_height;
       background-size: cover;
     }
+
+    .avatar-fallback {
+      background: mix($theme_color, white, 70%);
+      color: white;
+      width: $avatar_width;
+      line-height: $avatar_height;
+    }
   }
 
   div.dropdown-wrapper {

@@ -13,16 +13,22 @@
       div.search-wrapper
         input.search(type="text", placeholder="搜索", v-model="search", @focus="setHintVisiable(true)", @blur="setHintVisiable(false)")
         div.input-hint-container(v-bind:class="{ visiable: searchHintsVisiable }"): div.input-hint
-          div.search-info(v-if="search === '' || loadingSearchResult") 输入关键字搜索标题和用户，按下回车搜索内容
+          div.search-info(v-if="search === ''")
+            span 输入关键字搜索标题和用户，按下回车搜索内容
+            div.loading-icon(v-show="loadingSearchResult")
           template(v-else)
-            div.section 帖子
+            div.section 
+              span 帖子
+              div.loading-icon(v-show="loadingSearchResult")
             ul(v-if="search !== '' && searchHints.discussions.length !== 0")
               router-link(v-for="hint in searchHints.discussions" :to="`/d/${hint._id}`")
                 li
                   span(style="font-family: monospace; color: gray") ({{ hint.postsCount }})
                   | &nbsp;{{ hint.title }}
             div.search-not-found(v-else) 没有找到相关标题，尝试回车搜索全文？
-            div.section 用户
+            div.section
+              span 用户
+              div.loading-icon(v-show="loadingSearchResult")
             ul(v-if="search !== '' && searchHints.members.length !== 0")
               router-link(v-for="hint in searchHints.members" :to="`/m/${hint._id}`")
                 li {{ hint.username }}
@@ -256,6 +262,24 @@ div.st-header {
     div.input-hint {
       div.search-info {
         padding: 0.3em 0.7em;
+      }
+
+      @keyframes spin {
+        100% {
+          transform:rotate(360deg);
+        }
+      }
+
+      div.loading-icon {
+        background-image: url(../assets/loading.svg);
+        background-size: cover;
+        vertical-align: middle;
+        width: 12px;
+        height: 12px;
+        margin-top: -3px;
+        margin-left: 5px;
+        display: inline-block;
+        animation: spin 1s linear infinite;
       }
 
       ul {

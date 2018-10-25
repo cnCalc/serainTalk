@@ -475,7 +475,7 @@ export default {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
             this.canLoadMorePosts = true;
-            this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+            this.dataPromise = this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
               if (route.meta.mode === 'discussions') {
                 return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
               } else {
