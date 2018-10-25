@@ -16,6 +16,8 @@
       "name": "Mocha Tests",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
+        "--require",
+        "intelli-espower-loader",
         "--exit",
         "--recursive",
         "-b",
@@ -26,7 +28,7 @@
         "--colors",
         "${workspaceRoot}/test",
         // "--grep",
-        // "recover a post by admin"
+        // "get latest discussion list by memberId"
       ],
       "env": {
         "NODE_ENV": "mocha"
@@ -55,6 +57,12 @@
         "NODE_ENV": "product",
         "release": "stable"
       }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "测试路由",
+      "program": "${workspaceFolder}/utils/router",
     }
   ]
 }

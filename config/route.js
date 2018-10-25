@@ -120,7 +120,7 @@ let route = {
     ignoreMember: {
       description: '拒收指定 member 的回复通知。',
       path: [
-        '/v1/member/:id/ignore',
+        '/v1/members/:id/ignore',
         '/v1/member/:id/ignore',
       ],
       method: 'post',
@@ -774,7 +774,7 @@ let devRoute = {
   },
 };
 
-// TODO: 这块需要小心。这里不会被测试覆盖到
+// NOTE: 这块需要小心。这里不会被测试覆盖到
 if (utils.env.isDev || !utils.env.isRelease) {
   Object.assign(route, devRoute);
 }

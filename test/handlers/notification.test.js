@@ -1,7 +1,7 @@
 'use strict';
 
 const supertest = require('supertest');
-const expect = require('chai').expect;
+const assert = require('assert');
 const testTools = require('../testTools');
 const errorMessages = require('../../utils/error-messages');
 const config = require('../../config');
@@ -27,10 +27,12 @@ describe('notification part', async () => {
       let notificationRes = await agent.get(getUrl)
         .expect(200);
       let notifications = notificationRes.body.notifications;
-      expect(notifications).to.be.an('array');
-      expect(_.last(notifications)).include(notification);
-      expect(Object.keys(_.last(notifications))).not.include('href');
-      expect(_.last(notifications).index).to.be.equal(notifications.length);
+
+      for (let key of Object.keys(notification)) {
+        assert(_.last(notifications)[key] === notification[key]);
+      }
+      assert(!Object.keys(_.last(notifications)).includes('href'));
+      assert(_.last(notifications).index === notifications.length);
     });
   });
 
@@ -45,9 +47,12 @@ describe('notification part', async () => {
       let notificationRes = await agent.get(getUrl)
         .expect(200);
       let notifications = notificationRes.body.notifications;
-      expect(notifications).to.be.an('array');
-      expect(_.last(notifications)).include(notification);
-      expect(_.last(notifications).index).to.be.equal(notifications.length);
+      ;
+
+      for (let key of Object.keys(notification)) {
+        assert(_.last(notifications)[key] === notification[key]);
+      }
+      assert(_.last(notifications).index === notifications.length);
     });
   });
 
@@ -60,7 +65,7 @@ describe('notification part', async () => {
         await utils.notification.sendNotification(utils.createRandomString(24, { hax: true }), notification);
         throw new Error('it should be wrong.');
       } catch (err) {
-        expect(err.code).to.be.equal(errorMessages.MEMBER_NOT_EXIST.code);
+        assert(err.code === errorMessages.MEMBER_NOT_EXIST.code);
       }
     });
   });
@@ -80,8 +85,8 @@ describe('notification part', async () => {
       notificationRes = notificationRes.body;
       let notifications = notificationRes.notifications;
       let count = notificationRes.count;
-      expect(notifications.length).to.be.equal(config.pagesize);
-      expect(count).to.be.equal(config.pagesize + 1);
+      assert(notifications.length === config.pagesize);
+      assert(count === config.pagesize + 1);
     });
   });
 
@@ -93,8 +98,8 @@ describe('notification part', async () => {
       nitificationRes = nitificationRes.body;
       let notifications = nitificationRes.notifications;
       let count = nitificationRes.count;
-      expect(notifications.length).to.be.equal(0);
-      expect(count).to.be.equal(0);
+      assert(notifications.length === 0);
+      assert(count === 0);
     });
   });
 
@@ -117,8 +122,8 @@ describe('notification part', async () => {
         .expect(200);
       nitificationRes = nitificationRes.body;
       let notifications = nitificationRes.notifications;
-      expect(notifications.find((item) => item.index === 1)).to.includes({ index: 1, hasRead: true });
-      expect(notifications.find((item) => item.index === 2)).to.includes({ index: 2, hasRead: false });
+      assert(notifications.find((item) => item.index === 1).hasRead === true);
+      assert(notifications.find((item) => item.index === 2).hasRead === false);
     });
   });
 
@@ -142,7 +147,7 @@ describe('notification part', async () => {
       nitificationRes = nitificationRes.body;
       let notifications = nitificationRes.notifications;
       for (let notification of notifications) {
-        expect(notification.hasRead).to.be.equal(true);
+        assert(notification.hasRead === true);
       }
     });
   });
@@ -171,7 +176,7 @@ describe('notification part', async () => {
         nitificationRes = nitificationRes.body;
         let notifications = nitificationRes.notifications;
         for (let notification of notifications) {
-          expect(notification.hasRead).to.be.equal(true);
+          assert(notification.hasRead === true);
         }
       });
 
@@ -181,7 +186,7 @@ describe('notification part', async () => {
       nitificationRes = nitificationRes.body;
       let notifications = nitificationRes.notifications;
       for (let notification of notifications) {
-        expect(notification.hasRead).to.be.equal(false);
+        assert(notification.hasRead === false);
       }
     });
   });

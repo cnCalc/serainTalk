@@ -2,7 +2,6 @@
 
 const { ObjectID } = require('mongodb');
 const childProcess = require('child_process');
-const util = require('util');
 
 exports = module.exports = {};
 
@@ -43,11 +42,21 @@ exports.uploadOneAttachment = uploadOneAttachment;
 let createAttachmentFile = async (fileName, size, next) => {
   fileName = fileName || `${size / 1024 / 1024}M.txt`;
   let testFilePath = `./test/testfile/${fileName}`;
-  let promiseExec = util.promisify(childProcess.exec);
-  await promiseExec(`dd if=/dev/zero of=${testFilePath} count=1 bs=${size}`);
+
+  await new Promise((resolve, reject) => {
+    childProcess.exec(`dd if=/dev/zero of=${testFilePath} count=1 bs=${size}`, (err) => {
+      if (err) reject(err);
+      resolve();
+    });
+  });
 
   await next(testFilePath);
 
-  await promiseExec(`rm ${testFilePath}`);
+  await new Promise((resolve, reject) => {
+    childProcess.exec(`rm ${testFilePath}`, (err) => {
+      if (err) reject(err);
+      resolve();
+    });
+  });
 };
 exports.createAttachmentFile = createAttachmentFile;

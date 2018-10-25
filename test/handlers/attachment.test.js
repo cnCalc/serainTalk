@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const assert = require('assert');
 const fs = require('fs');
 const supertest = require('supertest');
 
@@ -22,8 +22,8 @@ describe('attachment part.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let fileCount = fs.readdirSync(staticConfig.upload.file.path).length;
       await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
-        expect(fs.readdirSync(staticConfig.upload.file.path).length).to.be.equal(fileCount + 1);
-        expect(newAttachmentInfo.filePath).to.not.be.ok;
+        assert(fs.readdirSync(staticConfig.upload.file.path).length === fileCount + 1);
+        assert(!newAttachmentInfo.filePath);
       });
     });
   });
@@ -32,7 +32,7 @@ describe('attachment part.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let uploadUrl = '/api/v1/attachment';
       let errorUploadRes = await agent.post(uploadUrl).expect(400);
-      expect(errorUploadRes.body.code).to.be.equal('ERR_BAD_REQUEST');
+      assert(errorUploadRes.body.code === 'ERR_BAD_REQUEST');
     });
   });
 
@@ -43,8 +43,8 @@ describe('attachment part.', async () => {
         let attachmentsRes = await agent.get(getUrl);
         let attachments = attachmentsRes.body.attachments;
 
-        expect(attachments[0].fileName).to.be.equal('attachment.txt');
-        expect(attachments[0].filePath).to.not.be.ok;
+        assert(attachments[0].fileName === 'attachment.txt');
+        assert(!attachments[0].filePath);
       });
     });
   });
@@ -54,7 +54,7 @@ describe('attachment part.', async () => {
     let fileRes = await agent.post(getUrl)
       .attach('file', 'test/testfile/attachment.txt');
 
-    expect(fileRes.body.status).to.be.equal('error');
+    assert(fileRes.body.status === 'error');
   });
 
   it('get a file.', async () => {
@@ -62,7 +62,7 @@ describe('attachment part.', async () => {
       await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachmentInfo) => {
         let getUrl = `/api/v1/attachment/${newAttachmentInfo.id}`;
         let fileRes = await agent.get(getUrl);
-        expect(fileRes.type).to.be.equal('text/plain');
+        assert(fileRes.type === 'text/plain');
       });
     });
   });
@@ -73,8 +73,8 @@ describe('attachment part.', async () => {
         await testTools.member.logout(agent, async () => {
           let getUrl = `/api/v1/attachment/${newAttachmentInfo.id}`;
           let fileRes = await agent.get(getUrl);
-          expect(fileRes.body.status).to.be.equal('error');
-          expect(fileRes.body.code).to.be.equal('ERR_REQUIRE_AUTHORIZATION');
+          assert(fileRes.body.status === 'error');
+          assert(fileRes.body.code === 'ERR_REQUIRE_AUTHORIZATION');
         });
       });
     });
@@ -84,8 +84,8 @@ describe('attachment part.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       let getUrl = `/api/v1/attachment/${utils.createRandomString(24, { hax: true })}`;
       let fileRes = await agent.get(getUrl);
-      expect(fileRes.body.status).to.be.equal('error');
-      expect(fileRes.body.code).to.be.equal('ERR_NOT_FOUND');
+      assert(fileRes.body.status === 'error');
+      assert(fileRes.body.code === 'ERR_NOT_FOUND');
     });
   });
 
@@ -108,8 +108,8 @@ describe('attachment part.', async () => {
               let getUrl = '/api/v1/attachment/info/me?excludingUsed=on';
               let fileRes = await agent.get(getUrl);
               let fileList = fileRes.body.attachments;
-              expect(fileRes.body.status).to.be.equal('ok');
-              expect(fileList.length).to.be.equal(1);
+              assert(fileRes.body.status === 'ok');
+              assert(fileList.length === 1);
             });
           });
         });
@@ -120,10 +120,10 @@ describe('attachment part.', async () => {
   it('get daily traffic.', async () => {
     let trafficUrl = '/api/v1/attachment/traffic';
     let trafficRes = await agent.get(trafficUrl);
-    expect(trafficRes.body.status).to.be.equal('error');
+    assert(trafficRes.body.status === 'error');
     testTools.member.createOneMember(agent, null, async () => {
       trafficRes = await agent.get(trafficUrl);
-      expect(trafficRes.body.dailyTraffic).to.be.equal(staticConfig.download.dailyTraffic);
+      assert(trafficRes.body.dailyTraffic === staticConfig.download.dailyTraffic);
     });
   });
 
@@ -136,12 +136,12 @@ describe('attachment part.', async () => {
           await testTools.attachment.uploadOneAttachment(agent, filePath, async (newAttachmentInfoB) => {
             let getUrl = `/api/v1/attachment/${newAttachmentInfoA.id}`;
             let fileRes = await agent.get(getUrl);
-            expect(fileRes.type).to.be.equal('text/plain');
+            assert(fileRes.type === 'text/plain');
 
             getUrl = `/api/v1/attachment/${newAttachmentInfoB.id}`;
             fileRes = await agent.get(getUrl);
-            expect(fileRes.body.status).to.be.equal('error');
-            expect(fileRes.body.code).to.be.equal('ERR_TRAFFIC_LIMIT_EXCEEDED');
+            assert(fileRes.body.status === 'error');
+            assert(fileRes.body.code === 'ERR_TRAFFIC_LIMIT_EXCEEDED');
           });
         });
       });
@@ -163,8 +163,8 @@ describe('attachment part.', async () => {
         await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
           let deleteUrl = `/api/v1/attachment/${newAttachment.id}`;
           let deleteRes = await agent.delete(deleteUrl).expect(401);
-          expect(deleteRes.body.status).to.be.equal('error');
-          expect(deleteRes.body.code).to.be.equal('ERR_PERMISSION_DENIED');
+          assert(deleteRes.body.status === 'error');
+          assert(deleteRes.body.code === 'ERR_PERMISSION_DENIED');
         });
       });
     });

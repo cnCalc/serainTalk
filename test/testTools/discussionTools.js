@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const assert = require('assert');
 const dbTool = require('../../database');
 const testTools = require('./');
 const { ObjectID } = require('mongodb');
@@ -56,8 +56,8 @@ let createOneDiscussion = async (agent, discussionInfo, next) => {
       error.code = newDiscussionRes.body.code;
       throw error;
     }
-    expect(newDiscussionRes.statusCode).to.be.equal(201);
-    expect(newDiscussionRes.body.status).to.equal('ok');
+    assert(newDiscussionRes.statusCode === 201);
+    assert(newDiscussionRes.body.status === 'ok');
   } catch (err) {
     throw err;
   }

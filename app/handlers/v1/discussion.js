@@ -1148,12 +1148,28 @@ let deleteDiscussion = async (req, res, next) => {
   }
 };
 
+/**
+ * [处理函数] 忽略一个讨论。不再收到该讨论的消息通知。
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 let ignoreDiscussion = async (req, res, next) => {
   await utils.discussion.setIgnore(req.member._id, ObjectID(req.params.id));
 
   return res.status(201).send({ status: 'ok' });
 };
 
+/**
+ * [处理函数] 关注一个讨论。该讨论有任何动态都会向关注者发送通知。
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 let watchDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
@@ -1165,6 +1181,14 @@ let watchDiscussion = async (req, res, next) => {
   return res.status(201).send({ status: 'ok' });
 };
 
+/**
+ * [处理函数] 重置讨论关注状态。只有在被回复时才会收到通知。
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 let normalDiscussion = async (req, res, next) => {
   await dbTool.commonMember.updateOne(
     { _id: req.member._id },
@@ -1178,12 +1202,28 @@ let normalDiscussion = async (req, res, next) => {
   return res.status(201).send({ status: 'ok' });
 };
 
+/**
+ * [处理函数] 屏蔽一个其他成员。
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 let ignoreMember = async (req, res, next) => {
   await utils.member.setIgnore(req.member._id, ObjectID(req.params.id));
 
   return res.status(201).send({ status: 'ok' });
 };
 
+/**
+ * [处理函数] 锁定一个讨论。不允许普通用户再进行修改。
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 let lockDiscussion = async (req, res, next) => {
   if (!await utils.permission.checkPermission('discussion-lockDiscussion', req.member.permissions)) {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
