@@ -76,7 +76,7 @@ div
           check-box(:checked="false")
           span 允许站内用户查看我的电子邮件地址
         div.row
-          check-box(:checked="false")
+          check-box(:checked="settings.allowShowOnlineStatus" v-on:click.native="updateSetting('allowShowOnlineStatus', !settings.allowShowOnlineStatus)")
           span 公开我的在线状态
         h3 调试
         div.row
