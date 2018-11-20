@@ -8,7 +8,9 @@ div
     div.name-and-bio-container
       h1.member-name {{ member.username }}
       h2.member-bio(:title="member.bio") {{ member.bio }}
-      div.member-other-info 加入于{{ timeAgo(member.regdate) }} | 最后访问于{{ timeAgo(member.lastlogintime) }}
+      div.member-other-info
+        span 加入于{{ timeAgo(member.regdate) }}&nbsp;|&nbsp;
+        span {{ member.online === true ? '当前在线' : ('最后访问于' + timeAgo(member.lastlogintime)) }}
   div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
@@ -618,8 +620,8 @@ div.member-info {
       }
     }
     div.member-other-info {
-      // color: #888;
-      font-size: 14px;
+      color: #666;
+      font-size: 13px;
       line-height: $avatar-size / 4;
       height: $avatar-size / 4;
       @include respond-to(phone) {
