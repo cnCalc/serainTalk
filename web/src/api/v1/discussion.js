@@ -247,6 +247,45 @@ function deleteDiscussionPermanentlyById (params) {
   });
 }
 
+/**
+ * Update subscription mode
+ *
+ * @param {Object} params
+ * @param {string} params.id ID of the discussion
+ * @param {('normal'|'watch'|'ignore')} params.mode new subscription mode (normal, watch or ignore)
+ *
+ * @returns {Promise}
+ */
+function updateSubscribeModeById (params) {
+  if (!params.id) return Promise.reject('discussion id is required');
+
+  let URL = '';
+
+  switch (params.mode) {
+    case 'normal':
+      URL = `${config.api.url}/${config.api.version}/discussion/${params.id}/normal`;
+      break;
+    case 'watch':
+      URL = `${config.api.url}/${config.api.version}/discussion/${params.id}/watch`;
+      break;
+    case 'ignore':
+      URL = `${config.api.url}/${config.api.version}/discussion/${params.id}/ignore`;
+      break;
+    default:
+      return Promise.reject('subscription mode is required');
+  }
+
+  return new Promise((resolve, reject) => {
+    axios.post(URL)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
+if (process.env.VUE_ENV !== 'server') {
+  window.updateSubscribeModeById = updateSubscribeModeById;
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -259,4 +298,5 @@ export default {
   deletePostByDiscussionIdAndIndex,
   votePostByDiscussionIdAndIndex,
   deleteDiscussionPermanentlyById,
+  updateSubscribeModeById,
 };

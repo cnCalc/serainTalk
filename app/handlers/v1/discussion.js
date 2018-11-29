@@ -155,14 +155,22 @@ let getDiscussionById = async (req, res) => {
           creater: 1, title: 1, createDate: 1,
           lastDate: 1, views: 1, tags: 1,
           status: 1, lastMember: 1, category: 1,
+          subscribers: 1,
           postsCount: { $size: '$posts' },
         },
       },
     ]).toArray();
     if (discussionDoc.length === 0) return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
-    let count = discussionDoc[0].postsCount;
-    delete discussionDoc[0].postsCount;
-    return res.status(200).send({ status: 'ok', discussionInfo: discussionDoc[0], count: count });
+
+    const discussionInfo = discussionDoc[0];
+    const count = discussionInfo.postsCount;
+
+    discussionInfo.subscribeMode = discussionInfo.subscribers[req.member.id] || 'normal';
+
+    delete discussionInfo.postsCount;
+    delete discussionInfo.subscribers;
+
+    return res.status(200).send({ status: 'ok', discussionInfo, count });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -527,29 +535,29 @@ let createPost = async (req, res, next) => {
 
     // 通知优先级: 屏蔽/讨论有跟帖/被回复/被at
 
-    // 去重
-    let needNotification = new Set();
+    let needNotification = new Set(); // 去重
+    const watchList = [];
     // 添加楼主
     needNotification.add(discussionInfo.creater.toString());
     // 添加被回复者
     if (postInfo.replyTo) needNotification.add(postInfo.replyTo.memberId);
     postInfo.mentions.forEach(mention => needNotification.add(mention));
-
-    let watchList = await dbTool.commonMember.aggregate([
-      { $match: { 'subscription.watch.discussions': discussionInfo._id } },
-      { $project: { _id: true } },
-    ]).toArray();
-
-    watchList = watchList.map(member => member._id.toString());
-    watchList.forEach(memberId => { needNotification.add(memberId); });
+    // 添加订阅帖子用户，并除去该帖子的不关注用户
+    Object.keys(discussionInfo.subscribers || {}).forEach(userId => {
+      if (discussionInfo.subscribers[userId] === 'watch') {
+        watchList.push(userId);
+        needNotification.add(userId);
+      } else if (discussionInfo.subscribers[userId] === 'ignore') {
+        needNotification.delete(userId);
+      }
+    });
 
     needNotification = [...needNotification];
     // 如果已屏蔽则不发送通知
     let tempList = [];
     needNotification = needNotification.map(async memberId => {
       let _memberId = ObjectID(memberId);
-      if (!await utils.member.isIgnored(_memberId, req.member._id)
-        && !await utils.discussion.isIgnored(_memberId, discussionInfo._id)) {
+      if (!await utils.member.isIgnored(_memberId, req.member._id)) {
         tempList.push(_memberId);
       }
     });
@@ -1157,7 +1165,14 @@ let deleteDiscussion = async (req, res, next) => {
  * @returns
  */
 let ignoreDiscussion = async (req, res, next) => {
-  await utils.discussion.setIgnore(req.member._id, ObjectID(req.params.id));
+  const _id = ObjectID(req.params.id);
+  const $set = {};
+  $set[`subscribers.${req.member.id}`] = 'ignore';
+
+  await dbTool.discussion.updateOne(
+    { _id },
+    { $set }
+  );
 
   return res.status(201).send({ status: 'ok' });
 };
@@ -1171,13 +1186,15 @@ let ignoreDiscussion = async (req, res, next) => {
  * @returns
  */
 let watchDiscussion = async (req, res, next) => {
-  await dbTool.commonMember.updateOne(
-    { _id: req.member._id },
-    {
-      $push: { 'subscription.watch.discussions': ObjectID(req.params.id) },
-      $pull: { 'subscription.ignore.discussions': ObjectID(req.params.id) },
-    }
+  const _id = ObjectID(req.params.id);
+  const $set = {};
+  $set[`subscribers.${req.member.id}`] = 'watch';
+
+  await dbTool.discussion.updateOne(
+    { _id },
+    { $set }
   );
+
   return res.status(201).send({ status: 'ok' });
 };
 
@@ -1190,15 +1207,15 @@ let watchDiscussion = async (req, res, next) => {
  * @returns
  */
 let normalDiscussion = async (req, res, next) => {
-  await dbTool.commonMember.updateOne(
-    { _id: req.member._id },
-    {
-      $pull: {
-        'subscription.watch.discussions': ObjectID(req.params.id),
-        'subscription.ignore.discussions': ObjectID(req.params.id),
-      },
-    }
+  const _id = ObjectID(req.params.id);
+  const $unset = {};
+  $unset[`subscribers.${req.member.id}`] = 1;
+
+  await dbTool.discussion.updateOne(
+    { _id },
+    { $unset },
   );
+
   return res.status(201).send({ status: 'ok' });
 };
 
@@ -1297,19 +1314,27 @@ let lockDiscussion = async (req, res, next) => {
 module.exports = {
   createDiscussion,
   createPost,
+
   deleteDiscussion,
   deletePost,
+
   getDiscussionById,
   getDiscussionPostsById,
   getDiscussionsByCategory,
   getDiscussionUnderMember,
+
   getLatestDiscussionList,
+
   getPostByIndex,
-  ignoreDiscussion,
-  ignoreMember,
-  lockDiscussion,
-  normalDiscussion,
+
   updatePost,
   votePost,
+
+  ignoreMember,
+
+  normalDiscussion,
   watchDiscussion,
+  ignoreDiscussion,
+
+  lockDiscussion,
 };

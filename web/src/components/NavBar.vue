@@ -34,12 +34,12 @@
                 li {{ hint.username }}
             div.search-not-found(v-else) 没有找到相关用户。
       template(v-if="!me || typeof me._id === 'undefined'")
-        router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册") 注册
+        router-link.right(:to="`/signup?next=${encodeURIComponent(path)}`" title="注册" style="padding-left: 5px;") 注册
         router-link.right(:to="`/signin?next=${encodeURIComponent(path)}`" title="登录") 登录
       template(v-else)
         notification-control
         member-control
-      div.mobile-drawer-overlay(v-bind:class="{ active: isCategoryDrawerActivated }")
+      div.mobile-drawer-overlay(v-bind:class="{ active: isCategoryDrawerActivated }", onclick="javascript:void(0)")
       div.mobile-drawer(v-bind:class="{ active: isCategoryDrawerActivated }")
         div.category-list: category-list
 </template>

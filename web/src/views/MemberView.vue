@@ -814,6 +814,9 @@ div.member-activity {
         &:not(:first-child) {
           margin-bottom: 8px;
         }
+        .check-box {
+          flex-shrink: 0;
+        }
         span {
           font-size: 15px;
           vertical-align: middle;
