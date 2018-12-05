@@ -165,6 +165,10 @@ let getDiscussionById = async (req, res) => {
     const discussionInfo = discussionDoc[0];
     const count = discussionInfo.postsCount;
 
+    if (!discussionInfo.subscribers) {
+      discussionInfo.subscribers = {};
+    }
+
     if (req.member.id) {
       discussionInfo.subscribeMode = discussionInfo.subscribers[req.member.id] || 'normal';
     } else {
