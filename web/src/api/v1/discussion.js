@@ -282,10 +282,6 @@ function updateSubscribeModeById (params) {
   });
 }
 
-if (process.env.VUE_ENV !== 'server') {
-  window.updateSubscribeModeById = updateSubscribeModeById;
-}
-
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,

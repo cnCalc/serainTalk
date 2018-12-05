@@ -66,6 +66,9 @@ a:hover {
 .list-enter, .list-leave-to {
   opacity: 0;
 }
+.list-enter {
+  transform: translateY(15px);
+}
 
 // scroll bar
 ::-webkit-scrollbar {
