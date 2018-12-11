@@ -10,6 +10,7 @@ let getLatestList = {
   query: {
     tag: joi.array().items(joi.string()),
     category: joi.array().items(joi.string()),
+    sticky: joi.array().items(joi.string().valid(['category'])).min(1),
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
@@ -37,6 +38,7 @@ exports.getDiscussionByMember = getDiscussionByMember;
 
 let getDiscussionsByCategory = {
   query: {
+    sticky: joi.array().items(joi.string().valid(['site'])).min(1),
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
   },
@@ -109,6 +111,16 @@ let votePost = {
   },
 };
 exports.votePost = votePost;
+
+let stickyDiscussion = {
+  params: {
+    id: interfaceUtils.mongoId.required(),
+  },
+  body: {
+    sticky: joi.string().valid(['site', 'category']).required(),
+  },
+};
+exports.stickyDiscussion = stickyDiscussion;
 
 let updatePost = {
   params: {

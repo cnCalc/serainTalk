@@ -39,7 +39,7 @@ let sendNotification = async (_memberId, notification) => {
     if (notificationList[i].index === undefined) {
       let updateInfo = { $set: {} };
       updateInfo.$set[`notifications.${i}.index`] = i + 1;
-      await dbTool.commonMember.update(
+      await dbTool.commonMember.updateOne(
         { _id: _memberId },
         updateInfo
       );

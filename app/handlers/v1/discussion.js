@@ -75,6 +75,9 @@ let getLatestDiscussionList = async (req, res) => {
         { 'status.type': { $in: [config.discussion.status.ok, config.discussion.status.locked] } },
       ],
     };
+    let sort = {
+      'sticky.site': -1,
+    };
     // 无权限只显示白名单中的分类
     if (req.query.category
       // 鉴权 能否读取所有分类的讨论
@@ -94,18 +97,30 @@ let getLatestDiscussionList = async (req, res) => {
 
     // 鉴权 能否读取被封禁的 discussion
     if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
-      delete query.$or;
+      query.$or.splice(0, 2);
+      if (!query.$or.length) delete query.$or;
     }
 
+    // 是否需要获取分类的置顶贴
+    if (req.query.sticky) {
+      req.query.sticky.forEach(stickyType => {
+        sort[`sticky.${stickyType}`] = -1;
+      });
+    }
+
+    sort.lastDate = -1;
     let results = await dbTool.discussion.aggregate([
       { $match: query },
       {
         $project: {
           creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
           tags: 1, status: 1, lastMember: 1, replies: 1, category: 1,
+          sticky: 1,
         },
       },
-      { $sort: { lastDate: -1 } },
+      {
+        $sort: sort,
+      },
       { $skip: offset * pagesize },
       { $limit: pagesize },
     ]).toArray();
@@ -337,6 +352,12 @@ let createDiscussion = async (req, res, next) => {
     return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
   }
 
+  if (!config.discussion.category.whiteList.includes(req.body.category)
+    // 鉴权 能否向所有的分类新增讨论
+    && !await utils.permission.checkPermission('discussion-setStickyForCategory', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
   let emptyVote = {};
   for (let voteType of config.discussion.post.vote) emptyVote[voteType] = [];
 
@@ -377,6 +398,10 @@ let createDiscussion = async (req, res, next) => {
     replies: 1,
     status: {
       type: config.discussion.status.ok,
+    },
+    sticky: {
+      site: null,
+      category: null,
     },
     tags: req.body.tags,
     title: req.body.title,
@@ -858,6 +883,81 @@ let votePost = async (req, res, next) => {
   }
 };
 
+let stickyDiscussion = async (req, res, next) => {
+  try {
+    let _discussionId = ObjectID(req.params.id);
+    let discussionInfo = await dbTool.discussion.findOne({ _id: _discussionId });
+    if (!discussionInfo) {
+      return errorHandler(null, errorMessages.NOT_FOUND, 404, res);
+    }
+
+    // 检查discussion 是否被锁定
+    if (discussionInfo.status && discussionInfo.status.type === config.discussion.status.locked) {
+      return errorHandler(null, errorMessages.DISCUSSION_LOCKED, 403, res);
+    }
+
+    if (req.body.sticky === 'site') {
+      // 鉴权 是否可以置顶帖子
+      if (!await utils.permission.checkPermission('discussion-setStickyForSite', req.member.permissions)) {
+        return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+      }
+
+      if (discussionInfo.sticky && discussionInfo.sticky.site) {
+        await dbTool.discussion.updateOne(
+          { _id: _discussionId },
+          { $set: { 'sticky.site': null } }
+        );
+      } else {
+        let results = await dbTool.discussion.aggregate([
+          { $match: { 'sticky.site': { $ne: null } } },
+          { $project: { sticky: 1 } },
+          { $sort: { 'sticky.site': -1 } },
+          { $limit: 1 },
+        ]).toArray();
+
+        await dbTool.discussion.updateOne(
+          { _id: _discussionId },
+          { $set: { 'sticky.site': results[0] ? results[0].sticky.site + 1 : 1 } }
+        );
+      }
+    }
+    if (req.body.sticky === 'category') {
+      if (!await utils.permission.checkPermission('discussion-setStickyForCategory', req.member.permissions)) {
+        return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+      }
+
+      if (discussionInfo.sticky && discussionInfo.sticky.category) {
+        await dbTool.discussion.updateOne(
+          { _id: _discussionId },
+          { $set: { 'sticky.category': null } }
+        );
+      } else {
+        let results = await dbTool.discussion.aggregate([
+          {
+            $match: {
+              'sticky.category': { $ne: null },
+              category: discussionInfo.category,
+            },
+          },
+          { $project: { sticky: 1 } },
+          { $sort: { 'sticky.category': -1 } },
+          { $limit: 1 },
+        ]).toArray();
+
+        await dbTool.discussion.updateOne(
+          { _id: _discussionId },
+          { $set: { 'sticky.category': results[0] ? results[0].sticky.category + 1 : 1 } }
+        );
+      }
+    }
+
+    return res.status(201).send({ status: 'ok' });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
+  }
+};
+
 /**
  * [处理函数] 查询指定成员创建的讨论
  * GET /api/v1/member/:id/discussions
@@ -950,6 +1050,9 @@ let getDiscussionsByCategory = async (req, res, next) => {
         { 'status.type': { $in: [config.discussion.status.ok] } },
       ],
     };
+    let sort = {
+      'sticky.category': -1,
+    };
     if (!config.discussion.category.whiteList.includes(category)
       // 鉴权 能否读取所有分类的讨论
       && !await utils.permission.checkPermission('discussion-readExtraCategories', req.member.permissions)) {
@@ -959,16 +1062,26 @@ let getDiscussionsByCategory = async (req, res, next) => {
     if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
       delete query.$or;
     }
+    // 是否需要获取全站的置顶贴
+    if (req.query.sticky) {
+      req.query.sticky.forEach(stickyType => {
+        sort[`sticky.${stickyType}`] = -1;
+      });
+    }
 
+    sort.lastDate = -1;
     let discussions = await dbTool.discussion.aggregate([
       { $match: query },
       {
         $project: {
           creater: 1, title: 1, createDate: 1, lastDate: 1,
           views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
+          sticky: 1,
         },
       },
-      { $sort: { lastDate: -1 } },
+      {
+        $sort: sort,
+      },
       { $skip: offset * pagesize },
       { $limit: pagesize },
     ]).toArray();
@@ -1309,6 +1422,7 @@ module.exports = {
   ignoreMember,
   lockDiscussion,
   normalDiscussion,
+  stickyDiscussion,
   updatePost,
   votePost,
   watchDiscussion,

@@ -235,6 +235,72 @@ describe('discussion part', async () => {
     });
   });
 
+  it('site sticky.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+        await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
+          await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
+            await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
+              let getUrl = '/api/v1/discussion/latest?pagesize=2';
+              let discussionRes = await agent.get(getUrl);
+              let discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+
+              let stickyUrl = `/api/v1/discussion/${newDiscussionInfoA._id}/sticky`;
+              await agent.post(stickyUrl)
+                .send({ sticky: 'site' });
+              discussionRes = await agent.get(getUrl);
+              discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[0]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[1]._id);
+
+              await agent.post(stickyUrl)
+                .send({ sticky: 'site' });
+              discussionRes = await agent.get(getUrl);
+              discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('category sticky.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+        await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
+          await testTools.discussion.createOneDiscussion(agent, { category: '函数机综合讨论区' }, async (newDiscussionInfoA) => {
+            await testTools.discussion.createOneDiscussion(agent, { category: '函数机综合讨论区' }, async (newDiscussionInfoB) => {
+              let getUrl = '/api/v1/categories/scicalc/discussions';
+              let discussionRes = await agent.get(getUrl);
+              let discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+
+              let stickyUrl = `/api/v1/discussion/${newDiscussionInfoA._id}/sticky`;
+              await agent.post(stickyUrl)
+                .send({ sticky: 'category' });
+              discussionRes = await agent.get(getUrl);
+              discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[0]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[1]._id);
+
+              await agent.post(stickyUrl)
+                .send({ sticky: 'category' });
+              discussionRes = await agent.get(getUrl);
+              discussions = discussionRes.body.discussions;
+              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
+              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+            });
+          });
+        });
+      });
+    });
+  });
+
   it('whitelist test.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.setWhiteList(['test'], async () => {

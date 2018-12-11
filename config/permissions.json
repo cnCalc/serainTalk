@@ -75,8 +75,22 @@
       ],
       "enable": true
     },
-    "lockDiscussion":{
+    "lockDiscussion": {
       "description": "可以锁定一个帖子。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
+    },
+    "setStickyForCategory": {
+      "description": "可以分区置顶一个帖子。",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
+    },
+    "setStickyForSite": {
+      "description": "可以全站置顶一个帖子。",
       "allow": [
         "admin"
       ],

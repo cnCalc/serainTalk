@@ -129,6 +129,18 @@ let route = {
         handlers.v1.discussion.ignoreMember,
       ],
     },
+    stickyDiscussion: {
+      description: '置顶/取消置顶 一个 discussion。',
+      path: [
+        '/v1/discussions/:id/sticky',
+        '/v1/discussion/:id/sticky',
+      ],
+      method: 'post',
+      schema: dataInterface.discussion.stickyDiscussion,
+      handler: [
+        handlers.v1.discussion.stickyDiscussion,
+      ],
+    },
     lock: {
       description: '锁定/解锁 指定的 Discussion。',
       path: [
