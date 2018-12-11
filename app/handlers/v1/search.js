@@ -2,6 +2,7 @@
 
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
+const jieba = require('nodejieba');
 const { errorHandler, errorMessages } = utils;
 
 /*
@@ -45,9 +46,10 @@ const searchPostContent = async (req, res) => {
 
 // TODO: 限制搜索分区
 const searchDiscussionTitle = async (req, res) => {
+  const keywords = jieba.extract(req.query.keywords, 10).map(r => r.word);
   try {
     const aggregates = [
-      ...req.query.keywords.split(' ').map(keyword => {
+      ...keywords.map(keyword => {
         return { $match: { 'title': { $regex: new RegExp(escapeRegExp(keyword), 'i') } } };
       }),
       { $match: {

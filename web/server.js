@@ -53,6 +53,13 @@ site.use('/public', serve('./public', true));
 site.use('/manifest.json', serve('./manifest.json', true));
 site.use('/service-worker.js', serve('./dist/service-worker.js'));
 site.get('/favicon.ico', (req, res) => res.status(404).end());
+// disallow all robots access as it is a beta version
+site.get('/robots.txt', (req, res) => {
+  res.send([
+    'User-agent: *',
+    'Disallow: /',
+  ].join('\n'));
+});
 
 // The actual render entry.
 function render (req, res) {

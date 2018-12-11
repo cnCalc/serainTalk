@@ -8,7 +8,9 @@ div
     div.name-and-bio-container
       h1.member-name {{ member.username }}
       h2.member-bio(:title="member.bio") {{ member.bio }}
-      div.member-other-info 加入于{{ timeAgo(member.regdate) }} | 最后访问于{{ timeAgo(member.lastlogintime) }}
+      div.member-other-info
+        span 加入于{{ timeAgo(member.regdate) }}&nbsp;|&nbsp;
+        span {{ member.online === true ? '当前在线' : ('最后访问于' + timeAgo(member.lastlogintime)) }}
   div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
@@ -76,7 +78,7 @@ div
           check-box(:checked="false")
           span 允许站内用户查看我的电子邮件地址
         div.row
-          check-box(:checked="false")
+          check-box(:checked="settings.allowShowOnlineStatus" v-on:click.native="updateSetting('allowShowOnlineStatus', !settings.allowShowOnlineStatus)")
           span 公开我的在线状态
         h3 调试
         div.row
@@ -475,7 +477,7 @@ export default {
           this.currentMember = route.params.memberId;
           if (needRefetchMemberInfo) {
             this.canLoadMorePosts = true;
-            this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+            this.dataPromise = this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
               if (route.meta.mode === 'discussions') {
                 return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
               } else {
@@ -618,8 +620,8 @@ div.member-info {
       }
     }
     div.member-other-info {
-      // color: #888;
-      font-size: 14px;
+      color: #666;
+      font-size: 13px;
       line-height: $avatar-size / 4;
       height: $avatar-size / 4;
       @include respond-to(phone) {
@@ -811,6 +813,9 @@ div.member-activity {
         align-items: center;
         &:not(:first-child) {
           margin-bottom: 8px;
+        }
+        .check-box {
+          flex-shrink: 0;
         }
         span {
           font-size: 15px;

@@ -19,12 +19,18 @@ let getMemberInfo = async (req, res, next) => {
   req.member = {};
   if (req.cookies && req.cookies.membertoken) {
     try {
-      let payload = jwt.verify(req.cookies.membertoken, config.jwtSecret);
-      let memberDoc = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
+      const payload = jwt.verify(req.cookies.membertoken, config.jwtSecret);
+      const memberDoc = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
       memberUtils.removePrivateField(memberDoc);
-      memberDoc.id = memberDoc._id.toString();
+      const memberId = memberDoc.id = memberDoc._id.toString();
       if (payload.sudo) memberDoc.role = 'admin';
       req.member = memberDoc;
+
+      // 更新用户最后访问
+      await dbTool.commonMember.updateOne(
+        { _id: ObjectID(memberId) },
+        { $set: { lastlogintime: Date.now() } }
+      );
     } catch (err) {
       req.member = {};
       res.clearCookie('membertoken');

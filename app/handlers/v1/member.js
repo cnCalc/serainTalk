@@ -33,6 +33,15 @@ let getMemberInfoById = async (req, res, next) => {
       return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
     }
 
+    if (memberInfo.settings && memberInfo.settings.allowShowOnlineStatus) {
+      // 用户允许公开自己的在线状态，根据 WebSocket 连接情况判断是否在线
+      if (utils.websocket.connections[memberInfo._id] && utils.websocket.connections[memberInfo._id].length > 0) {
+        memberInfo.online = true;
+      } else {
+        memberInfo.online = false;
+      }
+    }
+
     // 删除用户的敏感信息部分
     utils.member.removeSensitiveField(memberInfo);
 

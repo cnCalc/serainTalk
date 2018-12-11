@@ -41,10 +41,16 @@ export default {
       return this.$store.state.busy;
     },
     discussions () {
-      if (this.slug && this.$store.state.category.discussions.length > 0) {
-        return this.$store.state.category.discussions;
-      } else {
+      if (this.slug === undefined) {
+        if (this.currentSlug) {
+          return this.$store.state.category.discussions;
+        } else {
+          return this.$store.state.discussions;
+        }
+      } else if (this.slug === '') {
         return this.$store.state.discussions;
+      } else {
+        return this.$store.state.category.discussions;
       }
     },
     members () {
