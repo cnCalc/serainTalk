@@ -61,7 +61,7 @@ export default {
     },
     isIndex () {
       return !this.slug;
-    }
+    },
   },
   title () {
     let base = '';

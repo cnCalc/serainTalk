@@ -32,7 +32,7 @@ const pictureUpload = multer({
   }),
   limits: { fileSize: staticConfig.upload.picture.maxSize },
   fileFilter (req, file, cb) {
-    if (!/(gif|bmp|webp|png|jpeg|svg)/i.test(file.mimetype)) {
+    if (!/(gif|bmp|webp|png|jpeg|svg|jpg)/i.test(file.mimetype)) {
       cb(new Error('don\'t support type'));
       return;
     }

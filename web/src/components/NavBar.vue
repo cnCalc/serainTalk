@@ -232,7 +232,7 @@ div.st-header {
       height: 0;
       opacity: 0;
       pointer-events: none;
-      transition: all ease 0.2s;
+      // transition: all ease 0.2s;
       &.visiable {
         display: block;
         opacity: 1;

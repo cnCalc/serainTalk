@@ -68,9 +68,22 @@ export default {
             el.addEventListener('click', e => {
               const url = new URL(el.href);
               const hostname = url.hostname;
+
+              const queryString = url.search.substr(1);
+              const queryObject = {};
+
+              queryString.split('&').forEach(pair => {
+                const [k, v] = pair.split('=');
+                queryObject[k] = v;
+              });
+
               if (hostname === location.hostname) {
                 e.preventDefault();
-                this.$router.push(`${url.pathname}${url.search}${url.hash}`);
+                this.$router.push({
+                  path: url.pathname,
+                  hash: url.hash,
+                  query: queryObject,
+                });
               }
             });
           });

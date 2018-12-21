@@ -26,7 +26,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="6.5787275"
+     inkscape:cx="-33.322298"
      inkscape:cy="55.54293"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -34,7 +34,7 @@
      units="px"
      inkscape:pagecheckerboard="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1014"
+     inkscape:window-height="1019"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1" />
@@ -46,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,9 +56,10 @@
      id="layer1"
      transform="translate(0,-263.13332)">
     <path
-       style="fill:#47719b;fill-opacity:0.82745098;stroke-width:1.43657804"
-       d="M 64 2.5078125 A 61.493037 61.493037 0 0 0 2.5078125 64 A 61.493037 61.493037 0 0 0 64 125.49219 A 61.493037 61.493037 0 0 0 125.49219 64 L 104.2793 64 A 40.279832 40.279832 0 0 1 64 104.2793 A 40.279832 40.279832 0 0 1 23.720703 64 A 40.279832 40.279832 0 0 1 64 23.720703 L 64 2.5078125 z "
-       transform="matrix(0.26458333,0,0,0.26458333,0,263.13332)"
-       id="path10" />
+       style="fill:#47719b;fill-opacity:0.82745098;stroke-width:0.36292377"
+       d="m 16.933333,264.53184 c -8.5795906,1.2e-4 -15.5346943,6.95522 -15.5348164,15.53481 1.165e-4,8.57959 6.9552219,15.5347 15.5348164,15.53482 8.579595,-1.2e-4 15.534701,-6.95522 15.534818,-15.53482 h -3.242362 c -6.8e-5,5.61991 -6.67255,12.2924 -12.292456,12.29247 -5.619906,-7e-5 -12.2923865,-6.67256 -12.292455,-12.29247 7.4e-5,-5.6199 6.672553,-12.29239 12.292455,-12.29246 z"
+       id="path10"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccc" />
   </g>
 </svg>

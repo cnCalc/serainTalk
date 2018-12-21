@@ -591,7 +591,7 @@ div.discussion-view {
     order: 2;
     flex: 0 0 $right_width;
     position: relative;
-    z-index: -100;
+    // z-index: -100;
     @include respond-to(phone){
       display: none;
     }

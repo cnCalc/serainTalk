@@ -746,6 +746,23 @@ let route = {
       ],
     },
   },
+  discuz: {
+    discuzLookup: {
+      description: '查找 Discuz ID 在当前数据库中的新 ID',
+      path: [
+        '/v1/discuz-lookup',
+      ],
+      method: 'get',
+      schema: {
+        query: {
+          tid: require('joi').string(),
+        },
+      },
+      handler: [
+        handlers.v1.discuzLookup.lookupDiscuzId,
+      ],
+    },
+  },
 };
 
 let devRoute = {

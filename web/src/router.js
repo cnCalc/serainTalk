@@ -9,7 +9,7 @@ const SigninView = () => import(/* webpackChunkName: "SigninView" */ './views/Si
 const SignupView = () => import(/* webpackChunkName: "SignupView" */ './views/SignupView.vue');
 const MigrationView = () => import(/* webpackChunkName: "MigrationView" */ './views/MigrationView.vue');
 const MessageView = () => import(/* webpackChunkName: "MessageView" */ './views/MessageView.vue');
-
+const DiscuzRedirectView = () => import(/* webpackChunkName: "DiscuzRedirectView" */ './views/DiscuzRedirectView.vue');
 Vue.use(VueRouter);
 
 export function createRouter () {
@@ -71,6 +71,15 @@ export function createRouter () {
         path: '/message/new/:memberId',
         component: MessageView,
         meta: { newSession: true },
+      }, {
+        path: '/viewthread.php',
+        component: DiscuzRedirectView,
+      }, {
+        path: '/thread-:tid-:extra-:page.html',
+        component: DiscuzRedirectView,
+      }, {
+        path: '/forum.php',
+        component: DiscuzRedirectView,
       }, {
         path: '/400',
         component: ErrorView,

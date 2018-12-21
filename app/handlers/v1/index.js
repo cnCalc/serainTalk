@@ -6,6 +6,7 @@ module.exports = {
   category: require('./category'),
   debug: require('./debug'),
   discussion: require('./discussion'),
+  discuzLookup: require('./discuz-lookup'),
   member: require('./member'),
   message: require('./message'),
   migration: require('./migration'),

@@ -6,6 +6,7 @@ import migration from './migration';
 import notification from './notification';
 import message from './message';
 import search from './search';
+import discuzLookup from './discuz-lookup';
 
 export default {
   attachment,
@@ -16,4 +17,5 @@ export default {
   notification,
   message,
   search,
+  discuzLookup,
 };
