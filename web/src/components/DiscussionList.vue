@@ -1,9 +1,11 @@
 <template lang="pug">
   div.discussion-list
-    transition-group(tag="ul" name="list")
+    //- transition-group(tag="ul" name="list")
+    ul
       li(v-for="(discussion, index) in discussions" :key="(keyPrefix || 'dft') + discussion._id" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
+            div.sticky-icon(v-if="showSticky && discussion.sticky[showSticky]")
             div.avatar-image(v-if="members[discussion.creater].avatar" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
             div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
           div.creater-info-popup
@@ -29,7 +31,7 @@ import decodeHTML from '../utils/decodeHTML';
 
 export default {
   name: 'discussion-list',
-  props: ['hideavatar', 'list', 'key-prefix'],
+  props: ['hideavatar', 'list', 'key-prefix', 'show-sticky'],
   data () {
     return {
       lastKeyPrefix: null,
@@ -112,7 +114,6 @@ div.discussion-list {
     background-color: mix($theme_color, white, 80%);
     color: white;
     cursor: pointer;
-    overflow: hidden;
     @include respond-to(phone) {
       @include set-avatar(35px);
     }
@@ -123,8 +124,24 @@ div.discussion-list {
       @include set-avatar(40px);
     }
 
+    div.sticky-icon {
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background-color: #CC3333;
+      background-image: url(../assets/pin.svg);
+      background-size: 80%;
+      background-position: center;
+      box-shadow: -2px 2px 2px rgba(black, 0.2);
+      z-index: 1;
+      border-radius: 50%;
+    }
+
     div.avatar-image {
       position: absolute;
+      border-radius: 50%;
       width: 100%;
       height: 100%;
       background-size: cover;

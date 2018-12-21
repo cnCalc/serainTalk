@@ -6,9 +6,9 @@
         category-list
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
-        discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug")
-        loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
+        discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'")
         div.list-nav
+          loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
           button.button.load-more(@click="loadMore", v-show="!busy") {{ i18n('ui_load_more') }}
 </template>
 
@@ -59,6 +59,9 @@ export default {
     slug () {
       return this.$route.path === '/' ? '' : this.$route.params.categorySlug;
     },
+    isIndex () {
+      return !this.slug;
+    }
   },
   title () {
     let base = '';
@@ -224,6 +227,10 @@ div.nav {
     color: grey;
     cursor: pointer;
     transition: height ease 0.2s;
+  }
+
+  div.list-nav {
+    height: 50px;
   }
 }
 
