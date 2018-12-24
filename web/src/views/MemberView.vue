@@ -97,7 +97,7 @@ div
             button.button(@click="selectAvatarFile", v-if="localImageUrl === ''") 单击选择图片
             div.cut-tool(v-else)
               img(:src="localImageUrl" draggable="false")
-              div.cut-indicator(v-bind:style="cutIndicatorStyle" v-on:mousedown="beginDrag")
+              div.cut-indicator(v-bind:style="cutIndicatorStyle" v-on:mousedown="beginDrag" v-on:touchstart="beginDrag")
               input.scale(type="range" min="10" max="100" setp="5" v-model="cutState.scale")
           //- div.preview
           //-   div.avatar
@@ -220,21 +220,26 @@ export default {
       this.$store.commit('switchScrollBehavior');
     },
     beginDrag (e) {
-      this.dragState.beginMouseX = e.clientX;
-      this.dragState.beginMouseY = e.clientY;
+      this.dragState.beginMouseX = e.clientX || e.changedTouches[0].clientX;
+      this.dragState.beginMouseY = e.clientY || e.changedTouches[0].clientY;
       this.dragState.beginIndicatorX = this.cutState.x;
       this.dragState.beginIndicatorY = this.cutState.y;
       document.addEventListener('mousemove', this.dragStep);
+      document.addEventListener('touchmove', this.dragStep);
       document.addEventListener('mouseup', this.dragStop);
+      document.addEventListener('touchend', this.dragStop);
     },
     dragStep (e) {
-      this.cutState.x = this.dragState.beginIndicatorX + (e.clientX - this.dragState.beginMouseX);
-      this.cutState.y = this.dragState.beginIndicatorY + (e.clientY - this.dragState.beginMouseY);
+      e.preventDefault();
+      this.cutState.x = this.dragState.beginIndicatorX + ((e.clientX || e.changedTouches[0].clientX) - this.dragState.beginMouseX);
+      this.cutState.y = this.dragState.beginIndicatorY + ((e.clientY || e.changedTouches[0].clientY) - this.dragState.beginMouseY);
       this.updateCutIndicatorStyle();
     },
     dragStop (e) {
       document.removeEventListener('mousemove', this.dragStep);
+      document.removeEventListener('touchmove', this.dragStep);
       document.removeEventListener('mouseup', this.dragStop);
+      document.removeEventListener('touchend', this.dragStop);
     },
     selectAvatarFile () {
       this.$el.querySelector('input[type="file"]').click();
@@ -768,6 +773,7 @@ div.member-activity {
         }
 
         div.cut-indicator {
+          touch-action: none;
           position: absolute;
           border-radius: 50%;
         }

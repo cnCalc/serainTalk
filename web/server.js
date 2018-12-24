@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { createBundleRenderer } = require('vue-server-renderer');
+const axios = require('axios');
 
 const isProd = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
@@ -91,6 +92,23 @@ function render (req, res) {
     res.send(html);
   });
 }
+
+// Redirect Discuz's URL
+function discuzRedirectHandler (req, res, next) {
+  const tid = req.query.tid || req.params.tid;
+  if (tid) {
+    axios.get(`/api/v1/discuz-lookup?tid=${tid}`)
+      .then(response => {
+        res.redirect(`/d/${response.data.discussionId}`);
+      })
+      .catch(next);
+  } else {
+    next();
+  }
+}
+site.use('/viewthread.php', discuzRedirectHandler);
+site.use('/thread-:tid-:extra-:page.html', discuzRedirectHandler);
+site.use('/forum.php', discuzRedirectHandler);
 
 // deal with all those unhandled requests here.
 site.get('*', (isProd || isTest)
