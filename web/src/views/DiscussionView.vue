@@ -49,8 +49,10 @@
     div.discussion-view-right
       div.functions-slide-bar-container(v-bind:class="{'fixed-slide-bar': fixedSlideBar}", v-bind:style="{ opacity: busy && (!settings.autoLoadOnScroll || maxPage === minPage) ? 0 : 1 }")
         div.quick-funcs {{ i18n('ui_quick_funcs') }}
-        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'") {{ i18n('ui_qf_subscribe') }}
-        button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY', discussionMeta._id)") {{ i18n('ui_qf_reply_to_post') }}
+        template(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'")
+          button.button.quick-funcs(v-if="discussionMeta.subscribeMode === 'normal'" @click="changeSubscribeMode('watch')") {{ i18n('ui_qf_subscribe') }}
+          button.button.quick-funcs(v-if="discussionMeta.subscribeMode === 'watch'" @click="changeSubscribeMode('normal')") {{ i18n('ui_qf_unsubscribe') }}
+          button.button.quick-funcs(@click="activateEditor('REPLY', discussionMeta._id)") {{ i18n('ui_qf_reply_to_post') }}
         button.button.quick-funcs(@click="scrollToTop(400)") {{ i18n('ui_qf_scroll_to_top') }}
         template(v-if="$store.state.me && $store.state.me.role === 'admin'")
           button.button.quick-funcs(v-if="discussionMeta.status && discussionMeta.status.type === 'ok'", @click="lockDiscussion()") {{ i18n('ui_qf_lock_discussion') }}
@@ -358,6 +360,14 @@ export default {
 
       this.$store.commit('setGlobalTitles', [title, category]);
     },
+    changeSubscribeMode (newMode) {
+      api.v1.discussion.updateSubscribeModeById({
+        id: this.discussionMeta._id,
+        mode: newMode,
+      }).then(() => {
+        return this.$store.dispatch('fetchDiscussionsMeta', { id: this.discussionMeta._id });
+      });
+    }
   },
   computed: {
     pagesCount () {
@@ -554,11 +564,12 @@ export default {
     const page = Number(route.params.page) || 1;
     return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
       .catch(error => {
-        console.log(error);
-        if (error.response.status === 404) {
+        if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
           this.$router.replace('/not-found');
-        }
-      });
+      } else {
+        throw error;
+      }
+    });
   },
 };
 </script>

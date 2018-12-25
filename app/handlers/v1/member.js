@@ -30,7 +30,7 @@ let getMemberInfoById = async (req, res, next) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne({ _id: memberId });
     if (!memberInfo) {
-      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
     }
 
     if (memberInfo.settings && memberInfo.settings.allowShowOnlineStatus) {
@@ -620,7 +620,7 @@ let resetPassword = async (req, res) => {
   tokenInfo.memberId = ObjectID(tokenInfo.memberId);
   let memberInfo = await dbTool.commonMember.findOne({ _id: tokenInfo.memberId });
   if (!memberInfo) {
-    return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
+    return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
   }
 
   // 密码不匹配则报错
@@ -689,7 +689,7 @@ let resetPasswordApplication = async (req, res) => {
       await utils.mail.sendMessage(memberInfo.email, url);
       return res.status(201).send({ status: 'ok' });
     } else {
-      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 400, res);
+      return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
     }
   } catch (err) {
     /* istanbul ignore next */

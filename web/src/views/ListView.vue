@@ -9,7 +9,7 @@
         discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'")
         div.list-nav
           loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
-          button.button.load-more(@click="loadMore", v-show="!busy") {{ i18n('ui_load_more') }}
+          button.button.load-more(@click="loadMore", v-show="!busy && canLoadMore") {{ i18n('ui_load_more') }}
 </template>
 
 <script>
@@ -17,6 +17,8 @@ import DiscussionList from '../components/DiscussionList.vue';
 import CategoryList from '../components/CategoryList.vue';
 import LoadingIcon from '../components/LoadingIcon.vue';
 import titleMixin from '../mixins/title.js';
+import config from '../config';
+
 // import bus from '../utils/ws-eventbus';
 
 export default {
@@ -62,6 +64,9 @@ export default {
     isIndex () {
       return !this.slug;
     },
+    canLoadMore () {
+      return this.currentPage * config.api.pagesize === this.discussions.length;
+    }
   },
   title () {
     let base = '';
@@ -80,6 +85,7 @@ export default {
   methods: {
     loadMore () {
       this.currentPage++;
+
       if (this.$route.fullPath === '/') {
         return this.$store.dispatch('fetchLatestDiscussions', {
           page: this.currentPage,

@@ -77,7 +77,7 @@ function render (req, res) {
 
   const context = {
     url: req.url,
-    title: 'test title',
+    title: 'cnCalc',
     // meta: clientConfig.meta,
   };
 

@@ -488,12 +488,18 @@ export default {
               } else {
                 return Promise.resolve();
               }
-            }).then(() => {
-              // this.updateTitle();
+            }).catch((error) => {
+              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+                this.$router.replace('/not-found');
+              }
             });
           } else if (this.$store.state.member.discussions === undefined) {
             this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
               this.$forceUpdate();
+            }).catch((error) => {
+              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+                this.$router.replace('/not-found');
+              }
             });
           }
           this.currentPage = 1;
@@ -528,8 +534,12 @@ export default {
       if (route.meta.mode === 'discussions') {
         return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
       }
-    }).then(() => {
-      // this.updateTitle();
+    }).catch((error) => {
+      if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+        this.$router.replace('/not-found');
+      } else {
+        throw error;
+      }
     });
   },
 };

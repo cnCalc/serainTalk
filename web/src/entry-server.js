@@ -51,7 +51,7 @@ export default context => new Promise((resolve, reject) => {
         resolve(app);
       }).catch(error => {
         if (error.response.status === 404) {
-          reject({ code: 404 });
+          reject({ code: 404, url: '/not-found' });
         }
         reject(error);
       });

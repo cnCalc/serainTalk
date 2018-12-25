@@ -17,6 +17,8 @@ export default {
   title: 'Error',
   mounted () {
     // this.updateTitle();
+    this.$store.commit('setGlobalTitles', []);
+    this.$store.commit('setBusy', false);
   },
 };
 </script>
