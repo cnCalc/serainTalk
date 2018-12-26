@@ -642,8 +642,6 @@ div.discussion-view {
       }
       div.discussion-post-container {
         display: flex;
-        padding: 16px 8px;
-
       }
 
       @mixin set-avatar-size($avatar-size) {
@@ -674,6 +672,7 @@ div.discussion-view {
         }
         .discussion-post-body > * {
           border-left: $avatar-size + 12px + 8px solid rgba(0, 0, 0, 0);
+          padding: 16px 8px;
         }
       }
 
@@ -762,6 +761,8 @@ div.discussion-view {
         footer.discussion-post-info {
           font-size: 0.8em;
           height: 70px;
+          padding-left: 0;
+          padding-right: 0;
 
           &.fixed {
             position: fixed;
