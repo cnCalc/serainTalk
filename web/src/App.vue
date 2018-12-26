@@ -1,10 +1,10 @@
 <template lang="pug">
   div#app(v-bind:class="{ 'dark-theme': isDarkTheme, 'light-theme': isLightTheme }")
     template(v-if="$store.state.theme === 'light'")
-      link(href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-light.min.css" rel="stylesheet")
+      link(href="https://cdn.jsdelivr.net/npm/highlight.js@9.13.1/styles/atelier-dune-light.css" rel="stylesheet")
       meta(name="theme-color" content="#1770B3")
     template(v-else)
-      link(href="https://cdn.bootcss.com/highlight.js/9.12.0/styles/atelier-dune-dark.min.css" rel="stylesheet")
+      link(href="https://cdn.jsdelivr.net/npm/highlight.js@9.13.1/styles/atelier-dune-dark.css" rel="stylesheet")
       meta(name="theme-color" content="#555555")
     nav-bar
     global-title

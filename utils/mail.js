@@ -22,12 +22,13 @@ const mail = env.isProd ? require('nodemailer').createTransport({
  */
 let sendVerificationCode = async (address, { token, link }) => {
   const html = [
-    '亲爱的用户：',
-    `您正在进行邮箱验证，本次请求的验证码为 <code>${token}</code>，十五分钟内有效。`,
-    link ? `如果您关闭了标签，您可以从<a href="${link}">此处</a>继续上次的操作。` : '',
-    '',
+    '亲爱的用户：<br />',
+    '<br />',
+    `您正在进行邮箱验证，本次请求的验证码为 <code>${token}</code>，十五分钟内有效。<br />`,
+    link ? `如果您关闭了标签，您可以从<a href="${link}">此处</a>继续上次的操作。<br />` : '',
+    '<br />',
     'cnCalc Team',
-  ].join('<br />');
+  ].join('');
 
   env.isProd && mail.sendMail({
     from: staticConfig.mail.data.from,
