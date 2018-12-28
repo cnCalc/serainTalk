@@ -2,18 +2,18 @@
   div.editor-wrapper
     div.editor-container
       div.editor(v-bind:class="{ mini: display === 'mini' }")
-        div.resize(v-show="display !== 'mini'")
-        div.mode(v-text="editorTitle" @click="recover")
-        div.row(v-if="state.mode === 'CREATE_DISCUSSION' || (state.mode === 'EDIT_POST' && state.index === 1)")
+        div.resize(v-show="display === 'show'")
+        div.mode(v-text="(display === 'mini' ? '点击此处继续' : '') + editorTitle" @click="recover")
+        div.row(v-if="state.mode === 'CREATE_DISCUSSION' || (state.mode === 'EDIT_POST' && state.index === 1)" v-show="display === 'show'")
           input(placeholder="输入标题", v-model="title")
           select(v-model="category")
             option(v-for="category in categories" :value="category.name") {{ category.name }}
-        div.row(v-if="isAdmin")
+        div.row(v-if="isAdmin" v-show="display === 'show'")
           span 排版语言：
           select(v-model="lang")
             option(value="html") HTML
             option(value="markdown") Markdown
-        div.textarea
+        div.textarea(v-show="display === 'show'")
           div.mention-wrapper(v-if="!showPreview")
             div.mention-dropdown(v-bind:style="dropdownStyle")
               input(type="text", autocomplete="off", class="mention-filter", v-model="mentionFilter", @keydown="filterKeyDown($event)", placeholder="用户名")
@@ -24,7 +24,7 @@
                                     :key="option") {{ option }}
             textarea.scrollable(placeholder="说些什么吧", v-model="content", :disabled="!editable" @keydown="handleInput" v-on:mousewheel="scrollHelper")
           div.preview.post-content.scrollable(v-else v-html="preview === '' ? '说些什么吧' : preview" v-on:mousewheel="scrollHelper")
-        div.footer
+        div.footer(v-show="display === 'show'")
           button.button(@click="submit") 提交
           button.button(@click="close") 关闭
           button.button(@click="minimum") 最小化
