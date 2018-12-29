@@ -424,10 +424,6 @@ let createDiscussion = async (req, res, next) => {
     views: 0,
   };
 
-  if (req.body.sticky && await utils.permission.checkPermission('discussion-setStickyForSite', req.member.permissions)) {
-    discussionInfo.sticky = req.body.sticky;
-  }
-
   try {
     await dbTool.discussion.insertOne(discussionInfo);
 
