@@ -269,7 +269,7 @@ export default {
       });
     },
     activateEditor (mode, discussionId, memberId, index) {
-      this.$store.commit('updateEditorMode', { mode, discussionId, discussionTitle: this.discussionMeta.title, discussionCategory: this.discussionMeta.category, memberId, index });
+      this.$store.commit('updateEditorMode', { mode, discussionId, discussionMeta: this.discussionMeta, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
     },
     copyLink (idx) {

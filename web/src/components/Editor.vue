@@ -8,6 +8,11 @@
           input(placeholder="输入标题", v-model="title")
           select(v-model="category")
             option(v-for="category in categories" :value="category.name") {{ category.name }}
+          div(v-if="isAdmin" style="display: inline")
+            span 全站置顶：
+            input.small(v-model="sticky.site")
+            span 分区置顶：
+            input.small(v-model="sticky.category")
         div.row(v-if="isAdmin" v-show="display === 'show'")
           span 排版语言：
           select(v-model="lang")
@@ -86,6 +91,10 @@ export default {
       category: '',
       content: '',
       state: {},
+      sticky: {
+        category: 0,
+        site: 0,
+      },
       showPreview: false,
       editable: true,
       lang: 'markdown',
@@ -147,6 +156,10 @@ export default {
     textarea.addEventListener('keyup', e => {
       this.updatePreview();
     });
+
+    if (this.categories.length === 0) {
+      this.$store.dispatch('fetchCategory');
+    }
   },
   computed: {
     mode () {
@@ -162,9 +175,9 @@ export default {
       if (this.state.mode === 'CREATE_DISCUSSION') {
         return '创建新讨论' + (this.title.length > 0 ? `：${this.title}` : '');
       } else if (this.state.mode === 'REPLY_TO_INDEX') {
-        return `回复：${this.state.discussionTitle} # ${this.state.index}`;
+        return `回复：${this.state.discussionMeta.title} # ${this.state.index}`;
       } else if (this.state.mode === 'REPLY') {
-        return `回复：${this.state.discussionTitle}`;
+        return `回复：${this.state.discussionMeta.title}`;
       } else if (this.state.mode === 'EDIT_POST') {
         return '编辑内容';
       }
@@ -199,6 +212,7 @@ export default {
         this.title = '';
         this.typed = false;
         this.state = {};
+        this.sticky = { site: 0, category: 0 };
 
         this.updatePreview();
       } else if (val === 'mini') {
@@ -234,8 +248,9 @@ export default {
               this.usedAttachments = response.post.attachments;
 
               if (this.state.index === 1) {
-                this.title = this.state.discussionTitle;
-                this.category = this.state.discussionCategory;
+                this.title = this.state.discussionMeta.title;
+                this.category = this.state.discussionMeta.category;
+                this.sticky = Object.assign({}, this.state.discussionMeta.sticky);
               }
 
               this.updatePreview();
@@ -554,6 +569,9 @@ export default {
         },
         tags: [],
       };
+      if (this.sticky.site !== 0 || this.sticky.category !== 0) {
+        payload.sticky = this.sticky;
+      }
       api.v1.discussion.createDiscussion({ discussion: payload }).then(() => {
         // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
         // 此处先直接将浏览器刷新，不管后续了
@@ -622,6 +640,13 @@ export default {
           category: this.category,
         };
       }
+
+      if (this.sticky.site !== this.state.discussionMeta.sticky.site ||
+          this.sticky.category !== this.state.discussionMeta.sticky.category) {
+        payload.meta.sticky = this.sticky;
+      }
+
+      console.log(payload);
 
       api.v1.discussion.updateDiscussionPostByIdAndIndex(payload).then(() => {
         // 同上
@@ -736,6 +761,11 @@ div.editor {
   div.row {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    
+    span {
+      font-size: 14px;
+      color: #666
+    }
   }
 
   input, select, textarea {    
@@ -750,6 +780,10 @@ div.editor {
   input, select {
     height: 2.2em;
     width: 300px;
+
+    &.small {
+      width: 100px;
+    }
   }
 
   textarea {
@@ -777,7 +811,7 @@ div.editor {
     box-shadow: 0 0 3px mix($theme_color, rgba(0, 0, 0, 0), 70%);
   }
 
-  div.row > input {
+  div.row input {
     padding-left: 0.5em;
     padding-right: 0.5em;
   }

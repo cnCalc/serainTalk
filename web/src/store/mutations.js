@@ -184,8 +184,8 @@ let mutations = {
   /**
    * 修改编辑器的模式
    */
-  updateEditorMode: (state, { mode, discussionId, discussionTitle, discussionCategory, memberId, index }) => {
-    let payload = { mode, discussionId, discussionTitle, discussionCategory, memberId, index };
+  updateEditorMode: (state, { mode, discussionId, discussionMeta, memberId, index }) => {
+    let payload = { mode, discussionId, discussionMeta, memberId, index };
     state.editor = Object.assign(state.editor, payload);
   },
 

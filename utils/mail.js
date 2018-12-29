@@ -42,6 +42,25 @@ let sendVerificationCode = async (address, { token, link }) => {
   }
 };
 
+let sendNotification = async (address, { title, link, content }) => {
+  const html = [
+    '亲爱的用户：<br />',
+    '<br />',
+    'cnCalc Team',
+  ].join('');
+
+  env.isProd && mail.sendMail({
+    from: staticConfig.mail.data.from,
+    to: address,
+    subject: `您订阅的讨论「${title}」有新的动态`,
+    html,
+    text: html,
+  });
+  if (!env.isMocha) {
+    console.log(html);
+  }
+};
+
 let sendMessage = async (address, message) => {
   env.isProd && mail.sendMail({
     from: staticConfig.mail.data.from,
@@ -54,5 +73,6 @@ let sendMessage = async (address, message) => {
 
 module.exports = {
   sendVerificationCode,
+  sendNotification,
   sendMessage,
 };

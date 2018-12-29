@@ -170,7 +170,7 @@ let getDiscussionById = async (req, res) => {
           creater: 1, title: 1, createDate: 1,
           lastDate: 1, views: 1, tags: 1,
           status: 1, lastMember: 1, category: 1,
-          subscribers: 1,
+          subscribers: 1, sticky: 1,
           postsCount: { $size: '$posts' },
         },
       },
@@ -423,6 +423,11 @@ let createDiscussion = async (req, res, next) => {
     title: req.body.title,
     views: 0,
   };
+
+  if (req.body.sticky && await utils.permission.checkPermission('discussion-setStickyForSite', req.member.permissions)) {
+    discussionInfo.sticky = req.body.sticky;
+  }
+
   try {
     await dbTool.discussion.insertOne(discussionInfo);
 

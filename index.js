@@ -3,6 +3,8 @@
 const express = require('express');
 const path = require('path');
 const validation = require('express-validation');
+const childProcess = require('child_process');
+const fs = require('fs');
 
 const staticConfig = require('./config/staticConfig');
 const utils = require('./utils');
@@ -24,9 +26,6 @@ if (utils.env.isDev) {
     return next();
   });
 }
-
-// 禁用 Etag 的缓存匹配，他会缓存 API 的返回值……
-// app.disable('etag');
 
 // 听说这样安全一点……？
 app.disable('x-powered-by');
@@ -61,15 +60,6 @@ validation.options({
 
 // 初始化 websocket
 const server = utils.websocket.attachSocketIO(app).server;
-
-// 默认发送首页
-app.use((req, res, next) => {
-  /* istanbul ignore next */
-  if (utils.env.isMocha) { return next(); } // 防止文件不存在导致报错
-
-  /* istanbul ignore next */
-  res.sendFile(path.join(staticConfig.frontEnd.filePath, 'index.html'));
-});
 
 let listenPromise = new Promise((resolve, reject) => {
   server.listen(process.env.PORT || 8000, () => {

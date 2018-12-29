@@ -41,7 +41,7 @@
     "updateAnyPost": {
       "description": "可以修改任何人发布的 Discussion 和 Post。",
       "allow": [
-        "_admin"
+        "admin"
       ],
       "enable": true
     },

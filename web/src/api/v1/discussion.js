@@ -127,6 +127,9 @@ function updateDiscussionPostByIdAndIndex (params) {
  * @param {Object} params.discussion.content An object describing the content.
  * @param {string} params.discussion.content.content Content of the new discussion
  * @param {string} params.discussion.content.encoding Encoding of the content
+ * @param {Object} params.discussion.sticky An object describing the sticky status.
+ * @param {Number} params.discussion.sticky.site Sticky level when showing in index.
+ * @param {Number} params.discussion.sticky.category Sticky level when showing in category.
  * @param {Array.<string>} params.discussion.tags Array of tags
  *
  * @returns {Promise} Promise of the request
