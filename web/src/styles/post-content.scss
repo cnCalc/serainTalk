@@ -53,6 +53,8 @@ div.post-content {
   table { 
     border-spacing: 0;
     border-collapse: collapse;
+    overflow-x: scroll;
+    width: 100%;
   }
   td, th {
     border-spacing: 0px;

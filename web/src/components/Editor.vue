@@ -641,8 +641,8 @@ export default {
         };
       }
 
-      if (this.sticky.site !== this.state.discussionMeta.sticky.site ||
-          this.sticky.category !== this.state.discussionMeta.sticky.category) {
+      if (this.sticky.site !== this.state.discussionMeta.sticky.site
+          || this.sticky.category !== this.state.discussionMeta.sticky.category) {
         payload.meta.sticky = this.sticky;
       }
 
