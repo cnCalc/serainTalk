@@ -111,6 +111,7 @@ site.use('/thread-:tid-:extra-:page.html', discuzRedirectHandler);
 site.use('/forum.php', discuzRedirectHandler);
 
 // deal with all those unhandled requests here.
+site.use(express.static(path.join(__dirname, './static')));
 site.get('*', (isProd || isTest)
   ? (req, res) => {
     render(req, res);
