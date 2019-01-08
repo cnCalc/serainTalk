@@ -14,6 +14,7 @@ module.exports = {
   password: {
     resetPasswordPage: 'https://www.cncalc.org/resetpassword.html',
     tokenValidTime: 1000 * 60 * 15, // 迁移或重置密码的 Token 有效期（15 分钟）
+    errorTimes: 3,
   },
   member: {
     privateField: [
@@ -22,6 +23,7 @@ module.exports = {
       'ignores', // 服务器端留存即可，无需发送
     ],
     protectedField: [
+      'email',
     ],
     permissions: 'loading',
     types: 'loading',

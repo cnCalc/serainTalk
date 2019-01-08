@@ -41,6 +41,7 @@ let checkMemberInfo = (receiveInfo, tempMemberInfo) => {
   assert(receiveInfo._id !== null);
   assert(!receiveInfo.credentials);
   delete _memberInfo.password;
+  delete _memberInfo.email;
   Object.keys(_memberInfo).forEach(key => {
     assert(
       [receiveInfo[key], parseInt(receiveInfo[key])].indexOf(_memberInfo[key]) !== -1

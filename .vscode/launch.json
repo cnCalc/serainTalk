@@ -16,8 +16,8 @@
       "name": "Mocha Tests",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
-        "--require",
-        "intelli-espower-loader",
+        // "--require",
+        // "intelli-espower-loader",
         "--exit",
         "--recursive",
         "-b",

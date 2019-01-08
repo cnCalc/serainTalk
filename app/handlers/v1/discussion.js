@@ -705,7 +705,7 @@ let updatePost = async (req, res, next) => {
     /* istanbul ignore else */
     if (!canUpdateAnyPost) {
       /* istanbul ignore else */
-      // 只有本人或管理员才可以修改 post
+      // 只有本人才可以修改 post
       if (exactPost.user.toString() !== req.member.id) {
         return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
       }
