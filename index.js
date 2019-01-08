@@ -1,10 +1,7 @@
 'use strict';
 
 const express = require('express');
-const path = require('path');
 const validation = require('express-validation');
-const childProcess = require('child_process');
-const fs = require('fs');
 
 const staticConfig = require('./config/staticConfig');
 const utils = require('./utils');

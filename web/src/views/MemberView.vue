@@ -44,7 +44,7 @@ div
         div.list-nav(v-else): span.already-max 没有更多了
       div.member-settings(v-if="$route.meta.mode === 'settings' && $route.params.memberId === $store.state.me._id")
         h3 账户设置
-        div.row
+        div.row.wrap
           button.button(@click="resetPassword") 修改密码
           button.button(@click="changeEmail") 变更邮箱
           button.button(@click="updateBio") 修改简介
@@ -81,7 +81,7 @@ div
           check-box(:checked="settings.allowShowOnlineStatus" v-on:click.native="updateSetting('allowShowOnlineStatus', !settings.allowShowOnlineStatus)")
           span 公开我的在线状态
         h3 调试
-        div.row
+        div.row.wrap
           button.button(@click="sudo") 提权至管理员
           button.button(@click="emitNotification('message')") 弹出消息通知
           button.button(@click="emitNotification('error')") 弹出错误通知
@@ -675,6 +675,7 @@ div.member-activity {
 
       @include respond-to(phone) {
         display: flex;
+        justify-content: center;
       }
 
       a {
@@ -685,7 +686,7 @@ div.member-activity {
       }
 
       button.button {
-        margin: 0.3rem;
+        margin: 0.3rem 0.1rem;
         padding: 0.3em 0.5em;
         width: 100px;
         border: none;
@@ -843,6 +844,10 @@ div.member-activity {
           border: none;
           padding: 6px 14px;
           margin-right: 5px;
+          margin-bottom: 5px;
+        }
+        &.wrap {
+          flex-wrap: wrap;
         }
       }
       h3 {

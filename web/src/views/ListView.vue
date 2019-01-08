@@ -66,7 +66,7 @@ export default {
     },
     canLoadMore () {
       return this.currentPage * config.api.pagesize === this.discussions.length;
-    }
+    },
   },
   title () {
     let base = '';

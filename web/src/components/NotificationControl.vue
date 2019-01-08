@@ -146,6 +146,7 @@ div.notification-container {
 
   div.notification-list {
     width: 320px;
+    max-width: 80vw;
     position: absolute;
     top: 8px;
     right: -30px;

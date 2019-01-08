@@ -1,11 +1,11 @@
 <template lang="pug">
   div.st-header
-    div.container
+    div.container(v-bind:class="{ 'search-active': searchHintsVisiable }")
       div.drawer-trigger(@click="categoryDrawerTrigger"): svg.drawer-trigger(viewBox="0 0 33.866666 33.866668"): g(transform="translate(0,-263.13332)")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="277.30042")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="267.77527")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="286.82556")
-      router-link.title(to="/" title="cnCalc"): h1 cnCalc.org
+      router-link.title(to="/" title="cnCalc"): h1: img(src="../assets/logo_40px_short.png" style="vertical-align: middle")
       template(v-for="link in links")
         a.extra-link(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
         router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
@@ -194,12 +194,14 @@ div.st-header {
       padding: 0; 
       margin: 0;
       font-weight: normal;
-      line-height: 50px;
+      // line-height: 50px;
     }
 
     div.search-wrapper {
       width: fit-content;
       position: relative;
+      width: 100%;
+      max-width: 320px;
     }
 
     input.search {
@@ -209,19 +211,15 @@ div.st-header {
       color: white;
       transition: all ease 0.4s;
       min-width: 0;
-      width: 320px;
+      box-sizing: border-box;
+      width: 100%;
       @include respond-to(phone) {
-        flex-grow: 1;
-        flex-shrink: 1;
-        width: 100%;
+        display: none;
       }
 
       &:focus {
         outline: none;
-        // width: 320px;
-        @include respond-to(phone) {
-          width: 100%;
-        }
+        width: 320px;
       }
     }
 
@@ -318,9 +316,9 @@ div.st-header {
     div.spring {
       flex-grow: 1;
       flex-shrink: 1;
-      @include respond-to(phone) {
-        display: none;
-      }
+      // @include respond-to(phone) {
+      //   display: none;
+      // }
     }
 
     div.mobile-drawer-overlay, div.mobile-drawer {

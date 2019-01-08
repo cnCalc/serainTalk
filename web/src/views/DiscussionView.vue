@@ -367,7 +367,7 @@ export default {
       }).then(() => {
         return this.$store.dispatch('fetchDiscussionsMeta', { id: this.discussionMeta._id });
       });
-    }
+    },
   },
   computed: {
     pagesCount () {
@@ -566,10 +566,10 @@ export default {
       .catch(error => {
         if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
           this.$router.replace('/not-found');
-      } else {
-        throw error;
-      }
-    });
+        } else {
+          throw error;
+        }
+      });
   },
 };
 </script>
