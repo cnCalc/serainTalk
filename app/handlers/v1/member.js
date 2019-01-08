@@ -383,10 +383,12 @@ let updateEmail = async (req, res, next) => {
 let login = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne(
-      { $or: [
-        { username: req.body.name },
-        { email: req.body.name },
-      ] },
+      {
+        $or: [
+          { username: req.body.name },
+          { email: req.body.name },
+        ],
+      },
       { notifications: 0 }
     );
 
@@ -501,6 +503,7 @@ let prepareSignup = async (req, res) => {
   if (existInfo) {
     return errorHandler(null, errorMessages.EMAIL_EXIST, 400, res);
   }
+  // TODO: 检查 token 冲突
 
   // 保存 token
   let token = utils.createRandomString(6);
@@ -547,7 +550,9 @@ let performSignup = async (req, res) => {
     type: 'signup',
   });
 
-  if (!tokenInfo) {
+  if (!tokenInfo
+    || tokenInfo.timeStamp <= Date.now() - config.password.tokenValidTime
+    || tokenInfo.errorTimes > config.password.errorTimes) {
     return errorHandler(null, errorMessages.BAD_VERIFICATION_CODE, 400, res);
   }
 
@@ -578,6 +583,20 @@ let performSignup = async (req, res) => {
 
   let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+
+  await dbTool.token.deleteMany({
+    type: 'signup',
+    $or: [
+      {
+        token,
+      }, {
+        timeStamp: { $lte: Date.now() - config.password.tokenValidTime },
+      }, {
+        errorTimes: { $gt: config.password.errorTimes },
+      },
+    ],
+  });
+
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 

@@ -25,7 +25,26 @@ exports.removePrivateField = removePrivateField;
 
 let removeProtectedField = (memberInfo) => {
   for (let field of config.member.protectedField) {
-    delete memberInfo[field];
+    switch (field) {
+      case 'email': {
+        let email = memberInfo[field];
+        email = email.split('@');
+        if (email.length !== 2 || !email[0].length || !email[1].length) break;
+        let domain = email[1].split('.');
+        if (domain.length !== 2 || !domain[0].length || !domain[1].length) break;
+        memberInfo[field]
+          = email[0][0]
+          + '*'.repeat(3)
+          + email[0][email[0].length - 1]
+          + '@'
+          + domain[0][0]
+          + '*'.repeat(2)
+          + '.'
+          + domain[1];
+        break;
+      }
+      default: delete memberInfo[field];
+    }
   }
   return memberInfo;
 };
