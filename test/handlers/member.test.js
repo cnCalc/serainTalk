@@ -301,7 +301,47 @@ describe('member part', () => {
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
       testTools.member.checkMemberInfo(memberInfo);
-      assert(/i\**i@k\**\.moe/i.test(memberInfo.email));
+      assert(memberInfo.email === 'i*****@k***.moe');
+    });
+  });
+
+  it('get protected email by anonymous.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let url = `/api/v1/member/${newMemberInfo.id}`;
+      let memberRes = await supertest.agent(app)
+        .get(url)
+        .expect(200);
+      assert(memberRes.body.status === 'ok');
+      delete memberRes.body.status;
+      let memberInfo = memberRes.body.memberinfo;
+      assert(!memberInfo.email);
+    });
+  });
+
+  it('get public email by member.', async () => {
+    await testTools.member.createOneMember(agent, { email: 'i@kasora.moe' }, async (newMemberInfoA) => {
+      let settingsUrl = '/api/v1/member/settings/privacy/showEmailToMembers';
+      await agent.put(settingsUrl).send({ value: true });
+
+      // 即时放开也不允许未登录用户获取邮箱
+      let url = `/api/v1/member/${newMemberInfoA.id}`;
+      let memberRes = await supertest.agent(app)
+        .get(url)
+        .expect(200);
+      assert(memberRes.body.status === 'ok');
+      delete memberRes.body.status;
+      let memberInfo = memberRes.body.memberinfo;
+      assert(!memberInfo.email);
+
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+        let memberRes = await agent
+          .get(url)
+          .expect(200);
+        assert(memberRes.body.status === 'ok');
+        delete memberRes.body.status;
+        let memberInfo = memberRes.body.memberinfo;
+        assert(memberInfo.email === 'i@kasora.moe');
+      });
     });
   });
 
