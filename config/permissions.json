@@ -114,5 +114,15 @@
       ],
       "enable": true
     }
+  },
+  "member": {
+    "readPublicEmail": {
+      "description": "可以获取未隐藏邮箱成员的邮箱。",
+      "allow": [
+        "admin",
+        "member"
+      ],
+      "enable": true
+    }
   }
 }
