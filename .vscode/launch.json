@@ -27,8 +27,8 @@
         "999999",
         "--colors",
         "${workspaceRoot}/test",
-        // "--grep",
-        // "get latest discussion list by memberId"
+        "--grep",
+        "search a post banned by admin."
       ],
       "env": {
         "NODE_ENV": "mocha"
