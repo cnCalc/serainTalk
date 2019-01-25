@@ -1406,4 +1406,92 @@ describe('discussion part', async () => {
       });
     });
   });
+
+  it('search a discussion banned by admin.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, {
+          title: utils.createRandomString(),
+        }, async (newDiscussionInfoA) => {
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+            let searchRes = await agent.get(`/api/v1/search/discussion?keywords=${newDiscussionInfoA.title}`);
+            let searchInfo = searchRes.body.result;
+            assert(searchInfo.length === 1);
+          });
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+              let postPayload = {
+                encoding: 'markdown',
+                content: 'hello test',
+              };
+              let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
+              await agent.post(addPostUrl)
+                .send(postPayload)
+                .expect(201);
+
+              let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}`;
+              await agent.delete(banUrl).expect(204);
+
+              let getUrl = `/api/v1/discussions/${newDiscussionInfoA.id}`;
+              let discussionRes = await agent
+                .get(getUrl)
+                .expect(200);
+
+              assert(discussionRes.body.status === 'ok');
+              let discussionInfo = discussionRes.body.discussionInfo;
+              assert(discussionInfo.status.type === config.discussion.status.deleted);
+            });
+          });
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+            let searchRes = await agent.get(`/api/v1/search/discussion?keywords=${newDiscussionInfoA.title}`);
+            let searchInfo = searchRes.body.result;
+            assert(searchInfo.length === 0);
+          });
+        });
+      });
+    });
+  });
+
+  it('search a post banned by admin.', async () => {
+    await testTools.discussion.closeFreqLimit(async () => {
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
+        await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
+          // 写入二楼
+          let postPayload = {
+            encoding: 'markdown',
+            content: utils.createRandomString(),
+          };
+          let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
+          await agent.post(addPostUrl)
+            .send(postPayload)
+            .expect(201);
+
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+            let searchRes = await agent.get(`/api/v1/search/post?keywords=${postPayload.content}`);
+            let searchInfo = searchRes.body.result;
+            assert(searchInfo.length === 1);
+          });
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+            await testTools.member.setAdmin(agent, newMemberInfoB._id, async () => {
+              let banUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post/2`;
+              await agent.delete(banUrl).expect(204);
+            });
+            let url = `/api/v1/discussions/${newDiscussionInfoA.id}/posts`;
+            let discussionRes = await agent
+              .get(url)
+              .expect(200);
+            assert(discussionRes.body.status === 'ok');
+            let postsInfo = discussionRes.body.posts;
+            assert(postsInfo.length === 1);
+            assert(postsInfo[0].status.type !== config.discussion.status.deleted);
+          });
+          await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
+            let searchRes = await agent.get(`/api/v1/search/post?keywords=${postPayload.content}`);
+            let searchInfo = searchRes.body.result;
+            assert(searchInfo.length === 0);
+          });
+        });
+      });
+    });
+  });
 });
