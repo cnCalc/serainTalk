@@ -51,13 +51,13 @@ div
           router-link(:to="`/m/${$route.params.memberId}/change-avatar`"): button.button(@click="selectAvatarFile") 更换头像
         h3 邮件通知
         div.row
-          check-box(:checked="false")
+          check-box(:checked="settings.replyMailNotification" v-on:click.native="updateSetting('replyMailNotification', !settings.replyMailNotification)")
           span 当我的话题被回复时
         div.row
-          check-box(:checked="false")
+          check-box(:checked="settings.mentionMailNotification" v-on:click.native="updateSetting('mentionMailNotification', !settings.mentionMailNotification)")
           span 当我被人提及时
         div.row
-          check-box(:checked="false")
+          check-box(:checked="settings.subscriptionMailNotification" v-on:click.native="updateSetting('subscriptionMailNotification', !settings.subscriptionMailNotification)")
           span 当我订阅的话题有更新时
         h3 浏览选项
         div.row

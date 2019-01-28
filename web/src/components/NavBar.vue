@@ -5,7 +5,7 @@
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="277.30042")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="267.77527")
         rect(width="28.965336" height="5.5324793" x="2.4506655" y="286.82556")
-      router-link.title(to="/" title="cnCalc"): h1: img(src="../assets/logo_40px_short.png" style="vertical-align: middle")
+      router-link.title(to="/" title="cnCalc"): h1: img(src="../assets/cnCalc-Next-w-ORG_wht.png")
       template(v-for="link in links")
         a.extra-link(v-if="link.external" :href="link.href" target="_blank" :title="link.text") {{ link.text }}
         router-link.extra-link(v-else :to="link.href" :title="link.text") {{ link.text }}
@@ -195,6 +195,13 @@ div.st-header {
       margin: 0;
       font-weight: normal;
       // line-height: 50px;
+
+      img {
+        vertical-align: middle;
+        height: 40px;
+        width: auto;
+        margin-top: -3px;
+      }
     }
 
     div.search-wrapper {
