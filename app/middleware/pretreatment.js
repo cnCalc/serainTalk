@@ -21,7 +21,7 @@ let getMemberInfo = async (req, res, next) => {
     try {
       const payload = jwt.verify(req.cookies.membertoken, config.jwtSecret);
       const memberDoc = await dbTool.commonMember.findOne({ _id: ObjectID(payload.id) });
-      memberUtils.removePrivateField(memberDoc);
+      await memberUtils.removePrivateField(memberDoc, req.member.permissions);
       const memberId = memberDoc.id = memberDoc._id.toString();
       if (payload.sudo) memberDoc.role = 'admin';
       req.member = memberDoc;

@@ -93,7 +93,7 @@ describe('member part', () => {
         .send({
           memberName: utils.createRandomString(70),
         })
-        .expect(400);
+        .expect(404);
       assert(applicationRes.body.status === 'error');
       assert(applicationRes.body.code === utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
@@ -225,7 +225,7 @@ describe('member part', () => {
       };
       let resetRes = await agent.post(resetUrl)
         .send(resetPayload)
-        .expect(400);
+        .expect(404);
       assert(resetRes.body.status === 'error');
       assert(resetRes.body.code === utils.errorMessages.MEMBER_NOT_EXIST.code);
     });
@@ -292,7 +292,7 @@ describe('member part', () => {
   });
 
   it('get member info by mongoId.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+    await testTools.member.createOneMember(agent, { email: 'i@kasora.moe' }, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
       let memberRes = await agent
         .get(url)
@@ -301,6 +301,47 @@ describe('member part', () => {
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
       testTools.member.checkMemberInfo(memberInfo);
+      assert(memberInfo.email === 'i*****@k***.moe');
+    });
+  });
+
+  it('get protected email by anonymous.', async () => {
+    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+      let url = `/api/v1/member/${newMemberInfo.id}`;
+      let memberRes = await supertest.agent(app)
+        .get(url)
+        .expect(200);
+      assert(memberRes.body.status === 'ok');
+      delete memberRes.body.status;
+      let memberInfo = memberRes.body.memberinfo;
+      assert(!memberInfo.email);
+    });
+  });
+
+  it('get public email by member.', async () => {
+    await testTools.member.createOneMember(agent, { email: 'i@kasora.moe' }, async (newMemberInfoA) => {
+      let settingsUrl = '/api/v1/member/settings/privacy/showEmailToMembers';
+      await agent.put(settingsUrl).send({ value: true });
+
+      // 即时放开也不允许未登录用户获取邮箱
+      let url = `/api/v1/member/${newMemberInfoA.id}`;
+      let memberRes = await supertest.agent(app)
+        .get(url)
+        .expect(200);
+      assert(memberRes.body.status === 'ok');
+      delete memberRes.body.status;
+      let memberInfo = memberRes.body.memberinfo;
+      assert(!memberInfo.email);
+
+      await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
+        let memberRes = await agent
+          .get(url)
+          .expect(200);
+        assert(memberRes.body.status === 'ok');
+        delete memberRes.body.status;
+        let memberInfo = memberRes.body.memberinfo;
+        assert(memberInfo.email === 'i@kasora.moe');
+      });
     });
   });
 

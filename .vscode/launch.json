@@ -16,8 +16,8 @@
       "name": "Mocha Tests",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "args": [
-        "--require",
-        "intelli-espower-loader",
+        // "--require",
+        // "intelli-espower-loader",
         "--exit",
         "--recursive",
         "-b",
@@ -27,8 +27,8 @@
         "999999",
         "--colors",
         "${workspaceRoot}/test",
-        // "--grep",
-        // "get latest discussion list by memberId"
+        "--grep",
+        "search a post banned by admin."
       ],
       "env": {
         "NODE_ENV": "mocha"

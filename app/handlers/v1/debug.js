@@ -15,7 +15,7 @@ let sudo = async (req, res, next) => {
 
     let memberInfo = await dbTool.commonMember.findOne({ _id: _id });
     if (!memberInfo) return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
-    utils.member.removePrivateField(memberInfo);
+    await utils.member.removePrivateField(memberInfo, req.member.permissions);
     memberInfo.role = 'admin';
 
     // 插入 memberToken 作为身份识别码。

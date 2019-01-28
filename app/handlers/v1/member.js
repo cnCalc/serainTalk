@@ -42,8 +42,12 @@ let getMemberInfoById = async (req, res, next) => {
       }
     }
 
+    if (!await utils.permission.checkPermission('member-readPublicEmail', req.member.permissions)) {
+      delete memberInfo.email;
+    }
+
     // 删除用户的敏感信息部分
-    utils.member.removeSensitiveField(memberInfo);
+    await utils.member.removeSensitiveField(memberInfo, req.member.permissions);
 
     // 获得此用户最近的帖子（如果需要）
     if (req.query.recent) {
@@ -159,7 +163,7 @@ let getMemberInfoGeneric = async (req, res) => {
   }
 
   // 删除所有用户的凭据部分
-  results.forEach(result => utils.member.removeSensitiveField(result));
+  for (let result of results) await utils.member.removeSensitiveField(result, req.member.permissions);
   return res.send({
     status: 'ok',
     list: results,
@@ -284,7 +288,7 @@ let updateSettings = async (req, res, next) => {
       { returnOriginal: false }
     );
     let memberInfo = updateDoc.value;
-    utils.member.removeSensitiveField(memberInfo);
+    await utils.member.removeSensitiveField(memberInfo, req.member.permissions);
     let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
     res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
     return res.status(201).send({ status: 'ok', settings: updateDoc.value.settings });
@@ -310,7 +314,7 @@ let updateMemberInfo = async (req, res, next) => {
       { returnOriginal: false }
     );
     let memberInfo = updateDoc.value;
-    utils.member.removeSensitiveField(memberInfo);
+    await utils.member.removeSensitiveField(memberInfo, req.member.permissions);
     return res.status(201).send({ status: 'ok', memberInfo: memberInfo });
   } catch (err) {
     errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
@@ -365,7 +369,7 @@ let updateEmail = async (req, res, next) => {
     { returnOriginal: false }
   );
   let memberInfo = updateDoc.value;
-  utils.member.removeSensitiveField(memberInfo);
+  await utils.member.removeSensitiveField(memberInfo, req.member.permissions);
 
   return res.status(201).send({ status: 'ok', memberInfo: memberInfo });
 };
@@ -383,10 +387,12 @@ let updateEmail = async (req, res, next) => {
 let login = async (req, res) => {
   try {
     let memberInfo = await dbTool.commonMember.findOne(
-      { $or: [
-        { username: req.body.name },
-        { email: req.body.name },
-      ] },
+      {
+        $or: [
+          { username: req.body.name },
+          { email: req.body.name },
+        ],
+      },
       { notifications: 0 }
     );
 
@@ -417,7 +423,7 @@ let login = async (req, res) => {
     }
 
     // 移除敏感信息
-    utils.member.removePrivateField(memberInfo);
+    await utils.member.removePrivateField(memberInfo, req.member.permissions);
 
     // 更新最后一次登录时间
     await dbTool.commonMember.updateOne(
@@ -477,7 +483,7 @@ let signup = async (req, res) => {
 
   await dbTool.commonMember.insertOne(memberInfo);
 
-  utils.member.removePrivateField(memberInfo);
+  await utils.member.removePrivateField(memberInfo, req.member.permissions);
 
   let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
@@ -501,6 +507,7 @@ let prepareSignup = async (req, res) => {
   if (existInfo) {
     return errorHandler(null, errorMessages.EMAIL_EXIST, 400, res);
   }
+  // TODO: 检查 token 冲突
 
   // 保存 token
   let token = utils.createRandomString(6);
@@ -547,7 +554,9 @@ let performSignup = async (req, res) => {
     type: 'signup',
   });
 
-  if (!tokenInfo) {
+  if (!tokenInfo
+    || tokenInfo.timeStamp <= Date.now() - config.password.tokenValidTime
+    || tokenInfo.errorTimes > config.password.errorTimes) {
     return errorHandler(null, errorMessages.BAD_VERIFICATION_CODE, 400, res);
   }
 
@@ -574,10 +583,24 @@ let performSignup = async (req, res) => {
 
   await dbTool.commonMember.insertOne(memberInfo);
 
-  utils.member.removePrivateField(memberInfo);
+  await utils.member.removePrivateField(memberInfo, req.member.permissions);
 
   let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
   res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
+
+  await dbTool.token.deleteMany({
+    type: 'signup',
+    $or: [
+      {
+        token,
+      }, {
+        timeStamp: { $lte: Date.now() - config.password.tokenValidTime },
+      }, {
+        errorTimes: { $gt: config.password.errorTimes },
+      },
+    ],
+  });
+
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
@@ -652,7 +675,7 @@ let resetPassword = async (req, res) => {
     return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
   }
 
-  utils.member.removePrivateField(memberInfo);
+  await utils.member.removePrivateField(memberInfo, req.member.permissions);
 
   // 返回登录 token
   let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
