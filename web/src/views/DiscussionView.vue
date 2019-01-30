@@ -1,7 +1,7 @@
 <template lang="pug">
   div.discussion-view
     div.discussion-view-left
-      loading-icon(v-if="busy && (!settings.autoLoadOnScroll || maxPage === minPage)")
+      loading-icon.loading-icon(v-if="busy && (!settings.autoLoadOnScroll || maxPage === minPage)")
       div
         ul.discussion-post-list(v-bind:class="{'hide': busy && (!settings.autoLoadOnScroll || maxPage === minPage)}"): li(v-for="(post, index) in showingPosts" :id="`index-${post.index}`" v-if="post" v-bind:class="{ deleted: post.status.type === 'deleted' }")
           div.discussion-post-container
@@ -142,8 +142,7 @@ export default {
               type: 'error',
               body: '游客无法执行此操作，请登录后继续。',
             });
-          } else if (err.response.data.message === 'the discussion is locked.') {
-            // TODO: use code instead of error message?
+          } else if (err.response.data.code === 'ERR_DISCUSSION_LOCKED') {
             this.bus.$emit('notification', {
               type: 'error',
               body: '当前讨论已被管理员锁定，无法进行该操作。',
@@ -183,7 +182,7 @@ export default {
       this.$router.push(`/d/${this.$route.params.discussionId}/${page}`);
     },
     showQuote (post, event) {
-      event.stopPropagation();
+      return event.stopPropagation();
 
       const selection = window.getSelection();
       if (selection.rangeCount === 0) {
@@ -269,6 +268,13 @@ export default {
       });
     },
     activateEditor (mode, discussionId, memberId, index) {
+      if (!this.$store.state.me || this.$store.state.me._id === undefined) {
+        return this.bus.$emit('notification', {
+          type: 'error',
+          body: '游客无法执行此操作，请登录后继续。',
+        });
+      }
+
       this.$store.commit('updateEditorMode', { mode, discussionId, discussionMeta: this.discussionMeta, memberId, index });
       this.$store.commit('updateEditorDisplay', 'show');
     },
@@ -361,6 +367,13 @@ export default {
       this.$store.commit('setGlobalTitles', [title, category]);
     },
     changeSubscribeMode (newMode) {
+      if (!this.$store.state.me || this.$store.state.me._id === undefined) {
+        return this.bus.$emit('notification', {
+          type: 'error',
+          body: '游客无法执行此操作，请登录后继续。',
+        });
+      }
+
       api.v1.discussion.updateSubscribeModeById({
         id: this.discussionMeta._id,
         mode: newMode,
@@ -591,7 +604,7 @@ div.discussion-view {
     min-width: 0;
     padding-right: 5px;
     position: relative;
-    > * {
+    .loading-icon {
       position: absolute;
       left: 0; right: 0;
     }

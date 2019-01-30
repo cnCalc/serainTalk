@@ -100,6 +100,13 @@ export default {
       }
     },
     showEditor () {
+      if (!this.$store.state.me || this.$store.state.me._id === undefined) {
+        return this.bus.$emit('notification', {
+          type: 'error',
+          body: '游客无法执行此操作，请登录后继续。',
+        });
+      }
+
       this.$store.commit('updateEditorDisplay', 'show');
       this.$store.commit('updateEditorMode', { mode: 'CREATE_DISCUSSION' });
     },

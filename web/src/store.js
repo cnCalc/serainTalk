@@ -24,8 +24,7 @@ export function createStore () {
         isMobileMemberView: false,
       },
       category: {},
-      // FIXME:
-      theme: /* window.localStorage['theme'] || */'light',
+      theme: (process.env.VUE_ENV !== 'server') ? (window.localStorage['theme'] || 'light') : 'light',
       busy: false,
       discussionMeta: {},
       discussionPosts: {},

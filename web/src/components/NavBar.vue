@@ -200,7 +200,7 @@ div.st-header {
         vertical-align: middle;
         height: 40px;
         width: auto;
-        margin-top: -3px;
+        margin-top: -1px;
       }
     }
 

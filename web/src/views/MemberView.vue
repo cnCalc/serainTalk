@@ -9,7 +9,7 @@ div
       h1.member-name {{ member.username }}
       h2.member-bio(:title="member.bio") {{ member.bio }}
       div.member-other-info
-        span 加入于{{ timeAgo(member.regdate) }}&nbsp;|&nbsp;
+        //- span 加入于{{ timeAgo(member.regdate) }}&nbsp;|&nbsp;
         span {{ member.online === true ? '当前在线' : ('最后访问于' + timeAgo(member.lastlogintime)) }}
   div.member-activity(v-if="member._id")
     div.member-activity-container

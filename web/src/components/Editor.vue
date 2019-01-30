@@ -116,7 +116,6 @@ export default {
   },
   mounted () {
     hljs = window.hljs;
-    console.log(hljs);
     md = window.markdownit({
       html: false,
       linkify: true,
