@@ -184,28 +184,28 @@ export default {
     showQuote (post, event) {
       return event.stopPropagation();
 
-      const selection = window.getSelection();
-      if (selection.rangeCount === 0) {
-        return;
-      }
-      const range = selection.getRangeAt(0);
-      const postContent = this.$el.querySelector(`#index-${post.index} div.discussion-post-content`);
+      // const selection = window.getSelection();
+      // if (selection.rangeCount === 0) {
+      //   return;
+      // }
+      // const range = selection.getRangeAt(0);
+      // const postContent = this.$el.querySelector(`#index-${post.index} div.discussion-post-content`);
 
-      if (range.startOffset === range.endOffset || !postContent.contains(range.commonAncestorContainer) || !(range.commonAncestorContainer instanceof window.Text)) {
-        // 选择的范围超过了一个帖子，或者根本没有选中长度，当然就不能去引用这些玩意儿咯
-        this.hideQuote();
-        return;
-      }
+      // if (range.startOffset === range.endOffset || !postContent.contains(range.commonAncestorContainer) || !(range.commonAncestorContainer instanceof window.Text)) {
+      //   // 选择的范围超过了一个帖子，或者根本没有选中长度，当然就不能去引用这些玩意儿咯
+      //   this.hideQuote();
+      //   return;
+      // }
 
-      const rects = window.getSelection().getRangeAt(0).getClientRects();
-      const lastRect = rects[rects.length - 1];
-      this.quoteButtonStyle = {
-        display: '',
-        position: 'absolute',
-        top: lastRect.bottom + window.scrollY + 'px',
-        left: lastRect.right + 'px',
-        transform: 'translateX(-100%)',
-      };
+      // const rects = window.getSelection().getRangeAt(0).getClientRects();
+      // const lastRect = rects[rects.length - 1];
+      // this.quoteButtonStyle = {
+      //   display: '',
+      //   position: 'absolute',
+      //   top: lastRect.bottom + window.scrollY + 'px',
+      //   left: lastRect.right + 'px',
+      //   transform: 'translateX(-100%)',
+      // };
     },
     hideQuote () {
       this.quoteButtonStyle = {
