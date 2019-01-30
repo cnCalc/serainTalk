@@ -84,7 +84,10 @@ export default {
     doCheckName () {
       api.v1.member.fetchMemberInfoByName({ name: this.origUserName }).then(res => {
         if (res.list.length !== 1) {
-          return window.alert('用户名不存在？');
+          return this.$store.dispatch('showMessageBox', {
+            type: 'OK',
+            message: '提供的用户名不存在，请检查后重试。',
+          }).then(() => {});
         } else {
           this.origEmail = res.list[0].email;
           this.step = 'checkOrigEmail';
@@ -105,19 +108,39 @@ export default {
       api.v1.migration.requestMigration(payload).then(() => {
         this.step = 'setUpNewInfo';
         this.newUserName = this.origUserName;
-      }).catch(error => {
-        console.dir(error);
-        if (error.response.status === 401) {
-          window.alert('邀请码无效，或已经被使用');
+      }).catch(err => {
+        console.error(err);
+
+        const res = err.response;
+        const data = res.data;
+        let message = '未知错误！查看 JavaScript 控制台确认问题！';
+
+        if (data.code === 'ERR_WRONG_PASSWORD') {
+          message = '输入的密码不正确。'
+        } else if (data.code === 'ERR_PERMISSION_DENIED') {
+          message = '邀请码无效或已经被使用。'
+        } else if (data.code === 'ERR_EMAIL_USED') {
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
         }
+
+        this.$store.dispatch('showMessageBox', {
+          type: 'OK',
+          message,
+        }).then(() => {});
       });
     },
     doMingration () {
       if (this.newPassword !== this.repeatNewPassword) {
-        return window.alert('两次密码不一致！');
+        return this.$store.dispatch('showMessageBox', {
+          type: 'OK',
+          message: '两次输入的密码不一致，请重新输入。',
+        }).then(() => {});
       }
       if (this.verificationCode === '') {
-        return window.alert('请输入验证码！');
+        return this.$store.dispatch('showMessageBox', {
+          type: 'OK',
+          message: '验证码不能为空，请重新输入。',
+        }).then(() => {});
       }
       api.v1.migration.performMigration({
         token: this.verificationCode,
@@ -125,8 +148,34 @@ export default {
         newname: this.newUserName !== this.origUserName ? this.newUserName : undefined,
         password: this.newPassword,
       }).then(() => {
-        window.alert('迁移成功！');
-        this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
+        this.$store.dispatch('showMessageBox', {
+          title: '迁移成功',
+          type: 'OK',
+          message: '账户迁移顺利完成，您的账户已经可以使用。',
+        }).then(() => {
+          this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
+        });
+      }).catch(err => {
+        console.error(err);
+
+        const res = err.response;
+        const data = res.data;
+        let message = '未知错误！查看 JavaScript 控制台确认问题！';
+
+        if (data.code === 'ERR_TOKEN_EXPIRED') {
+          message = '验证码已过期，请刷新页面重新执行迁移。'
+        } else if (data.code === 'ERR_MEMBER_EXIST') {
+          message = '用户名已被注册，请使用其他用户名重试。'
+        } else if (data.code === 'ERR_EMAIL_USED') {
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
+        } else if (data.code === 'ERR_PERMISSION_DENIED') {
+          message = '输入的验证码不正确。'
+        }
+
+        this.$store.dispatch('showMessageBox', {
+          type: 'OK',
+          message,
+        }).then(() => {});
       });
     },
     doUpdateEmail () {

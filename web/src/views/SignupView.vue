@@ -67,8 +67,21 @@ export default {
         window.alert('发送成功！');
         this.hasToken = true;
       }).catch(err => {
-        window.alert('发送失败！查看 JavaScript 控制台确认问题！');
         console.error(err);
+
+        const res = err.response;
+        const data = res.data;
+        let message = '未知错误！查看 JavaScript 控制台确认问题！';
+
+        if (data.code === 'ERR_EMAIL_USED') {
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
+        }
+
+        this.$store.dispatch('showMessageBox', {
+          title: '出现错误',
+          type: 'OK',
+          message,
+        }).then(() => {});
       });
     },
     doPerformSignup () {
@@ -77,11 +90,30 @@ export default {
         password: this.credentials.password,
         token: this.token,
       }).then(() => {
-        window.alert('注册成功');
+        this.$store.dispatch('showMessageBox', {
+          type: 'OK',
+          message: '注册成功',
+        }).then(() => {});
+
         this.$router.push('/signin');
       }).catch(err => {
-        window.alert('失败！查看 JavaScript 控制台确认问题！');
         console.error(err);
+
+        const res = err.response;
+        const data = res.data;
+        let message = '未知错误！查看 JavaScript 控制台确认问题！';
+
+        if (data.code === 'ERR_MEMBER_EXIST') {
+          message = '用户名已被注册，请使用其他用户名重试。'
+        } else if (data.code === 'ERR_WRONG_VERIFICATION_CODE') {
+          message = '验证码无效，请核对验证码是否正确，或刷新页面重试'
+        }
+
+        this.$store.dispatch('showMessageBox', {
+          title: '出现错误',
+          type: 'OK',
+          message,
+        }).then(() => {});
       });
     },
   },
