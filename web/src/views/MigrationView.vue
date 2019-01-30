@@ -116,11 +116,11 @@ export default {
         let message = '未知错误！查看 JavaScript 控制台确认问题！';
 
         if (data.code === 'ERR_WRONG_PASSWORD') {
-          message = '输入的密码不正确。'
+          message = '输入的密码不正确。';
         } else if (data.code === 'ERR_PERMISSION_DENIED') {
-          message = '邀请码无效或已经被使用。'
+          message = '邀请码无效或已经被使用。';
         } else if (data.code === 'ERR_EMAIL_USED') {
-          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。';
         }
 
         this.$store.dispatch('showMessageBox', {
@@ -163,13 +163,13 @@ export default {
         let message = '未知错误！查看 JavaScript 控制台确认问题！';
 
         if (data.code === 'ERR_TOKEN_EXPIRED') {
-          message = '验证码已过期，请刷新页面重新执行迁移。'
+          message = '验证码已过期，请刷新页面重新执行迁移。';
         } else if (data.code === 'ERR_MEMBER_EXIST') {
-          message = '用户名已被注册，请使用其他用户名重试。'
+          message = '用户名已被注册，请使用其他用户名重试。';
         } else if (data.code === 'ERR_EMAIL_USED') {
-          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。';
         } else if (data.code === 'ERR_PERMISSION_DENIED') {
-          message = '输入的验证码不正确。'
+          message = '输入的验证码不正确。';
         }
 
         this.$store.dispatch('showMessageBox', {

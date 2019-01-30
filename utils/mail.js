@@ -24,8 +24,8 @@ let sendVerificationCode = async (address, { token, link }) => {
   const html = `<p>亲爱的用户：</p>
   <p>您正在进行邮箱验证，本次请求的验证码为&nbsp;<code>${token}</code>&nbsp;，十五分钟内有效。</p>`
   + (link ? `<p>您也可以点击下面的链接继续之前的操作：</p>
-    <p><a href="${link}" target="_blank">${link}</a></p>` : '') +
-  +`<p>这是一封自动发送的邮件，请不要直接回复。如果这个请求不是由你发起的，那没问题，你不用担心，你可以安全地忽略这封邮件。</p>
+    <p><a href="${link}" target="_blank">${link}</a></p>` : '')
+  + `<p>这是一封自动发送的邮件，请不要直接回复。如果这个请求不是由你发起的，那没问题，你不用担心，你可以安全地忽略这封邮件。</p>
   <p>cnCalc Team</p>`;
 
   env.isProd && mail.sendMail({

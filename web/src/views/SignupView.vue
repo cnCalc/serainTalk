@@ -74,7 +74,7 @@ export default {
         let message = '未知错误！查看 JavaScript 控制台确认问题！';
 
         if (data.code === 'ERR_EMAIL_USED') {
-          message = '邮箱地址已被使用，请使用其他邮箱地址重试。'
+          message = '邮箱地址已被使用，请使用其他邮箱地址重试。';
         }
 
         this.$store.dispatch('showMessageBox', {
@@ -104,9 +104,9 @@ export default {
         let message = '未知错误！查看 JavaScript 控制台确认问题！';
 
         if (data.code === 'ERR_MEMBER_EXIST') {
-          message = '用户名已被注册，请使用其他用户名重试。'
+          message = '用户名已被注册，请使用其他用户名重试。';
         } else if (data.code === 'ERR_WRONG_VERIFICATION_CODE') {
-          message = '验证码无效，请核对验证码是否正确，或刷新页面重试'
+          message = '验证码无效，请核对验证码是否正确，或刷新页面重试';
         }
 
         this.$store.dispatch('showMessageBox', {
