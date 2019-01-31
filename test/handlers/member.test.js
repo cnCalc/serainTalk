@@ -292,7 +292,11 @@ describe('member part', () => {
   });
 
   it('get member info by mongoId.', async () => {
-    await testTools.member.createOneMember(agent, { email: 'i@kasora.moe' }, async (newMemberInfo) => {
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
+    let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
+    await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
       let memberRes = await agent
         .get(url)
@@ -301,12 +305,16 @@ describe('member part', () => {
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
       testTools.member.checkMemberInfo(memberInfo);
-      assert(memberInfo.email === 'i*****@k***.moe');
+      assert(memberInfo.email === `${emailPrefix[0]}*****@${emailHosting[0]}***.${emailDomain}`);
     });
   });
 
   it('get protected email by anonymous.', async () => {
-    await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
+    let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
+    await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
       let memberRes = await supertest.agent(app)
         .get(url)
@@ -314,12 +322,17 @@ describe('member part', () => {
       assert(memberRes.body.status === 'ok');
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
-      assert(!memberInfo.email);
+      assert(memberInfo.email === `${emailPrefix[0]}*****@${emailHosting[0]}***.${emailDomain}`);
     });
   });
 
   it('get public email by member.', async () => {
-    await testTools.member.createOneMember(agent, { email: 'i@kasora.moe' }, async (newMemberInfoA) => {
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
+    let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
+    console.log(email);
+    await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfoA) => {
       let settingsUrl = '/api/v1/member/settings/privacy/showEmailToMembers';
       await agent.put(settingsUrl).send({ value: true });
 
@@ -331,7 +344,7 @@ describe('member part', () => {
       assert(memberRes.body.status === 'ok');
       delete memberRes.body.status;
       let memberInfo = memberRes.body.memberinfo;
-      assert(!memberInfo.email);
+      assert(memberInfo.email === `${emailPrefix[0]}*****@${emailHosting[0]}***.${emailDomain}`);
 
       await testTools.member.createOneMember(agent, null, async (newMemberInfoB) => {
         let memberRes = await agent
@@ -340,7 +353,7 @@ describe('member part', () => {
         assert(memberRes.body.status === 'ok');
         delete memberRes.body.status;
         let memberInfo = memberRes.body.memberinfo;
-        assert(memberInfo.email === 'i@kasora.moe');
+        assert(memberInfo.email === email);
       });
     });
   });
