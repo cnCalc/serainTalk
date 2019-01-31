@@ -17,7 +17,7 @@ div
         div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
         div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode === 'discussions' }") 创建的讨论
         div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: $route.meta.mode === 'settings' }") 个人设置
-        div(v-else v-if="$store.state.me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
+        div(v-if="$store.state.me._id && $route.params.memberId !== $store.state.me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'")
         ul: li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts.createDate) }}
@@ -117,6 +117,7 @@ import DiscussionList from '../components/DiscussionList.vue';
 import api from '../api';
 import titleMixin from '../mixins/title.js';
 import axios from 'axios';
+import config from '../config';
 
 import { timeAgo, indexToPage } from '../utils/filters';
 
@@ -472,6 +473,14 @@ export default {
     this.currentPage = 1;
     this.currentMember = this.$route.params.memberId;
   },
+  mounted () {
+    if (this.member.recentActivities.length < config.api.pagesize) {
+      this.canLoadMoreActivities = false;
+    }
+    if (this.member.discussions && this.member.discussions.length < config.api.pagesize) {
+      this.canLoadMorePosts = false;
+    }
+  },
   watch: {
     '$route': function (route) {
       if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
@@ -484,7 +493,11 @@ export default {
             this.canLoadMorePosts = true;
             this.dataPromise = this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
               if (route.meta.mode === 'discussions') {
-                return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+                return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
+                  if (this.member.discussions.length < config.api.pagesize) {
+                    this.canLoadMorePosts = false;
+                  }
+                });
               } else {
                 return Promise.resolve();
               }
@@ -496,6 +509,10 @@ export default {
           } else if (this.$store.state.member.discussions === undefined) {
             this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
               this.$forceUpdate();
+
+              if (this.member.discussions.length < config.api.pagesize) {
+                this.canLoadMorePosts = false;
+              }
             }).catch((error) => {
               if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
                 this.$router.replace('/not-found');
@@ -700,6 +717,7 @@ div.member-activity {
     div.member-recent-activity {
       min-width: 0;
       padding: 0 20px;
+      margin-top: 10px;
       box-sizing: border-box;
     }
 
@@ -970,6 +988,7 @@ div.member-activity {
 
   div.list-nav {
     padding-bottom: 16px;
+    height: 40px;
   }
 
   span.already-max {
