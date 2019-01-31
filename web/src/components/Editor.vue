@@ -543,19 +543,66 @@ export default {
       this.showPreview = !this.showPreview;
       this.updatePreview();
     },
-    errorHandler (error) {
-      if (document.cookie.indexOf('membertoken') < 0) {
-        this.bus.$emit('notification', {
-          type: 'error',
-          body: '游客无法执行此操作，请登录后再继续。',
-        });
-      } else {
-        console.error(error);
-        this.bus.$emit('notification', {
-          type: 'error',
-          body: '服务器发生异常，查看 JavaScript 控制台以查看详情。',
-        });
+    replyErrorHandler (err) {
+      const res = err.response;
+      const data = res.data;
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+
+      if (data.code === 'ERR_DISCUSSION_LOCKED') {
+        message = '该讨论已被管理员锁定，无法追加回复。';
+      } else if (data.code === 'ERR_PERMISSION_DENIED') {
+        // FIXME: 服务端会在两种情况下返回 EPERM:
+        // 1. 当前讨论在隐藏分区或类似的情况
+        // 2. 该回复引用了其他人的附件
+        // 目前前端提供的功能无法插入别人的附件，所以暂时不考虑情况2
+        message = '您当前无权在此讨论下追加回复。';
+      } else if (data.code === 'ERR_NOT_FOUND') {
+        message = '该讨论已被管理员删除，无法追加回复。';
+      } else if (data.code === 'ERR_POST_FREQUENCY_EXCEEDED') {
+        message = '操作过于频繁，请稍后进行操作。';
       }
+
+      this.bus.$emit('notification', {
+        type: 'error',
+        body: message,
+      });
+    },
+    updateErrorHandler (err) {
+      const res = err.response;
+      const data = res.data;
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+
+      if (data.code === 'ERR_DISCUSSION_LOCKED') {
+        message = '该讨论已被管理员锁定，无法编辑帖子。';
+      } else if (data.code === 'ERR_PERMISSION_DENIED') {
+        // FIXME: 同上
+        message = '您当前无权编辑该帖子。';
+      } else if (data.code === 'ERR_NOT_FOUND') {
+        message = '该讨论已被管理员删除，无法无法编辑帖子。';
+      } else if (data.code === 'ERR_POST_FREQUENCY_EXCEEDED') {
+        message = '操作过于频繁，请稍后进行操作。';
+      }
+
+      this.bus.$emit('notification', {
+        type: 'error',
+        body: message,
+      });
+    },
+    createErrorhandler (err) {
+      const res = err.response;
+      const data = res.data;
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+
+      if (data.code === 'ERR_PERMISSION_DENIED') {
+        message = '您当前无权创建讨论。';
+      } else if (data.code === 'ERR_POST_FREQUENCY_EXCEEDED') {
+        message = '操作过于频繁，请稍后进行操作。';
+      }
+
+      this.bus.$emit('notification', {
+        type: 'error',
+        body: message,
+      });
     },
     createDiscussion () {
       const payload = {
@@ -575,7 +622,7 @@ export default {
         // 成功创建，触发刷新事件，清空文本框并隐藏编辑器。
         // 此处先直接将浏览器刷新，不管后续了
         window.location.reload();
-      }).catch(this.errorHandler);
+      }).catch(this.createErrorhandler);
     },
     replyToIndex () {
       const editorState = this.$store.state.editor;
@@ -599,7 +646,7 @@ export default {
         this.bus.$emit('reloadDiscussionView');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
-      }).catch(this.errorHandler);
+      }).catch(this.replyErrorHandler);
     },
     reply () {
       const editorState = this.$store.state.editor;
@@ -612,7 +659,7 @@ export default {
         this.bus.$emit('reloadDiscussionView');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
-      }).catch(this.errorHandler);
+      }).catch(this.replyErrorHandler);
     },
     update () {
       const editorState = this.$store.state.editor;
@@ -654,7 +701,7 @@ export default {
         }
         this.$store.dispatch('updateSingleDiscussionPost', { id: this.$store.state.discussionMeta._id, index: editorState.index, raw: false });
         this.$store.commit('updateEditorDisplay', 'none');
-      }).catch(this.errorHandler);
+      }).catch(this.updateErrorHandler);
     },
     submit () {
       switch (this.mode) {

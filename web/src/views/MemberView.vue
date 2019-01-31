@@ -17,7 +17,7 @@ div
         div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
         div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode === 'discussions' }") 创建的讨论
         div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: $route.meta.mode === 'settings' }") 个人设置
-        div(v-else): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
+        div(v-else v-if="$store.state.me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
       div.member-recent-activity(v-if="$route.meta.mode === 'posts'")
         ul: li.activity-item(v-for="activity in member.recentActivities")
           span.activity-time {{ timeAgo(activity.posts.createDate) }}
