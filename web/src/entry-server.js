@@ -41,7 +41,7 @@ export default context => new Promise((resolve, reject) => {
       });
 
       Promise.all(componentsWithAsyncData.map(Component => {
-        let promise = Component.asyncData.call(Component, {
+        let promise = Component.asyncData({
           store,
           route: router.currentRoute,
         });

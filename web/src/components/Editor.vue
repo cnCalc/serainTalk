@@ -546,7 +546,7 @@ export default {
     replyErrorHandler (err) {
       const res = err.response;
       const data = res.data;
-      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。';
 
       if (data.code === 'ERR_DISCUSSION_LOCKED') {
         message = '该讨论已被管理员锁定，无法追加回复。';
@@ -570,7 +570,7 @@ export default {
     updateErrorHandler (err) {
       const res = err.response;
       const data = res.data;
-      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。';
 
       if (data.code === 'ERR_DISCUSSION_LOCKED') {
         message = '该讨论已被管理员锁定，无法编辑帖子。';
@@ -591,7 +591,7 @@ export default {
     createErrorhandler (err) {
       const res = err.response;
       const data = res.data;
-      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。'
+      let message = '服务器发生异常，前往 JavaScript 控制台以查看详情。';
 
       if (data.code === 'ERR_PERMISSION_DENIED') {
         message = '您当前无权创建讨论。';
