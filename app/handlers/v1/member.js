@@ -42,10 +42,6 @@ let getMemberInfoById = async (req, res, next) => {
       }
     }
 
-    if (!await utils.permission.checkPermission('member-readPublicEmail', req.member.permissions)) {
-      delete memberInfo.email;
-    }
-
     // 删除用户的敏感信息部分
     await utils.member.removeSensitiveField(memberInfo, req.member.permissions);
 
