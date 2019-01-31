@@ -241,26 +241,31 @@ describe('discussion part', async () => {
         await testTools.member.setAdmin(agent, newMemberInfo._id, async () => {
           await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoA) => {
             await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoB) => {
-              let getUrl = '/api/v1/discussion/latest?pagesize=2';
-              let discussionRes = await agent.get(getUrl);
-              let discussions = discussionRes.body.discussions;
-              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
-              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+              await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfoC) => {
+                let getUrl = '/api/v1/discussion/latest?pagesize=3';
+                let discussionRes = await agent.get(getUrl);
+                let discussions = discussionRes.body.discussions;
+                assert(newDiscussionInfoA._id.toString() === discussions[2]._id);
+                assert(newDiscussionInfoB._id.toString() === discussions[1]._id);
+                assert(newDiscussionInfoC._id.toString() === discussions[0]._id);
 
-              let stickyUrl = `/api/v1/discussion/${newDiscussionInfoA._id}/sticky`;
-              await agent.post(stickyUrl)
-                .send({ sticky: 'site' });
-              discussionRes = await agent.get(getUrl);
-              discussions = discussionRes.body.discussions;
-              assert(newDiscussionInfoA._id.toString() === discussions[0]._id);
-              assert(newDiscussionInfoB._id.toString() === discussions[1]._id);
+                let stickyUrl = `/api/v1/discussion/${newDiscussionInfoA._id}/sticky`;
+                await agent.post(stickyUrl)
+                  .send({ sticky: 'site' });
+                discussionRes = await agent.get(getUrl);
+                discussions = discussionRes.body.discussions;
+                assert(newDiscussionInfoA._id.toString() === discussions[0]._id);
+                assert(newDiscussionInfoC._id.toString() === discussions[1]._id);
+                assert(newDiscussionInfoB._id.toString() === discussions[2]._id);
 
-              await agent.post(stickyUrl)
-                .send({ sticky: 'site' });
-              discussionRes = await agent.get(getUrl);
-              discussions = discussionRes.body.discussions;
-              assert(newDiscussionInfoA._id.toString() === discussions[1]._id);
-              assert(newDiscussionInfoB._id.toString() === discussions[0]._id);
+                await agent.post(stickyUrl)
+                  .send({ sticky: 'site' });
+                discussionRes = await agent.get(getUrl);
+                discussions = discussionRes.body.discussions;
+                assert(newDiscussionInfoA._id.toString() === discussions[2]._id);
+                assert(newDiscussionInfoB._id.toString() === discussions[1]._id);
+                assert(newDiscussionInfoC._id.toString() === discussions[0]._id);
+              });
             });
           });
         });
