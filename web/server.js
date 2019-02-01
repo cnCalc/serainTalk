@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { createBundleRenderer } = require('vue-server-renderer');
 const axios = require('axios');
+const serverConf = require('../config/staticConfig');
+
+axios.defaults.baseURL = serverConf.siteAddress;
 
 const isProd = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
@@ -96,12 +99,20 @@ function render (req, res) {
 // Redirect Discuz's URL
 function discuzRedirectHandler (req, res, next) {
   const tid = req.query.tid || req.params.tid;
+  const uid = req.query.uid || req.params.uid;
+
   if (tid) {
     axios.get(`/api/v1/discuz-lookup?tid=${tid}`)
       .then(response => {
         res.redirect(`/d/${response.data.discussionId}`);
       })
       .catch(next);
+  } else if (uid) {
+    axios.get(`/api/v1/discuz-lookup?uid=${uid}`)
+      .then(response => {
+        res.redirect(`/m/${response.data.memberId}`);
+      })
+      .catch(console.log);
   } else {
     next();
   }
@@ -109,6 +120,7 @@ function discuzRedirectHandler (req, res, next) {
 site.use('/viewthread.php', discuzRedirectHandler);
 site.use('/thread-:tid-:extra-:page.html', discuzRedirectHandler);
 site.use('/forum.php', discuzRedirectHandler);
+site.use('/home.php', discuzRedirectHandler);
 
 // deal with all those unhandled requests here.
 site.use(express.static(path.join(__dirname, './static')));

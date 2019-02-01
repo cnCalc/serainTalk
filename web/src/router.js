@@ -81,6 +81,9 @@ export function createRouter () {
         path: '/forum.php',
         component: DiscuzRedirectView,
       }, {
+        path: '/home.php',
+        component: DiscuzRedirectView,
+      }, {
         path: '/400',
         component: ErrorView,
         meta: { code: 400 },

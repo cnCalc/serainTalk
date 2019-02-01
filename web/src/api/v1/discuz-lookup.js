@@ -11,7 +11,7 @@ import config from '../../config.js';
 function discuzLookup (params) {
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/discuz-lookup?${Object.keys(params).map(k => `${k}=${params[k]}`).join('&')}`)
-      .then(response => resolve(response.data.discussionId))
+      .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
 }

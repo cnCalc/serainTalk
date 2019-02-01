@@ -2,7 +2,6 @@ import { createApp } from './app.js';
 import axios from 'axios';
 // import regeneratorRuntime from 'regenerator-runtime';
 
-axios.defaults.baseURL = 'http://localhost:8000';
 axios.interceptors.request.use(function (config) {
   config.headers = {
     'server-side-rendering': 'true',

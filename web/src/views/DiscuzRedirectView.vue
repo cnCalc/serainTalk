@@ -14,14 +14,20 @@ export default {
   },
   mounted () {
     if (this.$route.query.tid !== undefined) {
-      api.v1.discuzLookup.discuzLookup({ tid: this.$route.query.tid }).then(id => {
-        this.$router.replace(`/d/${id}`);
+      api.v1.discuzLookup.discuzLookup({ tid: this.$route.query.tid }).then(res => {
+        this.$router.replace(`/d/${res.discussionId}`);
       });
     }
 
     if (this.$route.params.tid !== undefined) {
-      api.v1.discuzLookup.discuzLookup({ tid: this.$route.params.tid }).then(id => {
-        this.$router.replace(`/d/${id}`);
+      api.v1.discuzLookup.discuzLookup({ tid: this.$route.params.tid }).then(res => {
+        this.$router.replace(`/d/${res.discussionId}`);
+      });
+    }
+
+    if (this.$route.query.uid !== undefined) {
+      api.v1.discuzLookup.discuzLookup({ uid: this.$route.query.uid }).then(res => {
+        this.$router.replace(`/m/${res.memberId}`);
       });
     }
   },

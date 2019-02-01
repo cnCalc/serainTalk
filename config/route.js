@@ -756,6 +756,7 @@ let route = {
       schema: {
         query: {
           tid: require('joi').string(),
+          uid: require('joi').string(),
         },
       },
       handler: [
