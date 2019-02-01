@@ -29,9 +29,10 @@ let removeProtectedField = async (memberInfo, permissions) => {
   for (let field of config.member.protectedField) {
     switch (field) {
       case 'email': {
-        if (!await permission.checkPermission('member-readPublicEmail', permissions)) {
-          delete memberInfo[field];
-        } else if (!settings || !settings.privacy || !settings.privacy.showEmailToMembers) {
+        if (!await permission.checkPermission('member-readPublicEmail', permissions)
+          || !settings
+          || !settings.privacy
+          || !settings.privacy.showEmailToMembers) {
           let email = memberInfo[field];
           email = email.split('@');
           if (email.length !== 2 || !email[0].length || !email[1].length) break;

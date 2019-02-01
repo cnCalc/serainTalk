@@ -416,8 +416,8 @@ let createDiscussion = async (req, res, next) => {
       type: config.discussion.status.ok,
     },
     sticky: {
-      site: null,
-      category: null,
+      site: 0,
+      category: 0,
     },
     tags: req.body.tags,
     title: req.body.title,
