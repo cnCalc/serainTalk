@@ -1,8 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-
 const config = require('../config');
 const dbTool = require('../database');
 const permission = require('./permission');

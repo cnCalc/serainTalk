@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 const config = require('../../../config');
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
