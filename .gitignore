@@ -14,3 +14,4 @@ coverage
 *package-lock.json
 
 invite-code.json
+staticConfig.js

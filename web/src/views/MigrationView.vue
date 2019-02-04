@@ -7,8 +7,6 @@
       form(v-on:submit.prevent="doCheckName", autocomplete="off")
         label.block(for="origUserName") 原 cnCalc 用户名：
         input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
-        label.block(for="inviteCode") 内测邀请码：
-        input(type="text" id="inviteCode" v-model="inviteCode")
         button.button(:disabled="busy") 下一步
     div(v-if="step === 'checkOrigEmail'")
       .explain 
@@ -60,7 +58,6 @@ export default {
       repeatNewPassword: '',
       newEmail: '',
       oldPassword: '',
-      inviteCode: '',
     };
   },
   title: '账户迁移',
@@ -97,7 +94,6 @@ export default {
     doSendCode () {
       let payload = {
         name: this.origUserName,
-        code: this.inviteCode,
       };
 
       if (this.newEmail) {
@@ -117,8 +113,6 @@ export default {
 
         if (data.code === 'ERR_WRONG_PASSWORD') {
           message = '输入的密码不正确。';
-        } else if (data.code === 'ERR_PERMISSION_DENIED') {
-          message = '邀请码无效或已经被使用。';
         } else if (data.code === 'ERR_EMAIL_USED') {
           message = '邮箱地址已被使用，请使用其他邮箱地址重试。';
         }

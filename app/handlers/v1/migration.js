@@ -50,15 +50,6 @@ async function verifyDiscuzMemberInfo (req, res) {
       return utils.errorHandler(null, errorMessages.ALREADY_MIGRATED, 400, res);
     }
 
-    if (!utils.env.isRelease) {
-      // 没有激活码 || 不正确的激活码 || 激活码已被激活
-      if (!req.body.code
-        || !_.includes(await utils.member.getInviteCodes(), req.body.code)
-        || await dbTool.commonMember.findOne({ inviteCode: req.body.code })) {
-        return utils.errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
-      }
-    }
-
     // 如果需要修改邮箱
     if (email) {
       // 核对密码。
@@ -114,11 +105,6 @@ async function verifyDiscuzMemberInfo (req, res) {
     } catch (err) {
       return errorHandler(err, errorMessages.SERVER_ERROR, 500, res);
     }
-
-    await dbTool.commonMember.updateOne(
-      { _id: req.member._id },
-      { $set: { inviteCode: req.body.code } }
-    );
 
     return res.status(201).send({ status: 'ok' });
   } catch (err) {

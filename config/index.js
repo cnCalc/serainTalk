@@ -55,8 +55,6 @@ let initConfig = async () => {
   }
   config.member.types = [...memberSet];
   config.member.permissions = memberPermissions;
-
-  await utils.member.getInviteCodes();
 };
 
 let init = initConfig();
