@@ -3,7 +3,9 @@
     h2 账户迁移
     div(v-if="step === 'getMemberName'")
       .explain 
-        div 这里是一段解释说明文本。
+        div 原cnCalc论坛的账户需要进行简单的迁移后才能在新论坛使用。
+        div 账户迁移的主要用途是重构密码体系以及验证一个有意义的邮件地址。
+        div 迁移对于每个账号只需要进行一次，第二次登录将不需要再次迁移。请注意大小写。
       form(v-on:submit.prevent="doCheckName", autocomplete="off")
         label.block(for="origUserName") 原 cnCalc 用户名：
         input(type="text" id="origUserName" v-model="origUserName" placeholder="区分大小写")
@@ -189,7 +191,7 @@ div.mingration-view {
   div.mingration-box {
     text-align: left;
     display: inline-block;
-    margin: 100px auto 0 auto;
+    margin: 60px auto 0 auto;
     padding: 0 10px;
     width: 300px;
     box-sizing: border-box;
@@ -205,10 +207,10 @@ div.mingration-view {
   .explain {
     margin-top: 1em;
     margin-bottom: 1em;
-  }
-
-  .explain {
     width: 100%;
+    div + div {
+      margin-top: 6px;
+    }
   }
 
   input[type="text"], input[type="password"] {

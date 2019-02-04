@@ -3,7 +3,9 @@
     div.signup-box
       form(v-on:submit.prevent="doPrepareSignUp" v-if="!hasToken")
         h2 注册
-        .explain 这里是一段解释说明的文本
+        .explain
+          div 用户在本论坛所发贴子内容版权归用户和论坛共有，如需转载必须注明作者和原贴地址。一切用户言论仅代表用户个人看法，本论坛不为此负责。
+          div 邮件地址仅用于订阅讨论、通知发送和找回密码，默认情况下不会公开。
         label.block(for="email") 电子邮件地址：
         input(id="email", type="text", v-model="email", :readonly="busy" autocomplete="email")
         button.button(:disabled="busy") 验证邮件地址
@@ -130,7 +132,7 @@ div.signup-view {
   div.signup-box {
     text-align: left;
     display: inline-block;
-    margin: 100px auto 0 auto;
+    margin: 60px auto 0 auto;
     padding: 0 10px;
     width: 300px;
     box-sizing: border-box;
@@ -155,6 +157,15 @@ div.signup-view {
 
   input:focus {
     outline: none;
+  }
+
+  .explain {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    width: 100%;
+    div + div {
+      margin-top: 6px;
+    }
   }
 
   h2 {
