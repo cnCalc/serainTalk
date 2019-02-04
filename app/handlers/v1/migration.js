@@ -3,7 +3,7 @@
 const config = require('../../../config');
 const dbTool = require('../../../database');
 const utils = require('../../../utils');
-const { errorHandler, errorMessages, md5: MD5 } = utils;
+const { errorHandler, errorMessages, md5: MD5, sha256: SHA256 } = utils;
 
 /**
  * 迁移逻辑：
@@ -157,7 +157,7 @@ async function performMigration (req, res) {
       credentials: {
         type: 'seraintalk',
         salt,
-        password: MD5(salt + newpassword),
+        password: MD5(salt + SHA256(newpassword)),
       },
     };
 

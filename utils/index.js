@@ -15,6 +15,7 @@ exports.object = require('./object');
 exports.promisify = require('./promisify');
 exports.renderer = require('./renderer');
 exports.router = require('./router');
+exports.sha256 = require('./sha256');
 exports.string = require('./string');
 exports.time = require('./time');
 exports.upload = require('./upload');

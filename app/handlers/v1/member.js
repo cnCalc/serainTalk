@@ -10,7 +10,8 @@ const config = require('../../../config');
 const dbTool = require('../../../database');
 const dataInterface = require('../../dataInterface');
 const utils = require('../../../utils');
-const MD5 = utils.md5;
+const { md5: MD5, sha256: SHA256 } = utils;
+
 const promisify = utils.promisify;
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussion } = utils.resolveMembers;
@@ -407,12 +408,12 @@ let login = async (req, res) => {
     let password = req.body.password;
     /* istanbul ignore if */
     if (memberInfo.credentials.salt === null) {
-      password = MD5(MD5(password).toLowerCase());
+      password = MD5(SHA256(password));
       if (password !== memberInfo.credentials.password) {
         return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
       }
     } else {
-      password = MD5(memberInfo.credentials.salt + password);
+      password = MD5(memberInfo.credentials.salt + SHA256(password));
       if (password !== memberInfo.credentials.password) {
         return utils.errorHandler(null, utils.errorMessages.BAD_PASSWORD, 401, res);
       }
@@ -446,44 +447,6 @@ let login = async (req, res) => {
 let logout = async (req, res) => {
   await res.clearCookie('membertoken');
   return res.status(204).send({ status: 'ok' });
-};
-
-/**
- * [处理函数] 注册
- * post: /api/v1/member/signup?name=<name>&password=<password>
- * @param {any} req 请求
- * @param {any} res 回复
- */
-let signup = async (req, res) => {
-  let memberInfo = req.body;
-
-  memberInfo.role = 'member';
-
-  // 生成成员身份信息
-  memberInfo.credentials = {};
-  memberInfo.credentials.salt = utils.createRandomString();
-  memberInfo.credentials.type = 'seraintalk';
-  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.body.password);
-  memberInfo.lastlogintime = Date.now();
-
-  try {
-    let tempMemberInfo = await dbTool.commonMember.findOne(
-      { username: memberInfo.username },
-      { notifications: 0, credentials: 0 }
-    );
-    if (tempMemberInfo) return utils.errorHandler(null, utils.errorMessages.MEMBER_EXIST, 400, res);
-  } catch (err) {
-    /* istanbul ignore next */
-    return utils.errorHandler(err, utils.errorMessages.DB_ERROR, 500, res);
-  }
-
-  await dbTool.commonMember.insertOne(memberInfo);
-
-  await utils.member.removePrivateField(memberInfo, req.member.permissions);
-
-  let memberToken = jwt.sign({ id: memberInfo._id.toString() }, config.jwtSecret);
-  res.cookie('membertoken', memberToken, { maxAge: config.cookie.renewTime });
-  return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
 /**
@@ -563,7 +526,7 @@ let performSignup = async (req, res) => {
   memberInfo.credentials = {};
   memberInfo.credentials.salt = utils.createRandomString();
   memberInfo.credentials.type = 'seraintalk';
-  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + req.body.password);
+  memberInfo.credentials.password = MD5(memberInfo.credentials.salt + SHA256(req.body.password));
   memberInfo.lastlogintime = Date.now();
 
   try {
@@ -651,7 +614,7 @@ let resetPassword = async (req, res) => {
   let credentials = {};
   credentials.salt = utils.createRandomString();
   credentials.type = 'seraintalk';
-  credentials.password = MD5(credentials.salt + newPassword);
+  credentials.password = MD5(credentials.salt + SHA256(newPassword));
 
   // 更新身份信息
   let now = Date.now();
@@ -728,7 +691,7 @@ let passwordModify = async (req, res) => {
   let credentials = {};
   credentials.salt = utils.createRandomString();
   credentials.type = 'seraintalk';
-  credentials.password = MD5(credentials.salt + req.body.password);
+  credentials.password = MD5(credentials.salt + SHA256(req.body.password));
   try {
     await dbTool.commonMember.updateOne(
       {
@@ -754,7 +717,6 @@ module.exports = {
   passwordModify,
   resetPassword,
   resetPasswordApplication,
-  signup, // TODO: remove
   prepareSignup,
   performSignup,
   updateEmail,
