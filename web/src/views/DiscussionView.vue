@@ -14,6 +14,10 @@
                 span.discussion-post-member {{ members[post.user].username }} 
                 span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
               post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
+              div.discussion-unused-image-attachments.post-content
+                li.attachment-item(v-for="id in post.attachments")
+                  span(v-if="attachments[id].mime.indexOf('image/') === 0")
+                    img(:src="`/api/v1/attachment/${id}`")
               div.discussion-post-attachments(v-if="post.attachments.length > 0")
                 div.attachment-wrapper
                   h3 {{ i18n('ui_attachment_list') }}
