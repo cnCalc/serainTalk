@@ -29,7 +29,9 @@
         button.button(:disabled="busy") 下一步
     div(v-if="step === 'setUpNewInfo'")
       .explain 
-        div 验证码已发送到您的邮箱，请注意查收。
+        div
+          | 验证码已发送到您的邮箱，请注意查收。
+          b 邮件接收可能有一定延迟，请耐心等待。
       form(v-on:submit.prevent="doMingration", autocomplete="off")
         label.block(for="verificationCode") 验证码（区分大小写）：
         input(type="text" id="verificationCode" v-model="verificationCode")
@@ -77,7 +79,6 @@ export default {
     }
   },
   mounted () {
-    // this.updateTitle();
   },
   methods: {
     doCheckName () {
@@ -117,6 +118,8 @@ export default {
           message = '输入的密码不正确。';
         } else if (data.code === 'ERR_EMAIL_USED') {
           message = '邮箱地址已被使用，请使用其他邮箱地址重试。';
+        } else if (data.code === 'ERR_VALIDATION') {
+          message = '提供的邮件地址不是有效的邮件地址，请检查后重试';
         }
 
         this.$store.dispatch('showMessageBox', {

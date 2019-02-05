@@ -46,7 +46,6 @@ export default {
     this.$store.commit('setGlobalTitles', []);
   },
   mounted () {
-    // this.updateTitle();
   },
   methods: {
     doSignin () {

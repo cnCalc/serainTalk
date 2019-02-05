@@ -57,7 +57,6 @@ export default {
     this.$store.commit('setGlobalTitles', []);
   },
   mounted () {
-    // this.updateTitle();
     if (this.$route.query.token) {
       this.hasToken = true;
       this.token = this.$route.query.token;

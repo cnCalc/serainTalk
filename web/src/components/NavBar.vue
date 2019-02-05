@@ -76,6 +76,12 @@ export default {
   },
   computed: {
     path () {
+      const nextPosition = this.$route.fullPath.indexOf('next=');
+
+      if (nextPosition >= 0) {
+        return decodeURIComponent(this.$route.fullPath.substring(nextPosition + 'next='.length));
+      }
+
       return this.$route.fullPath;
     },
     me () {
