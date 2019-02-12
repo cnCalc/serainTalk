@@ -17,4 +17,5 @@ before_script:
   - sudo apt-get install --allow-unauthenticated -y mongodb-org
   - sleep 5
   - mongo --version
+  - cp config/staticConfig.sample.js config/staticConfig.js
   

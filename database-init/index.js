@@ -25,6 +25,7 @@ let init = async () => {
               description: '德州仪器 Texas Instruments（TI）图形计算器、可编程计算器讨论。',
               color: '#888888',
               img: null,
+              tags: ['Nspire', '83/84', '89/92/V200', 'Lua', '其他'],
             },
             {
               name: '卡西欧（CASIO）图形计算器',
@@ -33,6 +34,7 @@ let init = async () => {
               description: '卡西欧（CASIO）图形计算器、可编程计算器讨论。',
               color: '#888888',
               img: null,
+              tags: ['fx-9860/9750', 'fx-CG10/20', 'ClassPad', '5800P', '其他'],
             },
             {
               name: '惠普（HP）图形计算器',
@@ -49,6 +51,7 @@ let init = async () => {
               description: '其它可编程计算器，辉光、VFD、LED等古董计算器收藏、泛手持计算设备的讨论。',
               color: '#888888',
               img: null,
+              tags: ['全部', '贴图', '教程/引导', '求助', 'DIY计算器讨论', '泛手持计算设备', '纯编程、古董', '工程样品机', 'SHARP图形机']
             },
             {
               name: '图形计算器资源下载',
@@ -109,6 +112,7 @@ let init = async () => {
               description: '意见、建议发表，系统问题报告',
               color: '#888888',
               img: null,
+              tags: ['全部', '公告', '勋章申请', '用户组申请', '意见/投诉/建议', '职位申请', '求助'],
             },
             {
               name: '二手&交易',
@@ -125,6 +129,7 @@ let init = async () => {
               description: '聊天之处，绝对禁止纯水。本区仅接受非技术性贴图。与计算器有关的图片请发表到相应的讨论区。',
               color: '#888888',
               img: null,
+              tags: ['全部', '贴图', '音乐/游戏/视频', '聊天'],
             },
             {
               name: '学生学术讨论',
