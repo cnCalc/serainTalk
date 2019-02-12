@@ -30,8 +30,19 @@ import { timeAgo } from '../utils/filters';
 import decodeHTML from '../utils/decodeHTML';
 
 export default {
-  name: 'discussion-list',
-  props: ['hideavatar', 'list', 'key-prefix', 'show-sticky'],
+  name: 'DiscussionList',
+  props: {
+    hideavatar: Boolean,
+    list: {
+      type: Array,
+      default: () => [],
+    },
+    keyPrefix: {
+      type: String,
+      default: '',
+    },
+    showSticky: Boolean,
+  },
   data () {
     return {
       lastKeyPrefix: null,

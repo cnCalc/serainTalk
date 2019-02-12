@@ -22,11 +22,11 @@ import config from '../config';
 // import bus from '../utils/ws-eventbus';
 
 export default {
-  name: 'list-view',
-  mixins: [titleMixin],
+  name: 'ListView',
   components: {
     DiscussionList, CategoryList, LoadingIcon,
   },
+  mixins: [titleMixin],
   data () {
     return {
       currentPage: 1,
@@ -82,6 +82,49 @@ export default {
 
     return base;
   },
+  watch: {
+    '$route': function (route) {
+      this.unread = 0;
+      if (typeof this.slug === 'undefined') {
+        return;
+      }
+      if (this.$route.path === '/' && this.currentSlug === '' && this.$route.fullPath !== '/?refresh') {
+        return;
+      }
+      if (this.currentSlug === route.params.categorySlug) {
+        return;
+      }
+
+      this.currentSlug = this.slug;
+      this.currentPage = 1;
+
+      if (this.$route.query.refresh === null) {
+        this.$nextTick(() => { this.$router.replace('/'); });
+      }
+
+      this.flushGlobalTitles();
+      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+    },
+    slug: function (slug) {
+      this.flushGlobalTitles();
+    },
+    categoriesGroup () {
+      this.flushGlobalTitles();
+    },
+  },
+  activated () {
+    this.flushGlobalTitles();
+    // this.updateTitle();
+    this.bus.$on('event', e => {
+      if (((this.currentCategory !== '' && this.currentCategory === e.affects.category) || this.currentCategory === '') && (e.eventType === 'Create' || e.eventType === 'Update')) {
+        this.unread++;
+        // this.updateTitle();
+      }
+    });
+  },
+  created () {
+    this.currentSlug = this.slug || '';
+  },
   methods: {
     loadMore () {
       this.currentPage++;
@@ -130,49 +173,6 @@ export default {
       this.unread = 0;
       // this.updateTitle();
     },
-  },
-  watch: {
-    '$route': function (route) {
-      this.unread = 0;
-      if (typeof this.slug === 'undefined') {
-        return;
-      }
-      if (this.$route.path === '/' && this.currentSlug === '' && this.$route.fullPath !== '/?refresh') {
-        return;
-      }
-      if (this.currentSlug === route.params.categorySlug) {
-        return;
-      }
-
-      this.currentSlug = this.slug;
-      this.currentPage = 1;
-
-      if (this.$route.query.refresh === null) {
-        this.$nextTick(() => { this.$router.replace('/'); });
-      }
-
-      this.flushGlobalTitles();
-      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
-    },
-    slug: function (slug) {
-      this.flushGlobalTitles();
-    },
-    categoriesGroup () {
-      this.flushGlobalTitles();
-    },
-  },
-  activated () {
-    this.flushGlobalTitles();
-    // this.updateTitle();
-    this.bus.$on('event', e => {
-      if (((this.currentCategory !== '' && this.currentCategory === e.affects.category) || this.currentCategory === '') && (e.eventType === 'Create' || e.eventType === 'Update')) {
-        this.unread++;
-        // this.updateTitle();
-      }
-    });
-  },
-  created () {
-    this.currentSlug = this.slug || '';
   },
   asyncData ({ store, route }) {
     let p;

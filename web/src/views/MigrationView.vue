@@ -49,7 +49,7 @@ import api from '../api';
 import titleMixin from '../mixins/title';
 
 export default {
-  name: 'migration-view',
+  name: 'MigrationView',
   mixins: [titleMixin],
   data () {
     return {

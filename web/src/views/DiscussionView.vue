@@ -82,7 +82,7 @@ import { scrollToTop, scrollTo } from '../utils/scrollToTop';
 let scrollToHash;
 
 export default {
-  name: 'discussion-view',
+  name: 'DiscussionView',
   components: {
     LoadingIcon, PostContent, Pagination,
   },
@@ -113,6 +113,197 @@ export default {
       return `(${this.unread.length}) ${this.discussionMeta.title}`;
     }
     return `${this.discussionMeta.title}`;
+  },
+  computed: {
+    pagesCount () {
+      return indexToPage(this.discussionMeta.postsCount);
+    },
+    discussionMeta () {
+      return this.$store.state.discussionMeta;
+    },
+    discussionPosts () {
+      if (!this.settings.autoLoadOnScroll) {
+        return this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize + 1);
+      } else {
+        return this.$store.state.discussionPosts;
+      }
+    },
+    showingPosts () {
+      return this.discussionPosts;
+    },
+    members () {
+      return this.$store.state.members;
+    },
+    attachments () {
+      return this.$store.state.attachments;
+    },
+    settings () {
+      return this.$store.state.settings;
+    },
+    busy () {
+      return this.$store.state.busy;
+    },
+  },
+  watch: {
+    discussionMeta (val) {
+      this.updateGlobalTitle();
+      // this.pagesCount = indexToPage(this.discussionMeta.postsCount);
+    },
+    '$route': function (route) {
+      if (!route.params.discussionId) {
+        return;
+      }
+
+      if (this.currentDiscussion !== route.params.discussionId) {
+        const page = Number(this.$route.params.page) || 1;
+
+        this.$store.commit('setGlobalTitles', [' ']);
+        this.currentDiscussion = route.params.discussionId;
+        this.maxPage = page;
+        this.minPage = page;
+        this.currentPage = page;
+        this.pageLoaded = [];
+        this.pageLoaded[this.currentPage] = true;
+
+        this.dataPromise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
+          this.$forceUpdate();
+          this.scrollWatcher();
+          if (this.settings.autoLoadOnScroll && page !== 1) {
+            this.minPage = page - 1;
+            this.pageLoaded[this.currentPage - 1] = true;
+          }
+        });
+        return;
+      }
+
+      this.scrollWatcher();
+      this.updateGlobalTitle();
+
+      if (this.pageLoaded[Number(route.params.page) || 1]) {
+        this.currentPage = Number(route.params.page) || 1;
+        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
+        // this.updateTitle();
+        return;
+      }
+
+      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: route.params.page }).then(() => {
+        this.currentPage = Number(route.params.page) || 1;
+        this.pageLoaded[this.currentPage] = true;
+        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
+        // this.updateTitle();
+      });
+    },
+    '$route.hash': function (hash) {
+      const attachPattern = /\#attach\-([0-9a-fA-F]{24})/;
+      if (hash) {
+        if (attachPattern.test(hash)) {
+          const attachId = hash.match(attachPattern)[1];
+          this.downloadAttachment(attachId);
+        } else {
+          scrollToHash(hash);
+        }
+      }
+    },
+  },
+  created () {
+    this.currentDiscussion = this.$route.params.discussionId;
+    const page = Number(this.$route.params.page) || 1;
+    this.maxPage = page;
+    this.minPage = page;
+    this.currentPage = page;
+  },
+  mounted () {
+    if (!scrollToHash) {
+      scrollToHash = (hash) => {
+        Promise.all([
+          this.promise,
+          this.dataPromise,
+        ]).then(() => {
+          let el = document.querySelector(hash);
+          if (!el) {
+            console.log('element not found: ' + hash);
+            return;
+          }
+          console.log(el);
+          el.classList.add('highlight');
+          setTimeout(() => {
+            el.classList.remove('highlight');
+          }, 2000);
+          el.scrollIntoView();
+          this.$nextTick(() => {
+            if (el.getBoundingClientRect().top < 60) {
+              window.scrollTo(0, window.scrollY - 60); // Height of NavBar
+            }
+          });
+        });
+      };
+    }
+
+    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
+    window.addEventListener('mouseup', this.hideQuote, { passive: true });
+
+    this.bus.$on('reloadDiscussionView', () => {
+      const page = Number(this.$route.params.page) || 1;
+
+      this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
+        this.$forceUpdate();
+        this.scrollWatcher();
+        if (this.settings.autoLoadOnScroll && page !== 1) {
+          this.minPage = page - 1;
+          this.pageLoaded[this.currentPage - 1] = true;
+        }
+        this.unread = [];
+        // this.updateTitle();
+      });
+    });
+
+    this.bus.$on('event', e => {
+      if (e.entity !== 'Post') {
+        return;
+      }
+
+      if (e.affects.discussionId === this.currentDiscussion) {
+        if (e.eventType === 'Create') {
+          this.unread.push(e.affects.postIndex);
+          // this.updateTitle();
+          return;
+        } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
+          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
+        }
+      }
+    });
+
+    const page = Number(this.$route.params.page) || 1;
+    this.maxPage = page;
+    this.minPage = page;
+    this.currentPage = page;
+    this.pageLoaded[this.currentPage] = true;
+
+    if (this.settings.autoLoadOnScroll && page !== 1) {
+      this.minPage = page - 1;
+      this.pageLoaded[this.currentPage - 1] = true;
+    }
+
+    this.$nextTick(() => {
+      if (window.location.hash) {
+        (this.promise || this.dataPromise || Promise.resolve()).then(() => scrollToHash(window.location.hash));
+      }
+    });
+
+    this.updateGlobalTitle();
+  },
+  beforeDestroy () {
+    window.removeEventListener('scroll', this.scrollWatcher);
+    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
+  },
+  activated () {
+    // this.updateTitle();
+    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
+    window.addEventListener('mouseup', this.hideQuote, { passive: true });
+  },
+  deactivated () {
+    window.removeEventListener('scroll', this.scrollWatcher);
+    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
   },
   methods: {
     indexToPage, scrollToTop, copyToClipboard, fileSize,
@@ -385,197 +576,6 @@ export default {
         return this.$store.dispatch('fetchDiscussionsMeta', { id: this.discussionMeta._id });
       });
     },
-  },
-  computed: {
-    pagesCount () {
-      return indexToPage(this.discussionMeta.postsCount);
-    },
-    discussionMeta () {
-      return this.$store.state.discussionMeta;
-    },
-    discussionPosts () {
-      if (!this.settings.autoLoadOnScroll) {
-        return this.$store.state.discussionPosts.slice((this.currentPage - 1) * this.pagesize + 1, this.currentPage * this.pagesize + 1);
-      } else {
-        return this.$store.state.discussionPosts;
-      }
-    },
-    showingPosts () {
-      return this.discussionPosts;
-    },
-    members () {
-      return this.$store.state.members;
-    },
-    attachments () {
-      return this.$store.state.attachments;
-    },
-    settings () {
-      return this.$store.state.settings;
-    },
-    busy () {
-      return this.$store.state.busy;
-    },
-  },
-  watch: {
-    discussionMeta (val) {
-      this.updateGlobalTitle();
-      // this.pagesCount = indexToPage(this.discussionMeta.postsCount);
-    },
-    '$route': function (route) {
-      if (!route.params.discussionId) {
-        return;
-      }
-
-      if (this.currentDiscussion !== route.params.discussionId) {
-        const page = Number(this.$route.params.page) || 1;
-
-        this.$store.commit('setGlobalTitles', [' ']);
-        this.currentDiscussion = route.params.discussionId;
-        this.maxPage = page;
-        this.minPage = page;
-        this.currentPage = page;
-        this.pageLoaded = [];
-        this.pageLoaded[this.currentPage] = true;
-
-        this.dataPromise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
-          this.$forceUpdate();
-          this.scrollWatcher();
-          if (this.settings.autoLoadOnScroll && page !== 1) {
-            this.minPage = page - 1;
-            this.pageLoaded[this.currentPage - 1] = true;
-          }
-        });
-        return;
-      }
-
-      this.scrollWatcher();
-      this.updateGlobalTitle();
-
-      if (this.pageLoaded[Number(route.params.page) || 1]) {
-        this.currentPage = Number(route.params.page) || 1;
-        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
-        // this.updateTitle();
-        return;
-      }
-
-      this.$store.dispatch('fetchDiscussionPosts', { id: this.$route.params.discussionId, page: route.params.page }).then(() => {
-        this.currentPage = Number(route.params.page) || 1;
-        this.pageLoaded[this.currentPage] = true;
-        this.$nextTick(() => this.$route.hash && scrollToHash(this.$route.hash));
-        // this.updateTitle();
-      });
-    },
-    '$route.hash': function (hash) {
-      const attachPattern = /\#attach\-([0-9a-fA-F]{24})/;
-      if (hash) {
-        if (attachPattern.test(hash)) {
-          const attachId = hash.match(attachPattern)[1];
-          this.downloadAttachment(attachId);
-        } else {
-          scrollToHash(hash);
-        }
-      }
-    },
-  },
-  created () {
-    this.currentDiscussion = this.$route.params.discussionId;
-    const page = Number(this.$route.params.page) || 1;
-    this.maxPage = page;
-    this.minPage = page;
-    this.currentPage = page;
-  },
-  mounted () {
-    if (!scrollToHash) {
-      scrollToHash = (hash) => {
-        Promise.all([
-          this.promise,
-          this.dataPromise,
-        ]).then(() => {
-          let el = document.querySelector(hash);
-          if (!el) {
-            console.log('element not found: ' + hash);
-            return;
-          }
-          console.log(el);
-          el.classList.add('highlight');
-          setTimeout(() => {
-            el.classList.remove('highlight');
-          }, 2000);
-          el.scrollIntoView();
-          this.$nextTick(() => {
-            if (el.getBoundingClientRect().top < 60) {
-              window.scrollTo(0, window.scrollY - 60); // Height of NavBar
-            }
-          });
-        });
-      };
-    }
-
-    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
-    window.addEventListener('mouseup', this.hideQuote, { passive: true });
-
-    this.bus.$on('reloadDiscussionView', () => {
-      const page = Number(this.$route.params.page) || 1;
-
-      this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {
-        this.$forceUpdate();
-        this.scrollWatcher();
-        if (this.settings.autoLoadOnScroll && page !== 1) {
-          this.minPage = page - 1;
-          this.pageLoaded[this.currentPage - 1] = true;
-        }
-        this.unread = [];
-        // this.updateTitle();
-      });
-    });
-
-    this.bus.$on('event', e => {
-      if (e.entity !== 'Post') {
-        return;
-      }
-
-      if (e.affects.discussionId === this.currentDiscussion) {
-        if (e.eventType === 'Create') {
-          this.unread.push(e.affects.postIndex);
-          // this.updateTitle();
-          return;
-        } else if (e.eventType === 'Update' && (this.settings.autoLoadOnScroll || this.indexToPage(e.affects.postIndex) === this.currentPage) && e.affects.postIndex <= this.discussionMeta.postsCount) {
-          this.$store.dispatch('updateSingleDiscussionPost', { id: this.currentDiscussion, index: e.affects.postIndex, raw: false });
-        }
-      }
-    });
-
-    const page = Number(this.$route.params.page) || 1;
-    this.maxPage = page;
-    this.minPage = page;
-    this.currentPage = page;
-    this.pageLoaded[this.currentPage] = true;
-
-    if (this.settings.autoLoadOnScroll && page !== 1) {
-      this.minPage = page - 1;
-      this.pageLoaded[this.currentPage - 1] = true;
-    }
-
-    this.$nextTick(() => {
-      if (window.location.hash) {
-        (this.promise || this.dataPromise || Promise.resolve()).then(() => scrollToHash(window.location.hash));
-      }
-    });
-
-    this.updateGlobalTitle();
-  },
-  beforeDestroy () {
-    window.removeEventListener('scroll', this.scrollWatcher);
-    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
-  },
-  activated () {
-    // this.updateTitle();
-    window.addEventListener('scroll', this.scrollWatcher, { passive: true });
-    window.addEventListener('mouseup', this.hideQuote, { passive: true });
-  },
-  deactivated () {
-    window.removeEventListener('scroll', this.scrollWatcher);
-    window.removeEventListener('mouseup', this.hideQuote, { passive: true });
   },
   asyncData ({ store, route }) {
     const page = Number(route.params.page) || 1;

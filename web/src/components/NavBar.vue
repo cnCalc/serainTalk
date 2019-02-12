@@ -52,7 +52,7 @@ import LoadingIcon from './LoadingIcon.vue';
 import api from '../api';
 
 export default {
-  name: 'nav-bar',
+  name: 'NavBar',
   components: {
     CategoryList, NotificationControl, MemberControl, LoadingIcon,
   },
@@ -86,6 +86,11 @@ export default {
     },
     me () {
       return this.$store.state.me;
+    },
+  },
+  watch: {
+    search () {
+      this.updateSearchHints();
     },
   },
   methods: {
@@ -142,11 +147,6 @@ export default {
           this.loadingSearchResult = false;
         });
       }, 300);
-    },
-  },
-  watch: {
-    search () {
-      this.updateSearchHints();
     },
   },
 };

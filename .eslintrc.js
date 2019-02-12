@@ -5,16 +5,19 @@ module.exports = {
         "mocha": true,
         "browser": true,
     },
-    "parser": "babel-eslint",
     "parserOptions": {
-        "ecmaVersion": 8,
+        "parser": "babel-eslint",
+        "ecmaVersion": 2017,
         "allowImportExportEverywhere": true
     },
-    "extends": "vue",
+    "extends": [
+        'plugin:vue/recommended'        
+    ],
     "plugins": [
         "standard",
         "promise",
-        "babel"
+        "babel",
+        "vue"
     ],
     "rules": {
         "indent": [
