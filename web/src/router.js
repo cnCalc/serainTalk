@@ -78,6 +78,9 @@ export function createRouter () {
         path: '/thread-:tid-:extra-:page.html',
         component: DiscuzRedirectView,
       }, {
+        path: '/space-uid-:uid.html',
+        component: DiscuzRedirectView,
+      }, {
         path: '/forum.php',
         component: DiscuzRedirectView,
       }, {

@@ -119,6 +119,7 @@ function discuzRedirectHandler (req, res, next) {
 }
 site.use('/viewthread.php', discuzRedirectHandler);
 site.use('/thread-:tid-:extra-:page.html', discuzRedirectHandler);
+site.use('/space-uid-:uid.html', discuzRedirectHandler);
 site.use('/forum.php', discuzRedirectHandler);
 site.use('/home.php', discuzRedirectHandler);
 

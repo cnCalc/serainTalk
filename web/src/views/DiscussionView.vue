@@ -12,7 +12,7 @@
                   div.avatar-image(v-if="members[post.user].avatar" v-bind:style="{ backgroundImage: 'url(' + members[post.user].avatar + ')'}")
                   div.avatar-fallback(v-else) {{ (members[post.user].username || '?').substr(0, 1).toUpperCase() }}
                 span.discussion-post-member {{ members[post.user].username }} 
-                span.discussion-post-index {{ `#${post.index}` + (post.status.type === 'deleted' ? '（仅管理员可见）' : '') }}
+                span.discussion-post-index {{ `${post.index}` }}
               post-content.discussion-post-content(:content="post.content", :reply-to="post.replyTo", :encoding="post.encoding" v-on:mouseup.native="showQuote(post, $event)")
               div.discussion-unused-image-attachments.post-content
                 li.attachment-item(v-for="id in post.attachments")
@@ -40,7 +40,7 @@
                   div.show-only-when-hover(style="float: right; display: flex; flex-direction: row-reverse; align-items: center")
                     button.button(v-if="discussionMeta.status.type === 'ok'" @click="activateEditor('REPLY_TO_INDEX', discussionMeta._id, post.user, post.index)") {{ i18n('ui_reply') }}
                     button.button(@click="copyLink(post.index)") {{ i18n('ui_copy_link') }}
-                    button.button(@click="gotoBottom(post.index)" v-if="index === absoluteBottomIndex") {{ i18n('ui_jump_to_bottom') }}
+                    button.button(@click="gotoBottom(post.index)" v-if="post.index === absoluteBottomIndex") {{ i18n('ui_jump_to_bottom') }}
                     template(v-if="$store.state.me")
                       button.button(v-if="(post.user === $store.state.me._id || $store.state.me.role === 'admin')" @click="activateEditor('EDIT_POST', discussionMeta._id, post.user, post.index)") {{ i18n('ui_edit') }}
                       template(v-if="$store.state.me.role === 'admin'")
@@ -241,7 +241,7 @@ export default {
           if (rect.bottom + 5 > window.innerHeight && rect.top < window.innerHeight - 200) {
             const fakeFooter = this.$el.querySelector('.fake-footer');
             if (fakeFooter) {
-              this.absoluteBottomIndex = i;
+              this.absoluteBottomIndex = Number(els[i].querySelector('.discussion-post-index').innerText);
               this.absoluteBottomWidth = fakeFooter.clientWidth;
             }
             break;
@@ -736,6 +736,9 @@ div.discussion-view {
       span.discussion-post-index {
         margin-right: 0.5em;
         font-size: 0.9em;
+        &::before {
+          content: '#';
+        }
       }
 
       div.discussion-post-avater {

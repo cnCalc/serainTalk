@@ -474,7 +474,7 @@ export default {
     this.currentMember = this.$route.params.memberId;
   },
   mounted () {
-    if (this.member.recentActivities.length < config.api.pagesize) {
+    if (this.member.recentActivities && this.member.recentActivities.length < config.api.pagesize) {
       this.canLoadMoreActivities = false;
     }
     if (this.member.discussions && this.member.discussions.length < config.api.pagesize) {
