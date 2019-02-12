@@ -59,9 +59,28 @@ export default {
         this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
         this.bus.$emit('reconnect');
-      }).catch(e => {
+      }).catch(err => {
         this.$store.commit('setBusy', false);
-        window.alert('密码错误');
+
+        console.error(err);
+
+        const res = err.response;
+        const data = res.data;
+        let message = '未知错误！查看 JavaScript 控制台确认问题！';
+
+        if (data.code === 'ERR_MEMBER_NOT_FOUND') {
+          message = '用户名不存在或密码错误。';
+        } else if (data.code === 'ERR_REQUIRE_RESET_PASSWORD') {
+          message = '该账户需要迁移后才可以使用，请前往账户迁移执行相关操作。';
+        } else if (data.code === 'ERR_WRONG_PASSWORD') {
+          message = '用户名不存在或密码错误。';
+        }
+
+        this.$store.dispatch('showMessageBox', {
+          title: '出现错误',
+          type: 'OK',
+          message,
+        }).then(() => {});
       });
     },
   },
