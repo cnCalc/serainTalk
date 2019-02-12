@@ -57,8 +57,15 @@ export default {
       return `与 ${this.members[this.session.peer].username} 的会话`;
     }
   },
-  created () {
-    // this.updateTitle();
+  computed: {
+    members () {
+      return this.$store.state.members;
+    },
+    me () {
+      return this.$store.state.me;
+    },
+  },
+  mounted () {
     this.loadSessions().then(() => {
       if (this.$route.params.messageId) {
         this.activeSession = this.$route.params.messageId;
@@ -81,16 +88,7 @@ export default {
       }
     });
     this.$store.commit('setGlobalTitles', []);
-  },
-  computed: {
-    members () {
-      return this.$store.state.members;
-    },
-    me () {
-      return this.$store.state.me;
-    },
-  },
-  mounted () {
+
     this.bus.$on('message', payload => {
       let id = payload.messageId;
       if (id === this.activeSession) {
