@@ -26,7 +26,7 @@ import api from '../api';
 import axios from 'axios';
 
 export default {
-  name: 'member-control',
+  name: 'MemberControl',
   data () {
     return {
       activated: false,

@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  name: 'loading-icon',
+  name: 'LoadingIcon',
   props: {
     noPaddingTop: {
       type: Boolean,

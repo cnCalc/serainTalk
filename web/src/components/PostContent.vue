@@ -15,8 +15,21 @@ import { indexToPage } from '../utils/filters';
 import api from '../api';
 
 export default {
-  name: 'post-content',
-  props: ['content', 'noattach', 'reply-to', 'discussion-id'],
+  name: 'PostContent',
+  props: {
+    content: {
+      type: String,
+      default: '',
+    },
+    replyTo: {
+      type: Object,
+      default: () => ({}),
+    },
+    discussionId: {
+      type: String,
+      default: '',
+    },
+  },
   data () {
     return {
       html: '',
@@ -27,13 +40,6 @@ export default {
       loaded: false,
       timeoutId: null,
     };
-  },
-  created () {
-    this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
-    this.injectLinks();
-  },
-  mounted () {
-    this.addPreviewEvents();
   },
   computed: {
     pattern () {
@@ -46,6 +52,37 @@ export default {
         return { username: 'ERROR' };
       }
     },
+  },
+  watch: {
+    content () {
+      this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
+    },
+    preview () {
+      if (!this.previewLoaded) {
+        this.previewReplyHtml = 'Loading...';
+        api.v1.discussion.fetchDiscussionPostByIdAndIndex({ id: this.discussionId || this.$store.state.discussionMeta._id, index: this.replyTo.value }).then(response => {
+          this.previewLoaded = true;
+          this.previewReplyHtml = response.post.content.replace(/\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/, '');
+        });
+      }
+    },
+    html () {
+      // 让 KaTeX 自动渲染 DOM 中的公式
+      this.$nextTick(() => {
+        try {
+          window.renderMathInElement(this.$el);
+        } catch (e) {
+          console.log(e);
+        }
+      });
+    },
+  },
+  created () {
+    this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
+    this.injectLinks();
+  },
+  mounted () {
+    this.addPreviewEvents();
   },
   methods: {
     showReplyPreview () {
@@ -138,30 +175,6 @@ export default {
         replyTo.addEventListener('mouseout', () => {
           this.hideReplyPreview();
         });
-      });
-    },
-  },
-  watch: {
-    content () {
-      this.html = this.replaceMentionTag(this.replaceReplyTag(this.content));
-    },
-    preview () {
-      if (!this.previewLoaded) {
-        this.previewReplyHtml = 'Loading...';
-        api.v1.discussion.fetchDiscussionPostByIdAndIndex({ id: this.discussionId || this.$store.state.discussionMeta._id, index: this.replyTo.value }).then(response => {
-          this.previewLoaded = true;
-          this.previewReplyHtml = response.post.content.replace(/\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/, '');
-        });
-      }
-    },
-    html () {
-      // 让 KaTeX 自动渲染 DOM 中的公式
-      this.$nextTick(() => {
-        try {
-          window.renderMathInElement(this.$el);
-        } catch (e) {
-          console.log(e);
-        }
       });
     },
   },

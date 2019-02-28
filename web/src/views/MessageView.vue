@@ -38,7 +38,7 @@ import titleMixin from '../mixins/title';
 // import bus from '../utils/ws-eventbus';
 
 export default {
-  name: 'message-view',
+  name: 'MessageView',
   components: { LoadingIcon },
   mixins: [titleMixin],
   data () {
@@ -63,6 +63,33 @@ export default {
     },
     me () {
       return this.$store.state.me;
+    },
+  },
+  watch: {
+    '$route': function () {
+      if (this.$route.params.messageId !== this.activeSession) {
+        this.activeSession = this.$route.params.messageId;
+      }
+    },
+    activeSession (id) {
+      if (!id) {
+        return;
+      }
+      this.busy = true;
+      api.v1.message.fetchMessageSessionById({ id }).then(res => {
+        this.session = res.message;
+        this.session.canLoadMore = true;
+        this.session.peer = this.getPeer(this.session.members);
+        if (this.session.timeline.length < 10) {
+          this.session.canLoadMore = false;
+        }
+        this.$store.commit('updateMessageSession', id);
+        // this.updateTitle();
+        this.$nextTick(() => {
+          this.busy = false;
+          this.scrollToBottom();
+        });
+      });
     },
   },
   mounted () {
@@ -104,6 +131,9 @@ export default {
         });
       }
     });
+  },
+  beforeDestroy () {
+    this.$store.commit('updateMessageSession', null);
   },
   methods: {
     loadSessions () {
@@ -191,36 +221,6 @@ export default {
           return this.loadSessions();
         });
       }
-    },
-  },
-  beforeDestroy () {
-    this.$store.commit('updateMessageSession', null);
-  },
-  watch: {
-    '$route': function () {
-      if (this.$route.params.messageId !== this.activeSession) {
-        this.activeSession = this.$route.params.messageId;
-      }
-    },
-    activeSession (id) {
-      if (!id) {
-        return;
-      }
-      this.busy = true;
-      api.v1.message.fetchMessageSessionById({ id }).then(res => {
-        this.session = res.message;
-        this.session.canLoadMore = true;
-        this.session.peer = this.getPeer(this.session.members);
-        if (this.session.timeline.length < 10) {
-          this.session.canLoadMore = false;
-        }
-        this.$store.commit('updateMessageSession', id);
-        // this.updateTitle();
-        this.$nextTick(() => {
-          this.busy = false;
-          this.scrollToBottom();
-        });
-      });
     },
   },
 };

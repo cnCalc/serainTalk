@@ -9,7 +9,7 @@
 import titleMixin from '../mixins/title.js';
 
 export default {
-  name: 'error-view',
+  name: 'ErrorView',
   mixins: [titleMixin],
   activated () {
     this.$store.commit('setGlobalTitles', []);

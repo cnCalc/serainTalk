@@ -31,7 +31,7 @@ div
                 div.avatar-fallback(v-else) {{ (member.username || '?').substr(0, 1).toUpperCase() }}
               div.activity-member-name
                 b {{ member.username }} 
-            post-content(:content="activity.posts.content" noattach="true" :reply-to="activity.posts.replyTo" :discussion-id="activity._id")
+            post-content(:content="activity.posts.content" :reply-to="activity.posts.replyTo" :discussion-id="activity._id")
         div.list-nav(v-if="canLoadMoreActivities")
           loading-icon(v-if="busy")
           button.button.load-more(@click="loadMoreRecentActivity" v-if="!busy") 加载更多
@@ -124,11 +124,11 @@ import { timeAgo, indexToPage } from '../utils/filters';
 // import bus from '../utils/ws-eventbus';
 
 export default {
-  name: 'member-view',
-  mixins: [titleMixin],
+  name: 'MemberView',
   components: {
     LoadingIcon, PostContent, DiscussionList, CheckBox,
   },
+  mixins: [titleMixin],
   data () {
     return {
       currentPage: 1,
@@ -178,6 +178,83 @@ export default {
     settings () {
       return this.$store.state.settings;
     },
+  },
+  watch: {
+    '$route': function (route) {
+      if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
+        // 如果 currentMember 和路由中的 member 不一致时，显然可以算作是首次进入。
+        let needRefetchMemberInfo = (this.currentMember !== route.params.memberId);
+        this.firstIn = false;
+        if (route.params.memberId) {
+          this.currentMember = route.params.memberId;
+          if (needRefetchMemberInfo) {
+            this.canLoadMorePosts = true;
+            this.dataPromise = this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+              if (route.meta.mode === 'discussions') {
+                return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
+                  if (this.member.discussions.length < config.api.pagesize) {
+                    this.canLoadMorePosts = false;
+                  }
+                });
+              } else {
+                return Promise.resolve();
+              }
+            }).catch((error) => {
+              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+                this.$router.replace('/not-found');
+              }
+            });
+          } else if (this.$store.state.member.discussions === undefined) {
+            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
+              this.$forceUpdate();
+
+              if (this.member.discussions.length < config.api.pagesize) {
+                this.canLoadMorePosts = false;
+              }
+            }).catch((error) => {
+              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+                this.$router.replace('/not-found');
+              }
+            });
+          }
+          this.currentPage = 1;
+        }
+        return;
+      }
+      if (route.params.memberId && route.meta.mode === 'discussions' && this.$store.state.member.discussions === undefined) {
+        this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+      }
+      // this.updateTitle();
+    },
+    'cutState.scale': function () {
+      const maxSize = Math.min(this.cutState.showingWidth, this.cutState.showingHeight);
+      const diff = (maxSize * Number(this.cutState.scale) / 100 - this.cutState.size) / 2;
+      this.cutState.size = maxSize * Number(this.cutState.scale) / 100;
+      this.cutState.x -= diff;
+      this.cutState.y -= diff;
+      this.updateCutIndicatorStyle();
+    },
+  },
+  created () {
+    this.currentPage = 1;
+    this.currentMember = this.$route.params.memberId;
+  },
+  mounted () {
+    if (this.member.recentActivities && this.member.recentActivities.length < config.api.pagesize) {
+      this.canLoadMoreActivities = false;
+    }
+    if (this.member.discussions && this.member.discussions.length < config.api.pagesize) {
+      this.canLoadMorePosts = false;
+    }
+  },
+  activated () {
+    if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
+      // this.$options.asyncData({ store: this.$store, route: this.$route });
+      this.firstIn = true;
+      this.canLoadMorePosts = true;
+    }
+    this.$store.commit('setGlobalTitles', [' ', ' ', true]);
+    // this.updateTitle();
   },
   methods: {
     timeAgo, indexToPage,
@@ -468,83 +545,6 @@ export default {
         // doing nothing.
       });
     },
-  },
-  created () {
-    this.currentPage = 1;
-    this.currentMember = this.$route.params.memberId;
-  },
-  mounted () {
-    if (this.member.recentActivities && this.member.recentActivities.length < config.api.pagesize) {
-      this.canLoadMoreActivities = false;
-    }
-    if (this.member.discussions && this.member.discussions.length < config.api.pagesize) {
-      this.canLoadMorePosts = false;
-    }
-  },
-  watch: {
-    '$route': function (route) {
-      if (typeof this.currentMember === 'undefined' || this.currentMember !== route.params.memberId || this.firstIn) {
-        // 如果 currentMember 和路由中的 member 不一致时，显然可以算作是首次进入。
-        let needRefetchMemberInfo = (this.currentMember !== route.params.memberId);
-        this.firstIn = false;
-        if (route.params.memberId) {
-          this.currentMember = route.params.memberId;
-          if (needRefetchMemberInfo) {
-            this.canLoadMorePosts = true;
-            this.dataPromise = this.$store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
-              if (route.meta.mode === 'discussions') {
-                return this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
-                  if (this.member.discussions.length < config.api.pagesize) {
-                    this.canLoadMorePosts = false;
-                  }
-                });
-              } else {
-                return Promise.resolve();
-              }
-            }).catch((error) => {
-              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-                this.$router.replace('/not-found');
-              }
-            });
-          } else if (this.$store.state.member.discussions === undefined) {
-            this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId }).then(() => {
-              this.$forceUpdate();
-
-              if (this.member.discussions.length < config.api.pagesize) {
-                this.canLoadMorePosts = false;
-              }
-            }).catch((error) => {
-              if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-                this.$router.replace('/not-found');
-              }
-            });
-          }
-          this.currentPage = 1;
-        }
-        return;
-      }
-      if (route.params.memberId && route.meta.mode === 'discussions' && this.$store.state.member.discussions === undefined) {
-        this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
-      }
-      // this.updateTitle();
-    },
-    'cutState.scale': function () {
-      const maxSize = Math.min(this.cutState.showingWidth, this.cutState.showingHeight);
-      const diff = (maxSize * Number(this.cutState.scale) / 100 - this.cutState.size) / 2;
-      this.cutState.size = maxSize * Number(this.cutState.scale) / 100;
-      this.cutState.x -= diff;
-      this.cutState.y -= diff;
-      this.updateCutIndicatorStyle();
-    },
-  },
-  activated () {
-    if (this.$store.state.member && this.$store.state.member._id !== this.$route.params.memberId) {
-      // this.$options.asyncData({ store: this.$store, route: this.$route });
-      this.firstIn = true;
-      this.canLoadMorePosts = true;
-    }
-    this.$store.commit('setGlobalTitles', [' ', ' ', true]);
-    // this.updateTitle();
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {

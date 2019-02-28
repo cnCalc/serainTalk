@@ -6,8 +6,10 @@
 
 <script>
 export default {
-  name: 'check-box',
-  props: ['checked'],
+  name: 'CheckBox',
+  props: {
+    checked: Boolean,
+  },
 };
 </script>
 

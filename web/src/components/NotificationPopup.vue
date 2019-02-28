@@ -17,7 +17,7 @@
 // window.bus = bus;
 
 export default {
-  name: 'notification-popup',
+  name: 'NotificationPopup',
   data () {
     return {
       items: [],

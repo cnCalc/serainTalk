@@ -15,7 +15,7 @@
 
 <script>
 export default {
-  name: 'message-box',
+  name: 'MessageBox',
   data () {
     return {
       showing: false,
@@ -25,6 +25,16 @@ export default {
   computed: {
     state () {
       return this.$store.state.messageBox;
+    },
+  },
+  watch: {
+    state (val, old) {
+      if (val.promise === null) {
+        this.showing = false;
+      } else {
+        this.showing = true;
+        this.text = '';
+      }
     },
   },
   methods: {
@@ -42,16 +52,6 @@ export default {
       this.showing = false;
       if (this.state.promise instanceof Promise) {
         this.state.promise.reject();
-      }
-    },
-  },
-  watch: {
-    state (val, old) {
-      if (val.promise === null) {
-        this.showing = false;
-      } else {
-        this.showing = true;
-        this.text = '';
       }
     },
   },

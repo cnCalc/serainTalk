@@ -80,7 +80,7 @@ const replyReg = /^\@([\da-fA-F]{24})\#([\da-fA-F]{24})\#(\d+)/;
 // const attachReg = /(\(\#attach\-([\da-fA-F]{24})\)|\/api\/v1\/attachment\/([\da-fA-F]{24}))/g;
 
 export default {
-  name: 'editor',
+  name: 'Editor',
   components: {
     LoadingIcon,
   },
@@ -114,52 +114,6 @@ export default {
       busy: false,
     };
   },
-  mounted () {
-    hljs = window.hljs;
-    md = window.markdownit({
-      html: false,
-      linkify: true,
-      highlight (str, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-          try {
-            return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
-          } catch (__) {}
-        }
-
-        return addSpanEachLine(str.trim());
-      },
-    });
-
-    const resize = document.querySelector('div.resize');
-    const editor = document.querySelector('div.editor');
-    const textarea = document.querySelector('textarea');
-    const app = document.querySelector('#app');
-    const dragStep = e => {
-      const height = Math.max(window.innerHeight - Math.max(e.clientY - 6, 50), 180);
-      editor.style.top = `${window.innerHeight - height}px`;
-      app.style.marginBottom = `${height}px`;
-    };
-    const dragStop = e => {
-      document.removeEventListener('mousemove', dragStep);
-      document.removeEventListener('mouseup', dragStop);
-      document.body.style.userSelect = '';
-    };
-    resize.addEventListener('mousedown', e => {
-      document.body.style.userSelect = 'none';
-      document.addEventListener('mousemove', dragStep);
-      document.addEventListener('mouseup', dragStop);
-    });
-    textarea.addEventListener('change', e => {
-      this.updatePreview();
-    });
-    textarea.addEventListener('keyup', e => {
-      this.updatePreview();
-    });
-
-    if (this.categories.length === 0) {
-      this.$store.dispatch('fetchCategory');
-    }
-  },
   computed: {
     mode () {
       return this.$store.state.editor.mode;
@@ -180,6 +134,7 @@ export default {
       } else if (this.state.mode === 'EDIT_POST') {
         return '编辑内容';
       }
+      return '';
     },
     isAdmin () {
       return !!(this.$store.state.me && this.$store.state.me.role === 'admin');
@@ -272,6 +227,52 @@ export default {
         this.updateMyAttachmentList();
       }
     },
+  },
+  mounted () {
+    hljs = window.hljs;
+    md = window.markdownit({
+      html: false,
+      linkify: true,
+      highlight (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return addSpanEachLine(hljs.highlight(lang, str.trim()).value);
+          } catch (__) {}
+        }
+
+        return addSpanEachLine(str.trim());
+      },
+    });
+
+    const resize = document.querySelector('div.resize');
+    const editor = document.querySelector('div.editor');
+    const textarea = document.querySelector('textarea');
+    const app = document.querySelector('#app');
+    const dragStep = e => {
+      const height = Math.max(window.innerHeight - Math.max(e.clientY - 6, 50), 180);
+      editor.style.top = `${window.innerHeight - height}px`;
+      app.style.marginBottom = `${height}px`;
+    };
+    const dragStop = e => {
+      document.removeEventListener('mousemove', dragStep);
+      document.removeEventListener('mouseup', dragStop);
+      document.body.style.userSelect = '';
+    };
+    resize.addEventListener('mousedown', e => {
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', dragStep);
+      document.addEventListener('mouseup', dragStop);
+    });
+    textarea.addEventListener('change', e => {
+      this.updatePreview();
+    });
+    textarea.addEventListener('keyup', e => {
+      this.updatePreview();
+    });
+
+    if (this.categories.length === 0) {
+      this.$store.dispatch('fetchCategory');
+    }
   },
   methods: {
     fileSize,

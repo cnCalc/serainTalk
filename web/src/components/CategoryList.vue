@@ -19,7 +19,7 @@
 
 <script>
 export default {
-  name: 'category-list',
+  name: 'CategoryList',
   computed: {
     categoriesGroup () {
       return this.$store.state.categoriesGroup;

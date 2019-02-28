@@ -24,17 +24,9 @@ import NotificationPopup from './components/NotificationPopup.vue';
 import MessageBox from './components/MessageBox.vue';
 
 export default {
-  name: 'app',
+  name: 'App',
   components: {
     NavBar, GlobalTitle, Editor, NotificationPopup, MessageBox,
-  },
-  beforeMount () {
-    // reload session info.
-    this.$store.dispatch('fetchCurrentSigninedMemberInfo')
-      .then(() => { this.$store.dispatch('fetchNotifications'); })
-      .catch(e => {});
-
-    this.bus.initialize();
   },
   computed: {
     isDarkTheme () {
@@ -43,6 +35,14 @@ export default {
     isLightTheme () {
       return !this.isDarkTheme;
     },
+  },
+  beforeMount () {
+    // reload session info.
+    this.$store.dispatch('fetchCurrentSigninedMemberInfo')
+      .then(() => { this.$store.dispatch('fetchNotifications'); })
+      .catch(e => {});
+
+    this.bus.initialize();
   },
   mounted () {
     console.log([

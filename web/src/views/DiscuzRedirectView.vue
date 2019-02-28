@@ -8,7 +8,7 @@
 import api from '../api';
 
 export default {
-  name: 'discuz-redirect-view',
+  name: 'DiscuzRedirectView',
   title () {
     return '跳转中';
   },

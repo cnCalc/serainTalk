@@ -8,12 +8,40 @@
 
 <script>
 export default {
-  name: 'pagination',
-  props: ['active', 'length', 'handler', 'max'],
+  name: 'Pagination',
+  props: {
+    active: {
+      type: Number,
+      default: 1,
+    },
+    length: {
+      type: Number,
+      default: 1,
+    },
+    handler: {
+      type: Function,
+      default: () => {},
+    },
+    max: {
+      type: Number,
+      default: 1,
+    },
+  },
   data () {
     return {
       pages: [],
     };
+  },
+  watch: {
+    max () {
+      this.reload();
+    },
+    active () {
+      this.reload();
+    },
+  },
+  mounted () {
+    this.reload();
   },
   methods: {
     move (page) {
@@ -26,17 +54,6 @@ export default {
       let currentPage = Number(this.active);
       let left = Math.max(1, currentPage - Math.floor(Number(this.length) / 2));
       this.pages = new Array(this.length).fill(0).map((dummy, index) => index + left).filter(i => i <= Number(this.max));
-    },
-  },
-  mounted () {
-    this.reload();
-  },
-  watch: {
-    max () {
-      this.reload();
-    },
-    active () {
-      this.reload();
     },
   },
 };

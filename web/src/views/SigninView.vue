@@ -22,7 +22,7 @@ import titleMixin from '../mixins/title';
 // import bus from '../utils/ws-eventbus';
 
 export default {
-  name: 'singin-view',
+  name: 'SinginView',
   mixins: [titleMixin],
   data () {
     return {

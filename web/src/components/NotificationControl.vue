@@ -19,7 +19,7 @@ import api from '../api';
 // import bus from '../utils/ws-eventbus';
 
 export default {
-  name: 'notification-control',
+  name: 'NotificationControl',
   data () {
     return {
       activated: false,

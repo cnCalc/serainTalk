@@ -9,7 +9,7 @@
 import decodeHTML from '../utils/decodeHTML';
 
 export default {
-  name: 'global-title',
+  name: 'GlobalTitle',
   computed: {
     title () {
       return this.$store.state.globalTitle.title || '';
