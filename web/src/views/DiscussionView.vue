@@ -205,6 +205,17 @@ export default {
       }
     },
   },
+  asyncData ({ store, route }) {
+    const page = Number(route.params.page) || 1;
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
+      .catch(error => {
+        if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+          this.$router.replace('/not-found');
+        } else {
+          throw error;
+        }
+      });
+  },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
     const page = Number(this.$route.params.page) || 1;
@@ -576,17 +587,6 @@ export default {
         return this.$store.dispatch('fetchDiscussionsMeta', { id: this.discussionMeta._id });
       });
     },
-  },
-  asyncData ({ store, route }) {
-    const page = Number(route.params.page) || 1;
-    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
-      .catch(error => {
-        if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-          this.$router.replace('/not-found');
-        } else {
-          throw error;
-        }
-      });
   },
 };
 </script>

@@ -12,6 +12,9 @@ export default {
   title () {
     return '跳转中';
   },
+  asyncData () {
+    // return Promsie.resolved();
+  },
   mounted () {
     if (this.$route.query.tid !== undefined) {
       api.v1.discuzLookup.discuzLookup({ tid: this.$route.query.tid }).then(res => {
@@ -30,9 +33,6 @@ export default {
         this.$router.replace(`/m/${res.memberId}`);
       });
     }
-  },
-  asyncData () {
-    // return Promsie.resolved();
   },
 };
 </script>

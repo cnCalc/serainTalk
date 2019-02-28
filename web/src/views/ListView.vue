@@ -65,7 +65,7 @@ export default {
       return !this.slug;
     },
     canLoadMore () {
-      return this.currentPage * config.api.pagesize === this.discussions.length;
+      return this.currentPage * config.discussionList.pagesize === this.discussions.length;
     },
   },
   title () {
@@ -112,6 +112,20 @@ export default {
       this.flushGlobalTitles();
     },
   },
+  asyncData ({ store, route }) {
+    let p;
+    if (route.path === '/') {
+      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize });
+    } else {
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize });
+    }
+    return p.then(() => {
+      // FIXME:
+      // if (// this.updateTitle) {
+      //   // this.updateTitle();
+      // }
+    });
+  },
   activated () {
     this.flushGlobalTitles();
     // this.updateTitle();
@@ -132,12 +146,14 @@ export default {
       if (this.$route.fullPath === '/') {
         return this.$store.dispatch('fetchLatestDiscussions', {
           page: this.currentPage,
+          pagesize: config.discussionList.pagesize,
           append: true,
         });
       } else {
         return this.$store.dispatch('fetchDiscussionsUnderCategory', {
           slug: this.$route.params.categorySlug,
           page: this.currentPage,
+          pagesize: config.discussionList.pagesize,
           append: true,
         });
       }
@@ -173,20 +189,6 @@ export default {
       this.unread = 0;
       // this.updateTitle();
     },
-  },
-  asyncData ({ store, route }) {
-    let p;
-    if (route.path === '/') {
-      p = store.dispatch('fetchLatestDiscussions');
-    } else {
-      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug });
-    }
-    return p.then(() => {
-      // FIXME:
-      // if (// this.updateTitle) {
-      //   // this.updateTitle();
-      // }
-    });
   },
 };
 </script>

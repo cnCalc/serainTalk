@@ -235,6 +235,19 @@ export default {
       this.updateCutIndicatorStyle();
     },
   },
+  asyncData ({ store, route }) {
+    return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+      if (route.meta.mode === 'discussions') {
+        return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
+      }
+    }).catch((error) => {
+      if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+        this.$router.replace('/not-found');
+      } else {
+        throw error;
+      }
+    });
+  },
   created () {
     this.currentPage = 1;
     this.currentMember = this.$route.params.memberId;
@@ -545,19 +558,6 @@ export default {
         // doing nothing.
       });
     },
-  },
-  asyncData ({ store, route }) {
-    return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
-      if (route.meta.mode === 'discussions') {
-        return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
-      }
-    }).catch((error) => {
-      if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-        this.$router.replace('/not-found');
-      } else {
-        throw error;
-      }
-    });
   },
 };
 </script>

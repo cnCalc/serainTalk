@@ -11,4 +11,7 @@ export default {
       bottom: 200,
     },
   },
+  discussionList: {
+    pagesize: 15,
+  },
 };

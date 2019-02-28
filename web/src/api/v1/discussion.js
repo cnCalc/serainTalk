@@ -6,12 +6,13 @@ import config from '../../config.js';
  *
  * @param {object} params An object containing the parameters
  * @param {number} params.page Page of the request.
+ * @param {number} params.pagesize Size of the page
  *
  * @returns {Promise} Promise of the request
  */
 function fetchLatestDiscussions (params) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

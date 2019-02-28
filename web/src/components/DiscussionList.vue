@@ -41,7 +41,10 @@ export default {
       type: String,
       default: '',
     },
-    showSticky: Boolean,
+    showSticky: {
+      type: String,
+      default: '',
+    },
   },
   data () {
     return {
@@ -92,8 +95,7 @@ div.discussion-list {
     padding: 0;
     list-style: none;
     div.discussion-list-item {
-      padding: 12px;
-      margin-bottom: 5px;
+      padding: 12px 12px;
       @include respond-to(phone) {
         padding: 6px;
       }
