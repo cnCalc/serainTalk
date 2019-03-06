@@ -161,7 +161,7 @@ export default {
       return html.replace(/@([a-fA-F0-9]{24})/g, (match, id) => `<a href="/m/${id}"><span class="mention"> @${members[id] ? members[id].username : '无效用户'} </span></a>`);
     },
     addPreviewEvents () {
-      if (!this.replyTo) {
+      if (!this.replyTo.value) {
         return;
       }
       this.$nextTick(() => {

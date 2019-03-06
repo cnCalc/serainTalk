@@ -69,6 +69,9 @@ div
         div.row
           check-box(:checked="settings.nofixedtoolbar" v-on:click.native="updateSetting('nofixedtoolbar', !settings.nofixedtoolbar)")
           span 浏览讨论时不要总是在页面底部显示功能栏
+        div.row
+          check-box(:checked="settings.preferNewTab" v-on:click.native="updateSetting('preferNewTab', !settings.preferNewTab)")
+          span 打开讨论页面时使用新标签而不是在当前标签跳转
         h3 编辑选项
         div.row
           check-box(:checked="settings.newlineAfterAttachmentInsert" v-on:click.native="updateSetting('newlineAfterAttachmentInsert', !settings.newlineAfterAttachmentInsert)")

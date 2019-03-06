@@ -1,7 +1,6 @@
 <template lang="pug">
   div.notification-container
-    button.notification(@click="trigger",
-      v-bind:class="{ active: activated, new: notifications.new }")
+    button.notification(@click="trigger($event)" v-bind:class="{ active: activated, new: notifications.new }")
     div.dropdown-wrapper: div.notification-list(@click="$event.stopPropagation()" v-bind:class="{ 'activated': activated }")
       header
         h3 消息通知
@@ -39,6 +38,7 @@ export default {
   },
   methods: {
     trigger (e) {
+      event.stopPropagation();
       if (!this.activated) {
         this.activate();
       }

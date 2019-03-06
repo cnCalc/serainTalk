@@ -235,7 +235,6 @@ export default {
             console.log('element not found: ' + hash);
             return;
           }
-          console.log(el);
           el.classList.add('highlight');
           setTimeout(() => {
             el.classList.remove('highlight');
@@ -248,6 +247,12 @@ export default {
           });
         });
       };
+
+      window.onload = () => {
+        this.$nextTick(() => {
+          this.$route.hash && scrollToHash(this.$route.hash);
+        });
+      }
     }
 
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });

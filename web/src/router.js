@@ -12,7 +12,7 @@ const MessageView = () => import(/* webpackChunkName: "MessageView" */ './views/
 const DiscuzRedirectView = () => import(/* webpackChunkName: "DiscuzRedirectView" */ './views/DiscuzRedirectView.vue');
 Vue.use(VueRouter);
 
-export function createRouter () {
+export function createRouter (store) {
   return new VueRouter({
     mode: 'history',
     routes: [
@@ -28,10 +28,28 @@ export function createRouter () {
         path: '/d/:discussionId',
         component: DiscussionView,
         meta: { keepAlive: true },
+        beforeEnter (to, from, next) {
+          const { state } = store;
+          if (from.path !== to.path && state.me && state.me.settings && state.me.settings.preferNewTab) {
+            window.open(to.fullPath);
+            next(false);
+          } else {
+            next();
+          }
+        },
       }, {
         path: '/d/:discussionId/:page',
         component: DiscussionView,
         meta: { keepAlive: true },
+        beforeEnter (to, from, next) {
+          const { state } = store;
+          if (from.params.discussionId !== to.params.discussionId && state.me && state.me.settings && state.me.settings.preferNewTab) {
+            window.open(to.fullPath);
+            next(false);
+          } else {
+            next();
+          }
+        },
       }, {
         path: '/m/:memberId',
         component: MemberView,
@@ -85,6 +103,9 @@ export function createRouter () {
         component: DiscuzRedirectView,
       }, {
         path: '/home.php',
+        component: DiscuzRedirectView,
+      }, {
+        path: '/redirect.php',
         component: DiscuzRedirectView,
       }, {
         path: '/400',

@@ -6,6 +6,7 @@
         category-list
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
+        div.sort-order-and-tag-contorl
         discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'")
         div.list-nav
           loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
