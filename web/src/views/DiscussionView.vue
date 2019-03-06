@@ -252,7 +252,7 @@ export default {
         this.$nextTick(() => {
           this.$route.hash && scrollToHash(this.$route.hash);
         });
-      }
+      };
     }
 
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
