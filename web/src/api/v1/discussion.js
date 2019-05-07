@@ -12,7 +12,7 @@ import config from '../../config.js';
  */
 function fetchLatestDiscussions (params) {
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}${ params.tag ? `&tag=${params.tag}` : ''}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

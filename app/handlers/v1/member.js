@@ -114,6 +114,9 @@ let getMemberInfoById = async (req, res, next) => {
       let members;
       try {
         members = await resolveMembersInDiscussion({ posts: tempPosts });
+        await Promise.all(Object.keys(members).map(async memberId => {
+          members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+        }));
       } catch (err) {
         members = {};
       }

@@ -7,7 +7,11 @@
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
         div.sort-order-and-tag-contorl
-        discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'")
+          select
+            option 最新回复
+            option 最新创建
+          button.tag(v-for="tag in tags" @click="selectTag(tag)" :class="{ active: tag === selectedTag }") {{ tag }}
+        discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'", :on-tag-click="selectTag")
         div.list-nav
           loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
           button.button.load-more(@click="loadMore", v-show="!busy && canLoadMore") {{ i18n('ui_load_more') }}
@@ -34,6 +38,8 @@ export default {
       currentSlug: '',
       currentCategory: '',
       unread: 0,
+      selectedTag: '',
+      availableTags: [],
     };
   },
   computed: {
@@ -68,6 +74,12 @@ export default {
     canLoadMore () {
       return this.currentPage * config.discussionList.pagesize === this.discussions.length;
     },
+    tags () {
+      if (this.selectedTag === '' || this.availableTags.indexOf(this.selectedTag) >= 0) {
+        return this.availableTags;
+      } else
+      return [...this.availableTags, this.selectedTag];
+    }
   },
   title () {
     let base = '';
@@ -115,10 +127,16 @@ export default {
   },
   asyncData ({ store, route }) {
     let p;
+    let tag = null;
+
+    if (this && this.selectedTag && this.selectedTag !== '') {
+      tag = this.selectedTag
+    }
+
     if (route.path === '/') {
-      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize });
+      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag });
     } else {
-      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize });
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag });
     }
     return p.then(() => {
       // FIXME:
@@ -148,12 +166,14 @@ export default {
         return this.$store.dispatch('fetchLatestDiscussions', {
           page: this.currentPage,
           pagesize: config.discussionList.pagesize,
+          tag: this.selectedTag,
           append: true,
         });
       } else {
         return this.$store.dispatch('fetchDiscussionsUnderCategory', {
           slug: this.$route.params.categorySlug,
           page: this.currentPage,
+          tag: this.selectedTag,
           pagesize: config.discussionList.pagesize,
           append: true,
         });
@@ -172,6 +192,8 @@ export default {
     },
     flushGlobalTitles () {
       this.currentCategory = '';
+      this.selectedTag = '';
+      this.availableTags = [];
       if (!this.slug && this.$route.path === '/') {
         return this.$store.commit('setGlobalTitles', []);
       }
@@ -181,6 +203,7 @@ export default {
           if (item.type === 'category' && item.slug === this.slug) {
             this.$store.commit('setGlobalTitles', [item.name, item.description]);
             this.currentCategory = item.name;
+            this.availableTags = item.tags || [];
           }
         }
       }
@@ -190,6 +213,25 @@ export default {
       this.unread = 0;
       // this.updateTitle();
     },
+    selectTag (tag) {
+      this.selectedTag = tag;
+      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+    },
+    manualAddTag () {
+      this.$store.dispatch('showMessageBox', {
+        // title: '',
+        type: 'INPUT',
+        message: '输入标签以检索讨论：',
+        // html: true,
+      }).then((input) => {
+        const tag = input.trim();
+
+        if (tag.length >= 0) {
+          this.appendTag(tag);
+        }
+      }).catch(() => {
+      });
+    }
   },
 };
 </script>
@@ -247,6 +289,41 @@ div.nav {
 
   div.list-nav {
     height: 50px;
+  }
+
+  div.sort-order-and-tag-contorl {
+    padding: 1px;
+    display: flex;
+    flex-wrap: wrap;
+
+    select {
+      border: none;
+      height: 36px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      color: mix($theme_color, white, 80%);
+      background: mix($theme_color, white, 15%);
+      margin-bottom: 5px;
+    }
+  }
+
+  button.tag {
+    display: inline-block;
+    font-size: 12px;
+    height: 36px;
+    padding: 6px 8px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    border: none;
+    color: mix($theme_color, white, 80%);
+    background: mix($theme_color, white, 10%);
+    transition: all ease 0.2s;
+
+    &.active {
+      background: mix($theme_color, white, 70%);
+      color: white;
+    }
   }
 }
 

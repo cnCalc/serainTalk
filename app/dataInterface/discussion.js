@@ -8,7 +8,7 @@ exports = module.exports = {};
 
 let getLatestList = {
   query: {
-    tag: joi.array().items(joi.string()),
+    tag: joi.alternatives(joi.array().items(joi.string()), joi.string()),
     category: joi.array().items(joi.string()),
     sticky: joi.array().items(joi.string().valid(['category'])).min(1),
     memberId: interfaceUtils.mongoId,
@@ -38,6 +38,7 @@ exports.getDiscussionByMember = getDiscussionByMember;
 
 let getDiscussionsByCategory = {
   query: {
+    tag: joi.alternatives(joi.array().items(joi.string()), joi.string()),
     sticky: joi.array().items(joi.string().valid(['site'])).min(1),
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
@@ -199,3 +200,11 @@ let ignoreMember = {
   },
 };
 exports.ignoreMember = ignoreMember;
+
+let getDiscussionsWatchedByMember = {
+  query: {
+    pagesize: interfaceUtils.pagesize,
+    page: interfaceUtils.page,
+  },
+};
+exports.getDiscussionsWatchedByMember = getDiscussionsWatchedByMember;

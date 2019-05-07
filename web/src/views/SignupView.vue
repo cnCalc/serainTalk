@@ -155,7 +155,7 @@ div.signup-view {
   }
 
   input:focus {
-    outline: none;
+    // outline: none;;
   }
 
   .explain {

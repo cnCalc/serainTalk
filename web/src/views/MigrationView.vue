@@ -225,7 +225,7 @@ div.mingration-view {
   }
 
   input:focus {
-    outline: none;
+    // outline: none;;
   }
 
   label {

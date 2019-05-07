@@ -368,7 +368,7 @@ div.message-view {
         padding: 0 1em;
         font-size: 14px;
         &:focus {
-          outline: none;
+          // outline: none;;
         }
       }
     }

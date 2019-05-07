@@ -110,7 +110,7 @@ a:hover {
 
 // remove firefox link outline
 a:focus, a:active, button:focus, button:active {
-  outline: none;
+  // outline: none;;
 }
 
 button::-moz-focus-inner,

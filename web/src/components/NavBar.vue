@@ -231,7 +231,7 @@ div.st-header {
       }
 
       &:focus {
-        outline: none;
+        // outline: none;;
         width: 320px;
       }
     }

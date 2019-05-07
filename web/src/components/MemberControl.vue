@@ -91,7 +91,7 @@ div.avatar-container {
     box-sizing: border-box;
 
     &:focus {
-      outline: none;
+      // outline: none;;
     }
 
     .avatar-image {

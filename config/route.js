@@ -55,6 +55,18 @@ let route = {
         handlers.v1.discussion.getDiscussionsByCategory,
       ],
     },
+    getDiscussionsWatchedByMember: {
+      description: '获取用户订阅的 Discussion。',
+      path: [
+        '/v1/discussions/watching',
+        '/v1/discussion/watching',
+      ],
+      method: 'get',
+      schema: dataInterface.discussion.getDiscussionsWatchedByMember,
+      handler: [
+        handlers.v1.discussion.getDiscussionsWatchedByMember,
+      ],
+    },
     addOne: {
       description: '新发布一个 Discussion。',
       path: [

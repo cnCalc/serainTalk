@@ -121,7 +121,7 @@ div.signin-view {
   }
 
   input:focus {
-    outline: none;
+    // outline: none;;
   }
 
   h2 {

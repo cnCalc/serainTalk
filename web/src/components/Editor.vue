@@ -854,7 +854,7 @@ div.editor {
   }
 
   input:focus, select:focus, textarea:focus  {
-    outline: none;
+    // outline: none;;
     box-shadow: 0 0 3px mix($theme_color, rgba(0, 0, 0, 0), 70%);
   }
 
@@ -933,7 +933,7 @@ div.editor {
       font-size: 14px;
 
       &:focus {
-        outline: none;
+        // outline: none;;
       }
     }
   }

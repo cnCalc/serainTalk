@@ -712,7 +712,7 @@ div.member-activity {
         border: none;
 
         &:focus {
-          outline: none;
+          // outline: none;;
         }
       }
     }

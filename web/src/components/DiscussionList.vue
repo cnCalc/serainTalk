@@ -19,7 +19,7 @@
               span.discussion-user
                 router-link(:to="'/m/' + discussion.lastMember") {{ discussion.lastMember ? members[discussion.lastMember].username : 'undefined' }} 
               |{{ i18n( discussion.replies === 1 ? 'ui_created_at' : 'ui_replied_at', { date: timeAgo(discussion.lastDate) })}}
-            span.discussion-tags(v-for="tag in discussion.tags"): a {{ tag }}
+            span.discussion-tags(v-for="tag in discussion.tags"): a(@click="onTagClick(tag)") {{ tag }}
         div.discussion-meta-right
           span.discussion-category.hide-on-small-device(v-if="discussion.category"): a {{ discussion.category }}
           span.discussion-replies {{ Math.max(discussion.replies - 1, 0) }}
@@ -45,6 +45,10 @@ export default {
       type: String,
       default: '',
     },
+    onTagClick: {
+      type: Function,
+      default: () => {}
+    }
   },
   data () {
     return {

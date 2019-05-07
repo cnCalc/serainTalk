@@ -29,7 +29,7 @@ function fetchCategoryList (params) {
 function fetchDiscussionsUnderCategory (params) {
   if (!params.slug) return Promise.reject('require slug for discussion.');
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/category/${params.slug}/discussions?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}`)
+    axios.get(`${config.api.url}/${config.api.version}/category/${params.slug}/discussions?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}${ params.tag ? `&tag=${params.tag}` : ''}`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

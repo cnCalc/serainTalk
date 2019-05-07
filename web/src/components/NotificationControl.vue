@@ -131,7 +131,7 @@ div.notification-container {
     }
 
     &:focus {
-      outline: none;
+      // outline: none;;
       background-color: mix($theme_color, black, 80%);
     }
   }

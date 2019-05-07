@@ -152,7 +152,7 @@ div.message-box-wrapper {
     border: none;
 
     &:focus {
-      outline: none;
+      // outline: none;
     }
   }
 }

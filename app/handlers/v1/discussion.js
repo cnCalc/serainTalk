@@ -93,7 +93,13 @@ let getLatestDiscussionList = async (req, res) => {
       query.creater = req.query._memberId;
     }
     // 检索指定的 tag
-    if (req.query.tag) query.tags = { $in: req.query.tag };
+    if (req.query.tag) {
+      if (Array.isArray(req.query.tag)) {
+        query.tags = { $in: req.query.tag };
+      } else {
+        query.tags = { $in: [req.query.tag] };
+      }
+    }
 
     // 鉴权 能否读取被封禁的 discussion
     if (await utils.permission.checkPermission('discussion-readBanedPost', req.member.permissions)) {
@@ -125,6 +131,9 @@ let getLatestDiscussionList = async (req, res) => {
       { $limit: pagesize },
     ]).toArray();
     let members = await resolveMembersInDiscussionArray(results);
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
     return res.send({ status: 'ok', discussions: results, members });
   } catch (err) {
     /* istanbul ignore next */
@@ -273,10 +282,15 @@ let getDiscussionPostsById = async (req, res) => {
       post.votes = tempVote;
       return post;
     });
+    let members = await resolveMembersInDiscussion({ posts });
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
+
     return res.status(200).send({
       status: 'ok',
       posts: utils.renderer.renderPosts(posts),
-      members: await resolveMembersInDiscussion({ posts }),
+      members,
       attachments: await resolveAttachmentsInPosts(posts),
     });
   } catch (err) {
@@ -335,11 +349,14 @@ let getPostByIndex = async (req, res, next) => {
       tempVote[voteType]['count'] = post.votes[voteType].length;
     }
     post.votes = tempVote;
-
+    let members = await resolveMembersInDiscussion({ posts: [post] });
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
     return res.status(200).send({
       status: 'ok',
       post: req.query.raw ? post : (utils.renderer.renderPosts([post]))[0],
-      members: await resolveMembersInDiscussion({ posts: [post] }),
+      members,
       attachments: await resolveAttachmentsInPosts([post]),
     });
   } catch (err) {
@@ -1029,6 +1046,9 @@ let getDiscussionUnderMember = async (req, res) => {
     let discussions = await cursor.toArray();
     let count = await cursor.count();
     let members = await resolveMembersInDiscussionArray(discussions);
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
     return res.send({ status: 'ok', discussions, members, count });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -1085,6 +1105,14 @@ let getDiscussionsByCategory = async (req, res, next) => {
         sort[`sticky.${stickyType}`] = -1;
       });
     }
+    // 检索指定的 tag
+    if (req.query.tag) {
+      if (Array.isArray(req.query.tag)) {
+        query.tags = { $in: req.query.tag };
+      } else {
+        query.tags = { $in: [req.query.tag] };
+      }
+    }
 
     sort.lastDate = -1;
     let discussions = await dbTool.discussion.aggregate([
@@ -1104,7 +1132,50 @@ let getDiscussionsByCategory = async (req, res, next) => {
     ]).toArray();
 
     let members = await resolveMembersInDiscussionArray(discussions);
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
     return res.send({ status: 'ok', category, discussions: discussions, members: members });
+  } catch (err) {
+    /* istanbul ignore next */
+    return errorHandler(err, errorMessages.DB_ERROR, 500, res);
+  }
+};
+
+let getDiscussionsWatchedByMember = async (req, res, next) => {
+  const member = req.member;
+  const memberId = member.id;
+  const pagesize = req.query.pagesize;
+  const offset = req.query.page - 1;
+
+  const query = {};
+  query[`subscribers.${memberId}`] = 'watch';
+
+  const sort = {
+    'sticky.category': -1,
+  };
+
+  try {
+    const discussions = await dbTool.discussion.aggregate([
+      { $match: query },
+      {
+        $project: {
+          creater: 1, title: 1, createDate: 1, lastDate: 1,
+          views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
+          sticky: 1,
+        },
+      },
+      {
+        $sort: sort,
+      },
+      { $skip: offset * pagesize },
+      { $limit: pagesize },
+    ]).toArray();
+    let members = await resolveMembersInDiscussionArray(discussions);
+    await Promise.all(Object.keys(members).map(async memberId => {
+      members[memberId] = await utils.member.removeSensitiveField(members[memberId], req.member.permissions);
+    }));
+    return res.send({ status: 'ok', discussions: discussions, members: members });
   } catch (err) {
     /* istanbul ignore next */
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -1443,6 +1514,7 @@ module.exports = {
   getDiscussionById,
   getDiscussionPostsById,
   getDiscussionsByCategory,
+  getDiscussionsWatchedByMember,
   getDiscussionUnderMember,
 
   getLatestDiscussionList,
