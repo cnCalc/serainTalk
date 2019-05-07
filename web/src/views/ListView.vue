@@ -127,7 +127,7 @@ export default {
     },
     sortBy () {
       this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
-    }
+    },
   },
   asyncData ({ store, route }) {
     let p;
