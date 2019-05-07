@@ -47,8 +47,8 @@ export default {
     },
     onTagClick: {
       type: Function,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
   data () {
     return {

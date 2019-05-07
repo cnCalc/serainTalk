@@ -78,8 +78,8 @@ export default {
       if (this.selectedTag === '' || this.availableTags.indexOf(this.selectedTag) >= 0) {
         return this.availableTags;
       } else
-      return [...this.availableTags, this.selectedTag];
-    }
+        return [...this.availableTags, this.selectedTag];
+    },
   },
   title () {
     let base = '';
@@ -130,7 +130,7 @@ export default {
     let tag = null;
 
     if (this && this.selectedTag && this.selectedTag !== '') {
-      tag = this.selectedTag
+      tag = this.selectedTag;
     }
 
     if (route.path === '/') {
@@ -231,7 +231,7 @@ export default {
         }
       }).catch(() => {
       });
-    }
+    },
   },
 };
 </script>
