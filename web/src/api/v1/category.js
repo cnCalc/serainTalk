@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../../config.js';
+import object2query from '../../utils/object2query';
 
 /**
  * Get all categories from server
@@ -28,8 +29,18 @@ function fetchCategoryList (params) {
  */
 function fetchDiscussionsUnderCategory (params) {
   if (!params.slug) return Promise.reject('require slug for discussion.');
+
+  const query = {};
+
+  if (params.tag) {
+    query.tag = params.tag;
+  }
+  if (params.sortBy) {
+    query.sortBy = params.sortBy;
+  }
+
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/category/${params.slug}/discussions?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}${ params.tag ? `&tag=${params.tag}` : ''}`)
+    axios.get(`${config.api.url}/${config.api.version}/category/${params.slug}/discussions?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}&${ object2query(query) }`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

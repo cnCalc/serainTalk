@@ -14,6 +14,7 @@ let getLatestList = {
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
+    sortBy: joi.string().valid(['createAt', 'replyAt']).default('replyAt'),
   },
 };
 exports.getLatestList = getLatestList;
@@ -42,6 +43,7 @@ let getDiscussionsByCategory = {
     sticky: joi.array().items(joi.string().valid(['site'])).min(1),
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
+    sortBy: joi.string().valid(['createAt', 'replyAt']).default('replyAt'),
   },
   params: {
     slug: joi.string().required(),

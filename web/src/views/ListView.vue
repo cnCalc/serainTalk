@@ -7,9 +7,9 @@
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
         div.sort-order-and-tag-contorl
-          select
-            option 最新回复
-            option 最新创建
+          select(v-model="sortBy")
+            option(value="replyAt") 最新回复
+            option(value="createAt") 最新创建
           button.tag(v-for="tag in tags" @click="selectTag(tag)" :class="{ active: tag === selectedTag }") {{ tag }}
         discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'", :on-tag-click="selectTag")
         div.list-nav
@@ -37,6 +37,7 @@ export default {
       currentPage: 1,
       currentSlug: '',
       currentCategory: '',
+      sortBy: 'replyAt',
       unread: 0,
       selectedTag: '',
       availableTags: [],
@@ -124,26 +125,29 @@ export default {
     categoriesGroup () {
       this.flushGlobalTitles();
     },
+    sortBy () {
+      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+    }
   },
   asyncData ({ store, route }) {
     let p;
     let tag = null;
+    let sortBy = null;
 
     if (this && this.selectedTag && this.selectedTag !== '') {
       tag = this.selectedTag;
     }
 
-    if (route.path === '/') {
-      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag });
-    } else {
-      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag });
+    if (this && this.sortBy) {
+      sortBy = this.sortBy;
     }
-    return p.then(() => {
-      // FIXME:
-      // if (// this.updateTitle) {
-      //   // this.updateTitle();
-      // }
-    });
+
+    if (route.path === '/') {
+      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag, sortBy });
+    } else {
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag, sortBy });
+    }
+    return p;
   },
   activated () {
     this.flushGlobalTitles();
@@ -193,6 +197,7 @@ export default {
     flushGlobalTitles () {
       this.currentCategory = '';
       this.selectedTag = '';
+      this.sortBy = 'replyAt';
       this.availableTags = [];
       if (!this.slug && this.$route.path === '/') {
         return this.$store.commit('setGlobalTitles', []);

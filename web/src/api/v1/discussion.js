@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../../config.js';
+import object2query from '../../utils/object2query';
 
 /**
  * Get latest discussions from server
@@ -11,8 +12,17 @@ import config from '../../config.js';
  * @returns {Promise} Promise of the request
  */
 function fetchLatestDiscussions (params) {
+  const query = {};
+
+  if (params.tag) {
+    query.tag = params.tag;
+  }
+  if (params.sortBy) {
+    query.sortBy = params.sortBy;
+  }
+
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}${ params.tag ? `&tag=${params.tag}` : ''}`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}&${ object2query(query) }`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });

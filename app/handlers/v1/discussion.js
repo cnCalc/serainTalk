@@ -114,7 +114,14 @@ let getLatestDiscussionList = async (req, res) => {
       });
     }
 
-    sort.lastDate = -1;
+    switch (req.query.sortBy) {
+      case 'createAt':
+        sort.createDate = -1;
+      case 'replyAt':
+      default:
+        sort.lastDate = -1;
+    }
+
     let results = await dbTool.discussion.aggregate([
       { $match: query },
       {
@@ -1114,7 +1121,13 @@ let getDiscussionsByCategory = async (req, res, next) => {
       }
     }
 
-    sort.lastDate = -1;
+    switch (req.query.sortBy) {
+      case 'createAt':
+        sort.createDate = -1;
+      case 'replyAt':
+      default:
+        sort.lastDate = -1;
+    }
     let discussions = await dbTool.discussion.aggregate([
       { $match: query },
       {
