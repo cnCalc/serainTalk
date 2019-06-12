@@ -95,9 +95,9 @@ let getLatestDiscussionList = async (req, res) => {
     // 检索指定的 tag
     if (req.query.tag) {
       if (Array.isArray(req.query.tag)) {
-        query.tags = { $in: req.query.tag };
+        query.tags = { $all: req.query.tag };
       } else {
-        query.tags = { $in: [req.query.tag] };
+        query.tags = { $all: [req.query.tag] };
       }
     }
 
@@ -1115,9 +1115,9 @@ let getDiscussionsByCategory = async (req, res, next) => {
     // 检索指定的 tag
     if (req.query.tag) {
       if (Array.isArray(req.query.tag)) {
-        query.tags = { $in: req.query.tag };
+        query.tags = { $all: req.query.tag };
       } else {
-        query.tags = { $in: [req.query.tag] };
+        query.tags = { $all: [req.query.tag] };
       }
     }
 

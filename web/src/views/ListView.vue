@@ -7,10 +7,35 @@
       div.right
         div.unread-message(v-bind:style="{ height: unread !== 0 ? '60px' : '' }" @click="refresh") {{ i18n('ui_new_discussion_or_updates', { count: unread }) }}
         div.sort-order-and-tag-contorl
-          select(v-model="sortBy")
-            option(value="replyAt") 最新回复
-            option(value="createAt") 最新创建
-          button.tag(v-for="tag in tags" @click="selectTag(tag)" :class="{ active: tag === selectedTag }") {{ tag }}
+          div.drop-down-options-wrapper(v-if="sortBySelectorVisible")
+            div.drop-down-options-container(style="width: 140px")
+              div.drop-down-option(@click="toggleSortBySelectorValue('replyAt')")
+                div.check-status(:class="{ checked: sortBy === 'replyAt' }")
+                span 最新回复
+              div.drop-down-option(@click="toggleSortBySelectorValue('createAt')")
+                div.check-status(:class="{ checked: sortBy === 'createAt' }")
+                span 最新创建
+          button.button(@click="toggleSortBySelector($event)")
+            span(v-if="sortBy === 'replyAt'") 最新回复
+            span(v-if="sortBy === 'createAt'") 最新创建
+            div.drop-down-icon
+          //- button.tag(v-for="tag in tags" @click="selectTag(tag)" :class="{ active: tag === selectedTag }") {{ tag }}
+          div(style="flex-grow: 1")
+          button.tag-selector(@click="toggleTagFilter($event)") 标签筛选
+            div.drop-down-icon
+          div.drop-down-options-wrapper(v-if="tagFilterVisible" @click="$event.stopPropagation()")
+            div.drop-down-options-container.align-right
+              div.tag-filter
+                div.tag(v-for="tag in tags")
+                  input(type="checkbox" v-model="selectedTags[tag]")
+                  span {{ tag }}
+              div.tag-filter.extra-tags
+                div.tag(v-for="tag in Object.keys(extraTags)")
+                  input(type="checkbox" v-model="extraTags[tag]")
+                  span {{ tag }}
+              div.manual-input
+                input.fake-input(type="checkbox")
+                span.manual-input(role="button", @click="manualAddTag()") 手动输入标签
         discussion-list(v-show="!busy || currentPage > 1", :list="discussions", :key-prefix="currentSlug", :show-sticky="isIndex ? 'site' : 'category'", :on-tag-click="selectTag")
         div.list-nav
           loading-icon(v-if="busy", :no-padding-top="currentPage != 1")
@@ -39,8 +64,11 @@ export default {
       currentCategory: '',
       sortBy: 'replyAt',
       unread: 0,
-      selectedTag: '',
+      selectedTags: {},
+      extraTags: {},
       availableTags: [],
+      sortBySelectorVisible: false,
+      tagFilterVisible: false,
     };
   },
   computed: {
@@ -76,10 +104,7 @@ export default {
       return this.currentPage * config.discussionList.pagesize === this.discussions.length;
     },
     tags () {
-      if (this.selectedTag === '' || this.availableTags.indexOf(this.selectedTag) >= 0) {
-        return this.availableTags;
-      } else
-        return [...this.availableTags, this.selectedTag];
+      return Object.keys(this.selectedTags);
     },
   },
   title () {
@@ -131,11 +156,27 @@ export default {
   },
   asyncData ({ store, route }) {
     let p;
-    let tag = null;
+    let tags = [];
     let sortBy = null;
 
-    if (this && this.selectedTag && this.selectedTag !== '') {
-      tag = this.selectedTag;
+    if (this && this.selectedTags) {
+      for (const tag of Object.keys(this.selectedTags)) {
+        if (this.selectedTags[tag]) {
+          tags.push(tag);
+        }
+      }
+    }
+
+    if (this && this.extraTags) {
+      for (const tag of Object.keys(this.extraTags)) {
+        if (this.extraTags[tag]) {
+          tags.push(tag);
+        }
+      }
+    }
+
+    if (tags.length === 0) {
+      tags = null;
     }
 
     if (this && this.sortBy) {
@@ -143,9 +184,9 @@ export default {
     }
 
     if (route.path === '/') {
-      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag, sortBy });
+      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag: tags, sortBy });
     } else {
-      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag, sortBy });
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag: tags, sortBy });
     }
     return p;
   },
@@ -209,6 +250,11 @@ export default {
             this.$store.commit('setGlobalTitles', [item.name, item.description]);
             this.currentCategory = item.name;
             this.availableTags = item.tags || [];
+            this.selectedTags = {};
+
+            for (const tag of this.availableTags) {
+              this.selectedTags[tag] = false;
+            }
           }
         }
       }
@@ -219,24 +265,65 @@ export default {
       // this.updateTitle();
     },
     selectTag (tag) {
-      this.selectedTag = tag;
+      const $update = {};
+      $update[tag] = true;
+
+      if (this.selectedTags[tag] !== undefined) {
+        return;
+      }
+
+      this.extraTags = {
+        ...this.extraTags,
+        ...$update,
+      };
       this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
     },
     manualAddTag () {
       this.$store.dispatch('showMessageBox', {
-        // title: '',
         type: 'INPUT',
         message: '输入标签以检索讨论：',
-        // html: true,
       }).then((input) => {
         const tag = input.trim();
+        const $update = {};
+        $update[tag] = true;
 
-        if (tag.length >= 0) {
-          this.appendTag(tag);
-        }
+        this.extraTags = {
+          ...this.extraTags,
+          ...$update,
+        };
       }).catch(() => {
       });
     },
+    toggleSortBySelector (event) {
+      if (!this.sortBySelectorVisible) {
+        this.sortBySelectorVisible = true;
+
+        event.stopPropagation();
+        document.addEventListener('click', this.toggleSortBySelector);
+
+        return;
+      }
+
+      document.removeEventListener('click', this.toggleSortBySelector);
+      this.sortBySelectorVisible = false;
+    },
+    toggleTagFilter (event) {
+      if (!this.tagFilterVisible) {
+        this.tagFilterVisible = true;
+
+        event.stopPropagation();
+        document.addEventListener('click', this.toggleTagFilter);
+
+        return;
+      }
+
+      document.removeEventListener('click', this.toggleTagFilter);
+      this.tagFilterVisible = false;
+      this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
+    },
+    toggleSortBySelectorValue (option) {
+      this.sortBy = option;
+    }
   },
 };
 </script>
@@ -301,14 +388,108 @@ div.nav {
     display: flex;
     flex-wrap: wrap;
 
-    select {
+    button {
       border: none;
       height: 36px;
-      padding: 6px 8px;
+      padding: 8px 12px;
+      font-size: 13px;
       border-radius: 4px;
       color: mix($theme_color, white, 80%);
       background: mix($theme_color, white, 15%);
       margin-bottom: 5px;
+      
+    }
+
+    div.drop-down-icon {
+      background-image: url(../assets/drop-down.svg);
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      background-position: center;
+      background-size: contain;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    div.drop-down-options-wrapper {
+      width: 0;
+      height: 0;
+      overflow: visible;
+      align-self: flex-end;
+      position: relative;
+    }
+
+    div.drop-down-options-container {
+      height: auto;
+      padding: 12px 0;
+      background: white;
+      position: relative;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      z-index: 20;
+      border-radius: 4px;
+      &.align-right {
+        position: absolute;
+        right: 0;
+      }
+    }
+
+    div.drop-down-option {
+      font-size: 14px;
+      // text-align: center;
+      line-height: 32px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: mix($theme_color, white, 10%);
+      }
+    }
+
+    div.check-status {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-position: center;
+      background-size: contain;
+      vertical-align: text-bottom;
+      margin: 0 8px 0 8px;
+
+      &.checked {
+        background-image: url(../assets/check.svg);
+      }
+    }
+
+    div.tag-filter {
+      width: 300px;
+      padding-left: 10px;
+      padding-right: 10px;
+      display: flex;
+      flex-wrap: wrap;
+
+      &.extra-tags {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid mix($theme_color, white, 10%);
+      }
+    }
+
+    div.tag {
+      width: 150px;
+      font-size: 14px;
+    }
+
+    div.manual-input {
+      font-size: 14px;
+      padding-left: 10px;
+      margin-top: 2px;
+
+      span.manual-input {
+        cursor: pointer;
+        color: $theme_color;
+      }
+
+      input.fake-input {
+        opacity: 0;
+      }
     }
   }
 

@@ -39,6 +39,8 @@ function fetchDiscussionsUnderCategory (params) {
     query.sortBy = params.sortBy;
   }
 
+  console.log(query);
+
   return new Promise((resolve, reject) => {
     axios.get(`${config.api.url}/${config.api.version}/category/${params.slug}/discussions?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}&${ object2query(query) }`)
       .then(response => resolve(response.data))

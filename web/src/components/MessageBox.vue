@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.message-box-wrapper
+  div.message-box-wrapper(@click="$event.stopPropagation()")
     div.message-box-container(v-bind:class="{ active: showing }", v-on:mousewheel="scrollHelper($event)")
       div.message-box
         h1.title {{ state.title }}
