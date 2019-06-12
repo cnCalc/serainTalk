@@ -323,7 +323,7 @@ export default {
     },
     toggleSortBySelectorValue (option) {
       this.sortBy = option;
-    }
+    },
   },
 };
 </script>
