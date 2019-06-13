@@ -159,28 +159,12 @@ export default {
     let tags = [];
     let sortBy = null;
 
-    if (this && this.selectedTags) {
-      for (const tag of Object.keys(this.selectedTags)) {
-        if (this.selectedTags[tag]) {
-          tags.push(tag);
-        }
-      }
-    }
-
-    if (this && this.extraTags) {
-      for (const tag of Object.keys(this.extraTags)) {
-        if (this.extraTags[tag]) {
-          tags.push(tag);
-        }
-      }
-    }
-
-    if (tags.length === 0) {
-      tags = null;
-    }
-
     if (this && this.sortBy) {
       sortBy = this.sortBy;
+    }
+
+    if (this && this.checkoutTags) {
+      tags = this.checkoutTags();
     }
 
     if (route.path === '/') {
@@ -207,18 +191,20 @@ export default {
     loadMore () {
       this.currentPage++;
 
+      const tags = this.checkoutTags();
+
       if (this.$route.fullPath === '/') {
         return this.$store.dispatch('fetchLatestDiscussions', {
           page: this.currentPage,
           pagesize: config.discussionList.pagesize,
-          tag: this.selectedTag,
+          tag: tags,
           append: true,
         });
       } else {
         return this.$store.dispatch('fetchDiscussionsUnderCategory', {
           slug: this.$route.params.categorySlug,
           page: this.currentPage,
-          tag: this.selectedTag,
+          tag: tags,
           pagesize: config.discussionList.pagesize,
           append: true,
         });
@@ -268,14 +254,18 @@ export default {
       const $update = {};
       $update[tag] = true;
 
-      if (this.selectedTags[tag] !== undefined) {
-        return;
+      if (this.selectedTags[tag] !== undefined && this.selectedTags[tag] !== true) {
+        this.selectedTags = {
+          ...this.selectedTags,
+          ...$update,
+        };
+      } else {
+        this.extraTags = {
+          ...this.extraTags,
+          ...$update,
+        };
       }
 
-      this.extraTags = {
-        ...this.extraTags,
-        ...$update,
-      };
       this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
     },
     manualAddTag () {
@@ -324,6 +314,31 @@ export default {
     toggleSortBySelectorValue (option) {
       this.sortBy = option;
     },
+    checkoutTags () {
+      let tags = [];
+
+      if (this && this.selectedTags) {
+        for (const tag of Object.keys(this.selectedTags)) {
+          if (this.selectedTags[tag]) {
+            tags.push(tag);
+          }
+        }
+      }
+
+      if (this && this.extraTags) {
+        for (const tag of Object.keys(this.extraTags)) {
+          if (this.extraTags[tag]) {
+            tags.push(tag);
+          }
+        }
+      }
+
+      if (tags.length === 0) {
+        tags = null;
+      }
+
+      return tags;
+    }
   },
 };
 </script>
