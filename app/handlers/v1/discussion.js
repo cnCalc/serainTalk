@@ -9,6 +9,7 @@ const utils = require('../../../utils');
 const { errorHandler, errorMessages } = utils;
 const { resolveMembersInDiscussionArray, resolveMembersInDiscussion } = utils.resolveMembers;
 const { isSelfAttachment, resolveAttachmentsInPosts } = utils.attachment;
+const staticConfig = require('../../../config/staticConfig');
 
 /**
  * 缓存保存对象
@@ -628,6 +629,11 @@ let createPost = async (req, res, next) => {
     needNotification.map(_memberId => {
       // 如果是楼主 则发送有跟帖通知
       if (_memberId.equals(discussionInfo.creater)) {
+        utils.mail.sendDiscussionReplyNotification(discussionInfo.creater, {
+          title: discussionInfo.title,
+          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          content: req.body.content,
+        });
         return utils.notification.sendNotification(discussionInfo.creater, {
           content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
             var1: req.member.username,
@@ -643,6 +649,11 @@ let createPost = async (req, res, next) => {
 
       // 如果是被回复者 则发送被回复通知
       if (postInfo.replyTo && _memberId.equals(postInfo.replyTo._memberId)) {
+        utils.mail.sendPostReplyNotification(postInfo.replyTo._memberId, {
+          title: discussionInfo.title,
+          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          content: req.body.content,
+        });
         return utils.notification.sendNotification(postInfo.replyTo._memberId, {
           content: utils.string.fillTemplate(config.notification.postReplied.content, {
             var1: req.member.username,
@@ -658,6 +669,12 @@ let createPost = async (req, res, next) => {
 
       // 如不是 watcher 则为被 at 的成员 发送被 at 的通知
       if (!watchList.includes(_memberId.toString())) {
+        utils.mail.sendMentionNotification(_memberId, {
+          title: discussionInfo.title,
+          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          content: req.body.content,
+        });
+
         return utils.notification.sendNotification(_memberId, {
           content: utils.string.fillTemplate(config.notification.postMentioned.content, {
             var1: req.member.username,
@@ -672,6 +689,11 @@ let createPost = async (req, res, next) => {
       }
 
       // 其余情况则通知 watcher
+      utils.mail.sendSubscriptionUpdateNotification(_memberId, {
+        title: discussionInfo.title,
+        link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+        content: req.body.content,
+      });
       return utils.notification.sendNotification(_memberId, {
         content: utils.string.fillTemplate(config.notification.postWatcher.content, {
           var1: req.member.username,

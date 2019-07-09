@@ -2,6 +2,8 @@
 
 const staticConfig = require('../config/staticConfig');
 const env = require('./env');
+const dbTool = require('../database');
+const { ObjectID } = require('mongodb');
 
 const mail = env.isProd ? require('nodemailer').createTransport({
   port: staticConfig.mail.port,
@@ -39,21 +41,27 @@ let sendVerificationCode = async (address, { token, link }) => {
   }
 };
 
-let sendSubscriptionUpdateNotification = async (address, { title, link, content }) => {
+let sendSubscriptionUpdateNotification = async (memberId, { title, link, content }) => {
+  const member = await dbTool.commonMember.findOne({ _id: ObjectID(memberId) });
+
+  if (!member.settings || !member.settings.subscriptionMailNotification) {
+    return;
+  }
+  
   const html = [
     '亲爱的用户：<br />',
     '<br />',
-    '您订阅的讨论「${title}」有新的动态：<br />',
-    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em">' + content + '</div>',
+    `您订阅的讨论「${title}」有新的动态：<br />`,
+    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em 0">' + content + '</div>',
     '您可以通过下面的链接来查看完整讨论：<br />',
     '<br />',
-    '<del>此处应有链接</del>',
+    `<a href="${link}" target="_blank">${title}</a><br />`,
     '<br />',
     'cnCalc Team',
   ].join('');
 
   env.isProd && mail.sendMail({
-    from: staticConfig.mail.data.from,
+    from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
     to: address,
     subject: `您订阅的讨论「${title}」有新的动态`,
     html,
@@ -63,45 +71,89 @@ let sendSubscriptionUpdateNotification = async (address, { title, link, content 
   }
 };
 
-let sendDiscussionReplyNotification = async (address, { title, link, content }) => {
+let sendDiscussionReplyNotification = async (memberId, { title, link, content }) => {
+  const member = await dbTool.commonMember.findOne({ _id: ObjectID(memberId) });
+
+  if (!member.settings || !member.settings.discussionReplyMailNotification) {
+    return;
+  }
+
   const html = [
     '亲爱的用户：<br />',
     '<br />',
-    '您创建的讨论「${title}」有新的回复：<br />',
-    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em">' + content + '</div>',
+    `您创建的讨论「${title}」有新的回复：<br />`,
+    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em 0">' + content + '</div>',
     '您可以通过下面的链接来查看完整讨论：<br />',
     '<br />',
-    '<del>此处应有链接</del>',
+    `<a href="${link}" target="_blank">${title}</a><br />`,
     '<br />',
     'cnCalc Team',
   ].join('');
 
   env.isProd && mail.sendMail({
-    from: staticConfig.mail.data.from,
-    to: address,
+    from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
+    to: member.email,
     subject: `您创建的讨论「${title}」有新的回复`,
     html,
   });
+
   if (!env.isMocha) {
     console.log(html);
   }
 };
 
-let sendMentionNotification = async (address, { title, link, content }) => {
+let sendPostReplyNotification = async (memberId, { title, link, content }) => {
+  const member = await dbTool.commonMember.findOne({ _id: ObjectID(memberId) });
+
+  if (!member.settings || !member.settings.postReplyMailNotification) {
+    return;
+  }
+
   const html = [
     '亲爱的用户：<br />',
     '<br />',
-    '您在讨论「${title}」中被提及：<br />',
-    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em">' + content + '</div>',
+    `您在讨论「${title}」中的跟帖有新的回复：<br />`,
+    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em 0">' + content + '</div>',
     '您可以通过下面的链接来查看完整讨论：<br />',
     '<br />',
-    '<del>此处应有链接</del>',
+    `<a href="${link}" target="_blank">${title}</a><br />`,
     '<br />',
     'cnCalc Team',
   ].join('');
 
   env.isProd && mail.sendMail({
-    from: staticConfig.mail.data.from,
+    from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
+    to: member.email,
+    subject: `您在讨论「${title}」中的跟帖有新的回复！`,
+    html,
+  });
+
+  if (!env.isMocha) {
+    console.log(html);
+  }
+};
+
+let sendMentionNotification = async (memberId, { title, link, content }) => {
+  const member = await dbTool.commonMember.findOne({ _id: ObjectID(memberId) });
+
+  if (!member.settings || !member.settings.mentionMailNotification) {
+    return;
+  }
+
+  const html = [
+    '亲爱的用户：<br />',
+    '<br />',
+    `您在讨论「${title}」中被提及：<br />`,
+    '<div style="border: 1px solid #AAAAAA; padding: 1em; margin: 1em 0">' + content + '</div>',
+    '您可以通过下面的链接来查看完整讨论：<br />',
+    '<br />',
+    `<a href="${link}" target="_blank">${title}</a><br />`,
+    '<br />',
+    'cnCalc Team',
+  ].join('');
+
+  env.isProd && mail.sendMail({
+    from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
     to: address,
     subject: `您在讨论「${title}」中被提及`,
     html,
@@ -113,7 +165,7 @@ let sendMentionNotification = async (address, { title, link, content }) => {
 
 let sendMessage = async (address, message) => {
   env.isProd && mail.sendMail({
-    from: staticConfig.mail.data.from,
+    from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
     to: address,
     subject: message.subject,
     text: message.text,
@@ -127,5 +179,6 @@ module.exports = {
   sendSubscriptionUpdateNotification,
   sendDiscussionReplyNotification,
   sendMentionNotification,
+  sendPostReplyNotification,
   sendMessage,
 };
