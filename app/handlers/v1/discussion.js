@@ -631,7 +631,7 @@ let createPost = async (req, res, next) => {
       if (_memberId.equals(discussionInfo.creater)) {
         utils.mail.sendDiscussionReplyNotification(discussionInfo.creater, {
           title: discussionInfo.title,
-          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          link: `${staticConfig.siteAddress}/d/${_id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`,
           content: req.body.content,
         });
         return utils.notification.sendNotification(discussionInfo.creater, {
@@ -651,7 +651,7 @@ let createPost = async (req, res, next) => {
       if (postInfo.replyTo && _memberId.equals(postInfo.replyTo._memberId)) {
         utils.mail.sendPostReplyNotification(postInfo.replyTo._memberId, {
           title: discussionInfo.title,
-          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          link: `${staticConfig.siteAddress}/d/${_id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`,
           content: req.body.content,
         });
         return utils.notification.sendNotification(postInfo.replyTo._memberId, {
@@ -671,7 +671,7 @@ let createPost = async (req, res, next) => {
       if (!watchList.includes(_memberId.toString())) {
         utils.mail.sendMentionNotification(_memberId, {
           title: discussionInfo.title,
-          link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+          link: `${staticConfig.siteAddress}/d/${_id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`,
           content: req.body.content,
         });
 
@@ -691,7 +691,7 @@ let createPost = async (req, res, next) => {
       // 其余情况则通知 watcher
       utils.mail.sendSubscriptionUpdateNotification(_memberId, {
         title: discussionInfo.title,
-        link: `${staticConfig.siteAddress}/d/${_id}#index-${Math.floor((postInfo.index - 1) / config.pagesize) + 1}`,
+        link: `${staticConfig.siteAddress}/d/${_id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`,
         content: req.body.content,
       });
       return utils.notification.sendNotification(_memberId, {

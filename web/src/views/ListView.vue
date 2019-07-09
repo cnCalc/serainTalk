@@ -338,7 +338,7 @@ export default {
       }
 
       return tags;
-    }
+    },
   },
 };
 </script>
