@@ -183,6 +183,10 @@ let getAttachment = async (req, res, next) => {
         }
       } else {
         res.sendFile(attachmentInfo.filePath, options);
+        dbTool.attachment.updateOne(
+          { _id: ObjectID(req.params.id) },
+          { $inc: { downloadCount: 1 } },
+        ).catch(error => console.error(error));
       }
     });
   } catch (err) {
