@@ -36,6 +36,16 @@ export default {
       return this.$store.state.member.watchedDiscussions;
     },
   },
+  mounted () {
+    if (this.member.watchedDiscussions === undefined) {
+      this.$store.dispatch('fetchDiscussionsWatchedByMember', { id: this.$route.params.memberId }).then(() => {
+        this.$forceUpdate();
+        this.$nextTick(() => this.checkCanLoadMore());
+      });
+    } else {
+      this.$nextTick(() => this.checkCanLoadMore());
+    }
+  },
   methods: {
     indexToPage,
     checkCanLoadMore () {
@@ -50,15 +60,5 @@ export default {
       });
     },
   },
-  mounted () {
-    if (this.member.watchedDiscussions === undefined) {
-      this.$store.dispatch('fetchDiscussionsWatchedByMember', { id: this.$route.params.memberId }).then(() => {
-        this.$forceUpdate();
-        this.$nextTick(() => this.checkCanLoadMore());
-      })
-    } else {
-      this.$nextTick(() => this.checkCanLoadMore());
-    }
-  }
 };
 </script>

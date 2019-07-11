@@ -73,7 +73,7 @@ export default {
     },
     subPath () {
       return this.$route.path.substring(27);
-    }
+    },
   },
   watch: {
     '$route.params.memberId': function (id) {

@@ -35,6 +35,13 @@ export default {
       return this.member.discussions;
     },
   },
+  mounted () {
+    if (this.discussions === undefined) {
+      this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId }).then(() => {
+        this.$forceUpdate();
+      });
+    }
+  },
   methods: {
     indexToPage,
     loadMore () {
@@ -46,12 +53,5 @@ export default {
       });
     },
   },
-  mounted () {
-    if (this.discussions === undefined) {
-      this.$store.dispatch('fetchDiscussionsCreatedByMember', { id: this.$route.params.memberId }).then(() => {
-        this.$forceUpdate();
-      })
-    }
-  }
 };
 </script>
