@@ -15,6 +15,7 @@ const AvatarCutter = () => import(/* webpackChunkName: "AvatarCutterComponent" *
 const AccountSetting = () => import(/* webpackChunkName: "AccountSettingComponent" */ './components/AccountSetting.vue');
 const RecentActivity = () => import(/* webpackChunkName: "RecentActivityComponent" */ './components/RecentActivity.vue');
 const MemberRecentPosts = () => import(/* webpackChunkName: "MemberRecentPostsComponent" */ './components/MemberRecentPosts.vue');
+const MemberSubscribedPosts = () => import(/* webpackChunkName: "MemberSubscribedPostsComponent" */ './components/MemberSubscribedPosts.vue');
 
 Vue.use(VueRouter);
 
@@ -75,6 +76,10 @@ export function createRouter (store) {
         }, {
           path: 'discussions',
           component: MemberRecentPosts,
+          meta: { keepAlive: true },
+        }, {
+          path: 'subscribed',
+          component: MemberSubscribedPosts,
           meta: { keepAlive: true },
         }],
       }, {

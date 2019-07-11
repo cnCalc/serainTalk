@@ -23,6 +23,7 @@
 import { timeAgo, indexToPage } from '../utils/filters';
 import PostContent from './PostContent.vue';
 import LoadingIcon from './LoadingIcon.vue';
+import api from '../api';
 
 export default {
   components: {

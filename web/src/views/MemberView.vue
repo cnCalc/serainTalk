@@ -14,9 +14,10 @@ div
   div.member-activity(v-if="member._id")
     div.member-activity-container
       div.member-side-nav
-        div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: $route.meta.mode === 'posts' }") 最近的活动
-        div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: $route.meta.mode === 'discussions' }") 创建的讨论
-        div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: $route.meta.mode === 'settings' }") 个人设置
+        div: router-link(:to="`/m/${$route.params.memberId}`"): button.button(v-bind:class="{ active: subPath === '' }") 最近的活动
+        div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: subPath === '/discussions' }") 创建的讨论
+        div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/subscribed`"): button.button(v-bind:class="{ active: subPath === '/subscribed' }") 订阅的讨论
+        div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: subPath === '/settings' }") 个人设置
         div(v-if="$store.state.me._id && $route.params.memberId !== $store.state.me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
       router-view
 </template>
@@ -52,13 +53,13 @@ export default {
       return 'Loading';
     }
 
-    const subPath = this.$route.path.substring(27);
-
-    switch (subPath) {
+    switch (this.subPath) {
       case '':
         return `${this.member.username} 的最近活动`;
       case '/discussions':
         return `${this.member.username} 创建的讨论`;
+      case '/subscribed':
+        return `${this.member.username} 订阅的讨论`;
       case '/settings':
         return '个人设置';
     }
@@ -70,6 +71,9 @@ export default {
     busy () {
       return this.$store.state.busy;
     },
+    subPath () {
+      return this.$route.path.substring(27);
+    }
   },
   watch: {
     '$route.params.memberId': function (id) {
@@ -81,7 +85,6 @@ export default {
   },
   asyncData ({ store, route }) {
     return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
-      return store.dispatch('fetchDiscussionsCreatedByMember', { id: route.params.memberId });
     }).catch((error) => {
       if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
         this.$router.replace('/not-found');
@@ -248,7 +251,9 @@ div.member-activity {
 
       @include respond-to(phone) {
         display: flex;
-        justify-content: center;
+        overflow-y: scroll;
+        width: 90vw;
+        margin: 0 auto;
       }
 
       a {

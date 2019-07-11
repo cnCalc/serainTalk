@@ -156,12 +156,12 @@ export default {
    */
   fetchDiscussionsWatchedByMember: (state, params = {}) => {
     state.commit('setBusy', true);
-    params.append || state.commit('setMemberDiscussions', []);
+    params.append || state.commit('setMemberWatchedDiscussions', []);
     return api.v1.discussion.fetchWatchedDiscussions(params).then(data => {
       if (params.append) {
-        state.commit('appendMemberDiscussions', data.discussions);
+        state.commit('appendMemberWatchedDiscussions', data.discussions);
       } else {
-        state.commit('setMemberDiscussions', data.discussions);
+        state.commit('setMemberWatchedDiscussions', data.discussions);
       }
       state.commit('mergeMembers', data.members);
       state.commit('setBusy', false);

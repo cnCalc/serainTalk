@@ -168,6 +168,20 @@ let mutations = {
   },
 
   /**
+   * 设置帖子列表正在展示的帖子
+   */
+  setMemberWatchedDiscussions: (state, discussions) => {
+    state.member = Object.assign(state.member, { watchedDiscussions: discussions });
+  },
+
+  /**
+   * 向帖子列表内附加帖子
+   */
+  appendMemberWatchedDiscussions: (state, discussions) => {
+    state.member.watchedDiscussions = [...state.member.watchedDiscussions, ...discussions];
+  },
+
+  /**
    * 更新当前登陆的用户细心
    */
   setCurrentSigninedMemberInfo: (state, me) => {
