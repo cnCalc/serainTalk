@@ -49,7 +49,7 @@ export default {
   methods: {
     indexToPage,
     checkCanLoadMore () {
-      if (this.discussions && this.discussions.length !== this.currentPage * config.api.pagesize) {
+      if (this.discussions && this.discussions.length !== this.currentPage * config.discussionList.pagesize) {
         this.canLoadMorePosts = false;
       }
     },
