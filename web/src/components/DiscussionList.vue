@@ -1,7 +1,6 @@
 <template lang="pug">
   div.discussion-list
-    //- transition-group(tag="ul" name="list")
-    ul
+    transition-group(tag="ul" name="list")
       li(v-for="(discussion, index) in discussions" :key="(keyPrefix || 'dft') + discussion._id" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
         router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
           div.avater
@@ -53,18 +52,24 @@ export default {
   data () {
     return {
       lastKeyPrefix: null,
+      discussions: [],
     };
   },
   computed: {
-    discussions () {
-      return this.$props.list || this.$store.state.discussions;
-    },
     members () {
       return this.$store.state.members;
     },
     busy () {
       return this.$store.state.busy;
     },
+  },
+  watch: {
+    list (val) {
+      this.discussions = val;
+    },
+  },
+  created () {
+    this.discussions = this.list;
   },
   methods: {
     timeAgo, decodeHTML,

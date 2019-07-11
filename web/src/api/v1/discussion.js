@@ -22,7 +22,7 @@ function fetchLatestDiscussions (params) {
   }
 
   return new Promise((resolve, reject) => {
-    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.pagesize}&${ object2query(query) }`)
+    axios.get(`${config.api.url}/${config.api.version}/discussions/latest?page=${params.page || 1}&pagesize=${params.pagesize || config.discussionList.pagesize}&${ object2query(query) }`)
       .then(response => resolve(response.data))
       .catch(error => reject(error));
   });
@@ -296,6 +296,16 @@ function updateSubscribeModeById (params) {
   });
 }
 
+function fetchWatchedDiscussions (params) {
+  const query = {};
+
+  return new Promise((resolve, reject) => {
+    axios.get(`${config.api.url}/${config.api.version}/discussions/watching?page=${params.page || 1}&pagesize=${params.pagesize || config.discussionList.pagesize}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
 export default {
   fetchLatestDiscussions,
   fetchDiscussionMetaById,
@@ -309,4 +319,5 @@ export default {
   votePostByDiscussionIdAndIndex,
   deleteDiscussionPermanentlyById,
   updateSubscribeModeById,
+  fetchWatchedDiscussions,
 };

@@ -10,6 +10,12 @@ const SignupView = () => import(/* webpackChunkName: "SignupView" */ './views/Si
 const MigrationView = () => import(/* webpackChunkName: "MigrationView" */ './views/MigrationView.vue');
 const MessageView = () => import(/* webpackChunkName: "MessageView" */ './views/MessageView.vue');
 const DiscuzRedirectView = () => import(/* webpackChunkName: "DiscuzRedirectView" */ './views/DiscuzRedirectView.vue');
+
+const AvatarCutter = () => import(/* webpackChunkName: "AvatarCutterComponent" */ './components/AvatarCutter.vue');
+const AccountSetting = () => import(/* webpackChunkName: "AccountSettingComponent" */ './components/AccountSetting.vue');
+const RecentActivity = () => import(/* webpackChunkName: "RecentActivityComponent" */ './components/RecentActivity.vue');
+const MemberRecentPosts = () => import(/* webpackChunkName: "MemberRecentPostsComponent" */ './components/MemberRecentPosts.vue');
+
 Vue.use(VueRouter);
 
 export function createRouter (store) {
@@ -54,18 +60,23 @@ export function createRouter (store) {
         path: '/m/:memberId',
         component: MemberView,
         meta: { keepAlive: true, mode: 'posts' },
-      }, {
-        path: '/m/:memberId/discussions',
-        component: MemberView,
-        meta: { keepAlive: true, mode: 'discussions' },
-      }, {
-        path: '/m/:memberId/settings',
-        component: MemberView,
-        meta: { keepAlive: true, mode: 'settings' },
-      }, {
-        path: '/m/:memberId/change-avatar',
-        component: MemberView,
-        meta: { keepAlive: true, mode: 'avatar' },
+        children: [{
+          path: 'change-avatar',
+          component: AvatarCutter,
+          meta: { keepAlive: true },
+        }, {
+          path: 'settings',
+          component: AccountSetting,
+          meta: { keepAlive: true },
+        }, {
+          path: '',
+          component: RecentActivity,
+          meta: { keepAlive: true },
+        }, {
+          path: 'discussions',
+          component: MemberRecentPosts,
+          meta: { keepAlive: true },
+        }],
       }, {
         path: '/signin',
         component: SigninView,

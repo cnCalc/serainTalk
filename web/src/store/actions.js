@@ -152,6 +152,24 @@ export default {
   },
 
   /**
+   * 获取用户订阅的讨论列表
+   */
+  fetchDiscussionsWatchedByMember: (state, params = {}) => {
+    state.commit('setBusy', true);
+    params.append || state.commit('setMemberDiscussions', []);
+    return api.v1.discussion.fetchWatchedDiscussions(params).then(data => {
+      if (params.append) {
+        state.commit('appendMemberDiscussions', data.discussions);
+      } else {
+        state.commit('setMemberDiscussions', data.discussions);
+      }
+      state.commit('mergeMembers', data.members);
+      state.commit('setBusy', false);
+      return Promise.resolve(data.count);
+    });
+  },
+
+  /**
    * 获取当前用户信息（仅根组件创建、即首次打开时）
    */
   fetchCurrentSigninedMemberInfo: state => {
