@@ -56,6 +56,7 @@
 
 <script>
 import CheckBox from './form/CheckBox.vue';
+import api from '../api';
 
 export default {
   components: {
@@ -126,7 +127,7 @@ export default {
           title: '请稍等',
           type: '',
           message: '正在更新个人简介，请稍等……',
-        });
+        });console.log(123);
         api.v1.member.updateMemberInfo({ bio: res }).then(() => {
           this.bus.$emit('notification', {
             type: 'message',
@@ -208,6 +209,12 @@ export default {
         });
       }).catch(() => {
         // doing nothing.
+      });
+    },
+    reloadMemberInfo () {
+      this.$store.dispatch('fetchCurrentSigninedMemberInfo');
+      this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
+        // this.updateTitle();
       });
     },
   },

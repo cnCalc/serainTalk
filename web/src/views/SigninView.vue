@@ -56,7 +56,9 @@ export default {
       api.v1.member.signin(this.credentials).then(response => {
         this.$store.commit('setBusy', false);
         this.$store.dispatch('fetchNotifications');
-        this.$store.commit('setCurrentSigninedMemberInfo', response.memberinfo);
+        this.$store.dispatch('fetchCurrentSigninedMemberInfo')
+          .then(() => { this.$store.dispatch('fetchNotifications'); })
+          .catch(e => {});
         this.$route.query.next && this.$router.push(decodeURIComponent(this.$route.query.next));
         this.bus.$emit('reconnect');
       }).catch(err => {
