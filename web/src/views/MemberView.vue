@@ -111,12 +111,6 @@ export default {
   },
   methods: {
     timeAgo, indexToPage,
-    reloadMemberInfo () {
-      this.$store.dispatch('fetchCurrentSigninedMemberInfo');
-      this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
-        // this.updateTitle();
-      });
-    },
   },
 };
 </script>

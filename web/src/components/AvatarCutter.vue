@@ -21,6 +21,9 @@
 </template>
 
 <script>
+import axios from 'axios';
+import api from '../api';
+
 export default {
   data () {
     return {
@@ -120,6 +123,53 @@ export default {
           this.updateCutIndicatorStyle();
         }, 200);
       }
+    },
+    uploadAvatar () {
+      let source = axios.CancelToken.source();
+      this.$store.dispatch('showMessageBox', {
+        title: '上传中',
+        type: 'CANCEL',
+        message: '正在上传（0%）',
+      }).catch(() => {
+        source.cancel('用户取消上传');
+      });
+      api.v1.member.uploadAvatar({
+        file: this.$el.querySelector('input[type="file"]').files[0],
+        x: Math.floor(this.cutState.x / this.cutState.ratio),
+        y: Math.floor(this.cutState.y / this.cutState.ratio),
+        w: Math.floor(this.cutState.size / this.cutState.ratio),
+      }, {
+        onUploadProgress: e => {
+          this.$store.dispatch('updateMessageBox', {
+            title: '上传中',
+            message: `正在上传（${(100 * e.loaded / e.total).toFixed(2)}%）`,
+          });
+        },
+        cancelToken: source.token,
+      }).then(() => {
+        this.$store.dispatch('disposeMessageBox');
+        return this.$store.dispatch('showMessageBox', {
+          title: '上传成功',
+          type: 'OK',
+          message: '文件上传成功，您的头像已经更新。',
+        }).then(() => {
+          window.history.go(-1);
+          this.reloadMemberInfo();
+        });
+      }).catch(error => {
+        this.$store.dispatch('disposeMessageBox');
+        console.error(error);
+        this.bus.$emit('notification', {
+          type: 'error',
+          body: error.message,
+        });
+      });
+    },
+    reloadMemberInfo () {
+      this.$store.dispatch('fetchCurrentSigninedMemberInfo');
+      this.$store.dispatch('fetchMemberInfo', { id: this.$route.params.memberId }).then(() => {
+        // this.updateTitle();
+      });
     },
   },
 };
