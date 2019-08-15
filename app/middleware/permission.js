@@ -53,7 +53,7 @@ let verifyDiscussionFreq = async (req, res, next) => {
   }
 
   let latestDiscussion = await dbTool.discussion.aggregate([
-    { $match: { 'creater': req.member._id } },
+    { $match: { 'creator': req.member._id } },
     { $sort: { 'createDate': -1 } },
     { $limit: 1 },
   ]).toArray();

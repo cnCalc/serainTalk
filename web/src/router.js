@@ -19,7 +19,7 @@ const MemberSubscribedPosts = () => import(/* webpackChunkName: "MemberSubscribe
 
 Vue.use(VueRouter);
 
-export function createRouter (store) {
+export function creatorouter (store) {
   return new VueRouter({
     mode: 'history',
     routes: [

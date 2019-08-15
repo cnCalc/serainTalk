@@ -91,7 +91,7 @@ let getLatestDiscussionList = async (req, res) => {
     // 检索其发出的 discussion
     if (req.query.memberId) {
       req.query._memberId = ObjectID(req.query.memberId);
-      query.creater = req.query._memberId;
+      query.creator = req.query._memberId;
     }
     // 检索指定的 tag
     if (req.query.tag) {
@@ -127,7 +127,7 @@ let getLatestDiscussionList = async (req, res) => {
       { $match: query },
       {
         $project: {
-          creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+          creator: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
           tags: 1, status: 1, lastMember: 1, replies: 1, category: 1,
           sticky: 1,
         },
@@ -184,7 +184,7 @@ let getDiscussionById = async (req, res) => {
       { $match: query },
       {
         $project: {
-          creater: 1, title: 1, createDate: 1,
+          creator: 1, title: 1, createDate: 1,
           lastDate: 1, views: 1, tags: 1,
           status: 1, lastMember: 1, category: 1,
           subscribers: 1, sticky: 1,
@@ -415,7 +415,7 @@ let createDiscussion = async (req, res, next) => {
     _id: ObjectID(),
     category: req.body.category,
     createDate: now,
-    creater: req.member._id,
+    creator: req.member._id,
     lastDate: now,
     lastMember: req.member._id,
     participants: [
@@ -597,7 +597,7 @@ let createPost = async (req, res, next) => {
     let needNotification = new Set(); // 去重
     const watchList = [];
     // 添加楼主
-    needNotification.add(discussionInfo.creater.toString());
+    needNotification.add(discussionInfo.creator.toString());
     // 添加被回复者
     if (postInfo.replyTo) needNotification.add(postInfo.replyTo.memberId);
     postInfo.mentions.forEach(mention => needNotification.add(mention));
@@ -628,13 +628,13 @@ let createPost = async (req, res, next) => {
 
     needNotification.map(_memberId => {
       // 如果是楼主 则发送有跟帖通知
-      if (_memberId.equals(discussionInfo.creater)) {
-        utils.mail.sendDiscussionReplyNotification(discussionInfo.creater, {
+      if (_memberId.equals(discussionInfo.creator)) {
+        utils.mail.sendDiscussionReplyNotification(discussionInfo.creator, {
           title: discussionInfo.title,
           link: `${staticConfig.siteAddress}/d/${_id}/${Math.floor((postInfo.index - 1) / config.pagesize) + 1}#index-${postInfo.index}`,
           content: req.body.content,
         });
-        return utils.notification.sendNotification(discussionInfo.creater, {
+        return utils.notification.sendNotification(discussionInfo.creator, {
           content: utils.string.fillTemplate(config.notification.discussionReplied.content, {
             var1: req.member.username,
             var2: discussionInfo.title,
@@ -1037,7 +1037,7 @@ let getDiscussionUnderMember = async (req, res) => {
   let { pagesize, page: offset } = req.query;
   offset -= 1;
   let query = {
-    creater: memberId,
+    creator: memberId,
     category: { $in: config.discussion.category.whiteList },
     $or: [
       { status: null },
@@ -1057,7 +1057,7 @@ let getDiscussionUnderMember = async (req, res) => {
     //   { $match: query },
     //   {
     //     $project: {
-    //       creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+    //       creator: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
     //       tags: 1, status: 1, lastMember: 1, replies: 1, category: 1
     //     }
     //   },
@@ -1068,7 +1068,7 @@ let getDiscussionUnderMember = async (req, res) => {
     let cursor = dbTool.discussion.find(
       query,
       {
-        creater: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
+        creator: 1, title: 1, createDate: 1, lastDate: 1, views: 1,
         tags: 1, status: 1, lastMember: 1, replies: 1, category: 1,
       }
     ).sort({ createDate: -1 }).limit(pagesize).skip(offset * pagesize);
@@ -1154,7 +1154,7 @@ let getDiscussionsByCategory = async (req, res, next) => {
       { $match: query },
       {
         $project: {
-          creater: 1, title: 1, createDate: 1, lastDate: 1,
+          creator: 1, title: 1, createDate: 1, lastDate: 1,
           views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
           sticky: 1,
         },
@@ -1195,7 +1195,7 @@ let getDiscussionsWatchedByMember = async (req, res, next) => {
       { $match: query },
       {
         $project: {
-          creater: 1, title: 1, createDate: 1, lastDate: 1,
+          creator: 1, title: 1, createDate: 1, lastDate: 1,
           views: 1, tags: 1, status: 1, lastMember: 1, replies: 1,
           sticky: 1,
         },
@@ -1321,7 +1321,7 @@ let deleteDiscussion = async (req, res, next) => {
     // 查询封禁状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { title: 1, creater: 1 } },
+      { $project: { title: 1, creator: 1 } },
     ]).toArray();
 
     if (req.query.force) {
@@ -1333,7 +1333,7 @@ let deleteDiscussion = async (req, res, next) => {
           ),
         };
         await Promise.all([
-          utils.notification.sendNotification(discussionDoc[0].creater, notification),
+          utils.notification.sendNotification(discussionDoc[0].creator, notification),
           dbTool.discussion.deleteOne({ _id: _id }),
         ]);
         return res.status(204).send({ status: 'ok' });
@@ -1377,7 +1377,7 @@ let deleteDiscussion = async (req, res, next) => {
           { title: updateDoc.value.title }
         ),
     };
-    utils.notification.sendNotification(updateDoc.value.creater, notification);
+    utils.notification.sendNotification(updateDoc.value.creator, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);
@@ -1479,7 +1479,7 @@ let lockDiscussion = async (req, res, next) => {
     // 查询锁定状态
     let discussionDoc = await dbTool.discussion.aggregate([
       { $match: { _id: _id } },
-      { $project: { title: 1, creater: 1, status: 1 } },
+      { $project: { title: 1, creator: 1, status: 1 } },
     ]).toArray();
 
     if (!discussionDoc) {
@@ -1532,7 +1532,7 @@ let lockDiscussion = async (req, res, next) => {
       };
     }
 
-    utils.notification.sendNotification(updateDoc.value.creater, notification);
+    utils.notification.sendNotification(updateDoc.value.creator, notification);
     return res.status(204).send({ status: 'ok' });
   } catch (err) {
     return errorHandler(err, errorMessages.DB_ERROR, 500, res);

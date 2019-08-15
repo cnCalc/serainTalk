@@ -33,7 +33,7 @@ let fetchOneMember = async (_memberId) => {
  */
 async function resolveMembersInDiscussionArray (discussions) {
   let members = {};
-  let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creater, discussion.lastMember]), []);
+  let membersToFetch = discussions.reduce((arr, discussion) => arr.concat([discussion.creator, discussion.lastMember]), []);
   await Promise.all([...new Set(membersToFetch)].map(async memberId => { members[memberId] = await fetchOneMember(ObjectID(memberId)); }));
   return members;
 }

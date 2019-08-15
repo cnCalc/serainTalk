@@ -8,10 +8,10 @@ const haxPossible = 'abcdef0123456789';
  *
  * @param {Number} length 字符串长度
  */
-function createRandomString (length = 10, flag = {}) {
+function creatorandomString (length = 10, flag = {}) {
   let possible = strPossible;
   if (flag.hax) possible = haxPossible;
   return Array(length).fill(0).map(i => possible.charAt(Math.floor(possible.length * Math.random()))).join('');
 }
 
-module.exports = createRandomString;
+module.exports = creatorandomString;

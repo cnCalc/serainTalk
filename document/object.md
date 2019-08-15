@@ -14,7 +14,7 @@ Discussion 是论坛的每一个讨论的结构，对应 Discuz 中是帖子。
 ``` TypeScript
 interface Discussion {
   _id: ObjectID,                  // 该讨论的 ObjectID
-  creater: ObjectID,              // 创建者的 ObjectID
+  creator: ObjectID,              // 创建者的 ObjectID
   title: string,                  // 该讨论的标题
   createDate: number,             // 讨论创建日期的 UNIX 时间戳
   lastDate: number,               // 讨论最后回复的日期的 UNIX 时间戳

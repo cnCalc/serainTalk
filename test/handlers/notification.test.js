@@ -62,7 +62,7 @@ describe('notification part', async () => {
         content: 'hello world',
       };
       try {
-        await utils.notification.sendNotification(utils.createRandomString(24, { hax: true }), notification);
+        await utils.notification.sendNotification(utils.creatorandomString(24, { hax: true }), notification);
         throw new Error('it should be wrong.');
       } catch (err) {
         assert(err.code === errorMessages.MEMBER_NOT_EXIST.code);

@@ -6,7 +6,7 @@
  * @param {string} url 基础链接
  * @param {object} params 参数
  */
-let createRESTfulUrl = (url, params) => {
+let creatorESTfulUrl = (url, params) => {
   url += '?';
   Object.keys(params).forEach(key => {
     let tempstr = Array.isArray(params[key]) ? JSON.stringify(params[key]) : params[key];
@@ -18,5 +18,5 @@ let createRESTfulUrl = (url, params) => {
 };
 
 module.exports = {
-  createRESTfulUrl,
+  creatorESTfulUrl,
 };

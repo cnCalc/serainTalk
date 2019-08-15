@@ -3,14 +3,14 @@
     //- transition-group(tag="ul" name="list")
     ul
       li(v-for="(discussion, index) in discussions" :key="(keyPrefix || 'dft') + discussion._id" v-on:click="dispatchClickToLink($event, discussion)", style="cursor: pointer"): div.discussion-list-item
-        router-link.discussion-avatar(:to="'/m/' + discussion.creater" v-if="!hideavatar")
+        router-link.discussion-avatar(:to="'/m/' + discussion.creator" v-if="!hideavatar")
           div.avater
             div.sticky-icon(v-if="showSticky && discussion.sticky[showSticky]")
-            div.avatar-image(v-if="members[discussion.creater].avatar" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creater].avatar + ')'}")
-            div.avatar-fallback(v-else) {{ (members[discussion.creater].username || '?').substr(0, 1).toUpperCase() }}
-          div.creater-info-popup
+            div.avatar-image(v-if="members[discussion.creator].avatar" v-bind:style="{ backgroundImage: 'url(' + members[discussion.creator].avatar + ')'}")
+            div.avatar-fallback(v-else) {{ (members[discussion.creator].username || '?').substr(0, 1).toUpperCase() }}
+          div.creator-info-popup
             div.triangle-left
-            span {{ members[discussion.creater].username || 'undefined' }} {{ i18n('ui_created_at', { date: new Date(discussion.createDate).toLocaleDateString() }) }}
+            span {{ members[discussion.creator].username || 'undefined' }} {{ i18n('ui_created_at', { date: new Date(discussion.createDate).toLocaleDateString() }) }}
         div.discussion-meta
           h3.discussion-title
             router-link.default(:to="'/d/' + discussion._id") {{ decodeHTML(discussion.title) }}
@@ -175,7 +175,7 @@ div.discussion-list {
   $arrow-width: 5px;
   $arrow-height: 6px;
   $popup-color: #333;
-  div.creater-info-popup {
+  div.creator-info-popup {
     display: inline-block;
     position: absolute;
     margin-top: 8px;
@@ -209,7 +209,7 @@ div.discussion-list {
     }
   }
 
-  div.avater:hover + div.creater-info-popup {
+  div.avater:hover + div.creator-info-popup {
     opacity: 1;
   }
 

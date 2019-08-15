@@ -19,7 +19,7 @@ let site = express();
 site.disable('x-powered-by');
 
 // Factory for Vue renderer
-function createRenderer (bundle, options) {
+function creatorenderer (bundle, options) {
   return createBundleRenderer(bundle, Object.assign(options, {
     basedir: path.resolve(__dirname, './dist'),
     runInNewContext: false,
@@ -36,7 +36,7 @@ if (isProd || isTest) {
   const template = fs.readFileSync(templatePath, 'utf-8');
   const bundle = require('./dist/vue-ssr-server-bundle.json');
   const clientManifest = require('./dist/vue-ssr-client-manifest.json');
-  renderer = createRenderer(bundle, {
+  renderer = creatorenderer(bundle, {
     template,
     clientManifest,
   });
@@ -46,7 +46,7 @@ if (isProd || isTest) {
     site,
     templatePath,
     (bundle, options) => {
-      renderer = createRenderer(bundle, options);
+      renderer = creatorenderer(bundle, options);
     }
   );
 }

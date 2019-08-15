@@ -72,7 +72,7 @@
 
 //       // 提交新邮箱
 //       let verifyUrl = '/api/v1/migration/verify';
-//       let newEmail = `${utils.createRandomString(10)}@cncalc.org`;
+//       let newEmail = `${utils.creatorandomString(10)}@cncalc.org`;
 //       await agent.post(verifyUrl)
 //         .send({
 //           name: newMemberInfo.username,
@@ -121,11 +121,11 @@
 //       expect(tokenDoc).to.not.be.ok;
 //       // 提交新邮箱
 //       let verifyUrl = '/api/v1/migration/verify';
-//       let newEmail = `${utils.createRandomString(10)}@cncalc.org`;
+//       let newEmail = `${utils.creatorandomString(10)}@cncalc.org`;
 //       let a = await agent.post(verifyUrl)
 //         .send({
 //           name: newMemberInfo.username,
-//           password: utils.createRandomString(20),
+//           password: utils.creatorandomString(20),
 //           email: newEmail,
 //         })
 //         .expect(401);
@@ -170,8 +170,8 @@
 
 //       // 执行迁移
 //       let performUrl = '/api/v1/migration/perform';
-//       let newName = utils.createRandomString(10);
-//       let newPassword = utils.createRandomString(10);
+//       let newName = utils.creatorandomString(10);
+//       let newPassword = utils.creatorandomString(10);
 //       await agent.post(performUrl)
 //         .send({
 //           name: newMemberInfo.username,
