@@ -62,7 +62,7 @@ let sendSubscriptionUpdateNotification = async (memberId, { title, link, content
 
   env.isProd && mail.sendMail({
     from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
-    to: address,
+    to: member.email,
     subject: `您订阅的讨论「${title}」有新的动态`,
     html,
   });
@@ -154,7 +154,7 @@ let sendMentionNotification = async (memberId, { title, link, content }) => {
 
   env.isProd && mail.sendMail({
     from: 'cnCalc 计算器论坛 <notification@cncalc.org>',
-    to: address,
+    to: member.email,
     subject: `您在讨论「${title}」中被提及`,
     html,
   });
