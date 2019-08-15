@@ -45,6 +45,15 @@ export default {
     this.bus.initialize();
   },
   mounted () {
+    this.$store.dispatch('showMessageBox', {
+      title: '特别提醒',
+      type: 'OK',
+      html: true,
+      message: '<p>此论坛（next.cncalc.org）目前处于<b>公开测试</b>阶段，新论坛的数据不会保留，仅作为测试用途。<b>开发团队会在需要进行数据重置时回滚数据。</b></p>'
+               + '<p>新的需要保留的正常帖子请<a href="www.cncalc.org" target="_blank" style="color: #1770b3">点击此处</a>发布到老论坛。</p>'
+               + '<p>开发团队会在进行数据重置前备份所有数据，若您需要查看这些内容，请前往<b>站务管理</b>分区并在相应置顶帖内进行回复，对此造成的不便深表歉意。</p>'
+    })
+
     console.log([
       '%c┌─┐┌┐┌╔═╗┌─┐┬  ┌─┐ ┌─┐┬─┐┌─┐',
       '│  │││║  ├─┤│  │   │ │├┬┘│ ┬',
