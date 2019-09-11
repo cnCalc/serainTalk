@@ -20,7 +20,7 @@ exports = module.exports = {};
  * @return {any}
  */
 let info2signUp = (memberInfo) => {
-  let allowKeys = ['username', 'password', 'email', 'gender', 'birthyear', 'birthmonth', 'token',
+  let allowKeys = ['username', 'password', 'email', 'birthyear', 'birthmonth', 'token',
     'birthday', 'address', 'qq', 'site', 'bio', 'regip', 'regdate', 'secques', 'device'];
   let tempMemberInfo = {};
   for (let key of allowKeys) {
@@ -43,9 +43,11 @@ let checkMemberInfo = (receiveInfo, tempMemberInfo) => {
   delete _memberInfo.password;
   delete _memberInfo.email;
   Object.keys(_memberInfo).forEach(key => {
-    assert(
-      [receiveInfo[key], parseInt(receiveInfo[key])].indexOf(_memberInfo[key]) !== -1
-    );
+    if (receiveInfo[key] !== undefined) {
+      assert(
+        [receiveInfo[key], parseInt(receiveInfo[key])].indexOf(_memberInfo[key]) !== -1
+      );
+    }
   });
 };
 exports.checkMemberInfo = checkMemberInfo;
