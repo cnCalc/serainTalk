@@ -60,7 +60,7 @@ describe('discussion part', async () => {
           category: ['test'],
           memberId: newMemberInfo.id,
         };
-        let url = utils.url.creatorESTfulUrl('/api/v1/discussions/latest', payload);
+        let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent
           .get(url)
           .expect(200);
@@ -91,7 +91,7 @@ describe('discussion part', async () => {
           category: ['test'],
           tag: ['temp tag'],
         };
-        let url = utils.url.creatorESTfulUrl('/api/v1/discussions/latest', payload);
+        let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
         let discussionRes = await agent
           .get(url)
           .expect(200);
@@ -150,7 +150,7 @@ describe('discussion part', async () => {
   it('get discussion by wrong id.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        let url = `/api/v1/discussions/${utils.creatorandomString(24, { hax: true })}`;
+        let url = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}`;
         let discussionRes = await agent
           .get(url)
           .expect(404);
@@ -202,7 +202,7 @@ describe('discussion part', async () => {
   it('get discussion posts by wrong id.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        let url = `/api/v1/discussions/${utils.creatorandomString(24, { hax: true })}/posts`;
+        let url = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/posts`;
         let discussionRes = await agent
           .get(url)
           .expect(404);
@@ -324,7 +324,7 @@ describe('discussion part', async () => {
               category: ['test'],
               memberId: newMemberInfo.id,
             };
-            let url = utils.url.creatorESTfulUrl('/api/v1/discussions/latest', payload);
+            let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
             let discussionRes = await agent
               .get(url)
               .expect(200);
@@ -336,7 +336,7 @@ describe('discussion part', async () => {
             category: ['test'],
             memberId: newMemberInfo.id,
           };
-          let url = utils.url.creatorESTfulUrl('/api/v1/discussions/latest', payload);
+          let url = utils.url.createRESTfulUrl('/api/v1/discussions/latest', payload);
           let discussionRes = await agent
             .get(url)
             .expect(200);
@@ -700,7 +700,7 @@ describe('discussion part', async () => {
   it('vote for wrong discussion(should be wrong).', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.discussion.createOneDiscussion(agent, null, async (newDiscussionInfo) => {
-        let voteUrl = `/api/v1/discussions/${utils.creatorandomString(24, { hax: true })}/post/1/vote`;
+        let voteUrl = `/api/v1/discussions/${utils.createRandomString(24, { hax: true })}/post/1/vote`;
         let voteType = config.discussion.post.vote.slice();
         let voteInfo = {
           vote: voteType[0],
@@ -1416,7 +1416,7 @@ describe('discussion part', async () => {
     await testTools.discussion.closeFreqLimit(async () => {
       await testTools.member.createOneMember(agent, null, async (newMemberInfoA) => {
         await testTools.discussion.createOneDiscussion(agent, {
-          title: utils.creatorandomString(),
+          title: utils.createRandomString(),
         }, async (newDiscussionInfoA) => {
           await testTools.member.createOneMember(agent, null, async (newMemberInfoC) => {
             let searchRes = await agent.get(`/api/v1/search/discussion?keywords=${newDiscussionInfoA.title}`);
@@ -1464,7 +1464,7 @@ describe('discussion part', async () => {
           // 写入二楼
           let postPayload = {
             encoding: 'markdown',
-            content: utils.creatorandomString(),
+            content: utils.createRandomString(),
           };
           let addPostUrl = `/api/v1/discussion/${newDiscussionInfoA.id}/post`;
           await agent.post(addPostUrl)

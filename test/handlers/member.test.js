@@ -91,7 +91,7 @@ describe('member part', () => {
       let applicationRes = await agent
         .post(url)
         .send({
-          memberName: utils.creatorandomString(70),
+          memberName: utils.createRandomString(70),
         })
         .expect(404);
       assert(applicationRes.body.status === 'error');
@@ -118,7 +118,7 @@ describe('member part', () => {
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
-      let newPassword = utils.creatorandomString(20);
+      let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
         password: newPassword,
@@ -155,10 +155,10 @@ describe('member part', () => {
       assert(applicationRes.body.status === 'ok');
 
       newMemberInfo = await dbTool.commonMember.findOne({ username: newMemberInfo.username });
-      let emailPayload = utils.creatorandomString(80);
+      let emailPayload = utils.createRandomString(80);
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
-      let newPassword = utils.creatorandomString(20);
+      let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
         password: newPassword,
@@ -186,7 +186,7 @@ describe('member part', () => {
       let emailPayload = '';
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
-      let newPassword = utils.creatorandomString(20);
+      let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
         password: newPassword,
@@ -218,7 +218,7 @@ describe('member part', () => {
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
-      let newPassword = utils.creatorandomString(20);
+      let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
         password: newPassword,
@@ -250,7 +250,7 @@ describe('member part', () => {
       };
       let emailToken = jwt.sign(emailPayload, config.jwtSecret);
       let resetUrl = '/api/v1/member/password/reset';
-      let newPassword = utils.creatorandomString(20);
+      let newPassword = utils.createRandomString(20);
       let resetPayload = {
         token: emailToken,
         password: newPassword,
@@ -292,9 +292,9 @@ describe('member part', () => {
   });
 
   it('get member info by mongoId.', async () => {
-    let emailPrefix = utils.creatorandomString(5);
-    let emailHosting = utils.creatorandomString(4);
-    let emailDomain = utils.creatorandomString(3);
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
     let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
     await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
@@ -310,9 +310,9 @@ describe('member part', () => {
   });
 
   it('get protected email by anonymous.', async () => {
-    let emailPrefix = utils.creatorandomString(5);
-    let emailHosting = utils.creatorandomString(4);
-    let emailDomain = utils.creatorandomString(3);
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
     let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
     await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfo) => {
       let url = `/api/v1/member/${newMemberInfo.id}`;
@@ -327,9 +327,9 @@ describe('member part', () => {
   });
 
   it('get public email by member.', async () => {
-    let emailPrefix = utils.creatorandomString(5);
-    let emailHosting = utils.creatorandomString(4);
-    let emailDomain = utils.creatorandomString(3);
+    let emailPrefix = utils.createRandomString(5);
+    let emailHosting = utils.createRandomString(4);
+    let emailDomain = utils.createRandomString(3);
     let email = `${emailPrefix}@${emailHosting}.${emailDomain}`;
     console.log(email);
     await testTools.member.createOneMember(agent, { email: email }, async (newMemberInfoA) => {

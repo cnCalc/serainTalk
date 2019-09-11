@@ -54,7 +54,7 @@ describe('debug part.', async () => {
         content: 'just test',
         href: 'cncalc.org',
       };
-      notificationUrl = utils.url.creatorESTfulUrl(notificationUrl, payload);
+      notificationUrl = utils.url.createRESTfulUrl(notificationUrl, payload);
       let sudoRes = await agent.get(notificationUrl).send(payload).expect(201);
       assert(sudoRes.body.status === 'ok');
     });

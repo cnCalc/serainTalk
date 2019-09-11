@@ -82,7 +82,7 @@ describe('attachment part.', async () => {
 
   it('get files that does not exit.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
-      let getUrl = `/api/v1/attachment/${utils.creatorandomString(24, { hax: true })}`;
+      let getUrl = `/api/v1/attachment/${utils.createRandomString(24, { hax: true })}`;
       let fileRes = await agent.get(getUrl);
       assert(fileRes.body.status === 'error');
       assert(fileRes.body.code === 'ERR_NOT_FOUND');
@@ -151,7 +151,7 @@ describe('attachment part.', async () => {
   it('delete an attachment that does not exist.', async () => {
     await testTools.member.createOneMember(agent, null, async (newMemberInfo) => {
       await testTools.attachment.uploadOneAttachment(agent, null, async (newAttachment) => {
-        let deleteUrl = `/api/v1/attachment/${utils.creatorandomString(24, { hax: true })}`;
+        let deleteUrl = `/api/v1/attachment/${utils.createRandomString(24, { hax: true })}`;
         await agent.delete(deleteUrl).expect(404);
       });
     });

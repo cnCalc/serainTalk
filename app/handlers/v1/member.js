@@ -323,7 +323,7 @@ let updateMemberInfo = async (req, res, next) => {
 
 let verifyEmail = async (req, res, next) => {
   let { email } = req.body;
-  let token = utils.env.isMocha ? '000000' : utils.creatorandomString(6);
+  let token = utils.env.isMocha ? '000000' : utils.createRandomString(6);
   await dbTool.token.findOneAndUpdate(
     {
       memberId: req.member._id,
@@ -472,7 +472,7 @@ let prepareSignup = async (req, res) => {
   // TODO: 检查 token 冲突
 
   // 保存 token
-  let token = utils.creatorandomString(6);
+  let token = utils.createRandomString(6);
   if (utils.env.isMocha) token = 'kasora';
   await dbTool.token.replaceOne(
     {
@@ -527,7 +527,7 @@ let performSignup = async (req, res) => {
 
   // 生成成员身份信息
   memberInfo.credentials = {};
-  memberInfo.credentials.salt = utils.creatorandomString();
+  memberInfo.credentials.salt = utils.createRandomString();
   memberInfo.credentials.type = 'seraintalk';
   memberInfo.credentials.password = MD5(memberInfo.credentials.salt + SHA256(req.body.password));
   memberInfo.lastlogintime = Date.now();
@@ -615,7 +615,7 @@ let resetPassword = async (req, res) => {
 
   // 生成新的身份信息
   let credentials = {};
-  credentials.salt = utils.creatorandomString();
+  credentials.salt = utils.createRandomString();
   credentials.type = 'seraintalk';
   credentials.password = MD5(credentials.salt + SHA256(newPassword));
 
@@ -692,7 +692,7 @@ let resetPasswordApplication = async (req, res) => {
 let passwordModify = async (req, res) => {
   // 生成成员身份信息
   let credentials = {};
-  credentials.salt = utils.creatorandomString();
+  credentials.salt = utils.createRandomString();
   credentials.type = 'seraintalk';
   credentials.password = MD5(credentials.salt + SHA256(req.body.password));
   try {

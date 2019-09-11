@@ -3,7 +3,7 @@
 exports = module.exports = {};
 
 exports.cookie = require('./cookie');
-exports.creatorandomString = require('./random-string');
+exports.createRandomString = require('./random-string');
 exports.env = require('./env');
 exports.errorHandler = require('./error-handler');
 exports.errorMessages = require('./error-messages');

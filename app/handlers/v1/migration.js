@@ -79,7 +79,7 @@ async function verifyDiscuzMemberInfo (req, res) {
     }
 
     // 保存迁移 token，留着下一步使用
-    let token = utils.creatorandomString(6);
+    let token = utils.createRandomString(6);
     if (utils.env.isMocha) token = 'kasora';
     await dbTool.token.replaceOne(
       {
@@ -151,7 +151,7 @@ async function performMigration (req, res) {
     }
 
     // 加密密码，采用和新的密码杂凑方式
-    let salt = utils.creatorandomString();
+    let salt = utils.createRandomString();
     let newMemberInfo = {
       username: newname,
       credentials: {

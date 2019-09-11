@@ -6,7 +6,7 @@ import App from './App.vue';
 
 import './utils/ws-eventbus';
 import i18n from './mixins/i18n';
-import { creatorouter } from './router';
+import { createRouter } from './router';
 import { createStore } from './store';
 
 Vue.mixin(i18n);
@@ -30,7 +30,7 @@ Vue.mixin({
 
 export function createApp () {
   const store = createStore();
-  const router = creatorouter(store);
+  const router = createRouter(store);
 
   sync(store, router);
 
