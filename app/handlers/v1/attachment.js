@@ -46,7 +46,10 @@ let getAttachmentInfoByAttachmentId = async (req, res) => {
  * @param {Response} res
  */
 let getAttachmentsInfoByMemberId = async (req, res) => {
-  const query = { _owner: req.member._id };
+  const query = {
+    _owner: req.member._id,
+    type: 'attachment',
+  };
 
   if (req.query.excludingUsed) {
     query.referer = [];
