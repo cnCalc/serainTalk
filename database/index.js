@@ -30,16 +30,6 @@ let mongoConnect = async () => {
     _db = (await MongoClient.connect(config.database, { useNewUrlParser: true })).db(config.databaseName);
     if (env.isMocha) await _db.dropDatabase();
 
-    exports.generic = _db.collection('generic');
-    exports.discussion = _db.collection('discussion');
-    exports.attachment = _db.collection('attachment');
-    exports.commonMember = _db.collection('common_member');
-    exports.mail = _db.collection('mail');
-    exports.temppost = _db.collection('temppost');
-    exports.config = _db.collection('config');
-    exports.message = _db.collection('message');
-    exports.token = _db.collection('token');
-
     logger.writeInfoLog({ entity: 'Database', content: 'Database connected.' });
   } catch (err) {
     /* istanbul ignore next */
@@ -59,20 +49,17 @@ let prepare = async () => {
   if (!_db) await connection;
 };
 
-exports = module.exports = {
+exports = module.exports = new Proxy({
   get db () {
     return _db;
   },
-
-  generic: 'loading',
-  discussion: 'loading',
-  attachment: 'loading',
-  commonMember: 'loading',
-  mail: 'loading',
-  temppost: 'loading',
-  config: 'loading',
-  message: 'loading',
-  token: 'loading',
-
   prepare,
-};
+}, {
+  get (object, prop) {
+    if (prop in object) {
+      return object[prop];
+    }
+
+    return _db.collection(prop.replace(/([A-Z])/g, '_$1').toLowerCase());
+  },
+});
