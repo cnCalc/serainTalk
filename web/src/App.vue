@@ -58,7 +58,7 @@ export default {
 
     matchMedia('(prefers-color-scheme: dark)').onchange = () => {
       this.browserPreferDarkTheme = matchMedia('(prefers-color-scheme: dark)').matches;
-    }
+    };
 
     // reload session info.
     this.$store.dispatch('fetchCurrentSigninedMemberInfo')
