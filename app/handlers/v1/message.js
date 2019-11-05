@@ -113,7 +113,7 @@ let getMessagesInfo = async (req, res, next) => {
     // { $skip: offset },
     // { $limit: pagesize },
   ]).toArray();
-  let count = await dbTool.message.count({
+  let count = await dbTool.message.countDocuments({
     $or: [
       { 'members.0': req.member._id },
       { 'members.1': req.member._id },
