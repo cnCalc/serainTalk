@@ -29,7 +29,12 @@ let getMemberInfoById = async (req, res, next) => {
 
   // 查询用户的基础信息
   try {
-    let memberInfo = await dbTool.commonMember.findOne({ _id: memberId });
+    let memberInfo = await dbTool.commonMember.findOne({
+      _id: memberId,
+      'credentials.type': {
+        $ne: 'deleted',
+      },
+    });
     if (!memberInfo) {
       return errorHandler(null, errorMessages.MEMBER_NOT_EXIST, 404, res);
     }
@@ -566,6 +571,37 @@ let performSignup = async (req, res) => {
   return res.status(201).send({ status: 'ok', memberinfo: memberInfo });
 };
 
+/**
+ * [处理函数] 删除用户
+ * DELETE: /api/v1/member/:id
+ * @param {*} req
+ * @param {*} res
+ */
+let purgeMember = async (req, res) => {
+  if (!await utils.permission.checkPermission('member-memberDelete', req.member.permissions)) {
+    return errorHandler(null, errorMessages.PERMISSION_DENIED, 401, res);
+  }
+
+  const memberId = ObjectID(req.params.id);
+
+  await Promise.all([
+    dbTool.discussion.deleteMany({
+      creator: memberId,
+    }),
+    dbTool.commonMember.updateOne({
+      _id: memberId,
+    }, {
+      $set: {
+        'credentials.type': 'deleted',
+      },
+    }),
+  ]);
+
+  res.status(200).send({
+    status: 'ok',
+  });
+};
+
 // #endregion
 
 // #region 成员密码部分
@@ -727,4 +763,5 @@ module.exports = {
   updateSettings,
   uploadAvatar,
   verifyEmail,
+  purgeMember,
 };

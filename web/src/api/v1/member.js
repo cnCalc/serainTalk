@@ -259,6 +259,14 @@ function performSignup (params) {
   });
 }
 
+function purgeMember (params) {
+  return new Promise((resolve, reject) => {
+    axios.delete(`/api/v1/member/${params.id}`)
+      .then(response => resolve(response.data))
+      .catch(reject);
+  });
+}
+
 export default {
   fetchMemberInfoById,
   fetchMemberInfoByName,
@@ -275,4 +283,5 @@ export default {
   changeEmailAddress,
   prepareSignup,
   performSignup,
+  purgeMember,
 };

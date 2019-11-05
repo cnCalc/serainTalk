@@ -57,6 +57,7 @@
 <script>
 import CheckBox from './form/CheckBox.vue';
 import api from '../api';
+import axios from 'axios';
 
 export default {
   components: {

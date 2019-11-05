@@ -416,6 +416,18 @@ let route = {
         handlers.v1.member.updateEmail,
       ],
     },
+    purgeMember: {
+      description: '删除用户',
+      path: [
+        '/v1/member/:id',
+      ],
+      method: 'delete',
+      schema: {},
+      handler: [
+        verifyMember,
+        handlers.v1.member.purgeMember,
+      ],
+    },
   },
   password: {
     applicationReset: {

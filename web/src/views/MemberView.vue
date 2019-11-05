@@ -18,7 +18,8 @@ div
         div: router-link(:to="`/m/${$route.params.memberId}/discussions`"): button.button(v-bind:class="{ active: subPath === '/discussions' }") 创建的讨论
         div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/subscribed`"): button.button(v-bind:class="{ active: subPath === '/subscribed' }") 订阅的讨论
         div(v-if="$route.params.memberId === $store.state.me._id"): router-link(:to="`/m/${$route.params.memberId}/settings`"): button.button(v-bind:class="{ active: subPath === '/settings' }") 个人设置
-        div(v-if="$store.state.me._id && $route.params.memberId !== $store.state.me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
+        div(v-if="$route.params.memberId !== me._id"): router-link(:to="`/message/new/${$route.params.memberId}`"): button.button 开始对话
+        div(v-if="$route.params.memberId !== me._id && me.role === 'admin'"): button.button.dangerous(@click="purgeMember()") 删除该账户
       router-view
 </template>
 
@@ -68,6 +69,9 @@ export default {
     member () {
       return this.$store.state.member;
     },
+    me () {
+      return this.$store.state.me || {};
+    },
     busy () {
       return this.$store.state.busy;
     },
@@ -111,6 +115,18 @@ export default {
   },
   methods: {
     timeAgo, indexToPage,
+    purgeMember () {
+      this.$store.dispatch('showMessageBox', {
+        title: '危险操作警告',
+        type: 'OKCANCEL',
+        message: '该操作会彻底删除该成员，并使该成员创建的讨论和回复全部被删除，确认要删除该成员吗？',
+      }).then(res => {
+        return api.v1.member.purgeMember({ id: this.$route.params.memberId });
+      }).then(() => {
+        this.$router.push('/');
+      }).catch(() => {
+      });
+    },
   },
 };
 </script>
@@ -262,6 +278,10 @@ div.member-activity {
         padding: 0.3em 0.5em;
         width: 100px;
         border: none;
+
+        &.dangerous {
+          color: #F56C6C;
+        }
       }
     }
 

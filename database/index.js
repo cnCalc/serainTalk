@@ -49,6 +49,10 @@ let prepare = async () => {
   if (!_db) await connection;
 };
 
+/**
+ * @typedef {import('mongodb').Collection} Collection
+ * @type {Object.<string, Collection>}
+ */
 exports = module.exports = new Proxy({
   get db () {
     return _db;

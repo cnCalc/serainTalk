@@ -123,6 +123,13 @@
         "member"
       ],
       "enable": true
+    },
+    "memberDelete": {
+      "description": "可以删除成员",
+      "allow": [
+        "admin"
+      ],
+      "enable": true
     }
   }
 }
