@@ -6,7 +6,7 @@ const NPX_COMMAND = (() => {
     return 'npx.cmd';
   }
   return 'npx';
-})()
+})();
 
 // start webpack-dev-server
 const frontend = require('./web/server');
