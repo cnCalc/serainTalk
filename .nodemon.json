@@ -1,0 +1,8 @@
+{
+  "verbose": false,
+  "ignore": [
+    "web/*",
+    "uploads/*",
+    "test/*"
+  ]
+}
