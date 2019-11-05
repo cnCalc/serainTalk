@@ -28,15 +28,38 @@ export default {
   components: {
     NavBar, GlobalTitle, Editor, NotificationPopup, MessageBox,
   },
+  data () {
+    return {
+      browserPreferDarkTheme: false,
+    };
+  },
   computed: {
     isDarkTheme () {
-      return this.$store.state.settings.nightmode;
+      let settings = null;
+      
+      if (process.env.VUE_ENV === 'server') {
+        settings = this.$ssrContext;
+      } else {
+        settings = this.$store.state.settings;
+      }
+
+      if (settings.autoTheme) {
+        return this.browserPreferDarkTheme;
+      }
+
+      return process.env.VUE_ENV === 'server' ? this.$ssrContext.nightmode : this.$store.state.settings.nightmode;
     },
     isLightTheme () {
       return !this.isDarkTheme;
     },
   },
   beforeMount () {
+    this.browserPreferDarkTheme = matchMedia('(prefers-color-scheme: dark)') .matches;
+
+    matchMedia('(prefers-color-scheme: dark)').onchange = () => {
+      this.browserPreferDarkTheme = matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
     // reload session info.
     this.$store.dispatch('fetchCurrentSigninedMemberInfo')
       .then(() => { this.$store.dispatch('fetchNotifications'); })

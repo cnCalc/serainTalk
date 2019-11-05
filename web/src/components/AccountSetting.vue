@@ -24,6 +24,9 @@
       check-box(:checked="settings.autoLoadOnScroll" v-on:click.native="updateSetting('autoLoadOnScroll', !settings.autoLoadOnScroll)")
       span 在讨论页面中使用实验性的滚动自动加载
     div.row
+      check-box(:checked="settings.autoTheme" v-on:click.native="updateSetting('autoTheme', !settings.autoTheme)")
+      span 启用实验性的主题自动切换
+    div.row(v-if="!settings.autoTheme")
       check-box(:checked="settings.nightmode" v-on:click.native="updateSetting('nightmode', !settings.nightmode)")
       span 启用夜间模式（黑色主题）
     div.row

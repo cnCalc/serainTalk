@@ -4,6 +4,7 @@ const path = require('path');
 const { createBundleRenderer } = require('vue-server-renderer');
 const axios = require('axios');
 const serverConf = require('../config/staticConfig');
+const cookieParser = require('cookie-parser');
 
 axios.defaults.baseURL = serverConf.siteAddress;
 
@@ -14,6 +15,9 @@ const serve = (p, cache) => express.static(path.resolve(__dirname, p), {
 });
 
 let site = express();
+
+// Parse cookie
+site.use(cookieParser());
 
 // disable 'x-powered-by' for security
 site.disable('x-powered-by');
@@ -66,7 +70,7 @@ site.get('/robots.txt', (req, res) => {
 });
 
 // The actual render entry.
-function render (req, res) {
+async function render (req, res) {
   res.setHeader('Content-Type', 'text/html');
 
   const errorHandler = err => {
@@ -83,6 +87,19 @@ function render (req, res) {
     title: 'cnCalc',
     // meta: clientConfig.meta,
   };
+
+  if (req.cookies.membertoken) {
+    try {
+      const { data } = await axios.get('/api/v1/member/me', {
+        headers: {
+          cookie: `membertoken=${req.cookies.membertoken}`,
+        },
+      });
+
+      context.nightmode = data.memberInfo.settings.nightmode;
+      context.autoTheme = data.memberInfo.settings.autoTheme;
+    } catch (e) {}
+  }
 
   if (req.path === '/not-found') {
     res.status(404);
