@@ -19,6 +19,10 @@ const MemberSubscribedPosts = () => import(/* webpackChunkName: "MemberSubscribe
 
 Vue.use(VueRouter);
 
+function isBrowser () {
+  return typeof window !== 'undefined';
+}
+
 export function createRouter (store) {
   return new VueRouter({
     mode: 'history',
@@ -37,7 +41,9 @@ export function createRouter (store) {
         meta: { keepAlive: true },
         beforeEnter (to, from, next) {
           const { state } = store;
-          if (from.path !== to.path && state.me && state.me.settings && state.me.settings.preferNewTab) {
+          
+          if (from.path !== to.path && state.me && state.me.settings && state.me.settings.preferNewTab && isBrowser() && !(window.event instanceof PopStateEvent)) {
+            console.log(window.event);
             window.open(to.fullPath);
             next(false);
           } else {
@@ -50,7 +56,7 @@ export function createRouter (store) {
         meta: { keepAlive: true },
         beforeEnter (to, from, next) {
           const { state } = store;
-          if (from.params.discussionId !== to.params.discussionId && state.me && state.me.settings && state.me.settings.preferNewTab) {
+          if (from.params.discussionId !== to.params.discussionId && state.me && state.me.settings && state.me.settings.preferNewTab && isBrowser() && !(window.event instanceof PopStateEvent)) {
             window.open(to.fullPath);
             next(false);
           } else {

@@ -13,7 +13,7 @@
       router-link(:to="`/m/${me._id}/settings`"): li
         div.icon.settings-icon
         div.text {{ i18n('link_settings') }}
-      a(@click="switchTheme" v-if="!me.settings.autoTheme"): li
+      a(@click="switchTheme" v-if="!me.settings || !me.settings.autoTheme"): li
         div(:class="theme === 'light' ? 'icon night-mode-icon' : 'icon day-mode-icon'")
         div.text {{ i18n('link_switch_theme') }}
       a(@click="signout"): li
