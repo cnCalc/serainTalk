@@ -11,7 +11,5 @@ app/public/*
 coverage
 .nyc_output/*
 
-*package-lock.json
-
 invite-code.json
 staticConfig.js

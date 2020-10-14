@@ -87,6 +87,17 @@ export default {
     LoadingIcon, PostContent, Pagination,
   },
   mixins: [titleMixin],
+  asyncData ({ store, route }) {
+    const page = Number(route.params.page) || 1;
+    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
+      .catch(error => {
+        if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+          this.$router.replace('/not-found');
+        } else {
+          throw error;
+        }
+      });
+  },
   data () {
     return {
       pagesize: config.api.pagesize,
@@ -205,17 +216,6 @@ export default {
       }
     },
   },
-  asyncData ({ store, route }) {
-    const page = Number(route.params.page) || 1;
-    return store.dispatch('fetchDiscussion', { id: route.params.discussionId, page, preloadPrevPage: store.state.autoLoadOnScroll })
-      .catch(error => {
-        if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-          this.$router.replace('/not-found');
-        } else {
-          throw error;
-        }
-      });
-  },
   created () {
     this.currentDiscussion = this.$route.params.discussionId;
     const page = Number(this.$route.params.page) || 1;
@@ -258,7 +258,7 @@ export default {
     window.addEventListener('scroll', this.scrollWatcher, { passive: true });
     window.addEventListener('mouseup', this.hideQuote, { passive: true });
 
-    this.bus.$on('reloadDiscussionView', () => {
+    this.bus.$on('reload-discussion-view', () => {
       const page = Number(this.$route.params.page) || 1;
 
       this.$options.asyncData.call(this, { store: this.$store, route: this.$route }).then(() => {

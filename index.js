@@ -47,13 +47,13 @@ app.use('/uploads', express.static(
 ));
 
 // 数据校验禁止附带多余字段
-validation.options({
-  allowUnknownHeaders: false,
-  allowUnknownBody: false,
-  allowUnknownQuery: false,
-  allowUnknownParams: false,
-  allowUnknownCookies: false,
-});
+// validation.options({
+//   allowUnknownHeaders: false,
+//   allowUnknownBody: false,
+//   allowUnknownQuery: false,
+//   allowUnknownParams: false,
+//   allowUnknownCookies: false,
+// });
 
 // 初始化 websocket
 const server = utils.websocket.attachSocketIO(app).server;

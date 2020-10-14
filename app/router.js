@@ -3,7 +3,7 @@
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
-const validation = require('express-validation');
+const { validate } = require('express-validation');
 
 const config = require('../config');
 const dbTool = require('../database');
@@ -52,7 +52,9 @@ routeList.sort(utils.router.routeCompare);
 for (let route of routeList) {
   try {
     let handler = route.handler.pop();
-    route.handler.push(validation(route.schema));
+    if (Object.entries(route.schema).length !== 0) {
+      route.handler.push(validate(route.schema));
+    }
     route.handler.push(handler);
     router[route.method](route.path, ...route.handler);
   } catch (err) {

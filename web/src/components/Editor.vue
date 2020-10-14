@@ -644,7 +644,7 @@ export default {
       }
 
       api.v1.discussion.replyToDiscussion(payload).then(res => {
-        this.bus.$emit('reloadDiscussionView');
+        this.bus.$emit('reload-discussion-view');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
       }).catch(this.replyErrorHandler);
@@ -657,7 +657,7 @@ export default {
         content: this.content,
         attachments: this.usedAttachments,
       }).then(res => {
-        this.bus.$emit('reloadDiscussionView');
+        this.bus.$emit('reload-discussion-view');
         this.$router.push(`/d/${this.$route.params.discussionId}/${indexToPage(res.newPost.index)}#index-${res.newPost.index}`);
         this.$store.commit('updateEditorDisplay', 'none');
       }).catch(this.replyErrorHandler);

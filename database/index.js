@@ -27,7 +27,7 @@ let _db = null;
  */
 let mongoConnect = async () => {
   try {
-    _db = (await MongoClient.connect(config.database, { useNewUrlParser: true })).db(config.databaseName);
+    _db = (await MongoClient.connect(config.database, { useNewUrlParser: true, useUnifiedTopology: true })).db(config.databaseName);
     if (env.isMocha) await _db.dropDatabase();
 
     logger.writeInfoLog({ entity: 'Database', content: 'Database connected.' });

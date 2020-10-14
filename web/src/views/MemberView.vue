@@ -43,6 +43,16 @@ export default {
     LoadingIcon, PostContent, DiscussionList, CheckBox,
   },
   mixins: [titleMixin],
+  asyncData ({ store, route }) {
+    return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
+    }).catch((error) => {
+      if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
+        this.$router.replace('/not-found');
+      } else {
+        throw error;
+      }
+    });
+  },
   data () {
     return {
       currentMember: null,
@@ -86,16 +96,6 @@ export default {
         this.$options.asyncData({ route: this.$route, store: this.$store });
       }
     },
-  },
-  asyncData ({ store, route }) {
-    return store.dispatch('fetchMemberInfo', { id: route.params.memberId }).then(() => {
-    }).catch((error) => {
-      if (process.env.VUE_ENV !== 'server' && error.response.status === 404) {
-        this.$router.replace('/not-found');
-      } else {
-        throw error;
-      }
-    });
   },
   created () {
     this.currentPage = 1;

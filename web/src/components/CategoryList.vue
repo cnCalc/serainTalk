@@ -20,13 +20,13 @@
 <script>
 export default {
   name: 'CategoryList',
+  asyncData ({ store, route }) {
+    return store.dispatch('fetchCategory');
+  },
   computed: {
     categoriesGroup () {
       return this.$store.state.categoriesGroup;
     },
-  },
-  asyncData ({ store, route }) {
-    return store.dispatch('fetchCategory');
   },
 };
 </script>

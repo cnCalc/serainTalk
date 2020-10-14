@@ -10,11 +10,11 @@ let getLatestList = {
   query: {
     tag: joi.alternatives(joi.array().items(joi.string()), joi.string()),
     category: joi.array().items(joi.string()),
-    sticky: joi.array().items(joi.string().valid(['category'])).min(1),
+    sticky: joi.array().items(joi.string().valid('category')).min(1),
     memberId: interfaceUtils.mongoId,
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    sortBy: joi.string().valid(['createAt', 'replyAt']).default('replyAt'),
+    sortBy: joi.string().valid('createAt', 'replyAt').default('replyAt'),
   },
 };
 exports.getLatestList = getLatestList;
@@ -40,10 +40,10 @@ exports.getDiscussionByMember = getDiscussionByMember;
 let getDiscussionsByCategory = {
   query: {
     tag: joi.alternatives(joi.array().items(joi.string()), joi.string()),
-    sticky: joi.array().items(joi.string().valid(['site'])).min(1),
+    sticky: joi.array().items(joi.string().valid('site')).min(1),
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
-    sortBy: joi.string().valid(['createAt', 'replyAt']).default('replyAt'),
+    sortBy: joi.string().valid('createAt', 'replyAt').default('replyAt'),
   },
   params: {
     slug: joi.string().required(),
@@ -93,7 +93,7 @@ let createPost = {
     encoding: joi.string().required(),
     content: joi.string().required(),
     replyTo: {
-      type: joi.string().allow(['index']).required(),
+      type: joi.string().allow('index').required(),
       value: joi.number().required(),
       memberId: interfaceUtils.mongoId.required(),
     },
@@ -110,7 +110,7 @@ let votePost = {
     postIndex: joi.number().min(1).required(),
   },
   body: {
-    vote: joi.string().allow([config.discussion.post.vote]).required(),
+    vote: joi.string().allow(...config.discussion.post.vote).required(),
   },
 };
 exports.votePost = votePost;
@@ -120,7 +120,7 @@ let stickyDiscussion = {
     id: interfaceUtils.mongoId.required(),
   },
   body: {
-    sticky: joi.string().valid(['site', 'category']).required(),
+    sticky: joi.string().valid('site', 'category').required(),
   },
 };
 exports.stickyDiscussion = stickyDiscussion;
@@ -135,7 +135,7 @@ let updatePost = {
     encoding: joi.string(),
     content: joi.string(),
     replyTo: {
-      type: joi.string().allow(['index']).required(),
+      type: joi.string().allow('index').required(),
       value: joi.number().required(),
       memberId: interfaceUtils.mongoId.required(),
     },

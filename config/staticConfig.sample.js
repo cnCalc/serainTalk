@@ -3,7 +3,7 @@
 const path = require('path');
 
 module.exports = {
-  database: 'mongodb://localhost:27017/cncalc?autoReconnect=true',
+  database: 'mongodb://localhost:27017/cncalc',
   databaseName: 'cncalc',
   pagesize: 10,
   jwtSecret: 'exampleSecret',

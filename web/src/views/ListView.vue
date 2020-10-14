@@ -57,6 +57,26 @@ export default {
     DiscussionList, CategoryList, LoadingIcon,
   },
   mixins: [titleMixin],
+  asyncData ({ store, route }) {
+    let p;
+    let tags = [];
+    let sortBy = null;
+
+    if (this && this.sortBy) {
+      sortBy = this.sortBy;
+    }
+
+    if (this && this.checkoutTags) {
+      tags = this.checkoutTags();
+    }
+
+    if (route.path === '/') {
+      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag: tags, sortBy });
+    } else {
+      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag: tags, sortBy });
+    }
+    return p;
+  },
   data () {
     return {
       currentPage: 1,
@@ -153,26 +173,6 @@ export default {
     sortBy () {
       this.promise = this.$options.asyncData.call(this, { store: this.$store, route: this.$route });
     },
-  },
-  asyncData ({ store, route }) {
-    let p;
-    let tags = [];
-    let sortBy = null;
-
-    if (this && this.sortBy) {
-      sortBy = this.sortBy;
-    }
-
-    if (this && this.checkoutTags) {
-      tags = this.checkoutTags();
-    }
-
-    if (route.path === '/') {
-      p = store.dispatch('fetchLatestDiscussions', { pagesize: config.discussionList.pagesize, tag: tags, sortBy });
-    } else {
-      p = store.dispatch('fetchDiscussionsUnderCategory', { slug: route.params.categorySlug, pagesize: config.discussionList.pagesize, tag: tags, sortBy });
-    }
-    return p;
   },
   activated () {
     this.flushGlobalTitles();

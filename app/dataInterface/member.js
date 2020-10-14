@@ -94,7 +94,7 @@ let info = {
   },
   update: {
     body: {
-      device: joi.string().valid(staticConfig.device),
+      device: joi.string().valid(...staticConfig.device),
       bio: joi.string(),
     },
   },
