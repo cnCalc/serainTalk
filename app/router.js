@@ -3,7 +3,8 @@
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
-const { validate } = require('express-validation');
+// const { validate, Joi } = require('express-validation');
+const joi = require('joi');
 
 const config = require('../config');
 const dbTool = require('../database');
@@ -52,9 +53,32 @@ routeList.sort(utils.router.routeCompare);
 for (let route of routeList) {
   try {
     let handler = route.handler.pop();
-    if (Object.entries(route.schema).length !== 0) {
-      route.handler.push(validate(route.schema));
-    }
+    route.handler.push((req, res, next) => {
+      try {
+        const possibleFields = ['query', 'params', 'body'];
+
+        for (const field of possibleFields) {
+          if (!route.schema[field]) {
+            continue;
+          }
+
+          const result = route.schema[field].validate(req[field]);
+
+          if (result.error) {
+            throw result.error;
+          }
+
+          req[field] = result.value;
+        }
+      } catch (error) {
+        return next(error);
+      }
+
+      next();
+    });
+    // if (Object.entries(route.schema).length !== 0) {
+    // route.handler.push(validate(route.schema, {}, { convert: true }));
+    // }
     route.handler.push(handler);
     router[route.method](route.path, ...route.handler);
   } catch (err) {

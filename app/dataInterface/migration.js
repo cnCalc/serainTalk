@@ -15,11 +15,11 @@ let verify = {
 exports.verify = verify;
 
 let perform = {
-  body: {
+  body: joi.object({
     name: joi.string().required(),
     newname: joi.string(),
     newpassword: joi.string().required().required(),
     token: joi.string().required(),
-  },
+  }),
 };
 exports.perform = perform;

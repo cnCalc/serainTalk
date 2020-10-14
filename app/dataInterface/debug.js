@@ -6,20 +6,20 @@ const interfaceUtils = require('./interfaceUtils');
 exports = module.exports = {};
 
 let sudo = {
-  query: {
+  query: joi.object({
     id: interfaceUtils.mongoId,
-  },
+  }),
 };
 exports.sudo = sudo;
 
 let sendNotification = {
-  params: {
+  params: joi.object({
     id: interfaceUtils.mongoId,
-  },
-  query: {
+  }),
+  query: joi.object({
     content: joi.string().required(),
     href: joi.string(),
-  },
+  }),
 };
 exports.sendNotification = sendNotification;
 

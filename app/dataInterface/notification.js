@@ -19,18 +19,18 @@ exports = module.exports = {};
 // endregion
 
 let getNotification = {
-  query: {
+  query: joi.object({
     pagesize: interfaceUtils.pagesize,
     page: interfaceUtils.page,
     after: joi.number().default(0),
-  },
+  }),
 };
 exports.getNotification = getNotification;
 
 let readNotification = {
-  params: {
+  params: joi.object({
     index: joi.number().min(0).required(),
-  },
+  }),
 };
 exports.readNotification = readNotification;
 

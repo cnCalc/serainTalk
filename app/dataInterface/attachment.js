@@ -13,15 +13,15 @@ let getAttachmentByAttachmentId = {
 };
 
 let getAttachmentsByMemberId = {
-  query: {
+  query: joi.object({
     excludingUsed: interfaceUtils.flag,
-  },
+  }),
 };
 
 let getAttachmentById = {
-  params: {
+  params: joi.object({
     id: interfaceUtils.mongoId.required(),
-  },
+  }),
 };
 
 let getDailyTraffic = {
@@ -33,9 +33,9 @@ let uploadFile = {
 };
 
 let deleteFile = {
-  params: {
+  params: joi.object({
     id: interfaceUtils.mongoId.required(),
-  },
+  }),
 };
 
 exports.deleteFile = deleteFile;

@@ -10,15 +10,15 @@ exports = module.exports = {};
 
 // 成员注册之验证邮箱
 let prepareSignup = {
-  body: {
+  body: joi.object({
     email: joi.string().email().required(),
-  },
+  }),
 };
 exports.prepareSignup = prepareSignup;
 
 // 成员注册之执行注册
 let performSignup = {
-  body: {
+  body: joi.object({
     token: joi.string().required(),
     username: joi.string().required(),
     password: joi.string().required(),
@@ -35,16 +35,16 @@ let performSignup = {
     regdate: joi.number(),
     secques: joi.string(),
     device: joi.string(),
-  },
+  }),
 };
 exports.performSignup = performSignup;
 
 // 成员登录
 let login = {
-  body: {
+  body: joi.object({
     name: joi.string().required(),
     password: joi.string().required(),
-  },
+  }),
 };
 exports.login = login;
 
@@ -57,13 +57,13 @@ exports.logout = logout;
 
 let info = {
   getById: {
-    params: {
+    params: joi.object({
       id: interfaceUtils.mongoId.required(),
-    },
-    query: {
+    }),
+    query: joi.object({
       recent: interfaceUtils.flag,
       before: joi.number(),
-    },
+    }),
   },
   me: {},
   get: {
@@ -75,14 +75,14 @@ let info = {
     }).or('name', 'device'),
   },
   startWith: {
-    params: {
+    params: joi.object({
       subName: joi.string(),
-    },
-    query: {
+    }),
+    query: joi.object({
       subName: joi.string(),
       pagesize: interfaceUtils.pagesize,
       page: interfaceUtils.page,
-    },
+    }),
   },
   uploadAvatar: {
     query: joi.object({
@@ -93,20 +93,20 @@ let info = {
     }).and('left', 'top', 'width', 'height'),
   },
   update: {
-    body: {
+    body: joi.object({
       device: joi.string().valid(...staticConfig.device),
       bio: joi.string(),
-    },
+    }),
   },
   verifyEmail: {
-    body: {
+    body: joi.object({
       email: joi.string().email().required(),
-    },
+    }),
   },
   updateEmail: {
-    body: {
+    body: joi.object({
       token: joi.string().alphanum().length(6),
-    },
+    }),
   },
 };
 exports.info = info;
@@ -121,22 +121,22 @@ exports.setting = setting;
 let password = {
   // 修改密码
   modify: {
-    body: {
+    body: joi.object({
       password: joi.string().required(),
-    },
+    }),
   },
   // 申请重置密码
   resetApplication: {
-    body: {
+    body: joi.object({
       memberName: joi.string().required(),
-    },
+    }),
   },
   // 重置密码
   reset: {
-    body: {
+    body: joi.object({
       token: joi.string().required(),
       password: joi.string().required(),
-    },
+    }),
   },
 };
 exports.password = password;
