@@ -10,7 +10,7 @@
     "axios": "^0.20.0",
     "express": "^4.17.1",
     "memory-fs": "^0.5.0",
-    "pug": "^3.0.0",
+    "pug": "^3.0.1",
     "socket.io-client": "^2.3.1",
     "vue": "^2.6.12",
     "vue-router": "^3.4.6",
