@@ -56,7 +56,7 @@
     "joi": "^17.2.1",
     "joi-to-json-schema": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "markdown-it": "^11.0.1",
     "mmmagic": "^0.5.3",
     "mongodb": "^3.6.2",
