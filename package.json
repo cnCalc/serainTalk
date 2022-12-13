@@ -50,7 +50,7 @@
     "body-parser": "^1.19.0",
     "chalk": "^4.1.0",
     "cookie-parser": "^1.4.5",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-validation": "^3.0.6",
     "highlight.js": "^10.2.1",
     "joi": "^17.2.1",
